@@ -1,0 +1,31 @@
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Gradle / Java (mod/) ---
+.gradle/
+**/build/
+!src/**/build/
+mod/run/
+*.class
+*.log
+
+# --- Node / TypeScript (launcher/, backend/) ---
+node_modules/
+dist/
+out/
+**/*.tsbuildinfo
+npm-debug.log*
+
+# --- Electron build output ---
+launcher/release/
+
+# --- Env / Secrets ---
+.env
+.env.*
+!.env.example
