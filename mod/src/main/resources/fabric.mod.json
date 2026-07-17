@@ -1,0 +1,26 @@
+{
+	"schemaVersion": 1,
+	"id": "tntsallin1client",
+	"version": "${version}",
+	"name": "TNT's All-In-1 Client",
+	"description": "Custom Minecraft: Java Edition client (Fabric mod half) — performance and quality-of-life features, paired with its own launcher.",
+	"authors": [
+		"clenz-debug"
+	],
+	"contact": {
+		"sources": "https://github.com/clenz-debug/TNTsAllIn1Client"
+	},
+	"license": "ARR",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.tntsallin1client.TNTsAllIn1ClientMod"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
