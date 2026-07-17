@@ -2,7 +2,7 @@
 
 ## Context
 
-The goal is a custom Minecraft: Java Edition client (comparable to Lunar Client, Badlion Client, or Feather/Dawn Client) including its own desktop launcher. The client aims to improve performance (without requiring in-game settings to be tweaked) and offer a growing list of desired features (see `Ideen_für_den_client.md`). This is a hobby project with no time pressure, expected to take weeks to months of spare time — the roadmap is therefore deliberately broken into small, motivating milestones instead of being planned around one big deliverable.
+The goal is a custom Minecraft: Java Edition client (comparable to Lunar Client, Badlion Client, or Feather/Dawn Client) including its own desktop launcher. The client aims to improve performance (without requiring in-game settings to be tweaked) and offer a growing list of desired features (see `Ideen_für_den_client.md` (this is in german)). This is a hobby project with no time pressure, expected to take weeks to months of spare time — the roadmap is therefore deliberately broken into small, motivating milestones instead of being planned around one big deliverable.
 
 **Note for continuing work:** New work sessions (including later, fresh conversations) can point directly at this file instead of reloading the previous chat history — saves tokens. It's useful to briefly state in the conversation which phase is currently active and what has already been implemented.
 
