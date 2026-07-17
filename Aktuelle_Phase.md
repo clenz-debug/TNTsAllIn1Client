@@ -4,6 +4,19 @@
 
 **Phase 1 — "Hello World"-Fabric-Mod** ✅ abgeschlossen
 
+**Phase 2 — Erstes Mixin** ✅ abgeschlossen
+
+## Phase 2 — Erledigt
+- Mixin-Infrastruktur aufgesetzt: `src/main/resources/tntsallin1client.mixins.json` (Package `com.tntsallin1client.mixin`, `compatibilityLevel: JAVA_21`), in `fabric.mod.json` unter `"mixins"` registriert. Fabric Loom (1.17.16, über den `net.fabricmc.fabric-loom-remap`-Plugin-Alias) erkennt die Config automatisch und übernimmt Annotation-Processing/Refmap ohne zusätzliche `build.gradle.kts`-Änderungen.
+- `mixin/GuiMixin.java`: `@Mixin(Gui.class)` mit `@Inject(method = "render", at = @At("TAIL"))` in `net.minecraft.client.gui.Gui#render(GuiGraphics, DeltaTracker)` — die zentrale HUD-Render-Methode. Zielsignatur vorher direkt aus dem von `genSources` erzeugten, gemappten Vanilla-Quellcode verifiziert (Mojang-Mappings, kein Blindraten).
+  - Zeichnet einmal pro Frame den Text "TNT's All-In-1 Client (Mixin active)" oben links ins HUD (`guiGraphics.drawString(...)`).
+  - Loggt genau einmal (statisches Flag) eine Bestätigungszeile beim ersten Feuern, statt bei jedem Frame zu spammen.
+- **Bug während des Tests gefunden und gefixt:** Farbwert `0xFFFFFF` an `drawString` übergeben wurde als 32-Bit-ARGB zu `0x00FFFFFF` (Alpha = 0) — `GuiGraphics.drawString` verwirft den Aufruf still, wenn `ARGB.alpha(k) == 0` (Quelle: `GuiGraphics.java`, Zeile 253). Fix: `0xFFFFFFFF` (volles Alpha) verwendet. Lehre: Farbwerte für GuiGraphics-Zeichenmethoden immer als ARGB inkl. Alpha-Byte angeben, nicht als reines RGB.
+- Verifiziert im Dev-Client (`runClient`, zwei Durchläufe — erster zeigte den Bug, zweiter nach dem Fix bestätigt):
+  - Log-Zeile `[tntsallin1client] Phase 2 mixin fired: injected into Gui#render.` erscheint beim Weltbeitritt ✅
+  - Text ist sichtbar im HUD oben links ✅ (visuell vom Nutzer bestätigt)
+- Mixin-Injection in eigenen Worten: Der Fabric-Mixin-Annotation-Prozessor webt zur Kompilierzeit Bytecode aus `GuiMixin` in die vom Spiel geladene `Gui`-Klasse ein — `@At("TAIL")` platziert den injizierten Code kurz vor dem `return` der `render`-Methode, sodass er nach allem Vanilla-HUD-Rendering, aber noch im selben Methodenaufruf läuft. Kein Overriding/Ersetzen der Originalmethode, sondern additive Injection in bestehenden Bytecode.
+
 ## Phase 1 — Erledigt
 - Versionsrecherche direkt bei fabricmc.net/Modrinth (nicht auf die Roadmap-Planzahlen verlassen, siehe Risikohinweis #6):
   - **Minecraft hat tatsächlich auf ein jahresbasiertes Versionsschema gewechselt** (aktuell stabil: `26.2`, davor `26.1.x`). Der klassische `1.21.x`-Strang läuft aber parallel weiter und ist ebenfalls aktuell stabil (`1.21.11`).
@@ -48,4 +61,4 @@ Beim Registrieren der Azure-App gab es mehrere ineinandergreifende Probleme, bis
 5. **Lösung**: Kostenloser Azure-Free-Account-Signup (Telefon-/Kartenverifizierung, keine Kosten im Free-Tier) hat automatisch ein echtes Verzeichnis provisioniert — danach lief die App-Registrierung ohne Probleme durch.
 
 ## Nächster Schritt
-**Phase 2 — Erstes Mixin**: eine winzige, sichtbare Änderung per Mixin (z.B. Log-Zeile in eine Render-Methode injizieren), um den Mixin-Workflow einmal komplett durchzuspielen, bevor etwas "Echtes" gebaut wird. Fertig, wenn die Änderung sichtbar ist und die Mixin-Injection in eigenen Worten erklärbar wäre. Muss weiterhin nicht auf die Minecraft-API-Freischaltung warten.
+**Phase 3 — Electron-Launcher-MVP: echter Microsoft-Login + Vanilla-Start**. Auth-Kette (Microsoft OAuth2 → Xbox Live → XSTS → Minecraft-Access-Token → Entitlement/Profil-Check), danach Version-Manifest, Download von Client-Jar/Libraries/Assets, Classpath/JVM-Args, `java` als Kindprozess starten. Praxis-Tipp aus der Roadmap: alles außer dem eigentlichen Minecraft-Login mit Platzhalter-Profildaten bauen und testen, während auf die Azure-Freischaltung gewartet wird — nicht blockieren lassen.
