@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 660" width="600" height="660">
+  <defs>
+    <linearGradient id="woodGrain" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3a2a1e"/>
+      <stop offset="50%" stop-color="#5c4130"/>
+      <stop offset="100%" stop-color="#3a2a1e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="600" height="660" fill="#ffffff"/>
+
+  <!-- Octagon outline -->
+  <polygon points="200,40 400,40 560,200 560,400 400,560 200,560 40,400 40,200"
+           fill="none" stroke="#1a1a1a" stroke-width="4"/>
+
+  <!-- N logo made of "wood beams" -->
+  <g stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round">
+    <!-- Top horizontal beam (übersteht links/rechts wie bei einem T) -->
+    <rect x="150" y="150" width="300" height="50" fill="url(#woodGrain)"/>
+
+    <!-- Left vertical leg -->
+    <rect x="185" y="200" width="45" height="240" fill="url(#woodGrain)"/>
+
+    <!-- Right vertical leg -->
+    <rect x="370" y="200" width="45" height="240" fill="url(#woodGrain)"/>
+
+    <!-- Diagonal beam connecting the two legs (beginnt oben genau am Querbalken) -->
+    <polygon points="185,200 230,200 415,415 415,440 370,440 185,225"
+             fill="url(#woodGrain)"/>
+  </g>
+
+  <!-- Text -->
+  <text x="300" y="500" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="72" fill="#1a1a1a">A I <tspan font-size="78">1</tspan></text>
+  <text x="300" y="535" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="26" letter-spacing="4" fill="#1a1a1a">CLIENT</text>
+</svg>
