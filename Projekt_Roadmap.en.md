@@ -25,6 +25,7 @@ TNTs_Client_Projekt/
 │   └── src/main/{auth,launch,mods,ipc}/, preload/, renderer/
 ├── backend/        (Phase 8 only, optional) Friends/presence service, Node/TS
 ├── docs/           Notes, decisions
+├── designs/        Mockups, reference screenshots, branding (logo/colors) for launcher + in-game UI
 └── Ideen_für_den_client.md   (existing — continue as a living backlog)
 ```
 
