@@ -6,7 +6,7 @@
 
 **Phase 2 — Erstes Mixin** ✅ abgeschlossen
 
-**Phase 3 — Electron-Launcher-MVP** 🔧 in Arbeit (blockiert auf Mojang-API-Freischaltung für den letzten Teil)
+**Phase 3 — Electron-Launcher-MVP** 🔧 in Arbeit — alles außer dem echten Mojang-Login steht und ist vom Nutzer live bestätigt; wartet jetzt nur noch auf die Mojang-API-Freischaltung
 
 ## Phase 3 — Zwischenstand
 `launcher/` angelegt: Electron 43 + electron-vite 5 + TypeScript 7 + React 19, Ordnerstruktur wie in der Roadmap (`src/main/{auth,launch,ipc}/`, `src/preload/`, `src/renderer/`, plus `src/shared/` für Typen/IPC-Kanalnamen, die von allen drei Seiten geteilt werden). Bewusst keine zusätzlichen Abhängigkeiten wie `electron-store` oder MSAL — Auth-Kette ist handgeschriebenes `fetch` gegen die dokumentierten Endpunkte (Lernziel laut Roadmap), Token-Cache ist eine simple JSON-Datei in `userData`.
@@ -18,13 +18,17 @@
 
 **Was noch mit Dev-Mock läuft (Schritte 4–5, `minecraftAuth.ts`):** `login_with_xbox` + Profil-Abruf werden echt versucht; schlagen sie fehl (aktuell 403, da Azure-App noch nicht freigeschaltet), greift ein klar markiertes Platzhalterprofil (`DevPlayer`, `isMock: true`), das in der UI sichtbar als "Dev-Mock-Profil"-Badge markiert wird. Sobald Mojang freischaltet, entfällt der Fallback-Zweig ersatzlos — kein sonstiger Code muss sich ändern.
 
-**Bug beim ersten echten Login-Test gefunden und gefixt:** Erster Versuch von "Mit Microsoft anmelden" scheiterte mit `unauthorized_client: The client does not exist or is not enabled for consumers`. Durchgecheckt: "Supported account types" in Azure war korrekt auf "Nur persönliche Konten" gesetzt (also nicht der naheliegende Verdacht) — die tatsächliche Ursache war ein Tippfehler beim Abschreiben der Application (Client) ID in Phase 0: notiert war `6820dddd-8bc1-4fe6-ab9b-945a3a7d400a`, echt ist `6820dddb-...` (`b` statt `d` als achtes Zeichen). Fix: `launcher/src/main/config.ts` und die Notiz oben auf die korrekte ID korrigiert. Lehre: GUIDs beim Abtippen aus dem Portal immer per Copy-Button kopieren, nie von Hand/Screenshot abschreiben.
+**Zwei Bugs beim ersten echten Login-Test gefunden und gefixt** (das Nachstellen dieser realen Testrunde war überhaupt erst möglich, weil `npm run dev` aus der Agent-Shell nicht bis zum GUI-Fenster kommt — dort ist `ELECTRON_RUN_AS_NODE=1` gesetzt, sehr wahrscheinlich eine bewusste Sandbox-Absicherung gegen automatisch aufpoppende Fenster; der Nutzer hat deshalb selbst in einem normalen Terminal getestet):
+1. `unauthorized_client: The client does not exist or is not enabled for consumers`. "Supported account types" in Azure war korrekt auf "Nur persönliche Konten" gesetzt (nicht der naheliegende Verdacht) — tatsächliche Ursache war ein Tippfehler beim Abschreiben der Application (Client) ID in Phase 0: notiert war `6820dddd-8bc1-4fe6-ab9b-945a3a7d400a`, echt ist `6820dddb-...` (`b` statt `d` als achtes Zeichen). Fix: `launcher/src/main/config.ts` und die Notiz weiter unten auf die korrekte ID korrigiert.
+2. Danach `invalid_request: The provided value for the input parameter 'redirect_uri' is not valid`. Ursache: Microsofts Any-Port-Matching für die registrierte bloße `http://localhost`-Redirect-URI greift nur, wenn die gesendete `redirect_uri` **keinen Pfad** hat — der Code sendete aber `http://localhost:{port}/callback`. Fix in `launcher/src/main/auth/msOAuth.ts`: `redirect_uri` ohne Pfad senden, Loopback-Server routet nicht mehr nach Pfad, ignoriert aber Anfragen ohne `code`/`error`-Parameter (verhindert, dass ein `favicon.ico`-Request den echten Callback wegschnappt).
+
+Lehre aus beidem: GUIDs beim Abtippen aus dem Portal immer per Copy-Button kopieren, nie von Hand/Screenshot abschreiben.
 
 **Verifiziert:**
-- `npm run typecheck` (main+preload und renderer getrennt) sauber ohne Fehler.
-- `npm run build` (electron-vite, alle drei Targets) erfolgreich.
+- `npm run typecheck` (main+preload und renderer getrennt) sauber ohne Fehler, `npm run build` (electron-vite, alle drei Targets) erfolgreich.
 - Pipeline-Smoke-Test (temporäres Skript, nicht Teil des Repos) gegen echte Mojang-Endpunkte durchgelaufen: Manifest/Version-Detail, OS-Filterung, Download+SHA-1, Classpath/Args, `java`-Verfügbarkeit — alles ✅.
-- **Nicht verifiziert von mir:** das eigentliche GUI-Fenster und der echte Microsoft-Login-Klick-Durchlauf — `npm run dev` lässt sich aus der Agent-Shell nicht bis zum sichtbaren Fenster durchstarten, weil dort `ELECTRON_RUN_AS_NODE=1` gesetzt ist (Electron läuft dann als reiner Node-Prozess ohne `app`/`BrowserWindow`-APIs, sehr wahrscheinlich eine bewusste Sandbox-Absicherung gegen automatisch aufpoppende GUI-Fenster). **Nächster Schritt für den Nutzer:** `npm run dev` in einem normalen Terminal (nicht über den Agenten) starten, Fenster sollte erscheinen, "Mit Microsoft anmelden" testen (Schritte 1–3 sind real) und optional "Skip Login (Dev-Mock)" für die Play-Pipeline.
+- **Vom Nutzer live bestätigt (nach den beiden Bugfixes):** echter Microsoft-Login im System-Browser erfolgreich, danach automatischer Rücksprung ins Launcher-Fenster, Play-Screen mit Mock-Profil erreicht, "Play" gestartet — Minecraft 1.21.11 wurde heruntergeladen und **startet tatsächlich mit dem `DevPlayer`-Mock-Profil**. Damit ist die komplette Kette bis auf den echten Mojang-Zugriff (Schritte 4–5) einmal real durchgespielt.
+- Minecraft-API-Freischaltungsantrag wurde erneut eingereicht (2026-07-18) — diesmal mit der korrekten Client-ID, da unklar war, ob die ursprüngliche Einreichung (2026-07-15) schon die verfälschte ID enthielt.
 
 ## Phase 2 — Erledigt
 - Mixin-Infrastruktur aufgesetzt: `src/main/resources/tntsallin1client.mixins.json` (Package `com.tntsallin1client.mixin`, `compatibilityLevel: JAVA_21`), in `fabric.mod.json` unter `"mixins"` registriert. Fabric Loom (1.17.16, über den `net.fabricmc.fabric-loom-remap`-Plugin-Alias) erkennt die Config automatisch und übernimmt Annotation-Processing/Refmap ohne zusätzliche `build.gradle.kts`-Änderungen.
@@ -81,6 +85,4 @@ Beim Registrieren der Azure-App gab es mehrere ineinandergreifende Probleme, bis
 5. **Lösung**: Kostenloser Azure-Free-Account-Signup (Telefon-/Kartenverifizierung, keine Kosten im Free-Tier) hat automatisch ein echtes Verzeichnis provisioniert — danach lief die App-Registrierung ohne Probleme durch.
 
 ## Nächster Schritt
-1. **Nutzer:** `npm run dev` in `launcher/` in einem echten Terminal starten (nicht über den Agenten, siehe Hinweis oben), Fenster prüfen, echten Microsoft-Login (Schritte 1–3) einmal durchklicken, danach über "Skip Login (Dev-Mock)" die volle Download/Start-Pipeline mit Mock-Profil live beobachten (`java` sollte starten und typischerweise an der eigenen Minecraft-Session-Prüfung scheitern, da der Access-Token gefälscht ist — das ist erwartet).
-2. Weiter auf Antwort zum Minecraft-API-Freischaltungsantrag warten (gestellt 2026-07-15, `aka.ms/mce-reviewappid`).
-3. Sobald freigeschaltet: `completeMinecraftLogin` in `launcher/src/main/auth/minecraftAuth.ts` real ohne Mock-Fallback testen, Phase 3 als ✅ abgeschlossen markieren, dann Phase 4 (Fabric-Start) angehen.
+Warten auf Antwort zum (erneut eingereichten, 2026-07-18) Minecraft-API-Freischaltungsantrag (`aka.ms/mce-reviewappid`) — kein weiterer Code nötig, bis die Freischaltung da ist. Sobald sie da ist: `completeMinecraftLogin` in `launcher/src/main/auth/minecraftAuth.ts` real ohne Mock-Fallback testen (einfach nochmal "Mit Microsoft anmelden" klicken — kein "Dev-Mock-Profil"-Badge mehr sollte dann erscheinen), Phase 3 als ✅ abgeschlossen markieren, dann Phase 4 (Fabric-Start) angehen.
