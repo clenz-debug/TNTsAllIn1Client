@@ -6,6 +6,24 @@
 
 **Phase 2 — Erstes Mixin** ✅ abgeschlossen
 
+**Phase 3 — Electron-Launcher-MVP** 🔧 in Arbeit (blockiert auf Mojang-API-Freischaltung für den letzten Teil)
+
+## Phase 3 — Zwischenstand
+`launcher/` angelegt: Electron 43 + electron-vite 5 + TypeScript 7 + React 19, Ordnerstruktur wie in der Roadmap (`src/main/{auth,launch,ipc}/`, `src/preload/`, `src/renderer/`, plus `src/shared/` für Typen/IPC-Kanalnamen, die von allen drei Seiten geteilt werden). Bewusst keine zusätzlichen Abhängigkeiten wie `electron-store` oder MSAL — Auth-Kette ist handgeschriebenes `fetch` gegen die dokumentierten Endpunkte (Lernziel laut Roadmap), Token-Cache ist eine simple JSON-Datei in `userData`.
+
+**Was echt funktioniert (unabhängig vom Mojang-Blocker):**
+- Auth-Schritte 1–3 komplett real implementiert: Microsoft OAuth2 mit PKCE über einen Loopback-HTTP-Server auf einem ephemeren Port (passt zur in Azure registrierten bloßen `http://localhost`-Redirect-URI, die Microsoft laut Doku für Desktop-Clients gegen jeden Port matcht), System-Browser-Login via `shell.openExternal` (kein eingebettetes WebView, damit die App nie Microsoft-Zugangsdaten sieht), danach Xbox-Live-User-Auth und XSTS-Autorisierung (`xboxLive.ts`) inkl. Klartext-Fehlermeldungen für die bekannten XSTS-Fehlercodes (kein Xbox-Profil / Kinderkonto ohne Zustimmung).
+- Komplette Download/Start-Pipeline real gebaut und **gegen die echte Mojang-API/CDN smoke-getestet** (Version-Manifest für 1.21.11 geladen, Libraries nach OS gefiltert, eine echte Library heruntergeladen und SHA-1-verifiziert, Re-Download bei vorhandener gültiger Datei korrekt übersprungen, Classpath + JVM-/Game-Args mit aufgelösten Platzhaltern gebaut, `java` auf dem PATH gefunden).
+- Sicherheits-Defaults gesetzt: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, schmale `contextBridge`-API im Preload.
+
+**Was noch mit Dev-Mock läuft (Schritte 4–5, `minecraftAuth.ts`):** `login_with_xbox` + Profil-Abruf werden echt versucht; schlagen sie fehl (aktuell 403, da Azure-App noch nicht freigeschaltet), greift ein klar markiertes Platzhalterprofil (`DevPlayer`, `isMock: true`), das in der UI sichtbar als "Dev-Mock-Profil"-Badge markiert wird. Sobald Mojang freischaltet, entfällt der Fallback-Zweig ersatzlos — kein sonstiger Code muss sich ändern.
+
+**Verifiziert:**
+- `npm run typecheck` (main+preload und renderer getrennt) sauber ohne Fehler.
+- `npm run build` (electron-vite, alle drei Targets) erfolgreich.
+- Pipeline-Smoke-Test (temporäres Skript, nicht Teil des Repos) gegen echte Mojang-Endpunkte durchgelaufen: Manifest/Version-Detail, OS-Filterung, Download+SHA-1, Classpath/Args, `java`-Verfügbarkeit — alles ✅.
+- **Nicht verifiziert von mir:** das eigentliche GUI-Fenster und der echte Microsoft-Login-Klick-Durchlauf — `npm run dev` lässt sich aus der Agent-Shell nicht bis zum sichtbaren Fenster durchstarten, weil dort `ELECTRON_RUN_AS_NODE=1` gesetzt ist (Electron läuft dann als reiner Node-Prozess ohne `app`/`BrowserWindow`-APIs, sehr wahrscheinlich eine bewusste Sandbox-Absicherung gegen automatisch aufpoppende GUI-Fenster). **Nächster Schritt für den Nutzer:** `npm run dev` in einem normalen Terminal (nicht über den Agenten) starten, Fenster sollte erscheinen, "Mit Microsoft anmelden" testen (Schritte 1–3 sind real) und optional "Skip Login (Dev-Mock)" für die Play-Pipeline.
+
 ## Phase 2 — Erledigt
 - Mixin-Infrastruktur aufgesetzt: `src/main/resources/tntsallin1client.mixins.json` (Package `com.tntsallin1client.mixin`, `compatibilityLevel: JAVA_21`), in `fabric.mod.json` unter `"mixins"` registriert. Fabric Loom (1.17.16, über den `net.fabricmc.fabric-loom-remap`-Plugin-Alias) erkennt die Config automatisch und übernimmt Annotation-Processing/Refmap ohne zusätzliche `build.gradle.kts`-Änderungen.
 - `mixin/GuiMixin.java`: `@Mixin(Gui.class)` mit `@Inject(method = "render", at = @At("TAIL"))` in `net.minecraft.client.gui.Gui#render(GuiGraphics, DeltaTracker)` — die zentrale HUD-Render-Methode. Zielsignatur vorher direkt aus dem von `genSources` erzeugten, gemappten Vanilla-Quellcode verifiziert (Mojang-Mappings, kein Blindraten).
@@ -61,4 +79,6 @@ Beim Registrieren der Azure-App gab es mehrere ineinandergreifende Probleme, bis
 5. **Lösung**: Kostenloser Azure-Free-Account-Signup (Telefon-/Kartenverifizierung, keine Kosten im Free-Tier) hat automatisch ein echtes Verzeichnis provisioniert — danach lief die App-Registrierung ohne Probleme durch.
 
 ## Nächster Schritt
-**Phase 3 — Electron-Launcher-MVP: echter Microsoft-Login + Vanilla-Start**. Auth-Kette (Microsoft OAuth2 → Xbox Live → XSTS → Minecraft-Access-Token → Entitlement/Profil-Check), danach Version-Manifest, Download von Client-Jar/Libraries/Assets, Classpath/JVM-Args, `java` als Kindprozess starten. Praxis-Tipp aus der Roadmap: alles außer dem eigentlichen Minecraft-Login mit Platzhalter-Profildaten bauen und testen, während auf die Azure-Freischaltung gewartet wird — nicht blockieren lassen.
+1. **Nutzer:** `npm run dev` in `launcher/` in einem echten Terminal starten (nicht über den Agenten, siehe Hinweis oben), Fenster prüfen, echten Microsoft-Login (Schritte 1–3) einmal durchklicken, danach über "Skip Login (Dev-Mock)" die volle Download/Start-Pipeline mit Mock-Profil live beobachten (`java` sollte starten und typischerweise an der eigenen Minecraft-Session-Prüfung scheitern, da der Access-Token gefälscht ist — das ist erwartet).
+2. Weiter auf Antwort zum Minecraft-API-Freischaltungsantrag warten (gestellt 2026-07-15, `aka.ms/mce-reviewappid`).
+3. Sobald freigeschaltet: `completeMinecraftLogin` in `launcher/src/main/auth/minecraftAuth.ts` real ohne Mock-Fallback testen, Phase 3 als ✅ abgeschlossen markieren, dann Phase 4 (Fabric-Start) angehen.
