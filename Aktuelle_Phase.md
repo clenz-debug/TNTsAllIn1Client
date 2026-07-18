@@ -18,6 +18,8 @@
 
 **Was noch mit Dev-Mock läuft (Schritte 4–5, `minecraftAuth.ts`):** `login_with_xbox` + Profil-Abruf werden echt versucht; schlagen sie fehl (aktuell 403, da Azure-App noch nicht freigeschaltet), greift ein klar markiertes Platzhalterprofil (`DevPlayer`, `isMock: true`), das in der UI sichtbar als "Dev-Mock-Profil"-Badge markiert wird. Sobald Mojang freischaltet, entfällt der Fallback-Zweig ersatzlos — kein sonstiger Code muss sich ändern.
 
+**Bug beim ersten echten Login-Test gefunden und gefixt:** Erster Versuch von "Mit Microsoft anmelden" scheiterte mit `unauthorized_client: The client does not exist or is not enabled for consumers`. Durchgecheckt: "Supported account types" in Azure war korrekt auf "Nur persönliche Konten" gesetzt (also nicht der naheliegende Verdacht) — die tatsächliche Ursache war ein Tippfehler beim Abschreiben der Application (Client) ID in Phase 0: notiert war `6820dddd-8bc1-4fe6-ab9b-945a3a7d400a`, echt ist `6820dddb-...` (`b` statt `d` als achtes Zeichen). Fix: `launcher/src/main/config.ts` und die Notiz oben auf die korrekte ID korrigiert. Lehre: GUIDs beim Abtippen aus dem Portal immer per Copy-Button kopieren, nie von Hand/Screenshot abschreiben.
+
 **Verifiziert:**
 - `npm run typecheck` (main+preload und renderer getrennt) sauber ohne Fehler.
 - `npm run build` (electron-vite, alle drei Targets) erfolgreich.
@@ -61,7 +63,7 @@
 - IntelliJ IDEA Community Edition installiert.
 - Git war bereits vorhanden (2.51.2).
 - Azure AD (Entra ID) Public-Client-App registriert: `TNTsAllIn1Client`, "Nur persönliche Konten", Redirect-URI `http://localhost` (öffentlicher Client), "Öffentliche Clientflows zulassen" = Ja.
-  - Application (Client) ID: `6820dddd-8bc1-4fe6-ab9b-945a3a7d400a`
+  - Application (Client) ID: `6820dddb-8bc1-4fe6-ab9b-945a3a7d400a` (in einer früheren Version dieser Notiz stand fälschlich `6820dddd...` — Tippfehler beim Abschreiben aus dem Portal, hat in Phase 3 den Microsoft-Login mit `unauthorized_client: The client does not exist` blockiert, siehe Phase-3-Abschnitt)
   - Verzeichnis-ID (Tenant): `a3dd876f-c607-4a29-a300-73b9e7130cbb`
 - Minecraft-API-Freischaltungsantrag unter aka.ms/mce-reviewappid abgeschickt (2026-07-15). **Antwortzeit unklar — laut Roadmap-Risikohinweis nicht darauf blockieren, direkt mit Phase 1 weitermachen.**
 - Öffentliches GitHub-Repo angelegt und gepusht: [github.com/clenz-debug/TNTsAllIn1Client](https://github.com/clenz-debug/TNTsAllIn1Client)
