@@ -30,9 +30,12 @@ interface AuthorizationResult {
 }
 
 /** Opens the system browser for Microsoft login and waits on a loopback HTTP server for the
- * redirect. The Azure app is registered with the bare `http://localhost` redirect URI, which
- * Microsoft's identity platform matches against any port at runtime for desktop/mobile clients —
- * so we can bind an ephemeral port here instead of hardcoding one. */
+ * redirect. The Azure app is registered with the bare `http://localhost` redirect URI (no path,
+ * no port) under "Mobile and desktop applications" — Microsoft's identity platform special-cases
+ * exactly that value to match any port at runtime, but only without a path suffix, so the
+ * redirect_uri we send must be `http://localhost:{port}` with nothing after the port. The server
+ * only ever serves this one login attempt, so it treats any request as the callback rather than
+ * matching on path. */
 async function getAuthorizationCode(): Promise<AuthorizationResult> {
   const { verifier, challenge } = createPkcePair()
   const state = base64Url(randomBytes(16))
@@ -42,14 +45,18 @@ async function getAuthorizationCode(): Promise<AuthorizationResult> {
 
     const server = createServer((req, res) => {
       const url = new URL(req.url ?? '/', 'http://localhost')
-      if (url.pathname !== '/callback') {
+      const code = url.searchParams.get('code')
+      const error = url.searchParams.get('error')
+
+      // Stray requests (e.g. the browser fetching /favicon.ico for the redirected-to page) have
+      // neither param — ignore them instead of treating them as a failed callback, so they can't
+      // race with and pre-empt the real one.
+      if (code === null && error === null) {
         res.writeHead(404).end()
         return
       }
 
       const returnedState = url.searchParams.get('state')
-      const code = url.searchParams.get('code')
-      const error = url.searchParams.get('error')
       const ok = !error && code !== null && returnedState === state
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
@@ -84,7 +91,7 @@ async function getAuthorizationCode(): Promise<AuthorizationResult> {
         reject(new Error('Failed to start loopback server.'))
         return
       }
-      redirectUri = `http://localhost:${address.port}/callback`
+      redirectUri = `http://localhost:${address.port}`
 
       const authorizeUrl = new URL(AUTHORIZE_ENDPOINT)
       authorizeUrl.searchParams.set('client_id', MS_CLIENT_ID)
