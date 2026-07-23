@@ -25,6 +25,9 @@ npm-debug.log*
 # --- Electron build output ---
 launcher/release/
 
+# --- Staged mod jars for manual mods/-folder copy (Phase 4), not source ---
+launcher/mods-bundle/
+
 # --- Env / Secrets ---
 .env
 .env.*

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
 export interface DownloadTask {
@@ -18,7 +18,15 @@ async function sha1Of(path: string): Promise<string | null> {
 }
 
 async function alreadyValid(task: DownloadTask): Promise<boolean> {
-  if (!task.sha1) return false
+  if (!task.sha1) {
+    // No hash to verify against (e.g. some Fabric meta libraries) — fall back to "file exists
+    // and is non-empty" so re-launches don't redownload these every time.
+    try {
+      return (await stat(task.destination)).size > 0
+    } catch {
+      return false
+    }
+  }
   return (await sha1Of(task.destination)) === task.sha1
 }
 

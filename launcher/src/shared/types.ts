@@ -17,6 +17,8 @@ export type LaunchStage =
   | 'client-jar'
   | 'libraries'
   | 'assets'
+  | 'fabric-meta'
+  | 'fabric-libraries'
   | 'launching'
   | 'running'
   | 'done'

@@ -5,6 +5,7 @@ import { IpcChannel } from '../../shared/ipc'
 import type { GameLogEvent, LaunchStage, MinecraftProfile } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { buildClasspath } from '../launch/classpath'
+import { installFabricLoader } from '../launch/fabricInstaller'
 import { checkJavaAvailable, launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
 import { buildLaunchArgs } from '../launch/launchArgs'
@@ -37,7 +38,8 @@ export function registerIpcHandlers(): void {
       throw new Error(message)
     }
 
-    const installed = await installVersion(sendProgress)
+    const vanilla = await installVersion(sendProgress)
+    const installed = await installFabricLoader(vanilla, sendProgress)
     const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
     const args = buildLaunchArgs({
       detail: installed.detail,
