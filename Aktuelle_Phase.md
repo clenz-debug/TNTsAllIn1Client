@@ -8,25 +8,30 @@
 
 **Phase 3 — Electron-Launcher-MVP** 🔧 in Arbeit — alles außer dem echten Mojang-Login steht und ist vom Nutzer live bestätigt; wartet weiter auf die Mojang-API-Freischaltung (kein Blocker mehr fürs Weiterarbeiten, siehe Phase 4)
 
-**Phase 4 — Fabric-Start** 🔧 in Arbeit — Fabric-Loader-Installation real implementiert und gegen die echte `meta.fabricmc.net`-API/-CDN smoke-getestet; wartet auf den ersten echten Live-Start durch den Nutzer (GUI nicht aus der Agent-Shell testbar, siehe Blocker-Hinweis in Phase 3)
+**Phase 4 — Fabric-Start** ✅ abgeschlossen
 
 ## Phase 4 — Zwischenstand
 Neu in `launcher/src/main/launch/`: `fabricMeta.ts` (ruft `meta.fabricmc.net/v2/versions/loader/{mcVersion}` ab, wählt die aktuell stabile Loader-Version, holt dann `.../profile/json` — das offizielle Fabric-"Launcher-Profil"-Format, dieselbe Quelle, die auch der offizielle Fabric-Installer nutzt) und `fabricInstaller.ts` (lädt die darin gelisteten Loader-Libraries als Maven-Koordinaten herunter, hängt sie an die Vanilla-`libraryPaths` an, überschreibt `mainClass` auf `net.fabricmc.loader.impl.launch.knot.KnotClient` und übernimmt den zusätzlichen JVM-Arg `-DFabricMcEmu=...`, den Fabric zur Laufzeit braucht um zu wissen, welche Klasse eigentlich gestartet werden sollte). Der Vanilla-Client-Jar selbst bleibt unangetastet — Fabric patcht zur Laufzeit über einen eigenen Classloader, ersetzt keine Datei. `ipc/handlers.ts` ruft `installFabricLoader` jetzt nach `installVersion` auf, bevor Classpath/Launch-Args gebaut werden; legt dabei auch `<instance>/game/mods/` an.
 
 `downloader.ts` robuster gemacht: wenn die Fabric-Meta-API für eine Library keinen SHA-1 mitliefert (betrifft nur `fabric-loader` und `intermediary` selbst — alle anderen Libraries haben SHA-1), wird beim erneuten Start nur noch auf Dateiexistenz statt auf Hash geprüft, damit nicht bei jedem Play-Klick neu heruntergeladen wird.
 
-**Was noch fehlt, um Phase 4 als ✅ abzuschließen (bewusst manuell, siehe Roadmap "anfangs manuelles Kopieren reicht"):** Die eigentlichen Mod-Jars müssen einmal in den Instanz-`mods/`-Ordner kopiert werden — Fabric Loader liest sie von dort beim Start. Alle vier nötigen Jars liegen dafür schon fertig (mit gegen Modrinth verifiziertem SHA-1) in `launcher/mods-bundle/` (git-ignoriert, kein Source):
-- `tntsallin1client-0.1.0.jar` (eigener Mod, frisch aus `mod/build/libs/` kopiert)
+Mod-Jars (eigener Mod + Fabric API + Sodium + Lithium) lagen fertig heruntergeladen mit gegen Modrinth verifiziertem SHA-1 in `launcher/mods-bundle/` (git-ignoriert, kein Source) bereit:
+- `tntsallin1client-0.1.0.jar`
 - `fabric-api-0.141.5+1.21.11.jar`
 - `sodium-fabric-0.8.13+mc1.21.11.jar`
 - `lithium-fabric-0.21.4+mc1.21.11.jar`
-
-Nächster Live-Test (in einem normalen Terminal, nicht der Agent-Shell — siehe Phase-3-Blocker-Notiz): einmal `npm run dev` starten und "Play" klicken (legt `%APPDATA%\tntsallin1client-launcher\instances\default\game\mods\` an, Start läuft dann schon über Fabric statt Vanilla, nur noch ohne Mods), danach die vier Jars aus `launcher/mods-bundle/` in genau diesen Ordner kopieren und erneut "Play" klicken. *Fertig, wenn* (laut Roadmap): Start erfolgt über Fabric, eigener Mod-Log-Eintrag ("TNT's All-In-1 Client (Mixin active)" im HUD) erscheint, Sodium/Lithium sichtbar aktiv (F3 zeigt Sodium-Renderer, bessere Frametimes).
 
 **Verifiziert (headless, ohne GUI):**
 - `npm run typecheck` und `npm run build` sauber.
 - Smoke-Test (temporäres Skript, nicht Teil des Repos) gegen die echte Fabric-Meta-API: stabile Loader-Version `0.19.3` für `1.21.11` ermittelt, `profile/json` geholt (`mainClass`, extra JVM-Arg, leere `game`-Args wie erwartet, 8 Libraries), alle 8 Libraries heruntergeladen, 6 davon SHA-1-verifiziert, die restlichen 2 (`fabric-loader`, `intermediary` — beide liefern laut echter API-Antwort keinen Hash) als vorhanden bestätigt.
 - Fabric-API/Sodium/Lithium-Download-URLs nicht geraten, sondern live über die Modrinth-API für `1.21.11`+`fabric` abgefragt, heruntergeladen und der SHA-1 gegen die von Modrinth gemeldeten Hashes verifiziert (siehe oben).
+
+**Vom Nutzer live bestätigt:** Jars in `<instance>/game/mods/` kopiert, "Play" gestartet — Start lief über Fabric Loader statt Vanilla. Alle drei "Fertig, wenn"-Kriterien der Roadmap erfüllt:
+- Sodium-Renderer sichtbar in F3 ✅
+- Lithium in der von Fabric Loader beim Start geloggten Mod-Liste bestätigt ✅ (kein eigener F3-Indikator, da Lithium reine Spiellogik statt Rendering optimiert — anders als Sodium keine eigene HUD-Zeile)
+- Eigener Mod-Text ("TNT's All-In-1 Client (Mixin active)") oben links im HUD sichtbar ✅
+
+Nebenbei richtiggestellt: Der "Mods"-Button im Pause-Menü kommt nicht von Fabric Loader/API selbst, sondern von der separaten Mod-Menu-Mod (nicht installiert) — Mod-Liste stattdessen über die Start-Log-Zeile "Loading N mods: ..." bestätigt.
 
 ## Phase 3 — Zwischenstand
 `launcher/` angelegt: Electron 43 + electron-vite 5 + TypeScript 7 + React 19, Ordnerstruktur wie in der Roadmap (`src/main/{auth,launch,ipc}/`, `src/preload/`, `src/renderer/`, plus `src/shared/` für Typen/IPC-Kanalnamen, die von allen drei Seiten geteilt werden). Bewusst keine zusätzlichen Abhängigkeiten wie `electron-store` oder MSAL — Auth-Kette ist handgeschriebenes `fetch` gegen die dokumentierten Endpunkte (Lernziel laut Roadmap), Token-Cache ist eine simple JSON-Datei in `userData`.
@@ -105,8 +110,6 @@ Beim Registrieren der Azure-App gab es mehrere ineinandergreifende Probleme, bis
 5. **Lösung**: Kostenloser Azure-Free-Account-Signup (Telefon-/Kartenverifizierung, keine Kosten im Free-Tier) hat automatisch ein echtes Verzeichnis provisioniert — danach lief die App-Registrierung ohne Probleme durch.
 
 ## Nächster Schritt
-Zwei parallele, voneinander unabhängige offene Punkte:
+Phase 4 ist abgeschlossen. Zwei offene Punkte bleiben, unabhängig voneinander:
 1. **Phase 3 abschließen:** weiter warten auf Antwort zum (erneut eingereichten, 2026-07-18) Minecraft-API-Freischaltungsantrag (`aka.ms/mce-reviewappid`). Sobald sie da ist: `completeMinecraftLogin` in `launcher/src/main/auth/minecraftAuth.ts` real ohne Mock-Fallback testen (einfach nochmal "Mit Microsoft anmelden" klicken — kein "Dev-Mock-Profil"-Badge mehr sollte dann erscheinen), Phase 3 als ✅ markieren.
-2. **Phase 4 abschließen:** Live-Test durch den Nutzer in einem normalen Terminal — Details und die vier bereitliegenden Jars siehe "Phase 4 — Zwischenstand" oben. Kein Code-Blocker mehr, rein der GUI-Test.
-
-Keiner der beiden Punkte blockiert den anderen — Phase 5 (eigene Features) kann parallel zu Phase-3-Warten begonnen werden, sobald Phase 4 live bestätigt ist.
+2. **Phase 5 angehen** (eigene Features, leicht → schwer, siehe Roadmap): mit 5a (Koordinaten + Kompass im HUD) starten — am einfachsten, reine Fabric-API (`HudRenderCallback`), keine Mixins nötig. Blockiert nicht durch das Phase-3-Warten.
