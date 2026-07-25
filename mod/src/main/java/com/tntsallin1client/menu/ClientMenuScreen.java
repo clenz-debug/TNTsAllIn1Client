@@ -9,16 +9,22 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5e: ingame mod menu, top level. Just the on/off switch per feature -
- * anything more detailed (which item to track, etc.) lives one level down in
- * {@link ClientOptionsScreen}. Reachable via the pause menu button
- * ({@link PauseMenuIntegration}) or its own keybind
+ * Phase 5e: ingame mod menu, top level. Just the on/off switch per feature.
+ * Features with more to configure than a toggle get their own dedicated
+ * options screen (e.g. {@link MaterialCounterOptionsScreen}), opened via a
+ * small button next to that feature's toggle - deliberately not one shared
+ * options screen for every feature, which would turn into an unrelated,
+ * ever-growing list as more features gain settings. Reachable via the pause
+ * menu button ({@link PauseMenuIntegration}) or its own keybind
  * ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
  */
 public class ClientMenuScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
+	private static final int OPTIONS_BUTTON_WIDTH = 56;
+	private static final int TOGGLE_GAP = 4;
+	private static final int TOGGLE_WIDTH = ROW_WIDTH - OPTIONS_BUTTON_WIDTH - TOGGLE_GAP;
 
 	private final @Nullable Screen parent;
 
@@ -42,11 +48,15 @@ public class ClientMenuScreen extends Screen {
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.material_counter"),
+				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.material_counter"),
 						(button, value) -> {
 							config.materialCounterEnabled = value;
 							config.save();
 						}));
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
+						button -> this.minecraft.setScreen(new MaterialCounterOptionsScreen(this)))
+				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
+				.build());
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.quickSortEnabled)
@@ -56,12 +66,6 @@ public class ClientMenuScreen extends Screen {
 							config.save();
 						}));
 		y += ROW_SPACING + 6;
-
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new ClientOptionsScreen(this)))
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)

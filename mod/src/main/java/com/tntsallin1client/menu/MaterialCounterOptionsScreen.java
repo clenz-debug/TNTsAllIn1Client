@@ -9,19 +9,21 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 /**
- * Phase 5e: detailed per-feature settings, one level below {@link ClientMenuScreen}.
- * Currently just the material counter's item source, but this is where future
- * per-feature detail settings should be added rather than back in the top menu.
+ * Phase 5e: dedicated options screen for the material counter feature only.
+ * Each feature that grows beyond a simple on/off toggle gets its own screen
+ * like this one, reached from {@link ClientMenuScreen}, rather than a single
+ * shared options screen for every feature - keeps each one focused instead of
+ * turning into one long, unrelated settings list.
  */
-public class ClientOptionsScreen extends Screen {
+public class MaterialCounterOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
 
 	private final Screen parent;
 
-	public ClientOptionsScreen(Screen parent) {
-		super(Component.translatable("gui.tntsallin1client.options.title"));
+	public MaterialCounterOptionsScreen(Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.material_counter_options.title"));
 		this.parent = parent;
 	}
 
@@ -32,7 +34,7 @@ public class ClientOptionsScreen extends Screen {
 		int y = 40;
 
 		EditBox itemIdBox = new EditBox(this.font, x, y + ROW_SPACING, ROW_WIDTH, ROW_HEIGHT,
-				Component.translatable("gui.tntsallin1client.menu.material_counter_item"));
+				Component.translatable("gui.tntsallin1client.material_counter_options.item_id"));
 		itemIdBox.setMaxLength(64);
 		itemIdBox.setValue(config.materialCounterItemId);
 		itemIdBox.setEditable(!config.materialCounterUseHeldItem);
@@ -43,10 +45,10 @@ public class ClientOptionsScreen extends Screen {
 		});
 
 		this.addRenderableWidget(CycleButton.booleanBuilder(
-						Component.translatable("gui.tntsallin1client.options.material_counter_source.held"),
-						Component.translatable("gui.tntsallin1client.options.material_counter_source.fixed"),
+						Component.translatable("gui.tntsallin1client.material_counter_options.source.held"),
+						Component.translatable("gui.tntsallin1client.material_counter_options.source.fixed"),
 						config.materialCounterUseHeldItem)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.options.material_counter_source"),
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.material_counter_options.source"),
 						(button, value) -> {
 							config.materialCounterUseHeldItem = value;
 							config.save();
