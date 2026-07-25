@@ -39,6 +39,7 @@
 - man sollte einfach updates aufspielen können, wenn z.B. neue features hinzugefügt wurden
 - jeder User soll sein Farbschema mit Hauptfarben und hintergrundfarbe selbst einstellen können
 - beim ersten starten nach installieren des clients soll sich der user eine willkommensnachricht bekommen, dann soll ein menü sich öffnen wo er die Farben einstellen kann (das kann man skippen, dann bekommt man den Standartfarbcode) und als letztes soll sich ein Tutorial öffnen (das soll man auch überspringen können)
+- in Discord soll angezeigt werden das man MC über meinen Client spielt
 
 ### Launcher:
 
