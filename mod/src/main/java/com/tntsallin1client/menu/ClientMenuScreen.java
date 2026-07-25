@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -84,6 +85,18 @@ public class ClientMenuScreen extends Screen {
 						(button, value) -> {
 							config.clientNameLabelEnabled = value;
 							config.save();
+						}));
+		y += ROW_SPACING;
+
+		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
+		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),
+						(button, value) -> {
+							if (value) {
+								connectedTextures.enable();
+							} else {
+								connectedTextures.disable();
+							}
 						}));
 		y += ROW_SPACING;
 

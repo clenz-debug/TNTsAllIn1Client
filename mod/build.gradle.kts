@@ -14,6 +14,10 @@ repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	maven("https://api.modrinth.com/maven") {
+		name = "Modrinth"
+		content { includeGroup("maven.modrinth") }
+	}
 }
 
 dependencies {
@@ -24,6 +28,10 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api_version")
+
+	// Phase 5f: connected textures (3D glass etc.) - bundled rather than reimplemented,
+	// see https://github.com/PepperCode1/Continuity. Beta build - only release supporting 1.21.11.
+	modImplementation("maven.modrinth:continuity:3.0.1-beta.1+1.21.11")
 }
 
 tasks.processResources {
