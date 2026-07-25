@@ -74,12 +74,16 @@ public class ClientMenuScreen extends Screen {
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.f3QuickInfoEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
+				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
 						(button, value) -> {
 							config.f3QuickInfoEnabled = value;
 							config.save();
 							QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
 						}));
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
+						button -> this.minecraft.setScreen(new F3OptionsScreen(this)))
+				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
+				.build());
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.clientNameLabelEnabled)

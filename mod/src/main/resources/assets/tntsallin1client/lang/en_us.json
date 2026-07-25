@@ -27,5 +27,7 @@
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.hint": "Drag a box to move it. Drag its bottom-right corner to resize it.",
-  "gui.tntsallin1client.hud_editor.reset_all": "Reset All Positions"
+  "gui.tntsallin1client.hud_editor.reset_all": "Reset All Positions",
+  "gui.tntsallin1client.f3_options.title": "F3 Menu Options",
+  "gui.tntsallin1client.f3_options.system_info_key": "System Info Key: %s"
 }

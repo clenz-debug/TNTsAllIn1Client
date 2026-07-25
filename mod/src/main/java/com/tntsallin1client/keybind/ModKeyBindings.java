@@ -29,15 +29,17 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
-	// 5d: hold F3 and press S to toggle the CPU/GPU/version overlay. Defaults to
-	// "S" (not unbound) to match vanilla's own F3+<letter> muscle memory - this
-	// physical key is free in this MC version's Options.java defaults, and even
-	// if it weren't, multiple KeyMappings can share a key without conflict (same
-	// as vanilla's F3+A/F3+B etc. sharing keys with movement/inventory binds).
+	// 5d: hold F3 and press this key to toggle the CPU/GPU/version overlay.
+	// Defaults to "K" - S was the obvious first pick but is already vanilla's
+	// "Dump Dynamic Textures" (key.debug.dumpDynamicTextures, Options.java line
+	// ~644 - easy to miss since it's a multi-line KeyMapping() call). Verified
+	// K against every keyDebugXxx default in Options.java this time, not just
+	// grepped. Rebindable both via vanilla Controls and this mod's own
+	// F3OptionsScreen (same underlying KeyMapping either way).
 	public static final KeyMapping SYSTEM_INFO = new KeyMapping(
 			"key.tntsallin1client.system_info",
 			InputConstants.Type.KEYSYM,
-			GLFW.GLFW_KEY_S,
+			GLFW.GLFW_KEY_K,
 			CATEGORY
 	);
 

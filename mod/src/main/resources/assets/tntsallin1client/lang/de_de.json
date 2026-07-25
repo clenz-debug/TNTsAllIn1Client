@@ -27,5 +27,7 @@
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.hint": "Box ziehen zum Verschieben. Untere rechte Ecke ziehen zum Skalieren.",
-  "gui.tntsallin1client.hud_editor.reset_all": "Alle Positionen zurücksetzen"
+  "gui.tntsallin1client.hud_editor.reset_all": "Alle Positionen zurücksetzen",
+  "gui.tntsallin1client.f3_options.title": "F3-Menü-Optionen",
+  "gui.tntsallin1client.f3_options.system_info_key": "System-Info-Taste: %s"
 }
