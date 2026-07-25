@@ -2,6 +2,7 @@
   "key.category.tntsallin1client.main": "TNT's All-In-1 Client",
   "key.tntsallin1client.sort_inventory": "Inventar sortieren",
   "key.tntsallin1client.open_menu": "Mod-Menü öffnen",
+  "key.tntsallin1client.system_info": "System-Info umschalten (F3 halten)",
   "gui.tntsallin1client.sort_button": "Sort.",
   "gui.tntsallin1client.sort_button.tooltip": "Inventar sortieren",
   "gui.tntsallin1client.sort_button.wrong_tab": "Zum Inventar-Tab wechseln, um zu sortieren",

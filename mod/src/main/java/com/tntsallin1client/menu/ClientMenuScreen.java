@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -77,6 +78,7 @@ public class ClientMenuScreen extends Screen {
 						(button, value) -> {
 							config.f3QuickInfoEnabled = value;
 							config.save();
+							QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
 						}));
 		y += ROW_SPACING;
 

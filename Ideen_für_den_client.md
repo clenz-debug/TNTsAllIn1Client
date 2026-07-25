@@ -4,7 +4,7 @@
 
 ### Ingame Features:
 
-- F3 und Shift+F3 Münü verbessern (sofern möglich) 
+- F3 und Shift+F3 Münü verbessern (sofern möglich) vll mit eigenen hotkeys (im mod menü einstellbar)
 - Optionen für 3D Texturen oder verbundenes Glas
 - Praktische Sachen fürs Inventar (schnell Items sortieren o.ä.)
 - Vielleicht irgendwie eine Anzeige oben rechts im Bildschirm, die anzeigt, wie viele Materialien man für irgendetwas noch braucht
