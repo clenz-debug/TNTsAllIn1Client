@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tntsallin1client.hud.CoordinatesHud;
+import com.tntsallin1client.hud.MaterialCounterHud;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
 	public static final String MOD_ID = "tntsallin1client";
@@ -30,5 +31,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5a: coordinates + compass HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "coordinates_hud"), new CoordinatesHud());
+
+		// Phase 5b: material counter HUD.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "material_counter_hud"), new MaterialCounterHud());
 	}
 }

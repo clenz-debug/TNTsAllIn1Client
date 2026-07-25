@@ -23,6 +23,11 @@ public class ClientConfig {
 
 	public boolean coordinatesHudEnabled = true;
 
+	// 5b: which item to tally across the inventory. Editable here for now;
+	// the ingame menu (5e) will turn this into an actual item picker.
+	public boolean materialCounterEnabled = true;
+	public String materialCounterItemId = "minecraft:diamond";
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();
