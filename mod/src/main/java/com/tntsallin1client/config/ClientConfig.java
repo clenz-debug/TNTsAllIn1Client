@@ -23,9 +23,10 @@ public class ClientConfig {
 
 	public boolean coordinatesHudEnabled = true;
 
-	// 5b: which item to tally across the inventory. Editable here for now;
-	// the ingame menu (5e) will turn this into an actual item picker.
+	// 5b: which item to tally across the inventory. Either a fixed item id, or
+	// whatever is currently in the main hand.
 	public boolean materialCounterEnabled = true;
+	public boolean materialCounterUseHeldItem = false;
 	public String materialCounterItemId = "minecraft:diamond";
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.

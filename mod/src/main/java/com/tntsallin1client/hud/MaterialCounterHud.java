@@ -14,9 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Phase 5b: total count of one configured item across the player's inventory,
- * top-right corner. Which item is tallied comes from {@link ClientConfig} for
- * now; the ingame menu (5e) will replace direct JSON edits with a picker.
+ * Phase 5b: total count of one item across the player's inventory, top-right
+ * corner. Either a fixed item id or whatever is currently in the main hand,
+ * per {@link ClientConfig#materialCounterUseHeldItem} (set via the ingame menu).
  */
 public class MaterialCounterHud implements HudElement {
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
@@ -36,14 +36,8 @@ public class MaterialCounterHud implements HudElement {
 			return;
 		}
 
-		Identifier itemId = Identifier.tryParse(config.materialCounterItemId);
-		if (itemId == null) {
-			return;
-		}
-
-		Item item = BuiltInRegistries.ITEM.getValue(itemId);
-		if (item == Items.AIR) {
-			// Unset or unknown item id in the config - nothing sensible to count.
+		Item item = resolveTrackedItem(config, player);
+		if (item == null || item == Items.AIR) {
 			return;
 		}
 
@@ -52,6 +46,15 @@ public class MaterialCounterHud implements HudElement {
 
 		int x = guiGraphics.guiWidth() - RIGHT_MARGIN - client.font.width(label);
 		guiGraphics.drawString(client.font, label, x, TOP, TEXT_COLOR);
+	}
+
+	private static Item resolveTrackedItem(ClientConfig config, LocalPlayer player) {
+		if (config.materialCounterUseHeldItem) {
+			return player.getMainHandItem().getItem();
+		}
+
+		Identifier itemId = Identifier.tryParse(config.materialCounterItemId);
+		return itemId == null ? null : BuiltInRegistries.ITEM.getValue(itemId);
 	}
 
 	private static int countInInventory(LocalPlayer player, Item item) {

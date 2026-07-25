@@ -9,5 +9,10 @@
   "gui.tntsallin1client.menu.coordinates_hud": "Koordinaten-HUD",
   "gui.tntsallin1client.menu.material_counter": "Material-Zähler",
   "gui.tntsallin1client.menu.material_counter_item": "Item-ID für Material-Zähler",
-  "gui.tntsallin1client.menu.quick_sort": "Inventar-Schnellsortierung"
+  "gui.tntsallin1client.menu.quick_sort": "Inventar-Schnellsortierung",
+  "gui.tntsallin1client.menu.options_button": "Optionen",
+  "gui.tntsallin1client.options.title": "TNT's All-In-1 Client - Optionen",
+  "gui.tntsallin1client.options.material_counter_source": "Material-Zähler-Quelle",
+  "gui.tntsallin1client.options.material_counter_source.held": "Gehaltenes Item",
+  "gui.tntsallin1client.options.material_counter_source.fixed": "Festes Item"
 }
