@@ -26,7 +26,7 @@ public class CoordinatesHud implements HudElement {
 
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
-		if (player == null) {
+		if (player == null || client.getDebugOverlay().showDebugScreen()) {
 			return;
 		}
 
