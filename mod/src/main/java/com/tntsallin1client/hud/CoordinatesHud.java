@@ -10,7 +10,9 @@ import net.minecraft.core.BlockPos;
 
 /**
  * Phase 5a: always-visible coordinates + facing direction, positioned below the
- * Phase 2 proof-of-mixin label so the two don't overlap.
+ * Phase 2 proof-of-mixin label so the two don't overlap. Coordinates, the N/S/W/O
+ * direction letter, and the degree number are each independently toggleable via
+ * {@link ClientConfig} (see the coordinates HUD options screen).
  */
 public class CoordinatesHud implements HudElement {
 	private static final String[] COMPASS_DIRECTIONS = {"S", "SW", "W", "NW", "N", "NE", "E", "SE"};
@@ -20,7 +22,8 @@ public class CoordinatesHud implements HudElement {
 
 	@Override
 	public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-		if (!ClientConfig.get().coordinatesHudEnabled) {
+		ClientConfig config = ClientConfig.get();
+		if (!config.coordinatesHudEnabled) {
 			return;
 		}
 
@@ -30,20 +33,41 @@ public class CoordinatesHud implements HudElement {
 			return;
 		}
 
-		BlockPos pos = player.blockPosition();
-		String coordsLine = pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
-		String facingLine = compassDirection(player.getYRot());
+		int y = TOP;
+		if (config.coordinatesHudShowCoordinates) {
+			BlockPos pos = player.blockPosition();
+			String coordsLine = pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
+			guiGraphics.drawString(client.font, coordsLine, LEFT, y, TEXT_COLOR);
+			y += client.font.lineHeight;
+		}
 
-		guiGraphics.drawString(client.font, coordsLine, LEFT, TOP, TEXT_COLOR);
-		guiGraphics.drawString(client.font, facingLine, LEFT, TOP + client.font.lineHeight, TEXT_COLOR);
+		String facingLine = facingLine(config, player.getYRot());
+		if (facingLine != null) {
+			guiGraphics.drawString(client.font, facingLine, LEFT, y, TEXT_COLOR);
+		}
 	}
 
-	private static String compassDirection(float yaw) {
+	private static String facingLine(ClientConfig config, float yaw) {
+		if (!config.coordinatesHudShowDirection && !config.coordinatesHudShowDegrees) {
+			return null;
+		}
+
 		float normalized = yaw % 360f;
 		if (normalized < 0f) {
 			normalized += 360f;
 		}
-		int index = (int) Math.floor((normalized + 22.5f) / 45f) % 8;
-		return COMPASS_DIRECTIONS[index] + " (" + Math.round(normalized) + "°)";
+
+		String direction = config.coordinatesHudShowDirection ? compassLetters(normalized) : null;
+		String degrees = config.coordinatesHudShowDegrees ? Math.round(normalized) + "°" : null;
+
+		if (direction != null && degrees != null) {
+			return direction + " (" + degrees + ")";
+		}
+		return direction != null ? direction : degrees;
+	}
+
+	private static String compassLetters(float normalizedYaw) {
+		int index = (int) Math.floor((normalizedYaw + 22.5f) / 45f) % 8;
+		return COMPASS_DIRECTIONS[index];
 	}
 }

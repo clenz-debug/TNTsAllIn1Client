@@ -21,7 +21,12 @@ public class ClientConfig {
 
 	private static ClientConfig instance;
 
+	// 5a: which parts of the coordinates HUD to show - independent toggles, not
+	// mutually exclusive (all three on is "show everything").
 	public boolean coordinatesHudEnabled = true;
+	public boolean coordinatesHudShowCoordinates = true;
+	public boolean coordinatesHudShowDirection = true;
+	public boolean coordinatesHudShowDegrees = true;
 
 	// 5b: which item to tally across the inventory. Either a fixed item id, or
 	// whatever is currently in the main hand.

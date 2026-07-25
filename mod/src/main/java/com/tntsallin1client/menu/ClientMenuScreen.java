@@ -40,11 +40,15 @@ public class ClientMenuScreen extends Screen {
 		int y = 40;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.coordinatesHudEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
+				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
 						(button, value) -> {
 							config.coordinatesHudEnabled = value;
 							config.save();
 						}));
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
+						button -> this.minecraft.setScreen(new CoordinatesHudOptionsScreen(this)))
+				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
+				.build());
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterEnabled)
