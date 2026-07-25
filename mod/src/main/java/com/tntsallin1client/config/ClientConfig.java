@@ -28,6 +28,9 @@ public class ClientConfig {
 	public boolean materialCounterEnabled = true;
 	public String materialCounterItemId = "minecraft:diamond";
 
+	// 5c: quick-sort button + keybind in the player's own inventory screen.
+	public boolean quickSortEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

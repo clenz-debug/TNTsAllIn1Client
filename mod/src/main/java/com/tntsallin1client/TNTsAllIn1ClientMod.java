@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
+import com.tntsallin1client.inventory.QuickSortUi;
+import com.tntsallin1client.keybind.ModKeyBindings;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
 	public static final String MOD_ID = "tntsallin1client";
@@ -34,5 +36,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5b: material counter HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "material_counter_hud"), new MaterialCounterHud());
+
+		// Phase 5c: inventory quick-sort (button + keybind).
+		ModKeyBindings.register();
+		QuickSortUi.register();
 	}
 }
