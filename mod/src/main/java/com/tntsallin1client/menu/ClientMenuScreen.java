@@ -1,0 +1,81 @@
+package com.tntsallin1client.menu;
+
+import com.tntsallin1client.config.ClientConfig;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Phase 5e: first version of the ingame mod menu. Exposes the toggles that
+ * previously only lived in the hand-edited config JSON (coordinates HUD,
+ * material counter + its item, quick-sort). Reachable via the pause menu
+ * button ({@link PauseMenuIntegration}) or its own keybind
+ * ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
+ */
+public class ClientMenuScreen extends Screen {
+	private static final int ROW_WIDTH = 210;
+	private static final int ROW_HEIGHT = 20;
+	private static final int ROW_SPACING = 24;
+
+	private final @Nullable Screen parent;
+
+	public ClientMenuScreen(@Nullable Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.menu.title"));
+		this.parent = parent;
+	}
+
+	@Override
+	protected void init() {
+		ClientConfig config = ClientConfig.get();
+		int x = (this.width - ROW_WIDTH) / 2;
+		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.coordinatesHudEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
+						(button, value) -> {
+							config.coordinatesHudEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.material_counter"),
+						(button, value) -> {
+							config.materialCounterEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
+		EditBox itemIdBox = new EditBox(this.font, x, y, ROW_WIDTH, ROW_HEIGHT,
+				Component.translatable("gui.tntsallin1client.menu.material_counter_item"));
+		itemIdBox.setMaxLength(64);
+		itemIdBox.setValue(config.materialCounterItemId);
+		itemIdBox.setResponder(value -> {
+			config.materialCounterItemId = value;
+			config.save();
+		});
+		this.addRenderableWidget(itemIdBox);
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.quickSortEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
+						(button, value) -> {
+							config.quickSortEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING + 6;
+
+		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
+				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.build());
+	}
+
+	@Override
+	public void onClose() {
+		this.minecraft.setScreen(this.parent);
+	}
+}

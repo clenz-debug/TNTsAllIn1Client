@@ -14,6 +14,7 @@ import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
+import com.tntsallin1client.menu.PauseMenuIntegration;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
 	public static final String MOD_ID = "tntsallin1client";
@@ -40,5 +41,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5c: inventory quick-sort (button + keybind).
 		ModKeyBindings.register();
 		QuickSortUi.register();
+
+		// Phase 5e: ingame mod menu (keybind + pause menu button).
+		PauseMenuIntegration.register();
 	}
 }

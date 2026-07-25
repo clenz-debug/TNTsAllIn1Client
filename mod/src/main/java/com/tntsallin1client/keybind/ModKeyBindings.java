@@ -11,9 +11,18 @@ public final class ModKeyBindings {
 			KeyMapping.Category.register(Identifier.fromNamespaceAndPath(TNTsAllIn1ClientMod.MOD_ID, "main"));
 
 	// Unbound by default - the user opts in via the vanilla Controls screen,
-	// same place the ingame menu (5e) will eventually surface it too.
+	// same place the ingame menu (5e) also surfaces it (both edit the same
+	// KeyMapping instance, so they can never fall out of sync with each other).
 	public static final KeyMapping SORT_INVENTORY = new KeyMapping(
 			"key.tntsallin1client.sort_inventory",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
+	// 5e: opens the mod menu directly from gameplay, in addition to the pause menu button.
+	public static final KeyMapping OPEN_MENU = new KeyMapping(
+			"key.tntsallin1client.open_menu",
 			InputConstants.Type.KEYSYM,
 			InputConstants.UNKNOWN.getValue(),
 			CATEGORY
@@ -24,5 +33,6 @@ public final class ModKeyBindings {
 
 	public static void register() {
 		KeyBindingHelper.registerKeyBinding(SORT_INVENTORY);
+		KeyBindingHelper.registerKeyBinding(OPEN_MENU);
 	}
 }

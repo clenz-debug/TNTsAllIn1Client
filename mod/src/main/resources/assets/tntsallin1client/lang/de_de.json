@@ -1,6 +1,13 @@
 {
   "key.category.tntsallin1client.main": "TNT's All-In-1 Client",
   "key.tntsallin1client.sort_inventory": "Inventar sortieren",
+  "key.tntsallin1client.open_menu": "Mod-Menü öffnen",
   "gui.tntsallin1client.sort_button": "Sort.",
-  "gui.tntsallin1client.sort_button.tooltip": "Inventar sortieren"
+  "gui.tntsallin1client.sort_button.tooltip": "Inventar sortieren",
+  "gui.tntsallin1client.menu.title": "TNT's All-In-1 Client",
+  "gui.tntsallin1client.menu.open_button": "Mod-Menü",
+  "gui.tntsallin1client.menu.coordinates_hud": "Koordinaten-HUD",
+  "gui.tntsallin1client.menu.material_counter": "Material-Zähler",
+  "gui.tntsallin1client.menu.material_counter_item": "Item-ID für Material-Zähler",
+  "gui.tntsallin1client.menu.quick_sort": "Inventar-Schnellsortierung"
 }
