@@ -69,6 +69,14 @@ public class ClientMenuScreen extends Screen {
 							config.quickSortEnabled = value;
 							config.save();
 						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.f3QuickInfoEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
+						(button, value) -> {
+							config.f3QuickInfoEnabled = value;
+							config.save();
+						}));
 		y += ROW_SPACING + 6;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())

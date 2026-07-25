@@ -1,15 +1,19 @@
 package com.tntsallin1client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
@@ -44,5 +48,10 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5e: ingame mod menu (keybind + pause menu button).
 		PauseMenuIntegration.register();
+
+		// Phase 5d: extra "Quick Info" block on the F3 debug screen.
+		Identifier quickInfoId = Identifier.fromNamespaceAndPath(MOD_ID, "quick_info");
+		DebugScreenEntries.register(quickInfoId, new QuickInfoDebugEntry());
+		ClientLifecycleEvents.CLIENT_STARTED.register(client -> client.debugEntries.setStatus(quickInfoId, DebugScreenEntryStatus.IN_OVERLAY));
 	}
 }

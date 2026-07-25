@@ -19,5 +19,6 @@
   "gui.tntsallin1client.coordinates_hud_options.title": "Coordinates HUD Options",
   "gui.tntsallin1client.coordinates_hud_options.show_coordinates": "Show Coordinates",
   "gui.tntsallin1client.coordinates_hud_options.show_direction": "Show Direction",
-  "gui.tntsallin1client.coordinates_hud_options.show_degrees": "Show Degrees"
+  "gui.tntsallin1client.coordinates_hud_options.show_degrees": "Show Degrees",
+  "gui.tntsallin1client.menu.f3_quick_info": "F3 Quick Info"
 }
