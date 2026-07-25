@@ -6,7 +6,7 @@
   "gui.tntsallin1client.sort_button": "Sort",
   "gui.tntsallin1client.sort_button.tooltip": "Sort your inventory",
   "gui.tntsallin1client.sort_button.wrong_tab": "Switch to the Inventory tab to sort",
-  "gui.tntsallin1client.menu.title": "TNT's All-In-1 Client",
+  "gui.tntsallin1client.menu.title": "Client Mods",
   "gui.tntsallin1client.menu.open_button": "Mod Menu",
   "gui.tntsallin1client.menu.coordinates_hud": "Coordinates HUD",
   "gui.tntsallin1client.menu.material_counter": "Material Counter",
