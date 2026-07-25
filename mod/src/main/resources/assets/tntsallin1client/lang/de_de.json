@@ -4,6 +4,7 @@
   "key.tntsallin1client.open_menu": "Mod-Menü öffnen",
   "gui.tntsallin1client.sort_button": "Sort.",
   "gui.tntsallin1client.sort_button.tooltip": "Inventar sortieren",
+  "gui.tntsallin1client.sort_button.wrong_tab": "Zum Inventar-Tab wechseln, um zu sortieren",
   "gui.tntsallin1client.menu.title": "TNT's All-In-1 Client",
   "gui.tntsallin1client.menu.open_button": "Mod-Menü",
   "gui.tntsallin1client.menu.coordinates_hud": "Koordinaten-HUD",
