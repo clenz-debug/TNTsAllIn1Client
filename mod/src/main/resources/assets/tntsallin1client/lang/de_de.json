@@ -21,6 +21,7 @@
   "gui.tntsallin1client.coordinates_hud_options.show_direction": "Richtung anzeigen",
   "gui.tntsallin1client.coordinates_hud_options.show_degrees": "Gradzahl anzeigen",
   "gui.tntsallin1client.menu.f3_quick_info": "F3 Quick Info",
+  "gui.tntsallin1client.menu.client_name_label": "Client-Name-Anzeige",
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.hint": "Box ziehen zum Verschieben. Untere rechte Ecke ziehen zum Skalieren.",

@@ -79,6 +79,14 @@ public class ClientMenuScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.clientNameLabelEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
+						(button, value) -> {
+							config.clientNameLabelEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 						button -> this.minecraft.setScreen(new HudEditorScreen(this)))
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)

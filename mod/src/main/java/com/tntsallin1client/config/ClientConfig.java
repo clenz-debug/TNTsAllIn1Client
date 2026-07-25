@@ -43,6 +43,9 @@ public class ClientConfig {
 	// 5d: extra "Quick Info" block on the F3 debug screen.
 	public boolean f3QuickInfoEnabled = true;
 
+	// Phase 2 leftover: the "TNT's All-In-1 Client (Mixin active)" top-left label.
+	public boolean clientNameLabelEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();
