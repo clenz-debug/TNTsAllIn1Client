@@ -4,21 +4,26 @@ import com.tntsallin1client.config.ClientConfig;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Phase 5a: always-visible coordinates + facing direction, positioned below the
- * Phase 2 proof-of-mixin label so the two don't overlap. Coordinates, the N/S/W/O
- * direction letter, and the degree number are each independently toggleable via
- * {@link ClientConfig} (see the coordinates HUD options screen).
+ * Phase 2 proof-of-mixin label by default so the two don't overlap. Coordinates,
+ * the N/S/W/O direction letter, and the degree number are each independently
+ * toggleable via {@link ClientConfig} (see the coordinates HUD options screen).
+ * Position/scale can be overridden via {@link HudLayout} (see the HUD editor).
  */
 public class CoordinatesHud implements HudElement {
 	private static final String[] COMPASS_DIRECTIONS = {"S", "SW", "W", "NW", "N", "NE", "E", "SE"};
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
-	private static final int LEFT = 4;
-	private static final int TOP = 14;
+	public static final int DEFAULT_LEFT = 4;
+	public static final int DEFAULT_TOP = 14;
 
 	@Override
 	public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -33,18 +38,45 @@ public class CoordinatesHud implements HudElement {
 			return;
 		}
 
-		int y = TOP;
+		List<String> lines = buildLines(config, player);
+		if (lines.isEmpty()) {
+			return;
+		}
+
+		HudLayout layout = config.coordinatesHudLayout;
+		float x = layout.customPosition ? layout.x : DEFAULT_LEFT;
+		float y = layout.customPosition ? layout.y : DEFAULT_TOP;
+		drawLines(guiGraphics, client.font, lines, x, y, layout.scale);
+	}
+
+	/** Lines this HUD would currently show, in render order. Shared with the HUD editor for accurate drag bounds. */
+	public static List<String> buildLines(ClientConfig config, LocalPlayer player) {
+		List<String> lines = new ArrayList<>(2);
 		if (config.coordinatesHudShowCoordinates) {
 			BlockPos pos = player.blockPosition();
-			String coordsLine = pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
-			guiGraphics.drawString(client.font, coordsLine, LEFT, y, TEXT_COLOR);
-			y += client.font.lineHeight;
+			lines.add(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
 		}
 
 		String facingLine = facingLine(config, player.getYRot());
 		if (facingLine != null) {
-			guiGraphics.drawString(client.font, facingLine, LEFT, y, TEXT_COLOR);
+			lines.add(facingLine);
 		}
+
+		return lines;
+	}
+
+	public static void drawLines(GuiGraphics guiGraphics, Font font, List<String> lines, float x, float y, float scale) {
+		guiGraphics.pose().pushMatrix();
+		guiGraphics.pose().translate(x, y);
+		guiGraphics.pose().scale(scale);
+
+		int lineY = 0;
+		for (String line : lines) {
+			guiGraphics.drawString(font, line, 0, lineY, TEXT_COLOR);
+			lineY += font.lineHeight;
+		}
+
+		guiGraphics.pose().popMatrix();
 	}
 
 	private static String facingLine(ClientConfig config, float yaw) {

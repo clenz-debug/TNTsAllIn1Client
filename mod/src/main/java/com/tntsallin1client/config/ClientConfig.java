@@ -3,6 +3,7 @@ package com.tntsallin1client.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tntsallin1client.TNTsAllIn1ClientMod;
+import com.tntsallin1client.hud.HudLayout;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.BufferedReader;
@@ -27,12 +28,14 @@ public class ClientConfig {
 	public boolean coordinatesHudShowCoordinates = true;
 	public boolean coordinatesHudShowDirection = true;
 	public boolean coordinatesHudShowDegrees = true;
+	public HudLayout coordinatesHudLayout = new HudLayout();
 
 	// 5b: which item to tally across the inventory. Either a fixed item id, or
 	// whatever is currently in the main hand.
 	public boolean materialCounterEnabled = true;
 	public boolean materialCounterUseHeldItem = false;
 	public String materialCounterItemId = "minecraft:diamond";
+	public HudLayout materialCounterHudLayout = new HudLayout();
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.
 	public boolean quickSortEnabled = true;

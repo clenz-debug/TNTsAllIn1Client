@@ -77,6 +77,12 @@ public class ClientMenuScreen extends Screen {
 							config.f3QuickInfoEnabled = value;
 							config.save();
 						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
+						button -> this.minecraft.setScreen(new HudEditorScreen(this)))
+				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.build());
 		y += ROW_SPACING + 6;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
