@@ -16,14 +16,27 @@ import org.jspecify.annotations.Nullable;
  * {@link ShulkerPreviewRenderer} once {@code hoveredSlot} is up to date for
  * this frame. See {@link ShulkerPreviewRenderer} for why this is split
  * across two mixins instead of one.
+ *
+ * <p><b>Bugfix (crafting table / furnace / player inventory never showed a
+ * preview):</b> this used to inject into {@code AbstractContainerScreen#render}.
+ * That method is only reliably called for screens that don't override
+ * {@code render()} themselves (chests, villager trading, ...). Any screen
+ * based on {@code AbstractRecipeBookScreen} - the player inventory, the
+ * crafting table, furnace/blast furnace/smoker - overrides {@code render()}
+ * and calls {@code super.renderContents(...)} directly instead of
+ * {@code super.render(...)}, skipping {@code AbstractContainerScreen#render}
+ * (and this injection) entirely. {@code renderContents} is the method both
+ * paths actually share - it's also where {@code hoveredSlot} itself gets
+ * refreshed - so injecting there instead covers every {@code AbstractContainerScreen}
+ * subclass regardless of which one it is.
  */
 @Mixin(AbstractContainerScreen.class)
 public class AbstractContainerScreenMixin {
 	@Shadow
 	private @Nullable Slot hoveredSlot;
 
-	@Inject(method = "render", at = @At("TAIL"))
-	private void tntsallin1client$onRenderTail(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+	@Inject(method = "renderContents", at = @At("TAIL"))
+	private void tntsallin1client$onRenderContentsTail(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
 		ShulkerPreviewRenderer.capture(
 				this.hoveredSlot != null && this.hoveredSlot.hasItem() ? this.hoveredSlot.getItem() : null,
 				mouseX, mouseY);
