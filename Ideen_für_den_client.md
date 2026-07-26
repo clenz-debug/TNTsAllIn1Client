@@ -55,7 +55,7 @@
 - Gutes Ingame Menü um die featurs / mods auzuwählen (auch über taste(-nkombie) zu öffnen welche mann selbst einstellen kann) [check] (5e)
     - Fullbright und lightlevel oveerlay [check] (5j — gebaut, noch nicht live getestet; nur die Zahl an der eigenen Position, kein voller In-World-Tile-Overlay)
     - Custom Crosshair (auch mit Farbauswahl) [check] (5i — gebaut, noch nicht live getestet)
-    - Anpassung der Hitbox Farbe [→ Phase 5l]
+    - Anpassung der Hitbox Farbe [check] (5l — gebaut, noch nicht live getestet)
     - Itemphysics [→ Phase 5o]
     - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [→ Phase 5n]
     - Keystrokes (vll auch mehr als das klassische wasd lmb rmb shift, space) [→ Phase 5m]

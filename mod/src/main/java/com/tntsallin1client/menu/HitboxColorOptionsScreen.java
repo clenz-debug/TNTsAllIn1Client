@@ -9,13 +9,11 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 /**
- * Phase 5e/5i: dedicated options screen for the custom crosshair - just a hex
- * color field (6 hex digits, no "#") plus a small live preview swatch. Always
- * saves with full alpha (0xFF______) baked in; a bare RGB value would be
- * invisible when passed to GuiGraphics#fill, same bug class as Phase 2's
- * client-name-label alpha issue.
+ * Phase 5l: dedicated options screen for the F3+B hitbox color - same hex
+ * field + swatch shape as {@link CrosshairOptionsScreen}, via
+ * {@link ColorPickerHelper}.
  */
-public class CrosshairOptionsScreen extends Screen {
+public class HitboxColorOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
@@ -25,8 +23,8 @@ public class CrosshairOptionsScreen extends Screen {
 
 	private final Screen parent;
 
-	public CrosshairOptionsScreen(Screen parent) {
-		super(Component.translatable("gui.tntsallin1client.crosshair_options.title"));
+	public HitboxColorOptionsScreen(Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.hitbox_options.title"));
 		this.parent = parent;
 	}
 
@@ -37,14 +35,14 @@ public class CrosshairOptionsScreen extends Screen {
 		int y = 40;
 
 		EditBox colorBox = new EditBox(this.font, x, y, EDIT_BOX_WIDTH, ROW_HEIGHT,
-				Component.translatable("gui.tntsallin1client.crosshair_options.color"));
+				Component.translatable("gui.tntsallin1client.hitbox_options.color"));
 		colorBox.setMaxLength(6);
 		colorBox.setFilter(value -> value.matches("[0-9a-fA-F]{0,6}"));
-		colorBox.setValue(ColorPickerHelper.toHexRgb(config.customCrosshairColor));
+		colorBox.setValue(ColorPickerHelper.toHexRgb(config.customHitboxColor));
 		colorBox.setResponder(value -> {
 			Integer parsed = ColorPickerHelper.parseHexRgbToArgb(value);
 			if (parsed != null) {
-				config.customCrosshairColor = parsed;
+				config.customHitboxColor = parsed;
 				config.save();
 			}
 		});
@@ -63,7 +61,7 @@ public class CrosshairOptionsScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		int swatchX = (this.width - ROW_WIDTH) / 2 + EDIT_BOX_WIDTH + SWATCH_GAP;
 		int swatchY = 40;
-		ColorPickerHelper.drawSwatch(guiGraphics, swatchX, swatchY, SWATCH_SIZE, config.customCrosshairColor);
+		ColorPickerHelper.drawSwatch(guiGraphics, swatchX, swatchY, SWATCH_SIZE, config.customHitboxColor);
 	}
 
 	@Override

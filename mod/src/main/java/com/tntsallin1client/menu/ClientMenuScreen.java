@@ -147,6 +147,18 @@ public class ClientMenuScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.customHitboxColorEnabled)
+				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
+						(button, value) -> {
+							config.customHitboxColorEnabled = value;
+							config.save();
+						}));
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
+						button -> this.minecraft.setScreen(new HitboxColorOptionsScreen(this)))
+				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
+				.build());
+		y += ROW_SPACING;
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),

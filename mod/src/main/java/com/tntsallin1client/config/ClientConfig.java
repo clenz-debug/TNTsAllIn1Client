@@ -66,6 +66,11 @@ public class ClientConfig {
 	// 5k: hold-to-preview shulker box contents beyond vanilla's own 5-item cap.
 	public boolean shulkerPreviewEnabled = true;
 
+	// 5l: F3+B hitbox outline color. Defaults to white, vanilla's own color, so
+	// turning this on doesn't visibly change anything until a color is picked.
+	public boolean customHitboxColorEnabled = true;
+	public int customHitboxColor = 0xFFFFFFFF;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();
