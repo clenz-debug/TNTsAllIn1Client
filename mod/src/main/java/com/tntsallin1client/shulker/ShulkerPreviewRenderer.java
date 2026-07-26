@@ -1,9 +1,11 @@
 package com.tntsallin1client.shulker;
 
+import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -47,6 +49,15 @@ import org.jspecify.annotations.Nullable;
  * same way 5c already does it: track press/release via
  * {@link ScreenKeyboardEvents}, which is built for exactly this case,
  * instead of the generic KeyMapping state.
+ *
+ * <p><b>Follow-up bugfix:</b> that alone still didn't cover a mouse-button
+ * binding - {@code KeyMapping#matches(KeyEvent)} only ever matches a
+ * KEYSYM-type binding; a mouse button needs the separate
+ * {@code matchesMouse(MouseButtonEvent)} method and {@link ScreenMouseEvents}'
+ * click/release events instead of the keyboard ones. Since the rebind screen
+ * (like vanilla's own Controls screen) allows binding this to either a key
+ * or a mouse button, both event families are registered so it works
+ * regardless of which one the user picked.
  */
 public final class ShulkerPreviewRenderer {
 	private static boolean keyHeldInScreen = false;
@@ -62,6 +73,7 @@ public final class ShulkerPreviewRenderer {
 	private static @Nullable ItemStack pendingStack;
 	private static int pendingMouseX;
 	private static int pendingMouseY;
+	private static boolean lastLoggedHovering = false;
 
 	private ShulkerPreviewRenderer() {
 	}
@@ -91,11 +103,33 @@ public final class ShulkerPreviewRenderer {
 					keyHeldInScreen = false;
 				}
 			});
+			ScreenMouseEvents.afterMouseClick(screen).register((scr, mouseEvent, consumed) -> {
+				if (ModKeyBindings.SHULKER_PREVIEW.matchesMouse(mouseEvent)) {
+					keyHeldInScreen = true;
+				}
+				return false;
+			});
+			ScreenMouseEvents.afterMouseRelease(screen).register((scr, mouseEvent, consumed) -> {
+				if (ModKeyBindings.SHULKER_PREVIEW.matchesMouse(mouseEvent)) {
+					keyHeldInScreen = false;
+				}
+				return false;
+			});
 		});
 	}
 
 	/** Called from {@link com.tntsallin1client.mixin.AbstractContainerScreenMixin} once per frame. */
 	public static void capture(@Nullable ItemStack hoveredStack, int mouseX, int mouseY) {
+		boolean isShulkerBox = hoveredStack != null && isShulkerBox(hoveredStack);
+		if (isShulkerBox != lastLoggedHovering) {
+			lastLoggedHovering = isShulkerBox;
+			if (isShulkerBox) {
+				TNTsAllIn1ClientMod.LOGGER.info(
+						"[{}] shulker-preview: hovering a shulker box (enabled={}, keyHeldInScreen={})",
+						TNTsAllIn1ClientMod.MOD_ID, ClientConfig.get().shulkerPreviewEnabled, keyHeldInScreen);
+			}
+		}
+
 		if (hoveredStack != null && isPreviewable(hoveredStack)) {
 			pendingStack = hoveredStack;
 			pendingMouseX = mouseX;
@@ -111,14 +145,13 @@ public final class ShulkerPreviewRenderer {
 			return;
 		}
 
+		NonNullList<ItemStack> slots = NonNullList.withSize(COLUMNS * ROWS, ItemStack.EMPTY);
 		ItemContainerContents contents = pendingStack.get(DataComponents.CONTAINER);
-		if (contents == null) {
-			pendingStack = null;
-			return;
+		if (contents != null) {
+			contents.copyInto(slots);
 		}
 
-		NonNullList<ItemStack> slots = NonNullList.withSize(COLUMNS * ROWS, ItemStack.EMPTY);
-		contents.copyInto(slots);
+		TNTsAllIn1ClientMod.LOGGER.info("[{}] shulker-preview: drawing grid at {},{}", TNTsAllIn1ClientMod.MOD_ID, pendingMouseX, pendingMouseY);
 
 		int color = boxColor(pendingStack);
 		int gridWidth = COLUMNS * SLOT_SIZE;
@@ -146,11 +179,12 @@ public final class ShulkerPreviewRenderer {
 	}
 
 	private static boolean isPreviewable(ItemStack stack) {
-		return ClientConfig.get().shulkerPreviewEnabled
-				&& keyHeldInScreen
-				&& stack.getItem() instanceof BlockItem blockItem
-				&& blockItem.getBlock() instanceof ShulkerBoxBlock
-				&& stack.get(DataComponents.CONTAINER) != null;
+		return ClientConfig.get().shulkerPreviewEnabled && keyHeldInScreen && isShulkerBox(stack);
+	}
+
+	/** Deliberately doesn't require a present CONTAINER component - an empty/never-filled shulker box is still a valid (empty) box to preview. */
+	private static boolean isShulkerBox(ItemStack stack) {
+		return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock;
 	}
 
 	private static int boxColor(ItemStack stack) {
