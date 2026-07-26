@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import type { GameLogEvent, LaunchStage, MinecraftProfile } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
+import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
 import { checkJavaAvailable, launchGame } from '../launch/gameProcess'
@@ -40,6 +41,7 @@ export function registerIpcHandlers(): void {
 
     const vanilla = await installVersion(sendProgress)
     const installed = await installFabricLoader(vanilla, sendProgress)
+    await syncBundledContent(installed.instanceDir, sendProgress)
     const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
     const args = buildLaunchArgs({
       detail: installed.detail,

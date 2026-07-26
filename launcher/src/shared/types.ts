@@ -19,6 +19,7 @@ export type LaunchStage =
   | 'assets'
   | 'fabric-meta'
   | 'fabric-libraries'
+  | 'bundles'
   | 'launching'
   | 'running'
   | 'done'

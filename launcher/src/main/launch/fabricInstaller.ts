@@ -44,9 +44,10 @@ export async function installFabricLoader(
   }
   await downloadAll(tasks, 8, (completed, total, label) => onProgress('fabric-libraries', completed, total, label))
 
-  // Fabric Loader reads mods from <gameDir>/mods at startup. For now that folder is filled by
-  // hand (own mod jar + Sodium/Lithium + Fabric API) — see Aktuelle_Phase.md; an in-launcher mod
-  // manager is Phase 6.
+  // Fabric Loader reads mods from <gameDir>/mods at startup. Created unconditionally here so the
+  // directory exists even on a checkout without launcher/mods-bundle populated yet; the actual
+  // jars (own mod + Sodium/Lithium + Fabric API) get copied in by bundleSync.syncBundledContent()
+  // right after this — a full in-launcher mod manager (add/remove/toggle via UI) is still Phase 6.
   await mkdir(join(vanilla.instanceDir, 'game', 'mods'), { recursive: true })
 
   return {
