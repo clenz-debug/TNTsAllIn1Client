@@ -52,6 +52,9 @@ public class ClientConfig {
 
 	// 5h: hold-to-zoom.
 	public boolean zoomEnabled = true;
+	// Scroll-adjustable while zooming (see ZoomHandler); persists as the
+	// "remembered" zoom level between sessions, same as every other setting here.
+	public int zoomFov = 15;
 
 	// 5i: custom crosshair color. Defaults to white so turning this on doesn't
 	// visibly change anything until the user actually picks a color.

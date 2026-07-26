@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -47,11 +48,18 @@ public class ZoomOptionsScreen extends Screen {
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
 				.build());
 		this.updateRebindButtonLabel();
-		y += ROW_SPACING + 6;
+		y += ROW_SPACING + 16;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
 				.build());
+	}
+
+	@Override
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		super.render(guiGraphics, mouseX, mouseY, partialTick);
+		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.zoom_options.scroll_hint"),
+				this.width / 2, 40 + ROW_SPACING, 0xFFAAAAAA);
 	}
 
 	private void updateRebindButtonLabel() {

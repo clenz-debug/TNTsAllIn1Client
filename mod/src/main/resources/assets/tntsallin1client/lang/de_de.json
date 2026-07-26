@@ -45,6 +45,7 @@
   "gui.tntsallin1client.menu.item_tilt": "Itemphysics (Neige-Effekt)",
   "gui.tntsallin1client.zoom_options.title": "Zoom - Optionen",
   "gui.tntsallin1client.zoom_options.key": "Zoom-Taste: %s",
+  "gui.tntsallin1client.zoom_options.scroll_hint": "Während des Zoomens: Mausrad = stärker/schwächer zoomen",
   "gui.tntsallin1client.menu.connected_textures": "Verbundene Texturen (3D-Glas etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",

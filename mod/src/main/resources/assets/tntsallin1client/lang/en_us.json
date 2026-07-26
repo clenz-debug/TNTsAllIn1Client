@@ -45,6 +45,7 @@
   "gui.tntsallin1client.menu.item_tilt": "Item Physics (Tilt Effect)",
   "gui.tntsallin1client.zoom_options.title": "Zoom Options",
   "gui.tntsallin1client.zoom_options.key": "Zoom Key: %s",
+  "gui.tntsallin1client.zoom_options.scroll_hint": "While zooming: scroll wheel = zoom in/out further",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures (3D Glass etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",
