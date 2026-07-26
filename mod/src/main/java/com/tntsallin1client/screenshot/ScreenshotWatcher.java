@@ -22,6 +22,11 @@ import java.util.Set;
  * "moderat" feature rather than hooking the write completion itself, which
  * would mean mixing into a lambda nested inside another lambda inside
  * {@code Screenshot.grab} - a lot more fragile than a short poll.
+ *
+ * <p>Once found, posts a chat message via {@link ScreenshotChatLink} - a
+ * plain chat line rather than the original popup Screen, per follow-up
+ * feedback wanting the "[Open]"/"[Copy]" links styled like vanilla's own
+ * screenshot notification instead of a separate GUI.
  */
 public final class ScreenshotWatcher {
 	private static final int TIMEOUT_TICKS = 100;
@@ -45,9 +50,7 @@ public final class ScreenshotWatcher {
 		File newFile = findNewFile(client, filesBeforeTrigger);
 		if (newFile != null) {
 			filesBeforeTrigger = null;
-			if (client.screen == null) {
-				client.setScreen(new ScreenshotToastScreen(newFile));
-			}
+			client.gui.getChat().addMessage(ScreenshotChatLink.buildChatMessage(newFile));
 		} else if (ticksWaited >= TIMEOUT_TICKS) {
 			filesBeforeTrigger = null;
 		}

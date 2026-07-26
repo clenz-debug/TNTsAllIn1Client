@@ -4,6 +4,7 @@
 	"package": "com.tntsallin1client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ChatScreenMixin",
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
 		"ItemEntityRendererMixin",
