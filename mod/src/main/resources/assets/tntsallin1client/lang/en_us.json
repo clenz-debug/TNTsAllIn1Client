@@ -36,6 +36,7 @@
   "gui.tntsallin1client.menu.hitbox_color": "Custom Hitbox Color (F3+B)",
   "gui.tntsallin1client.hitbox_options.title": "Hitbox Color Options",
   "gui.tntsallin1client.hitbox_options.color": "Color (Hex, no #)",
+  "gui.tntsallin1client.menu.keystrokes": "Keystrokes Display",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures (3D Glass etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",

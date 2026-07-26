@@ -4,6 +4,7 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
+import com.tntsallin1client.hud.KeystrokesHud;
 import com.tntsallin1client.hud.LightLevelHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import net.minecraft.client.gui.components.Button;
@@ -64,6 +65,10 @@ public class HudEditorScreen extends Screen {
 				Component.translatable("gui.tntsallin1client.menu.light_level_hud"),
 				config.lightLevelHudLayout,
 				this::lightLevelBounds));
+		entries.add(new Entry(
+				Component.translatable("gui.tntsallin1client.menu.keystrokes"),
+				config.keystrokesHudLayout,
+				this::keystrokesBounds));
 
 		this.addRenderableWidget(Button.builder(
 						Component.translatable("gui.tntsallin1client.hud_editor.reset_all"),
@@ -168,6 +173,7 @@ public class HudEditorScreen extends Screen {
 		config.materialCounterHudLayout = new HudLayout();
 		config.fpsCounterHudLayout = new HudLayout();
 		config.lightLevelHudLayout = new HudLayout();
+		config.keystrokesHudLayout = new HudLayout();
 		config.save();
 	}
 
@@ -247,6 +253,21 @@ public class HudEditorScreen extends Screen {
 
 		int unscaledWidth = this.font.width(label);
 		int unscaledHeight = this.font.lineHeight;
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect keystrokesBounds() {
+		if (this.minecraft.player == null) {
+			return null;
+		}
+
+		ClientConfig config = ClientConfig.get();
+		HudLayout layout = config.keystrokesHudLayout;
+		int unscaledWidth = KeystrokesHud.computeTotalWidth(this.minecraft);
+		int unscaledHeight = KeystrokesHud.computeTotalHeight(this.minecraft);
+		float x = layout.customPosition ? layout.x : this.width - 4 - unscaledWidth;
+		float y = layout.customPosition ? layout.y : this.height - 4 - unscaledHeight;
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

@@ -71,6 +71,10 @@ public class ClientConfig {
 	public boolean customHitboxColorEnabled = true;
 	public int customHitboxColor = 0xFFFFFFFF;
 
+	// 5m: keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop).
+	public boolean keystrokesEnabled = true;
+	public HudLayout keystrokesHudLayout = new HudLayout();
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

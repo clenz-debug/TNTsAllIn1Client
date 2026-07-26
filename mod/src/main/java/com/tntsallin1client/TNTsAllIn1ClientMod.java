@@ -19,6 +19,7 @@ import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
+import com.tntsallin1client.hud.KeystrokesHud;
 import com.tntsallin1client.hud.LightLevelHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
@@ -55,6 +56,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5j: light-level HUD + fullbright toggle.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "light_level_hud"), new LightLevelHud());
 		ClientTickEvents.END_CLIENT_TICK.register(FullbrightHandler::tick);
+
+		// Phase 5m: keystrokes overlay.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "keystrokes_hud"), new KeystrokesHud());
 
 		// Phase 5c: inventory quick-sort (button + keybind).
 		ModKeyBindings.register();
