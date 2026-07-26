@@ -46,6 +46,13 @@ public class ClientConfig {
 	// Phase 2 leftover: the "TNT's All-In-1 Client (Mixin active)" top-left label.
 	public boolean clientNameLabelEnabled = true;
 
+	// 5g: always-visible FPS counter, no F3 needed.
+	public boolean fpsCounterEnabled = true;
+	public HudLayout fpsCounterHudLayout = new HudLayout();
+
+	// 5h: hold-to-zoom.
+	public boolean zoomEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

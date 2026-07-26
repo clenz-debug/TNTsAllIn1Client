@@ -17,10 +17,12 @@ import org.slf4j.LoggerFactory;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.hud.CoordinatesHud;
+import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
+import com.tntsallin1client.zoom.ZoomHandler;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
 	public static final String MOD_ID = "tntsallin1client";
@@ -44,6 +46,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5b: material counter HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "material_counter_hud"), new MaterialCounterHud());
 
+		// Phase 5g: FPS counter HUD.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "fps_counter_hud"), new FpsCounterHud());
+
 		// Phase 5c: inventory quick-sort (button + keybind).
 		ModKeyBindings.register();
 		QuickSortUi.register();
@@ -65,5 +70,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 				SystemInfoOverlay.visible = !SystemInfoOverlay.visible;
 			}
 		});
+
+		// Phase 5h: hold-to-zoom.
+		ClientTickEvents.END_CLIENT_TICK.register(ZoomHandler::tick);
 	}
 }

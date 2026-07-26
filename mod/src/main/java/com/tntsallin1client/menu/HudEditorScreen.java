@@ -2,6 +2,7 @@ package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.hud.CoordinatesHud;
+import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import net.minecraft.client.gui.components.Button;
@@ -54,6 +55,10 @@ public class HudEditorScreen extends Screen {
 				Component.translatable("gui.tntsallin1client.menu.material_counter"),
 				config.materialCounterHudLayout,
 				this::materialCounterBounds));
+		entries.add(new Entry(
+				Component.translatable("gui.tntsallin1client.menu.fps_counter"),
+				config.fpsCounterHudLayout,
+				this::fpsCounterBounds));
 
 		this.addRenderableWidget(Button.builder(
 						Component.translatable("gui.tntsallin1client.hud_editor.reset_all"),
@@ -156,6 +161,7 @@ public class HudEditorScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		config.coordinatesHudLayout = new HudLayout();
 		config.materialCounterHudLayout = new HudLayout();
+		config.fpsCounterHudLayout = new HudLayout();
 		config.save();
 	}
 
@@ -199,6 +205,20 @@ public class HudEditorScreen extends Screen {
 		HudLayout layout = config.materialCounterHudLayout;
 		float x = layout.customPosition ? layout.x : MaterialCounterHud.defaultX(this.width, this.font, label);
 		float y = layout.customPosition ? layout.y : MaterialCounterHud.defaultY();
+
+		int unscaledWidth = this.font.width(label);
+		int unscaledHeight = this.font.lineHeight;
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect fpsCounterBounds() {
+		ClientConfig config = ClientConfig.get();
+		String label = FpsCounterHud.buildLabel(this.minecraft);
+
+		HudLayout layout = config.fpsCounterHudLayout;
+		float x = layout.customPosition ? layout.x : FpsCounterHud.defaultX(this.width, this.font, label);
+		float y = layout.customPosition ? layout.y : FpsCounterHud.defaultY();
 
 		int unscaledWidth = this.font.width(label);
 		int unscaledHeight = this.font.lineHeight;

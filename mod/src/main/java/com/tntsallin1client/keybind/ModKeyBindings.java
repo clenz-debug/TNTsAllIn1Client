@@ -43,6 +43,16 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// 5h: hold to zoom in. Unbound by default like most binds here (not SYSTEM_INFO's
+	// F3-modifier special case) - the user picks a key that doesn't collide with
+	// anything they already use.
+	public static final KeyMapping ZOOM = new KeyMapping(
+			"key.tntsallin1client.zoom",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -50,5 +60,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(SORT_INVENTORY);
 		KeyBindingHelper.registerKeyBinding(OPEN_MENU);
 		KeyBindingHelper.registerKeyBinding(SYSTEM_INFO);
+		KeyBindingHelper.registerKeyBinding(ZOOM);
 	}
 }

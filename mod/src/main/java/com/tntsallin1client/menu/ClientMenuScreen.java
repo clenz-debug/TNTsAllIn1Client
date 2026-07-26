@@ -95,6 +95,22 @@ public class ClientMenuScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.fpsCounterEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
+						(button, value) -> {
+							config.fpsCounterEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.zoomEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.zoom"),
+						(button, value) -> {
+							config.zoomEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),

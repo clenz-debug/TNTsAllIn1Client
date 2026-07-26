@@ -60,6 +60,6 @@
     - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [→ Phase 5n]
     - Keystrokes (vll auch mehr als das klassische wasd lmb rmb shift, space) [→ Phase 5m]
     - proximity voice mod oder was ähnliches wäre cool nicht jeder nutzt Discord zum labern das macht es einfacher [später — zu groß für Phase 5, eigene Phase/Bündelung wie 5f prüfen]
-    - zoom [→ Phase 5h]
-    - fps anzeige [→ Phase 5g]
+    - zoom [check] (5h — gebaut, noch nicht live getestet)
+    - fps anzeige [check] (5g — gebaut, noch nicht live getestet)
     - Shulkerbox inhalts anzeige (wenn bestimmter key gedrükt wird) [→ Phase 5k]
