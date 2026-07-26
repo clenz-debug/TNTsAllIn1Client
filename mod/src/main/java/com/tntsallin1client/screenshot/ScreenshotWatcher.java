@@ -8,76 +8,73 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Phase 5n: detects when a screenshot was just taken by watching the same
- * {@code options.keyScreenshot} keybind vanilla's own {@code KeyboardHandler}
- * reacts to. {@code consumeClick()} drains an independent click counter and
- * doesn't stop vanilla's own (separate, raw-key-event-based) handling of the
- * same press, so this coexists safely instead of interfering.
+ * Phase 5n: detects new screenshots by polling the {@code screenshots/}
+ * folder directly, every {@link #POLL_INTERVAL_TICKS} ticks.
  *
- * <p>The actual file write happens asynchronously on a background thread
- * ({@code Util.ioPool()} inside vanilla's {@code Screenshot.grab}), so this
- * can't assume the PNG exists the instant the key is pressed - it snapshots
- * the screenshots folder's contents, then polls for a few seconds for a
- * filename that wasn't there before. A reasonable approximation for a
- * "moderat" feature rather than hooking the write completion itself, which
- * would mean mixing into a lambda nested inside another lambda inside
- * {@code Screenshot.grab} - a lot more fragile than a short poll.
- *
- * <p>Once found, posts a chat message via {@link ScreenshotChatLink} - a
- * plain chat line rather than the original popup Screen, per follow-up
- * feedback wanting the "[Open]"/"[Copy]" links styled like vanilla's own
- * screenshot notification instead of a separate GUI.
+ * <p><b>Bugfix (feedback: "never shows up"):</b> the original version watched
+ * {@code options.keyScreenshot.consumeClick()}, the same technique that
+ * works fine for this mod's own custom keybinds. That doesn't work for
+ * vanilla's screenshot key specifically: {@code KeyboardHandler#keyPress}
+ * handles {@code keyScreenshot} as a hardcoded special case that calls
+ * {@code Screenshot.grab(...)} and then {@code return}s immediately -
+ * before reaching the generic {@code KeyMapping.click(key)} call further
+ * down in the same method that would otherwise increment the click counter
+ * {@code consumeClick()} drains. So the counter for that specific key never
+ * moves, no matter how the screenshot was actually triggered (key or
+ * otherwise) - confirmed by reading {@code KeyboardHandler.java} directly.
+ * Polling the directory instead sidesteps the problem entirely: it doesn't
+ * care how or whether a key was involved, only that a new file showed up.
  */
 public final class ScreenshotWatcher {
-	private static final int TIMEOUT_TICKS = 100;
+	private static final int POLL_INTERVAL_TICKS = 10;
 
-	private static Set<String> filesBeforeTrigger;
-	private static int ticksWaited;
+	private static boolean initialized = false;
+	private static final Set<String> knownFileNames = new HashSet<>();
+	private static int ticksSincePoll = 0;
 
 	private ScreenshotWatcher() {
 	}
 
 	public static void tick(Minecraft client) {
-		if (filesBeforeTrigger == null) {
-			if (ClientConfig.get().screenshotToastEnabled && client.options.keyScreenshot.consumeClick()) {
-				filesBeforeTrigger = listScreenshotFileNames(client);
-				ticksWaited = 0;
-			}
+		if (!ClientConfig.get().screenshotToastEnabled) {
 			return;
 		}
 
-		ticksWaited++;
-		File newFile = findNewFile(client, filesBeforeTrigger);
-		if (newFile != null) {
-			filesBeforeTrigger = null;
-			client.gui.getChat().addMessage(ScreenshotChatLink.buildChatMessage(newFile));
-		} else if (ticksWaited >= TIMEOUT_TICKS) {
-			filesBeforeTrigger = null;
+		if (!initialized) {
+			initializeBaseline(client);
+			return;
 		}
+
+		if (++ticksSincePoll < POLL_INTERVAL_TICKS) {
+			return;
+		}
+		ticksSincePoll = 0;
+
+		checkForNewFiles(client);
 	}
 
-	private static Set<String> listScreenshotFileNames(Minecraft client) {
-		Set<String> names = new HashSet<>();
+	/** Seeds the "already known" set from whatever's on disk right now, so pre-existing screenshots don't all get announced at once. */
+	private static void initializeBaseline(Minecraft client) {
 		File[] files = screenshotDir(client).listFiles();
 		if (files != null) {
 			for (File file : files) {
-				names.add(file.getName());
+				knownFileNames.add(file.getName());
 			}
 		}
-		return names;
+		initialized = true;
 	}
 
-	private static File findNewFile(Minecraft client, Set<String> namesBefore) {
+	private static void checkForNewFiles(Minecraft client) {
 		File[] files = screenshotDir(client).listFiles();
 		if (files == null) {
-			return null;
+			return;
 		}
+
 		for (File file : files) {
-			if (!namesBefore.contains(file.getName())) {
-				return file;
+			if (knownFileNames.add(file.getName())) {
+				client.gui.getChat().addMessage(ScreenshotChatLink.buildChatMessage(file));
 			}
 		}
-		return null;
 	}
 
 	private static File screenshotDir(Minecraft client) {
