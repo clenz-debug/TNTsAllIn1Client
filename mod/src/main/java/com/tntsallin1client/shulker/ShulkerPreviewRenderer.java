@@ -1,6 +1,5 @@
 package com.tntsallin1client.shulker;
 
-import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -69,11 +68,11 @@ public final class ShulkerPreviewRenderer {
 	private static final int OFFSET_Y = 24;
 	private static final int DEFAULT_COLOR = 0xFF8B5FBF;
 	private static final int BACKGROUND_COLOR = 0xD0202020;
+	private static final int GRID_LINE_COLOR = 0xFF3A3A3A;
 
 	private static @Nullable ItemStack pendingStack;
 	private static int pendingMouseX;
 	private static int pendingMouseY;
-	private static boolean lastLoggedHovering = false;
 
 	private ShulkerPreviewRenderer() {
 	}
@@ -120,16 +119,6 @@ public final class ShulkerPreviewRenderer {
 
 	/** Called from {@link com.tntsallin1client.mixin.AbstractContainerScreenMixin} once per frame. */
 	public static void capture(@Nullable ItemStack hoveredStack, int mouseX, int mouseY) {
-		boolean isShulkerBox = hoveredStack != null && isShulkerBox(hoveredStack);
-		if (isShulkerBox != lastLoggedHovering) {
-			lastLoggedHovering = isShulkerBox;
-			if (isShulkerBox) {
-				TNTsAllIn1ClientMod.LOGGER.info(
-						"[{}] shulker-preview: hovering a shulker box (enabled={}, keyHeldInScreen={})",
-						TNTsAllIn1ClientMod.MOD_ID, ClientConfig.get().shulkerPreviewEnabled, keyHeldInScreen);
-			}
-		}
-
 		if (hoveredStack != null && isPreviewable(hoveredStack)) {
 			pendingStack = hoveredStack;
 			pendingMouseX = mouseX;
@@ -151,8 +140,6 @@ public final class ShulkerPreviewRenderer {
 			contents.copyInto(slots);
 		}
 
-		TNTsAllIn1ClientMod.LOGGER.info("[{}] shulker-preview: drawing grid at {},{}", TNTsAllIn1ClientMod.MOD_ID, pendingMouseX, pendingMouseY);
-
 		int color = boxColor(pendingStack);
 		int gridWidth = COLUMNS * SLOT_SIZE;
 		int gridHeight = ROWS * SLOT_SIZE;
@@ -161,6 +148,18 @@ public final class ShulkerPreviewRenderer {
 
 		guiGraphics.fill(x - MARGIN, y - MARGIN, x + gridWidth + MARGIN, y + gridHeight + MARGIN, color);
 		guiGraphics.fill(x, y, x + gridWidth, y + gridHeight, BACKGROUND_COLOR);
+
+		// Slot separator lines, one shade lighter than the background fill rather than the
+		// (possibly very different) box border color, so they read as subtle grid lines instead
+		// of a second border.
+		for (int col = 0; col <= COLUMNS; col++) {
+			int lineX = x + col * SLOT_SIZE;
+			guiGraphics.fill(lineX, y, lineX + 1, y + gridHeight, GRID_LINE_COLOR);
+		}
+		for (int row = 0; row <= ROWS; row++) {
+			int lineY = y + row * SLOT_SIZE;
+			guiGraphics.fill(x, lineY, x + gridWidth, lineY + 1, GRID_LINE_COLOR);
+		}
 
 		var font = Minecraft.getInstance().font;
 		for (int index = 0; index < slots.size(); index++) {
