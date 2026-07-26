@@ -29,6 +29,8 @@
   "gui.tntsallin1client.menu.crosshair": "Custom Crosshair",
   "gui.tntsallin1client.crosshair_options.title": "Crosshair Options",
   "gui.tntsallin1client.crosshair_options.color": "Color (Hex, no #)",
+  "gui.tntsallin1client.menu.fullbright": "Fullbright",
+  "gui.tntsallin1client.menu.light_level_hud": "Light Level Display",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures (3D Glass etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",

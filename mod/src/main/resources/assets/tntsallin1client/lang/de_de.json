@@ -29,6 +29,8 @@
   "gui.tntsallin1client.menu.crosshair": "Eigenes Fadenkreuz",
   "gui.tntsallin1client.crosshair_options.title": "Fadenkreuz - Optionen",
   "gui.tntsallin1client.crosshair_options.color": "Farbe (Hex, ohne #)",
+  "gui.tntsallin1client.menu.fullbright": "Fullbright",
+  "gui.tntsallin1client.menu.light_level_hud": "Lichtlevel-Anzeige",
   "gui.tntsallin1client.menu.connected_textures": "Verbundene Texturen (3D-Glas etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",

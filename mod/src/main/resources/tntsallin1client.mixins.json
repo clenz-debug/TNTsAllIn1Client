@@ -4,7 +4,8 @@
 	"package": "com.tntsallin1client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"GuiMixin"
+		"GuiMixin",
+		"OptionInstanceAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

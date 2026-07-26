@@ -58,6 +58,11 @@ public class ClientConfig {
 	public boolean customCrosshairEnabled = true;
 	public int customCrosshairColor = 0xFFFFFFFF;
 
+	// 5j: fullbright (forced gamma override) and the always-visible light-level line.
+	public boolean fullbrightEnabled = false;
+	public boolean lightLevelHudEnabled = true;
+	public HudLayout lightLevelHudLayout = new HudLayout();
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

@@ -53,7 +53,7 @@
 
 ### Ingame Features:
 - Gutes Ingame Menü um die featurs / mods auzuwählen (auch über taste(-nkombie) zu öffnen welche mann selbst einstellen kann) [check] (5e)
-    - Fullbright und lightlevel oveerlay [→ Phase 5j]
+    - Fullbright und lightlevel oveerlay [check] (5j — gebaut, noch nicht live getestet; nur die Zahl an der eigenen Position, kein voller In-World-Tile-Overlay)
     - Custom Crosshair (auch mit Farbauswahl) [check] (5i — gebaut, noch nicht live getestet)
     - Anpassung der Hitbox Farbe [→ Phase 5l]
     - Itemphysics [→ Phase 5o]
