@@ -3,13 +3,22 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Phase 5e: ingame mod menu, top level. Just the on/off switch per feature.
@@ -20,14 +29,21 @@ import org.jspecify.annotations.Nullable;
  * ever-growing list as more features gain settings. Reachable via the pause
  * menu button ({@link PauseMenuIntegration}) or its own keybind
  * ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
+ *
+ * <p>The row list scrolls (a {@link ContainerObjectSelectionList}, the same
+ * base class vanilla's own Controls screen uses for its key bindings) -
+ * with 5a-5o's worth of features this no longer fits on screen at every GUI
+ * scale, so it needed real scrolling rather than the fixed absolute Y
+ * positions this screen used up through 5o.
  */
 public class ClientMenuScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
-	private static final int ROW_SPACING = 24;
+	private static final int ITEM_HEIGHT = 24;
 	private static final int OPTIONS_BUTTON_WIDTH = 56;
 	private static final int TOGGLE_GAP = 4;
-	private static final int TOGGLE_WIDTH = ROW_WIDTH - OPTIONS_BUTTON_WIDTH - TOGGLE_GAP;
+	private static final int LIST_TOP = 32;
+	private static final int FOOTER_HEIGHT = 30;
 
 	private final @Nullable Screen parent;
 
@@ -39,170 +55,122 @@ public class ClientMenuScreen extends Screen {
 	@Override
 	protected void init() {
 		ClientConfig config = ClientConfig.get();
-		int x = (this.width - ROW_WIDTH) / 2;
-		int y = 40;
+		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT;
+		FeatureList list = new FeatureList(this.minecraft, this.width, listHeight, LIST_TOP);
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.coordinatesHudEnabled)
-				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
-						(button, value) -> {
-							config.coordinatesHudEnabled = value;
-							config.save();
-						}));
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new CoordinatesHudOptionsScreen(this)))
-				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
+		list.addToggleRow(config.coordinatesHudEnabled, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
+				value -> {
+					config.coordinatesHudEnabled = value;
+					config.save();
+				},
+				() -> new CoordinatesHudOptionsScreen(this));
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterEnabled)
-				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.material_counter"),
-						(button, value) -> {
-							config.materialCounterEnabled = value;
-							config.save();
-						}));
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new MaterialCounterOptionsScreen(this)))
-				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
+		list.addToggleRow(config.materialCounterEnabled, Component.translatable("gui.tntsallin1client.menu.material_counter"),
+				value -> {
+					config.materialCounterEnabled = value;
+					config.save();
+				},
+				() -> new MaterialCounterOptionsScreen(this));
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.quickSortEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
-						(button, value) -> {
-							config.quickSortEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.quickSortEnabled, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
+				value -> {
+					config.quickSortEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.f3QuickInfoEnabled)
-				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
-						(button, value) -> {
-							config.f3QuickInfoEnabled = value;
-							config.save();
-							QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
-						}));
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new F3OptionsScreen(this)))
-				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
+		list.addToggleRow(config.f3QuickInfoEnabled, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
+				value -> {
+					config.f3QuickInfoEnabled = value;
+					config.save();
+					QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
+				},
+				() -> new F3OptionsScreen(this));
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.clientNameLabelEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
-						(button, value) -> {
-							config.clientNameLabelEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
+				value -> {
+					config.clientNameLabelEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.fpsCounterEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
-						(button, value) -> {
-							config.fpsCounterEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
+				value -> {
+					config.fpsCounterEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.zoomEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.zoom"),
-						(button, value) -> {
-							config.zoomEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.zoomEnabled, Component.translatable("gui.tntsallin1client.menu.zoom"),
+				value -> {
+					config.zoomEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.customCrosshairEnabled)
-				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.crosshair"),
-						(button, value) -> {
-							config.customCrosshairEnabled = value;
-							config.save();
-						}));
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new CrosshairOptionsScreen(this)))
-				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
+		list.addToggleRow(config.customCrosshairEnabled, Component.translatable("gui.tntsallin1client.menu.crosshair"),
+				value -> {
+					config.customCrosshairEnabled = value;
+					config.save();
+				},
+				() -> new CrosshairOptionsScreen(this));
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.fullbrightEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.fullbright"),
-						(button, value) -> {
-							config.fullbrightEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.fullbrightEnabled, Component.translatable("gui.tntsallin1client.menu.fullbright"),
+				value -> {
+					config.fullbrightEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.lightLevelHudEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.light_level_hud"),
-						(button, value) -> {
-							config.lightLevelHudEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.lightLevelHudEnabled, Component.translatable("gui.tntsallin1client.menu.light_level_hud"),
+				value -> {
+					config.lightLevelHudEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.shulkerPreviewEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
-						(button, value) -> {
-							config.shulkerPreviewEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
+				value -> {
+					config.shulkerPreviewEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.customHitboxColorEnabled)
-				.create(x, y, TOGGLE_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
-						(button, value) -> {
-							config.customHitboxColorEnabled = value;
-							config.save();
-						}));
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
-						button -> this.minecraft.setScreen(new HitboxColorOptionsScreen(this)))
-				.bounds(x + TOGGLE_WIDTH + TOGGLE_GAP, y, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING;
+		list.addToggleRow(config.customHitboxColorEnabled, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
+				value -> {
+					config.customHitboxColorEnabled = value;
+					config.save();
+				},
+				() -> new HitboxColorOptionsScreen(this));
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.keystrokesEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
-						(button, value) -> {
-							config.keystrokesEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
+				value -> {
+					config.keystrokesEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.screenshotToastEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
-						(button, value) -> {
-							config.screenshotToastEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
+				value -> {
+					config.screenshotToastEnabled = value;
+					config.save();
+				});
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.itemTiltEnabled)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.item_tilt"),
-						(button, value) -> {
-							config.itemTiltEnabled = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(config.itemTiltEnabled, Component.translatable("gui.tntsallin1client.menu.item_tilt"),
+				value -> {
+					config.itemTiltEnabled = value;
+					config.save();
+				});
 
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
-		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),
-						(button, value) -> {
-							if (value) {
-								connectedTextures.enable();
-							} else {
-								connectedTextures.disable();
-							}
-						}));
-		y += ROW_SPACING;
+		list.addToggleRow(connectedTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
+				value -> {
+					if (value) {
+						connectedTextures.enable();
+					} else {
+						connectedTextures.disable();
+					}
+				});
 
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
-						button -> this.minecraft.setScreen(new HudEditorScreen(this)))
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
-		y += ROW_SPACING + 6;
+		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
+				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
+
+		this.addRenderableWidget(list);
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.bounds((this.width - ROW_WIDTH) / 2, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH, ROW_HEIGHT)
 				.build());
 	}
 
@@ -215,5 +183,71 @@ public class ClientMenuScreen extends Screen {
 	@Override
 	public void onClose() {
 		this.minecraft.setScreen(this.parent);
+	}
+
+	/** Scrollable row list - {@link ContainerObjectSelectionList}, same base class as vanilla's Controls screen. */
+	private static class FeatureList extends ContainerObjectSelectionList<FeatureList.Row> {
+		FeatureList(Minecraft minecraft, int width, int height, int y) {
+			super(minecraft, width, height, y, ITEM_HEIGHT);
+		}
+
+		@Override
+		public int getRowWidth() {
+			return ROW_WIDTH;
+		}
+
+		void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle) {
+			addToggleRow(initial, label, onToggle, null);
+		}
+
+		void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle,
+				@Nullable Supplier<Screen> optionsScreenFactory) {
+			boolean hasOptions = optionsScreenFactory != null;
+			int toggleWidth = hasOptions ? ROW_WIDTH - OPTIONS_BUTTON_WIDTH - TOGGLE_GAP : ROW_WIDTH;
+			CycleButton<Boolean> toggle = CycleButton.onOffBuilder(initial)
+					.create(0, 0, toggleWidth, ROW_HEIGHT, label, (button, value) -> onToggle.accept(value));
+			Button options = hasOptions
+					? Button.builder(Component.translatable("gui.tntsallin1client.menu.options_button"),
+									button -> Minecraft.getInstance().setScreen(optionsScreenFactory.get()))
+							.bounds(0, 0, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
+							.build()
+					: null;
+			this.addEntry(new Row(toggle, options));
+		}
+
+		void addButtonRow(Component label, Runnable onPress) {
+			Button button = Button.builder(label, b -> onPress.run()).bounds(0, 0, ROW_WIDTH, ROW_HEIGHT).build();
+			this.addEntry(new Row(button, null));
+		}
+
+		static final class Row extends ContainerObjectSelectionList.Entry<Row> {
+			private final AbstractWidget primary;
+			private final @Nullable AbstractWidget secondary;
+
+			Row(AbstractWidget primary, @Nullable AbstractWidget secondary) {
+				this.primary = primary;
+				this.secondary = secondary;
+			}
+
+			@Override
+			public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
+				this.primary.setPosition(this.getContentX(), this.getContentY());
+				this.primary.render(guiGraphics, mouseX, mouseY, partialTick);
+				if (this.secondary != null) {
+					this.secondary.setPosition(this.getContentX() + this.primary.getWidth() + TOGGLE_GAP, this.getContentY());
+					this.secondary.render(guiGraphics, mouseX, mouseY, partialTick);
+				}
+			}
+
+			@Override
+			public List<? extends GuiEventListener> children() {
+				return this.secondary == null ? List.of(this.primary) : List.of(this.primary, this.secondary);
+			}
+
+			@Override
+			public List<? extends NarratableEntry> narratables() {
+				return this.secondary == null ? List.of(this.primary) : List.of(this.primary, this.secondary);
+			}
+		}
 	}
 }
