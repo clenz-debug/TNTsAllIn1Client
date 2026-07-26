@@ -2,8 +2,11 @@ package com.tntsallin1client.shulker;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
@@ -30,8 +33,23 @@ import org.jspecify.annotations.Nullable;
  * runs, which is called from {@code Screen#renderWithTooltipAndSubtitles} -
  * outside {@code AbstractContainerScreen#render} entirely, and generic
  * across every screen (not container-specific), hence the split.
+ *
+ * <p><b>Bugfix ("keybind works, display doesn't"):</b> the key gating used
+ * to be a plain {@code ModKeyBindings.SHULKER_PREVIEW.isDown()} check. That
+ * never becomes true while hovering a slot, because hovering only happens
+ * with a container screen open, and vanilla's generic key-state tracking
+ * ({@code KeyMapping.set}/{@code .click}, the pair {@code isDown()} and
+ * {@code consumeClick()} read from) is itself gated in
+ * {@code KeyboardHandler#keyPress} on {@code this.minecraft.screen == null}
+ * (or the key being the F3 debug modifier specifically) - the exact same
+ * "doesn't fire with a screen open" issue already noted for 5c's inventory
+ * sort key, just not previously checked against this feature. Fixed the
+ * same way 5c already does it: track press/release via
+ * {@link ScreenKeyboardEvents}, which is built for exactly this case,
+ * instead of the generic KeyMapping state.
  */
 public final class ShulkerPreviewRenderer {
+	private static boolean keyHeldInScreen = false;
 	private static final int SLOT_SIZE = 18;
 	private static final int COLUMNS = 9;
 	private static final int ROWS = 3;
@@ -46,6 +64,34 @@ public final class ShulkerPreviewRenderer {
 	private static int pendingMouseY;
 
 	private ShulkerPreviewRenderer() {
+	}
+
+	/**
+	 * Tracks the preview key's held state per open container screen (chest,
+	 * shulker box, player/creative inventory, ...). Resets to not-held on
+	 * every newly opened screen rather than relying on a release event always
+	 * firing first - {@code ScreenKeyboardEvents} subscriptions are dropped
+	 * when a screen closes, so a key still held at that point would otherwise
+	 * leave a stale "held" flag for whatever screen opens next.
+	 */
+	public static void registerScreenTracking() {
+		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+			if (!(screen instanceof AbstractContainerScreen<?>)) {
+				return;
+			}
+
+			keyHeldInScreen = false;
+			ScreenKeyboardEvents.afterKeyPress(screen).register((scr, keyEvent) -> {
+				if (ModKeyBindings.SHULKER_PREVIEW.matches(keyEvent)) {
+					keyHeldInScreen = true;
+				}
+			});
+			ScreenKeyboardEvents.afterKeyRelease(screen).register((scr, keyEvent) -> {
+				if (ModKeyBindings.SHULKER_PREVIEW.matches(keyEvent)) {
+					keyHeldInScreen = false;
+				}
+			});
+		});
 	}
 
 	/** Called from {@link com.tntsallin1client.mixin.AbstractContainerScreenMixin} once per frame. */
@@ -101,7 +147,7 @@ public final class ShulkerPreviewRenderer {
 
 	private static boolean isPreviewable(ItemStack stack) {
 		return ClientConfig.get().shulkerPreviewEnabled
-				&& ModKeyBindings.SHULKER_PREVIEW.isDown()
+				&& keyHeldInScreen
 				&& stack.getItem() instanceof BlockItem blockItem
 				&& blockItem.getBlock() instanceof ShulkerBoxBlock
 				&& stack.get(DataComponents.CONTAINER) != null;
