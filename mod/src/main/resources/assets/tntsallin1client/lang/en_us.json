@@ -42,6 +42,8 @@
   "gui.tntsallin1client.screenshot_toast.open": "Open",
   "gui.tntsallin1client.screenshot_toast.copy": "Copy",
   "gui.tntsallin1client.menu.item_tilt": "Item Physics (Tilt Effect)",
+  "gui.tntsallin1client.shulker_options.title": "Shulker Box Preview Options",
+  "gui.tntsallin1client.shulker_options.key": "Preview Key: %s",
   "gui.tntsallin1client.zoom_options.title": "Zoom Options",
   "gui.tntsallin1client.zoom_options.key": "Zoom Key: %s",
   "gui.tntsallin1client.zoom_options.scroll_hint": "While zooming: scroll wheel = zoom in/out further",

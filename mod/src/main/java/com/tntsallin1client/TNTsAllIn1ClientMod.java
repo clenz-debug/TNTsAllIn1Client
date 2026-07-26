@@ -26,7 +26,6 @@ import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
-import com.tntsallin1client.tooltip.ShulkerContentsTooltip;
 import com.tntsallin1client.zoom.ZoomHandler;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
@@ -88,8 +87,5 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5h: hold-to-zoom.
 		ClientTickEvents.END_CLIENT_TICK.register(ZoomHandler::tick);
-
-		// Phase 5k: hold-to-preview shulker box contents.
-		ShulkerContentsTooltip.register();
 	}
 }

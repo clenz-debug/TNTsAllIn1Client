@@ -128,7 +128,8 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.shulkerPreviewEnabled = value;
 					config.save();
-				});
+				},
+				() -> new ShulkerPreviewOptionsScreen(this));
 
 		list.addToggleRow(config.customHitboxColorEnabled, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
 				value -> {

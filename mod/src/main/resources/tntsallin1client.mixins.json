@@ -4,12 +4,14 @@
 	"package": "com.tntsallin1client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"AbstractContainerScreenMixin",
 		"ChatScreenMixin",
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
 		"ItemEntityRendererMixin",
 		"MouseHandlerMixin",
-		"OptionInstanceAccessor"
+		"OptionInstanceAccessor",
+		"ScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
