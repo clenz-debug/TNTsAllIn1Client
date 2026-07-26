@@ -167,6 +167,14 @@ public class ClientMenuScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.screenshotToastEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
+						(button, value) -> {
+							config.screenshotToastEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),

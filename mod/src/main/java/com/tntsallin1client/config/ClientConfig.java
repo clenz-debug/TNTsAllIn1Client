@@ -75,6 +75,9 @@ public class ClientConfig {
 	public boolean keystrokesEnabled = true;
 	public HudLayout keystrokesHudLayout = new HudLayout();
 
+	// 5n: Open/Copy popup after taking a screenshot.
+	public boolean screenshotToastEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

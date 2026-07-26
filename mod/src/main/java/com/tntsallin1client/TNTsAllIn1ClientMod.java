@@ -25,6 +25,7 @@ import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
+import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.tooltip.ShulkerContentsTooltip;
 import com.tntsallin1client.zoom.ZoomHandler;
 
@@ -59,6 +60,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5m: keystrokes overlay.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "keystrokes_hud"), new KeystrokesHud());
+
+		// Phase 5n: screenshot Open/Copy toast.
+		ClientTickEvents.END_CLIENT_TICK.register(ScreenshotWatcher::tick);
 
 		// Phase 5c: inventory quick-sort (button + keybind).
 		ModKeyBindings.register();
