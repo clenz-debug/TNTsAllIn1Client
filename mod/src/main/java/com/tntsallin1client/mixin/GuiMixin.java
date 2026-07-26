@@ -2,6 +2,7 @@ package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.crosshair.CustomCrosshair;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -39,5 +40,17 @@ public class GuiMixin {
 			return;
 		}
 		guiGraphics.drawString(client.font, "TNT's All-In-1 Client (Mixin active)", 4, 4, 0xFFFFFFFF);
+	}
+
+	/**
+	 * Phase 5i: cancel vanilla's own crosshair sprite when the custom one is
+	 * enabled, so the two don't draw on top of each other.
+	 */
+	@Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
+	private void tntsallin1client$onRenderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+		if (ClientConfig.get().customCrosshairEnabled) {
+			CustomCrosshair.render(guiGraphics);
+			ci.cancel();
+		}
 	}
 }

@@ -53,6 +53,11 @@ public class ClientConfig {
 	// 5h: hold-to-zoom.
 	public boolean zoomEnabled = true;
 
+	// 5i: custom crosshair color. Defaults to white so turning this on doesn't
+	// visibly change anything until the user actually picks a color.
+	public boolean customCrosshairEnabled = true;
+	public int customCrosshairColor = 0xFFFFFFFF;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

@@ -54,7 +54,7 @@
 ### Ingame Features:
 - Gutes Ingame Menü um die featurs / mods auzuwählen (auch über taste(-nkombie) zu öffnen welche mann selbst einstellen kann) [check] (5e)
     - Fullbright und lightlevel oveerlay [→ Phase 5j]
-    - Custom Crosshair (auch mit Farbauswahl) [→ Phase 5i]
+    - Custom Crosshair (auch mit Farbauswahl) [check] (5i — gebaut, noch nicht live getestet)
     - Anpassung der Hitbox Farbe [→ Phase 5l]
     - Itemphysics [→ Phase 5o]
     - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [→ Phase 5n]
