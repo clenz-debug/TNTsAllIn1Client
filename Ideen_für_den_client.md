@@ -62,4 +62,4 @@
     - proximity voice mod oder was ähnliches wäre cool nicht jeder nutzt Discord zum labern das macht es einfacher [später — zu groß für Phase 5, eigene Phase/Bündelung wie 5f prüfen]
     - zoom [check] (5h — gebaut, noch nicht live getestet)
     - fps anzeige [check] (5g — gebaut, noch nicht live getestet)
-    - Shulkerbox inhalts anzeige (wenn bestimmter key gedrükt wird) [→ Phase 5k]
+    - Shulkerbox inhalts anzeige (wenn bestimmter key gedrükt wird) [check] (5k — gebaut, noch nicht live getestet; Vanilla zeigt seit 1.21.11 selbst schon die ersten 5 Items im Tooltip, unser Zusatz zeigt den Rest beim Tastehalten)

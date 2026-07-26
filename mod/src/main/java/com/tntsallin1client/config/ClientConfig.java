@@ -63,6 +63,9 @@ public class ClientConfig {
 	public boolean lightLevelHudEnabled = true;
 	public HudLayout lightLevelHudLayout = new HudLayout();
 
+	// 5k: hold-to-preview shulker box contents beyond vanilla's own 5-item cap.
+	public boolean shulkerPreviewEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

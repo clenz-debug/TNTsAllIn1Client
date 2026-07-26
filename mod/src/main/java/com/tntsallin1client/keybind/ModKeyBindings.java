@@ -53,6 +53,15 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// 5k: hold while hovering a shulker box to see its remaining contents beyond
+	// the 5 items vanilla's own tooltip already lists.
+	public static final KeyMapping SHULKER_PREVIEW = new KeyMapping(
+			"key.tntsallin1client.shulker_preview",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -61,5 +70,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(OPEN_MENU);
 		KeyBindingHelper.registerKeyBinding(SYSTEM_INFO);
 		KeyBindingHelper.registerKeyBinding(ZOOM);
+		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
 	}
 }
