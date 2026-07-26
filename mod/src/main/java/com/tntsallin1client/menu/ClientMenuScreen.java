@@ -102,7 +102,8 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.zoomEnabled = value;
 					config.save();
-				});
+				},
+				() -> new ZoomOptionsScreen(this));
 
 		list.addToggleRow(config.customCrosshairEnabled, Component.translatable("gui.tntsallin1client.menu.crosshair"),
 				value -> {
