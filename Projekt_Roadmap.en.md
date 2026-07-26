@@ -64,6 +64,19 @@ As independent, individually toggleable milestones:
 - **5d. F3/Shift+F3 improvements** — moderate–hard, mixes directly into the vanilla debug HUD class, which changes unusually often between versions — plan for maintenance effort on version bumps.
 - **5e. Custom in-game menu** — moderate, own `Screen` subclass, no mixin needed (unless hooking into the vanilla pause menu itself).
 - **5f. 3D/connected textures (glass, etc.)** — the hardest, deliberately saved as a stretch goal for last: reaches deep into the block rendering pipeline; research existing CTM implementations as a reference/dependency instead of reinventing it from scratch.
+
+Second pass, added from `Ideen_für_den_client.md` (personal ideas not yet considered in the first pass), again easy → hard:
+- **5g. FPS counter (HUD)** — trivial, own `HudElement` analogous to 5a, no mixins.
+- **5h. Zoom (held key reduces FOV)** — trivial, pure keybind/FOV logic via the Fabric API, no mixin needed.
+- **5i. Custom crosshair with color picker** — easy, HUD rendering + its own options screen like the existing features.
+- **5j. Fullbright + light-level overlay** — easy–moderate, builds on the light-level logic already present in 5d, this time as a persistent overlay instead of an F3 line.
+- **5k. Shulker box content preview on keypress** — moderate, read item components/NBT and render as a custom overlay, purely local, no network risk.
+- **5l. Adjustable hitbox color** — moderate, needs a mixin into the vanilla hitbox debug renderer, comparable in scope to 5d.
+- **5m. Keystrokes display** (more than the classic WASD/mouse/shift/space) — moderate, HUD + key input polling.
+- **5n. Screenshot toast with "Open"/"Copy" buttons** — moderate, first check whether Fabric offers a hook for "screenshot saved" or whether a mixin into `Screenshot`/`ScreenshotRecorder` is needed.
+- **5o. Item physics** — moderate–hard, following the 5f pattern: bundle an existing mod (e.g. "Item Physic") as a dependency instead of rebuilding it from scratch.
+- **5p. Real 3D block models** — no mod code needed (pure vanilla resource pack functionality; Sodium natively renders custom block models with extra geometry); instead research a fitting resource pack and bundle it as its own, unmodified file (not embedded in the mod jar — kept deliberately separate, see license note below).
+
 *Done when:* every feature runs stably, is individually configurable, and works both in the dev client and in an instance started via the launcher.
 
 **Phase 6 — Launcher UX: version selection & mod management**
@@ -87,6 +100,7 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` against, e
 
 - **Sodium**: PolyForm Shield License 1.0.0 — bundling it in a full-featured client is explicitly allowed (without credit/permission), except if you build a directly competing rendering-mod product. Read the license text yourself before public release.
 - **Lithium**: LGPL-3.0-only — unmodified bundling is unproblematic (include notices), your own mod doesn't need to be open-sourced; only your own changes to Lithium itself would have to stay LGPL.
+- **3D Default (resource pack, Phase 5p)**: GPL-3.0-only — unlike Sodium (PolyForm Shield) and Lithium/Continuity (both LGPL), this is the first **full** copyleft GPL rather than LGPL. Deliberately **not** embedded in the mod jar (no `registerBuiltinResourcePack`), but shipped as an unmodified, separate file alongside the mod (`launcher/resourcepacks-bundle/`) to stay within "mere aggregation" (GPLv3 §5) rather than risk a derivative/combined work with the differently-licensed mod code. Double-check explicitly before public release, ideally with someone GPL-savvy — higher risk than the previous bundles.
 - Check every additional bundled mod individually — "open source" doesn't automatically mean "freely bundleable" (MIT/CC0/GPL/LGPL/All-Rights-Reserved are all present in the ecosystem).
 - Plan for a "Third-Party Licenses/Credits" screen in both the mod and the launcher.
 - **Mojang Usage Guidelines** (minecraft.net/en-us/usage-guidelines): don't redistribute Mojang's own game files (every user downloads them via their own entitlement — just like with the vanilla launcher), don't imply official Mojang/Microsoft endorsement, watch for "no unfair gameplay advantage" if monetizing — guidelines change, re-read them yourself at the relevant point in time.

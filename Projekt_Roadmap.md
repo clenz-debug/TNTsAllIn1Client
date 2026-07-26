@@ -64,6 +64,19 @@ Als unabhängige, einzeln umschaltbare Meilensteine:
 - **5d. F3/Shift+F3-Verbesserungen** — moderat–schwer, mixt direkt in die Vanilla-Debug-HUD-Klasse, die sich zwischen Versionen überdurchschnittlich oft ändert — Wartungsaufwand bei Versionswechseln einplanen.
 - **5e. Eigenes Ingame-Menü** — moderat, eigene `Screen`-Subklasse, kein Mixin nötig (außer bei Eingriff ins Vanilla-Pause-Menü selbst).
 - **5f. 3D-/verbundene Texturen (Glas etc.)** — am schwersten, bewusst als Stretch-Goal zuletzt: greift tief in die Block-Rendering-Pipeline ein; existierende CTM-Implementierungen als Vorbild/Abhängigkeit recherchieren statt komplett neu erfinden.
+
+Zweiter Durchgang, ergänzt aus `Ideen_für_den_client.md` (persönliche Ideen, die beim ersten Durchgang noch nicht berücksichtigt waren), wieder leicht → schwer:
+- **5g. FPS-Anzeige (HUD)** — trivial, eigenes `HudElement` analog zu 5a, keine Mixins.
+- **5h. Zoom (gehaltene Taste reduziert FOV)** — trivial, reine Keybind-/FOV-Logik über die Fabric-API, kein Mixin nötig.
+- **5i. Custom Crosshair mit Farbauswahl** — leicht, HUD-Rendering + eigener Options-Screen wie bei den bestehenden Features.
+- **5j. Fullbright + Lightlevel-Overlay** — leicht–moderat, baut auf der in 5d schon vorhandenen Lichtlevel-Logik auf, diesmal als dauerhaftes Overlay statt F3-Zeile.
+- **5k. Shulkerbox-Inhaltsanzeige per Taste** — moderat, Item-Components/NBT lesen und als eigenes Overlay rendern, rein lokal, kein Netzwerk-Risiko.
+- **5l. Anpassbare Hitbox-Farbe** — moderat, Mixin in den Vanilla-Hitbox-Debug-Renderer nötig, vom Umfang vergleichbar mit 5d.
+- **5m. Keystrokes-Anzeige** (mehr als WASD/Maus/Shift/Space) — moderat, HUD + Key-Input-Polling.
+- **5n. Screenshot-Toast mit "Open"/"Copy"-Buttons** — moderat, zuerst prüfen ob Fabric einen Hook für "Screenshot gespeichert" bietet oder ob ein Mixin in `Screenshot`/`ScreenshotRecorder` nötig ist.
+- **5o. Itemphysics** — moderat–schwer, nach 5f-Muster einen bestehenden Mod (z.B. "Item Physic") als Abhängigkeit bündeln statt selbst nachzubauen.
+- **5p. Echte 3D-Blockmodelle** — kein Mod-Code nötig (reine Vanilla-Resourcepack-Funktionalität, Sodium rendert Custom-Block-Modelle mit zusätzlicher Geometrie nativ); stattdessen ein passendes Resourcepack recherchieren und als eigene, unveränderte Datei bündeln (nicht in den Mod-Jar einbetten — bewusst getrennt gehalten, siehe Lizenz-Hinweis unten).
+
 *Fertig, wenn:* jedes Feature stabil läuft, einzeln konfigurierbar ist und sowohl im Dev-Client als auch in einer über den Launcher gestarteten Instanz funktioniert.
 
 **Phase 6 — Launcher-UX: Versionsauswahl & Mod-Verwaltung**
@@ -87,6 +100,7 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` gegen z.B.
 
 - **Sodium**: PolyForm Shield License 1.0.0 — Bündeln in einem vollwertigen Client ist ausdrücklich erlaubt (ohne Credit/Erlaubnis), außer man baut ein direkt konkurrierendes Rendering-Mod-Produkt. Vor Public Release selbst den Lizenztext lesen.
 - **Lithium**: LGPL-3.0-only — unmodifiziertes Bündeln unproblematisch (Notices mitliefern), eigener Mod muss nicht offengelegt werden; nur eigene Änderungen an Lithium selbst müssten LGPL bleiben.
+- **3D Default (Resourcepack, Phase 5p)**: GPL-3.0-only — anders als Sodium (PolyForm Shield) und Lithium/Continuity (beide LGPL) das erste **volle** Copyleft-GPL statt LGPL. Bewusst **nicht** in den Mod-Jar eingebettet (kein `registerBuiltinResourcePack`), sondern als unveränderte, separate Datei neben dem Mod ausgeliefert (`launcher/resourcepacks-bundle/`), um im Bereich "mere aggregation" (GPLv3 §5) zu bleiben statt eine Ableitung/Kombination mit dem eigenen (anders lizenzierten) Mod-Code zu riskieren. Vor öffentlichem Release nochmal explizit gegenprüfen, idealerweise mit jemandem, der sich mit GPL auskennt — höheres Risiko als die bisherigen Bundles.
 - Jedes weitere gebündelte Mod einzeln prüfen — "Open Source" heißt nicht automatisch "frei bündelbar" (MIT/CC0/GPL/LGPL/All-Rights-Reserved sind alle im Ökosystem vertreten).
 - Ein "Third-Party Licenses/Credits"-Screen in Mod und Launcher einplanen.
 - **Mojang Usage Guidelines** (minecraft.net/en-us/usage-guidelines): keine Mojang-eigenen Spieldateien redistributieren (jeder Nutzer lädt über sein eigenes Entitlement selbst — wie beim Vanilla-Launcher), keine Andeutung offizieller Mojang/Microsoft-Unterstützung, bei Monetarisierung auf "kein unfairer Gameplay-Vorteil" achten — Guidelines ändern sich, zum gegebenen Zeitpunkt erneut selbst lesen.

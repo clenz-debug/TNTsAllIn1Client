@@ -28,6 +28,9 @@ launcher/release/
 # --- Staged mod jars for manual mods/-folder copy (Phase 4), not source ---
 launcher/mods-bundle/
 
+# --- Staged resource packs for manual resourcepacks/-folder copy (Phase 5p), not source ---
+launcher/resourcepacks-bundle/
+
 # --- Env / Secrets ---
 .env
 .env.*
