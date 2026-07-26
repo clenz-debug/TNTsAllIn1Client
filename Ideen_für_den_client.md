@@ -56,7 +56,7 @@
     - Fullbright und lightlevel oveerlay [check] (5j — gebaut, noch nicht live getestet; nur die Zahl an der eigenen Position, kein voller In-World-Tile-Overlay)
     - Custom Crosshair (auch mit Farbauswahl) [check] (5i — gebaut, noch nicht live getestet)
     - Anpassung der Hitbox Farbe [check] (5l — gebaut, noch nicht live getestet)
-    - Itemphysics [→ Phase 5o]
+    - Itemphysics [check] (5o — gebaut, noch nicht live getestet; bewusst kein gebündelter Fremd-Mod, siehe Aktuelle_Phase.md: das übliche "ItemPhysic"-Mod braucht auch Server-Seite, hätte auf normalen Servern nichts bewirkt — stattdessen eigener rein kosmetischer Neige-Effekt)
     - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [check] (5n — gebaut, noch nicht live getestet; "open" gab es bei Vanilla schon als Chat-Link, "copy" ins Bild-Clipboard war der fehlende Teil)
     - Keystrokes (vll auch mehr als das klassische wasd lmb rmb shift, space) [check] (5m — gebaut, noch nicht live getestet; plus Sprint- und Q-Box)
     - proximity voice mod oder was ähnliches wäre cool nicht jeder nutzt Discord zum labern das macht es einfacher [später — zu groß für Phase 5, eigene Phase/Bündelung wie 5f prüfen]

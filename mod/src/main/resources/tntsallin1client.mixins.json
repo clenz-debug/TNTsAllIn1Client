@@ -6,6 +6,7 @@
 	"client": [
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
+		"ItemEntityRendererMixin",
 		"OptionInstanceAccessor"
 	],
 	"injectors": {

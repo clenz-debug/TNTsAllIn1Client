@@ -42,6 +42,7 @@
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot gespeichert: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Öffnen",
   "gui.tntsallin1client.screenshot_toast.copy": "Kopieren",
+  "gui.tntsallin1client.menu.item_tilt": "Itemphysics (Neige-Effekt)",
   "gui.tntsallin1client.menu.connected_textures": "Verbundene Texturen (3D-Glas etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",

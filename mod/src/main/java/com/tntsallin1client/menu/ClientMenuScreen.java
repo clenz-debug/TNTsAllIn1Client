@@ -175,6 +175,14 @@ public class ClientMenuScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.itemTiltEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.item_tilt"),
+						(button, value) -> {
+							config.itemTiltEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		this.addRenderableWidget(CycleButton.onOffBuilder(connectedTextures.isEnabled())
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.menu.connected_textures"),

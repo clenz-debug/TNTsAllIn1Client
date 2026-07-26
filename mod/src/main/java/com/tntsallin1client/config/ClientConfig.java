@@ -78,6 +78,9 @@ public class ClientConfig {
 	// 5n: Open/Copy popup after taking a screenshot.
 	public boolean screenshotToastEnabled = true;
 
+	// 5o: cosmetic dropped-item lean/tilt ("item physics" light).
+	public boolean itemTiltEnabled = true;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

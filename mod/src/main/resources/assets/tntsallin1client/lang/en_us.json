@@ -42,6 +42,7 @@
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot saved: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Open",
   "gui.tntsallin1client.screenshot_toast.copy": "Copy",
+  "gui.tntsallin1client.menu.item_tilt": "Item Physics (Tilt Effect)",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures (3D Glass etc.)",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",
