@@ -8,6 +8,7 @@
 		"ChatScreenMixin",
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
+		"ItemEntityRenderStateMixin",
 		"ItemEntityRendererMixin",
 		"MouseHandlerMixin",
 		"OptionInstanceAccessor",

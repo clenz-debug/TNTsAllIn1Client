@@ -41,7 +41,7 @@
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot erstellt: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Öffnen",
   "gui.tntsallin1client.screenshot_toast.copy": "Kopieren",
-  "gui.tntsallin1client.menu.item_tilt": "Itemphysics (Neige-Effekt)",
+  "gui.tntsallin1client.menu.item_tilt": "Itemphysics (liegt flach, dreht sich nicht)",
   "gui.tntsallin1client.shulker_options.title": "Shulkerbox-Vorschau - Optionen",
   "gui.tntsallin1client.shulker_options.key": "Vorschau-Taste: %s",
   "gui.tntsallin1client.zoom_options.title": "Zoom - Optionen",
