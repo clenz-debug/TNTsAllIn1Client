@@ -3,8 +3,11 @@ package com.tntsallin1client.mixin;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,10 +51,38 @@ import org.jspecify.annotations.Nullable;
  * existing bevel/shading detail of the vanilla texture stays intact, just
  * dimmed - rather than needing to intercept/retexture the individual blit
  * calls each subclass makes for its own background image.
+ *
+ * <p>Bugfix round after the first live test: (1) the overlay alpha ({@code
+ * 0xB0}, ~31% brightness left) crushed icon-style details drawn as part of
+ * some subclasses' own {@code renderBg} (the disabled-hammer icon in
+ * {@code AnvilScreen}, the book icon in {@code SmithingScreen}/
+ * {@code EnchantmentScreen}) to the point of being unrecognizable - lowered to
+ * {@code 0x70} (~56% brightness left), still clearly darker than vanilla but
+ * more forgiving of anything with its own dark/light detail. (2) the title
+ * text ("Furnace", "Crafting Table", ...) drawn by {@code renderLabels} kept
+ * vanilla's own fixed dark-gray color ({@code -12566464} / {@code 0xFF404040}),
+ * which vanilla only ever needed to contrast against the *light* panel -
+ * once the panel itself got darker, that same dark-gray text lost most of its
+ * contrast. Fake-extends {@link Screen} (same trick as
+ * {@code ItemEntityRendererMixin}) purely to get {@code font}/{@code title}
+ * (declared there, inherited by {@code AbstractContainerScreen}) as ordinary
+ * compile-time-inherited fields, on top of {@code @Shadow} for the extra
+ * fields {@code renderLabels} itself needs that
+ * {@code AbstractContainerScreen} declares directly. Covers every screen that
+ * doesn't override {@code renderLabels} itself (the large majority - chest,
+ * furnace variants, crafting table, brewing stand, grindstone, loom,
+ * stonecutter, cartography table, hopper, shulker box, dispenser, crafter,
+ * horse/llama, ...); {@code InventoryScreen} overrides it with its own single-line
+ * version and gets the same fix via {@code InventoryScreenMixin} instead.
+ * Anvil/beacon/creative-inventory/villager-trading also override
+ * {@code renderLabels} with their own (more involved) positioning logic and
+ * aren't covered yet - not reported as unreadable so far, left for a later
+ * pass if that changes.
  */
 @Mixin(AbstractContainerScreen.class)
-public class AbstractContainerScreenMixin {
-	private static final int DARK_OVERLAY_COLOR = 0xB0000000;
+public abstract class AbstractContainerScreenMixin extends Screen {
+	private static final int DARK_OVERLAY_COLOR = 0x70000000;
+	private static final int LIGHT_LABEL_COLOR = 0xFFE0E0E0;
 
 	@Shadow
 	private @Nullable Slot hoveredSlot;
@@ -63,6 +94,21 @@ public class AbstractContainerScreenMixin {
 	protected int imageWidth;
 	@Shadow
 	protected int imageHeight;
+	@Shadow
+	protected int titleLabelX;
+	@Shadow
+	protected int titleLabelY;
+	@Shadow
+	protected int inventoryLabelX;
+	@Shadow
+	protected int inventoryLabelY;
+	@Shadow
+	@Final
+	protected Component playerInventoryTitle;
+
+	protected AbstractContainerScreenMixin(Component component) {
+		super(component);
+	}
 
 	@Inject(method = "renderContents", at = @At("TAIL"))
 	private void tntsallin1client$onRenderContentsTail(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
@@ -77,5 +123,15 @@ public class AbstractContainerScreenMixin {
 			return;
 		}
 		guiGraphics.fill(this.leftPos, this.topPos, this.leftPos + this.imageWidth, this.topPos + this.imageHeight, DARK_OVERLAY_COLOR);
+	}
+
+	@Inject(method = "renderLabels", at = @At("HEAD"), cancellable = true)
+	private void tntsallin1client$onRenderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci) {
+		if (!ClientConfig.get().darkInventoryEnabled) {
+			return;
+		}
+		guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, LIGHT_LABEL_COLOR, false);
+		guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, LIGHT_LABEL_COLOR, false);
+		ci.cancel();
 	}
 }

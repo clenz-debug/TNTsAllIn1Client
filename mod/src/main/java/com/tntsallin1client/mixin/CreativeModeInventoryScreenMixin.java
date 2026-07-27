@@ -42,7 +42,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
-	private static final int DARK_OVERLAY_COLOR = 0xB0000000;
+	// Lowered from 0xB0 (same bugfix as AbstractContainerScreenMixin): the tab
+	// buttons carry an item icon each, which a stronger overlay crushed to
+	// near-unrecognizable.
+	private static final int DARK_OVERLAY_COLOR = 0x70000000;
 	private static final int TAB_WIDTH = 26;
 	private static final int TAB_HEIGHT = 32;
 

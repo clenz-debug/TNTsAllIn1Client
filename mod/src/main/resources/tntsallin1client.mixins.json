@@ -5,11 +5,13 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"AbstractContainerScreenMixin",
+		"AbstractRecipeBookScreenMixin",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
 		"CreativeModeInventoryScreenMixin",
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
+		"InventoryScreenMixin",
 		"ItemEntityRenderStateMixin",
 		"ItemEntityRendererMixin",
 		"MouseHandlerMixin",
