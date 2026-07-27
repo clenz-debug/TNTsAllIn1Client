@@ -56,9 +56,19 @@ import org.jspecify.annotations.Nullable;
  * 0xB0}, ~31% brightness left) crushed icon-style details drawn as part of
  * some subclasses' own {@code renderBg} (the disabled-hammer icon in
  * {@code AnvilScreen}, the book icon in {@code SmithingScreen}/
- * {@code EnchantmentScreen}) to the point of being unrecognizable - lowered to
- * {@code 0x70} (~56% brightness left), still clearly darker than vanilla but
- * more forgiving of anything with its own dark/light detail. (2) the title
+ * {@code EnchantmentScreen}) to the point of being unrecognizable - briefly
+ * lowered to {@code 0x70}, but a second round of feedback (with a screenshot)
+ * asked for the opposite: keep the background exactly as dark as the
+ * original {@code 0xB0}, and instead brighten *only* the specific
+ * icons/text sitting on top of it, the same way {@code
+ * CreativeModeInventoryScreenMixin} now re-renders each tab's item icon at
+ * full brightness after darkening its background. So the panel alpha is back
+ * to {@code 0xB0} here; the anvil/smithing/enchanting icons mentioned above
+ * don't have an equivalent per-icon fix yet (each uses a different, more
+ * involved icon system - a plain sprite, a stateful {@code
+ * CyclingSlotBackground}, and book-page animation frames, respectively) and
+ * will look dark again until that's built - a known, explicitly accepted
+ * trade-off for now rather than a regression nobody noticed. (2) the title
  * text ("Furnace", "Crafting Table", ...) drawn by {@code renderLabels} kept
  * vanilla's own fixed dark-gray color ({@code -12566464} / {@code 0xFF404040}),
  * which vanilla only ever needed to contrast against the *light* panel -
@@ -81,7 +91,7 @@ import org.jspecify.annotations.Nullable;
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin extends Screen {
-	private static final int DARK_OVERLAY_COLOR = 0x70000000;
+	private static final int DARK_OVERLAY_COLOR = 0xB0000000;
 	private static final int LIGHT_LABEL_COLOR = 0xFFE0E0E0;
 
 	@Shadow

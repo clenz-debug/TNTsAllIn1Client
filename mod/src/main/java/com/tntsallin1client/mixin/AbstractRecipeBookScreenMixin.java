@@ -33,10 +33,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(AbstractRecipeBookScreen.class)
 public abstract class AbstractRecipeBookScreenMixin {
-	// Same lowered alpha as the other 5r overlays - the book icon on this
-	// button would otherwise wash out the same way the anvil/smithing/
-	// enchanting icons did.
-	private static final int DARK_OVERLAY_COLOR = 0x70000000;
+	// Matches AbstractContainerScreenMixin's panel alpha (kept at the
+	// stronger 0xB0 per the second round of feedback - see that class for
+	// why). This button uses a plain rectangular sprite (no rounded/notched
+	// corners like the creative tabs), so the flat fill here hasn't shown the
+	// same "black box" edge artifact those did.
+	private static final int DARK_OVERLAY_COLOR = 0xB0000000;
 	private static final int BUTTON_WIDTH = 20;
 	private static final int BUTTON_HEIGHT = 18;
 
