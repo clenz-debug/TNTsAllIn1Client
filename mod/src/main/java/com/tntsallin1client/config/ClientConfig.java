@@ -68,7 +68,9 @@ public class ClientConfig {
 	public CrosshairMode crosshairMode = CrosshairMode.PRESET;
 	public CrosshairPreset crosshairPreset = CrosshairPreset.SMALLER;
 	public boolean[][] crosshairCustomGrid = CrosshairGrid.empty();
-	public int crosshairPixelSize = 2;
+	// Float, not int: the size list has non-uniform steps (0.25/0.5/0.75 below
+	// 1, then whole numbers 1-6 above), see DiscreteSliderButton/CrosshairOptionsScreen.
+	public float crosshairPixelSize = 2.0F;
 	public boolean crosshairIgnoreGuiScale = false;
 	public boolean crosshairTargetColorEnabled = false;
 	public int crosshairTargetColor = 0xFFFF5555;
