@@ -69,14 +69,24 @@ import org.jspecify.annotations.Nullable;
  * background+frame a normal item tooltip draws, since 1.21.x moved that from
  * hardcoded gradient colors to a proper 9-sliced sprite) instead of a plain
  * flat-color rectangle - free native-looking rounded corners/border, no new
- * art needed. The grid itself is now a solid fill of the box's own color
- * (previously only a thin border was colored, with a fixed dark gray
+ * art needed. The grid itself is now a solid fill derived from the box's own
+ * color (previously only a thin border was colored, with a fixed dark gray
  * interior) to match the reference's solid-brown look. Grid lines are kept
  * (confirmed useful in the original 5k feedback round - an all-one-color
- * fill with items on it read as a "blob" without them) but now derived from
- * the box's own color via {@link ARGB#scaleRGB(int, float)} instead of a
- * fixed gray, so they stay visible against light *and* dark box colors alike
- * instead of only working well against the old fixed dark background.
+ * fill with items on it read as a "blob" without them) and, like the fill
+ * itself, derived from the box's own color via {@link ARGB#scaleRGB(int, float)}
+ * instead of a fixed gray, so both stay visible against light *and* dark box
+ * colors alike instead of only working well against the old fixed dark
+ * background.
+ *
+ * <p><b>Bugfix, immediately after ("middle looks too bright vs. the reference"):</b>
+ * the grid fill originally used the box's raw {@code getTextColor()} directly -
+ * a vivid, fully-saturated tone. The reference screenshot's grid reads
+ * noticeably darker/more muted than that, closer to the surrounding frame's
+ * own darkness, not a bright color patch sitting inside a dark border. Now
+ * the fill itself is scaled down first ({@code GRID_FILL_SHADE}), with the
+ * grid lines scaled down further still from the same raw color so they
+ * remain a visibly darker accent on top of the (now also darker) fill.
  */
 public final class ShulkerPreviewRenderer {
 	private static boolean keyHeldInScreen = false;
@@ -87,7 +97,8 @@ public final class ShulkerPreviewRenderer {
 	private static final int OFFSET_Y = 24;
 	private static final int HEADER_PADDING = 4;
 	private static final int DEFAULT_COLOR = 0xFF8B5FBF;
-	private static final float GRID_LINE_SHADE = 0.6F;
+	private static final float GRID_FILL_SHADE = 0.55F;
+	private static final float GRID_LINE_SHADE = 0.4F;
 
 	private static @Nullable ItemStack pendingStack;
 	private static int pendingMouseX;
@@ -160,6 +171,7 @@ public final class ShulkerPreviewRenderer {
 		}
 
 		int color = boxColor(pendingStack);
+		int gridFillColor = ARGB.scaleRGB(color, GRID_FILL_SHADE);
 		int gridLineColor = ARGB.scaleRGB(color, GRID_LINE_SHADE);
 		int gridWidth = COLUMNS * SLOT_SIZE;
 		int gridHeight = ROWS * SLOT_SIZE;
@@ -177,7 +189,7 @@ public final class ShulkerPreviewRenderer {
 		guiGraphics.drawString(font, title, x, y + HEADER_PADDING / 2, 0xFFFFFFFF);
 
 		int gridY = y + headerHeight;
-		guiGraphics.fill(x, gridY, x + gridWidth, gridY + gridHeight, color);
+		guiGraphics.fill(x, gridY, x + gridWidth, gridY + gridHeight, gridFillColor);
 
 		// Slot separator lines, a darker shade of the box's own color rather than a fixed gray -
 		// the fill above is now the box color itself (not a constant dark background), so a fixed
