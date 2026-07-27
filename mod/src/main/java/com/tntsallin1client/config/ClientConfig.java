@@ -93,6 +93,14 @@ public class ClientConfig {
 	public boolean customHitboxColorEnabled = true;
 	public int customHitboxColor = 0xFFFFFFFF;
 
+	// 5q: the black wireframe box drawn around whatever block is being looked
+	// at. Same "alpha byte never shown as-is" pattern as keystrokesActiveColor -
+	// vanilla's own alpha (translucent normally, opaque in high-contrast mode)
+	// is always kept, only the RGB comes from here. Defaults to black, vanilla's
+	// own color, so turning this on doesn't visibly change anything until picked.
+	public boolean customBlockOutlineColorEnabled = true;
+	public int customBlockOutlineColor = 0xFF000000;
+
 	// 5m: keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop).
 	// Active-box color, same green as the original hardcoded default; the
 	// alpha byte here is never actually shown as-is (KeystrokesHud always

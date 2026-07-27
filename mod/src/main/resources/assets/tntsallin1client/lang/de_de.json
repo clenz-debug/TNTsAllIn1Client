@@ -66,6 +66,8 @@
   "gui.tntsallin1client.menu.shulker_preview": "Shulkerbox-Inhaltsanzeige",
   "gui.tntsallin1client.menu.hitbox_color": "Eigene Hitbox-Farbe",
   "gui.tntsallin1client.hitbox_options.title": "Hitbox-Farbe - Optionen",
+  "gui.tntsallin1client.menu.block_outline_color": "Eigene Blockumriss-Farbe",
+  "gui.tntsallin1client.block_outline_options.title": "Blockumriss-Farbe - Optionen",
   "gui.tntsallin1client.menu.keystrokes": "Tastenanzeige",
   "gui.tntsallin1client.keystrokes_options.title": "Tastenanzeige - Optionen",
   "gui.tntsallin1client.menu.screenshot_toast": "Screenshot-Chatnachricht",

@@ -76,6 +76,7 @@ Zweiter Durchgang, ergänzt aus `Ideen_für_den_client.md` (persönliche Ideen, 
 - **5n. Screenshot-Toast mit "Open"/"Copy"-Buttons** — moderat, zuerst prüfen ob Fabric einen Hook für "Screenshot gespeichert" bietet oder ob ein Mixin in `Screenshot`/`ScreenshotRecorder` nötig ist.
 - **5o. Itemphysics** — moderat–schwer, nach 5f-Muster einen bestehenden Mod (z.B. "Item Physic") als Abhängigkeit bündeln statt selbst nachzubauen.
 - **5p. Echte 3D-Blockmodelle** — kein Mod-Code nötig (reine Vanilla-Resourcepack-Funktionalität, Sodium rendert Custom-Block-Modelle mit zusätzlicher Geometrie nativ); stattdessen ein passendes Resourcepack recherchieren und als eigene, unveränderte Datei bündeln (nicht in den Mod-Jar einbetten — bewusst getrennt gehalten, siehe Lizenz-Hinweis unten).
+- **5q. Anpassbare Blockumriss-Farbe** — leicht, direkte Erweiterung von 5l (gleiches Mixin-Muster, gleicher `ColorPickerPanel`), diesmal für den Vanilla-Block-Auswahl-Umriss statt der F3+B-Hitbox.
 
 *Fertig, wenn:* jedes Feature stabil läuft, einzeln konfigurierbar ist und sowohl im Dev-Client als auch in einer über den Launcher gestarteten Instanz funktioniert.
 

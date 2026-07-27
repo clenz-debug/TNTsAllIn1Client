@@ -139,6 +139,13 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new HitboxColorOptionsScreen(this));
 
+		list.addToggleRow(config.customBlockOutlineColorEnabled, Component.translatable("gui.tntsallin1client.menu.block_outline_color"),
+				value -> {
+					config.customBlockOutlineColorEnabled = value;
+					config.save();
+				},
+				() -> new BlockOutlineColorOptionsScreen(this));
+
 		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
 				value -> {
 					config.keystrokesEnabled = value;
