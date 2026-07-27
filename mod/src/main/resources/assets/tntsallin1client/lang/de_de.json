@@ -84,6 +84,8 @@
   "gui.tntsallin1client.zoom_options.scroll_hint": "Während des Zoomens: Mausrad = stärker/schwächer zoomen",
   "gui.tntsallin1client.menu.connected_textures": "Verbundene Texturen",
   "gui.tntsallin1client.menu.hud_editor_button": "HUD verschieben / skalieren",
+  "gui.tntsallin1client.menu.credits_button": "Drittanbieter-Credits",
+  "gui.tntsallin1client.credits.title": "Drittanbieter-Credits",
   "gui.tntsallin1client.hud_editor.title": "HUD verschieben / skalieren",
   "gui.tntsallin1client.hud_editor.hint": "Box ziehen zum Verschieben. Untere rechte Ecke ziehen zum Skalieren.",
   "gui.tntsallin1client.hud_editor.reset_all": "Alle Positionen zurücksetzen",

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { GameLogEvent, LaunchProgressEvent, MinecraftProfile } from '../../../shared/types'
+import { CreditsScreen } from './CreditsScreen'
 
 interface Props {
   profile: MinecraftProfile
@@ -10,6 +11,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
   const [logs, setLogs] = useState<GameLogEvent[]>([])
+  const [showCredits, setShowCredits] = useState(false)
 
   async function handlePlay(): Promise<void> {
     setBusy(true)
@@ -29,6 +31,10 @@ export function PlayScreen({ profile, onLogout }: Props) {
     }
   }
 
+  if (showCredits) {
+    return <CreditsScreen onClose={() => setShowCredits(false)} />
+  }
+
   return (
     <div className="play-screen">
       <header>
@@ -36,9 +42,14 @@ export function PlayScreen({ profile, onLogout }: Props) {
           <strong>{profile.name}</strong>
           {profile.isMock && <span className="mock-badge">Dev-Mock-Profil</span>}
         </div>
-        <button className="link-button" onClick={onLogout}>
-          Abmelden
-        </button>
+        <div className="header-actions">
+          <button className="link-button" onClick={() => setShowCredits(true)}>
+            Credits
+          </button>
+          <button className="link-button" onClick={onLogout}>
+            Abmelden
+          </button>
+        </div>
       </header>
 
       <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy}>

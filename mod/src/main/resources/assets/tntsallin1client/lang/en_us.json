@@ -84,6 +84,8 @@
   "gui.tntsallin1client.zoom_options.scroll_hint": "While zooming: scroll wheel = zoom in/out further",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
+  "gui.tntsallin1client.menu.credits_button": "Third-Party Credits",
+  "gui.tntsallin1client.credits.title": "Third-Party Credits",
   "gui.tntsallin1client.hud_editor.title": "Move / Resize HUD",
   "gui.tntsallin1client.hud_editor.hint": "Drag a box to move it. Drag its bottom-right corner to resize it.",
   "gui.tntsallin1client.hud_editor.reset_all": "Reset All Positions",

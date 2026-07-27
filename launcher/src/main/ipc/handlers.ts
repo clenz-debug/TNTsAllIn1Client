@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from 'electron'
-import { ipcMain } from 'electron'
+import { ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import type { GameLogEvent, LaunchStage, MinecraftProfile } from '../../shared/types'
@@ -23,6 +23,13 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle(IpcChannel.AuthLoginMock, async () => loadMockProfile())
+
+  // Renderer never gets direct filesystem/shell access (contextIsolation) - opening a link in the
+  // system browser has to be proxied through the main process, same reasoning as the OAuth login
+  // flow's own shell.openExternal call in msOAuth.ts.
+  ipcMain.handle(IpcChannel.ShellOpenExternal, async (_event: IpcMainInvokeEvent, url: string) => {
+    await shell.openExternal(url)
+  })
 
   ipcMain.handle(IpcChannel.LaunchPlay, async (event: IpcMainInvokeEvent, profile: MinecraftProfile) => {
     const sendProgress = (stage: LaunchStage, completed: number, total: number, label?: string): void => {

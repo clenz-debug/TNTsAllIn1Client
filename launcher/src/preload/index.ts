@@ -13,6 +13,7 @@ const api = {
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
   loginMock: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLoginMock),
   play: (profile: MinecraftProfile): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchPlay, profile),
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

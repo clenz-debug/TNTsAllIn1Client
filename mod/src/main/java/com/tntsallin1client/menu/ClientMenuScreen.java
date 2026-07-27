@@ -178,6 +178,9 @@ public class ClientMenuScreen extends Screen {
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
 
+		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
+				() -> this.minecraft.setScreen(new CreditsScreen(this)));
+
 		this.addRenderableWidget(list);
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
