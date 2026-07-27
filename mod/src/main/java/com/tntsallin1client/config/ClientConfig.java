@@ -3,6 +3,9 @@ package com.tntsallin1client.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tntsallin1client.TNTsAllIn1ClientMod;
+import com.tntsallin1client.crosshair.CrosshairGrid;
+import com.tntsallin1client.crosshair.CrosshairMode;
+import com.tntsallin1client.crosshair.CrosshairPreset;
 import com.tntsallin1client.hud.HudLayout;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -56,10 +59,19 @@ public class ClientConfig {
 	// "remembered" zoom level between sessions, same as every other setting here.
 	public int zoomFov = 15;
 
-	// 5i: custom crosshair color. Defaults to white so turning this on doesn't
-	// visibly change anything until the user actually picks a color.
+	// 5i redesigned: custom crosshair color (defaults to white so turning this
+	// on doesn't visibly change anything until a color is picked), a shape
+	// (preset library or user-drawn 9x9 grid), a size independent of GUI Scale,
+	// and an optional second color while aiming at an attackable mob.
 	public boolean customCrosshairEnabled = true;
 	public int customCrosshairColor = 0xFFFFFFFF;
+	public CrosshairMode crosshairMode = CrosshairMode.PRESET;
+	public CrosshairPreset crosshairPreset = CrosshairPreset.SMALLER;
+	public boolean[][] crosshairCustomGrid = CrosshairGrid.empty();
+	public int crosshairPixelSize = 2;
+	public boolean crosshairIgnoreGuiScale = false;
+	public boolean crosshairTargetColorEnabled = false;
+	public int crosshairTargetColor = 0xFFFF5555;
 
 	// 5j: fullbright (forced gamma override).
 	public boolean fullbrightEnabled = false;
