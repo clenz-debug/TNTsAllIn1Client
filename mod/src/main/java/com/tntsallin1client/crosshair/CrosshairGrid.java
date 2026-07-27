@@ -72,29 +72,18 @@ public final class CrosshairGrid {
 	 * too far right/down (confirmed visually: the in-game crosshair and the
 	 * options-screen preset preview were both off-center from their intended
 	 * anchor point before this fix).
-	 *
-	 * <p>{@code pixelSize} is a {@code float}, not an {@code int} - crosshair
-	 * size now goes down to 0.25, well below one physical pixel per grid
-	 * cell. Cell positions are computed in float and only rounded at the
-	 * final {@code fill(...)} call; each cell still fills at least 1 physical
-	 * pixel ({@code Math.max(1, Math.round(pixelSize))}) so it stays visible
-	 * rather than vanishing at sub-pixel sizes - at very small sizes,
-	 * adjacent grid cells naturally round to the same screen pixel and the
-	 * shape compresses into a blob/dot, which is the expected trade-off of
-	 * asking for a crosshair only a couple of pixels wide in the first place.
 	 */
-	public static void render(GuiGraphics guiGraphics, boolean[][] grid, int centerX, int centerY, float pixelSize, int color) {
+	public static void render(GuiGraphics guiGraphics, boolean[][] grid, int centerX, int centerY, int pixelSize, int color) {
 		int half = SIZE / 2;
-		float offset = pixelSize / 2.0F;
-		int cellSize = Math.max(1, Math.round(pixelSize));
+		int offset = pixelSize / 2;
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
 				if (!grid[row][col]) {
 					continue;
 				}
-				int pixelX = Math.round(centerX + (col - half) * pixelSize - offset);
-				int pixelY = Math.round(centerY + (row - half) * pixelSize - offset);
-				guiGraphics.fill(pixelX, pixelY, pixelX + cellSize, pixelY + cellSize, color);
+				int pixelX = centerX + (col - half) * pixelSize - offset;
+				int pixelY = centerY + (row - half) * pixelSize - offset;
+				guiGraphics.fill(pixelX, pixelY, pixelX + pixelSize, pixelY + pixelSize, color);
 			}
 		}
 	}

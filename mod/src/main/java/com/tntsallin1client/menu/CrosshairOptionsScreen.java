@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -54,10 +53,8 @@ public class CrosshairOptionsScreen extends Screen {
 	private static final int PREVIEW_AREA_SIZE = CrosshairGrid.SIZE * PREVIEW_PIXEL_SIZE;
 	private static final int GRID_CELL_SIZE = 15;
 	private static final int GRID_AREA_SIZE = CrosshairGrid.SIZE * GRID_CELL_SIZE;
-	// Non-uniform steps on purpose: quarter-steps below 1 (on user request -
-	// "auch kleiner als scale 1, nämlich 0,75/0,5/0,25"), whole numbers above -
-	// a plain linear [min, max] range can't represent that, see DiscreteSliderButton.
-	private static final List<Float> PIXEL_SIZES = List.of(0.25F, 0.5F, 0.75F, 1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F);
+	private static final int MIN_PIXEL_SIZE = 1;
+	private static final int MAX_PIXEL_SIZE = 6;
 	private static final int TOP_MARGIN = 40;
 	private static final int BOTTOM_MARGIN = 10;
 	private static final int SCROLL_STEP = 16;
@@ -121,8 +118,8 @@ public class CrosshairOptionsScreen extends Screen {
 		}
 
 		int sizeSliderWidth = 100;
-		this.addRenderableWidget(new DiscreteSliderButton<>(x, y, sizeSliderWidth, ROW_HEIGHT, PIXEL_SIZES, config.crosshairPixelSize,
-				size -> Component.translatable("gui.tntsallin1client.crosshair_options.pixel_size", formatSize(size)),
+		this.addRenderableWidget(new IntSliderButton(x, y, sizeSliderWidth, ROW_HEIGHT, MIN_PIXEL_SIZE, MAX_PIXEL_SIZE, config.crosshairPixelSize,
+				size -> Component.translatable("gui.tntsallin1client.crosshair_options.pixel_size", size),
 				size -> {
 					config.crosshairPixelSize = size;
 					config.save();
@@ -269,11 +266,6 @@ public class CrosshairOptionsScreen extends Screen {
 			this.rebuild();
 		}
 		return true;
-	}
-
-	/** "2" instead of "2.0" for whole steps, "0.25" as-is for the fractional ones. */
-	private static String formatSize(float size) {
-		return size == Math.floor(size) ? String.valueOf((int) size) : String.valueOf(size);
 	}
 
 	private boolean isInGrid(double mouseX, double mouseY) {
