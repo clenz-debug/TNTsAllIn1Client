@@ -143,7 +143,8 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.keystrokesEnabled = value;
 					config.save();
-				});
+				},
+				() -> new KeystrokesOptionsScreen(this));
 
 		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
 				value -> {

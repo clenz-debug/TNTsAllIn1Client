@@ -81,8 +81,12 @@ public class ClientConfig {
 	public int customHitboxColor = 0xFFFFFFFF;
 
 	// 5m: keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop).
+	// Active-box color, same green as the original hardcoded default; the
+	// alpha byte here is never actually shown as-is (KeystrokesHud always
+	// re-applies its own translucent glow alpha on top), only the RGB matters.
 	public boolean keystrokesEnabled = true;
 	public HudLayout keystrokesHudLayout = new HudLayout();
+	public int keystrokesActiveColor = 0xFF33CC33;
 
 	// 5n: Open/Copy popup after taking a screenshot.
 	public boolean screenshotToastEnabled = true;

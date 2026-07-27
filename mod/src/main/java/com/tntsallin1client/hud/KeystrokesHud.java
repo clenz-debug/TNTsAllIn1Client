@@ -30,7 +30,7 @@ public class KeystrokesHud implements HudElement {
 	private static final int DEFAULT_RIGHT_MARGIN = 4;
 	private static final int DEFAULT_BOTTOM_MARGIN = 4;
 	private static final int BOX_COLOR_IDLE = 0x80333333;
-	private static final int BOX_COLOR_ACTIVE = 0xC033CC33;
+	private static final int ACTIVE_ALPHA = 0xC0000000;
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 
 	private record KeyEntry(String label, BooleanSupplier isDown) {
@@ -68,6 +68,8 @@ public class KeystrokesHud implements HudElement {
 		guiGraphics.pose().translate(x, y);
 		guiGraphics.pose().scale(layout.scale);
 
+		int activeColor = (config.keystrokesActiveColor & 0xFFFFFF) | ACTIVE_ALPHA;
+
 		int rowY = 0;
 		for (List<KeyEntry> row : rows) {
 			int rowWidth = rowWidth(row, font);
@@ -75,7 +77,7 @@ public class KeystrokesHud implements HudElement {
 			for (KeyEntry entry : row) {
 				int boxWidth = boxWidth(entry.label(), font);
 				boolean down = entry.isDown().getAsBoolean();
-				guiGraphics.fill(boxX, rowY, boxX + boxWidth, rowY + BOX_HEIGHT, down ? BOX_COLOR_ACTIVE : BOX_COLOR_IDLE);
+				guiGraphics.fill(boxX, rowY, boxX + boxWidth, rowY + BOX_HEIGHT, down ? activeColor : BOX_COLOR_IDLE);
 				guiGraphics.drawCenteredString(font, entry.label(), boxX + boxWidth / 2, rowY + (BOX_HEIGHT - font.lineHeight) / 2, TEXT_COLOR);
 				boxX += boxWidth + GAP;
 			}
@@ -135,6 +137,6 @@ public class KeystrokesHud implements HudElement {
 						new KeyEntry("RMB", options.keyUse::isDown)),
 				List.of(
 						new KeyEntry("Sprint", options.keySprint::isDown),
-						new KeyEntry("Q", options.keyDrop::isDown)));
+						new KeyEntry("Drop", options.keyDrop::isDown)));
 	}
 }

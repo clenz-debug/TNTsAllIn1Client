@@ -45,6 +45,7 @@
   "gui.tntsallin1client.menu.hitbox_color": "Custom Hitbox Color (F3+B)",
   "gui.tntsallin1client.hitbox_options.title": "Hitbox Color Options",
   "gui.tntsallin1client.menu.keystrokes": "Keystrokes Display",
+  "gui.tntsallin1client.keystrokes_options.title": "Keystrokes Options",
   "gui.tntsallin1client.menu.screenshot_toast": "Screenshot Chat Message (Open/Copy)",
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot created: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Open",
