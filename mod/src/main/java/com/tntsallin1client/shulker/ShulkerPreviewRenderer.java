@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -65,7 +64,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Restyled on user request to look like Lunar Client's own shulker preview
  * (reference screenshot supplied): a title bar showing the box's actual
  * display name ("Brown Shulker Box", ...) above the grid, using vanilla's own
- * {@link TooltipRenderUtil#renderTooltipBackground} sprite (the exact
+ * {@code TooltipRenderUtil#renderTooltipBackground} sprite (the exact
  * background+frame a normal item tooltip draws, since 1.21.x moved that from
  * hardcoded gradient colors to a proper 9-sliced sprite) instead of a plain
  * flat-color rectangle - free native-looking rounded corners/border, no new
@@ -87,6 +86,17 @@ import org.jspecify.annotations.Nullable;
  * the fill itself is scaled down first ({@code GRID_FILL_SHADE}), with the
  * grid lines scaled down further still from the same raw color so they
  * remain a visibly darker accent on top of the (now also darker) fill.
+ *
+ * <p><b>Redesign, still same feedback round ("only the middle field changes
+ * color - Lunar tints the whole GUI"):</b> the vanilla {@code
+ * TooltipRenderUtil} sprite border/header from the previous pass is a fixed
+ * neutral color, not tintable - it only ever looked "themed" because the grid
+ * next to it happened to be colored. Dropped it in favor of a fully
+ * hand-drawn, three-tier panel where *every* layer is a shade of the same
+ * {@link #boxColor(ItemStack)}: a dark outer border, a slightly lighter header bar
+ * behind the title text, and the (already-existing) mid-tone grid fill -
+ * matching the reference screenshot's actual "whole GUI reskinned per
+ * shulker color" look instead of "neutral GUI, colored grid".
  */
 public final class ShulkerPreviewRenderer {
 	private static boolean keyHeldInScreen = false;
@@ -96,7 +106,10 @@ public final class ShulkerPreviewRenderer {
 	private static final int OFFSET_X = 8;
 	private static final int OFFSET_Y = 24;
 	private static final int HEADER_PADDING = 4;
+	private static final int BORDER_THICKNESS = 2;
 	private static final int DEFAULT_COLOR = 0xFF8B5FBF;
+	private static final float BORDER_SHADE = 0.25F;
+	private static final float HEADER_SHADE = 0.35F;
 	private static final float GRID_FILL_SHADE = 0.55F;
 	private static final float GRID_LINE_SHADE = 0.4F;
 
@@ -171,6 +184,8 @@ public final class ShulkerPreviewRenderer {
 		}
 
 		int color = boxColor(pendingStack);
+		int borderColor = ARGB.scaleRGB(color, BORDER_SHADE);
+		int headerColor = ARGB.scaleRGB(color, HEADER_SHADE);
 		int gridFillColor = ARGB.scaleRGB(color, GRID_FILL_SHADE);
 		int gridLineColor = ARGB.scaleRGB(color, GRID_LINE_SHADE);
 		int gridWidth = COLUMNS * SLOT_SIZE;
@@ -178,29 +193,32 @@ public final class ShulkerPreviewRenderer {
 		Font font = Minecraft.getInstance().font;
 		Component title = pendingStack.getHoverName();
 		int headerHeight = font.lineHeight + HEADER_PADDING;
-		int contentWidth = gridWidth;
-		int contentHeight = headerHeight + gridHeight;
-		int x = pendingMouseX + OFFSET_X;
-		int y = pendingMouseY + OFFSET_Y;
+		int contentX = pendingMouseX + OFFSET_X + BORDER_THICKNESS;
+		int contentY = pendingMouseY + OFFSET_Y + BORDER_THICKNESS;
+		int x = contentX - BORDER_THICKNESS;
+		int y = contentY - BORDER_THICKNESS;
 
-		// Same background+frame sprite a normal item tooltip draws (moved from hardcoded
-		// gradient colors to a 9-sliced sprite in 1.21.x) - free native border/rounding.
-		TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, contentWidth, contentHeight, null);
-		guiGraphics.drawString(font, title, x, y + HEADER_PADDING / 2, 0xFFFFFFFF);
+		// Whole panel tinted in shades of the box's own color (dark border, slightly
+		// lighter header, mid-tone grid) rather than a neutral vanilla tooltip frame
+		// with only the grid colored - matches the reference's "whole GUI reskinned"
+		// look instead of "neutral GUI, colored grid".
+		guiGraphics.fill(x, y, x + gridWidth + 2 * BORDER_THICKNESS, y + headerHeight + gridHeight + 2 * BORDER_THICKNESS, borderColor);
+		guiGraphics.fill(contentX, contentY, contentX + gridWidth, contentY + headerHeight, headerColor);
+		guiGraphics.drawString(font, title, contentX + 2, contentY + HEADER_PADDING / 2, 0xFFFFFFFF);
 
-		int gridY = y + headerHeight;
-		guiGraphics.fill(x, gridY, x + gridWidth, gridY + gridHeight, gridFillColor);
+		int gridY = contentY + headerHeight;
+		guiGraphics.fill(contentX, gridY, contentX + gridWidth, gridY + gridHeight, gridFillColor);
 
 		// Slot separator lines, a darker shade of the box's own color rather than a fixed gray -
 		// the fill above is now the box color itself (not a constant dark background), so a fixed
 		// line color would read fine against light boxes but vanish against dark ones.
 		for (int col = 0; col <= COLUMNS; col++) {
-			int lineX = x + col * SLOT_SIZE;
+			int lineX = contentX + col * SLOT_SIZE;
 			guiGraphics.fill(lineX, gridY, lineX + 1, gridY + gridHeight, gridLineColor);
 		}
 		for (int row = 0; row <= ROWS; row++) {
 			int lineY = gridY + row * SLOT_SIZE;
-			guiGraphics.fill(x, lineY, x + gridWidth, lineY + 1, gridLineColor);
+			guiGraphics.fill(contentX, lineY, contentX + gridWidth, lineY + 1, gridLineColor);
 		}
 		for (int index = 0; index < slots.size(); index++) {
 			ItemStack slotStack = slots.get(index);
@@ -208,7 +226,7 @@ public final class ShulkerPreviewRenderer {
 				continue;
 			}
 
-			int slotX = x + (index % COLUMNS) * SLOT_SIZE + 1;
+			int slotX = contentX + (index % COLUMNS) * SLOT_SIZE + 1;
 			int slotY = gridY + (index / COLUMNS) * SLOT_SIZE + 1;
 			guiGraphics.renderItem(slotStack, slotX, slotY);
 			guiGraphics.renderItemDecorations(font, slotStack, slotX, slotY);
