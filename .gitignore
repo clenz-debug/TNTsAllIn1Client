@@ -31,6 +31,9 @@ launcher/mods-bundle/
 # --- Staged resource packs for manual resourcepacks/-folder copy (Phase 5p), not source ---
 launcher/resourcepacks-bundle/
 
+# --- Resource packs held for a future Minecraft version, NOT synced into any instance ---
+launcher/resourcepacks-bundle-26x-archive/
+
 # --- Env / Secrets ---
 .env
 .env.*
