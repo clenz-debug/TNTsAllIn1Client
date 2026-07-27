@@ -77,6 +77,7 @@ Second pass, added from `Ideen_für_den_client.md` (personal ideas not yet consi
 - **5o. Item physics** — moderate–hard, following the 5f pattern: bundle an existing mod (e.g. "Item Physic") as a dependency instead of rebuilding it from scratch.
 - **5p. Real 3D block models** — no mod code needed (pure vanilla resource pack functionality; Sodium natively renders custom block models with extra geometry); instead research a fitting resource pack and bundle it as its own, unmodified file (not embedded in the mod jar — kept deliberately separate, see license note below).
 - **5q. Customizable block outline color** — easy, direct extension of 5l (same mixin pattern, same `ColorPickerPanel`), this time for the vanilla block-targeting outline instead of the F3+B hitbox.
+- **5r. Dark inventory** — easy, a single always-called extension point (`AbstractContainerScreen#renderBackground`) covers every container screen; darkens the light gray panel via a semi-transparent overlay instead of replacing textures.
 
 *Done when:* every feature runs stably, is individually configurable, and works both in the dev client and in an instance started via the launcher.
 

@@ -165,6 +165,12 @@ public class ClientMenuScreen extends Screen {
 					config.save();
 				});
 
+		list.addToggleRow(config.darkInventoryEnabled, Component.translatable("gui.tntsallin1client.menu.dark_inventory"),
+				value -> {
+					config.darkInventoryEnabled = value;
+					config.save();
+				});
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		list.addToggleRow(connectedTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
 				value -> {
