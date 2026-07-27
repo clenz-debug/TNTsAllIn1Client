@@ -6,10 +6,14 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -57,18 +61,33 @@ import org.jspecify.annotations.Nullable;
  * (like vanilla's own Controls screen) allows binding this to either a key
  * or a mouse button, both event families are registered so it works
  * regardless of which one the user picked.
+ *
+ * <p>Restyled on user request to look like Lunar Client's own shulker preview
+ * (reference screenshot supplied): a title bar showing the box's actual
+ * display name ("Brown Shulker Box", ...) above the grid, using vanilla's own
+ * {@link TooltipRenderUtil#renderTooltipBackground} sprite (the exact
+ * background+frame a normal item tooltip draws, since 1.21.x moved that from
+ * hardcoded gradient colors to a proper 9-sliced sprite) instead of a plain
+ * flat-color rectangle - free native-looking rounded corners/border, no new
+ * art needed. The grid itself is now a solid fill of the box's own color
+ * (previously only a thin border was colored, with a fixed dark gray
+ * interior) to match the reference's solid-brown look. Grid lines are kept
+ * (confirmed useful in the original 5k feedback round - an all-one-color
+ * fill with items on it read as a "blob" without them) but now derived from
+ * the box's own color via {@link ARGB#scaleRGB(int, float)} instead of a
+ * fixed gray, so they stay visible against light *and* dark box colors alike
+ * instead of only working well against the old fixed dark background.
  */
 public final class ShulkerPreviewRenderer {
 	private static boolean keyHeldInScreen = false;
 	private static final int SLOT_SIZE = 18;
 	private static final int COLUMNS = 9;
 	private static final int ROWS = 3;
-	private static final int MARGIN = 4;
 	private static final int OFFSET_X = 8;
 	private static final int OFFSET_Y = 24;
+	private static final int HEADER_PADDING = 4;
 	private static final int DEFAULT_COLOR = 0xFF8B5FBF;
-	private static final int BACKGROUND_COLOR = 0xD0202020;
-	private static final int GRID_LINE_COLOR = 0xFF3A3A3A;
+	private static final float GRID_LINE_SHADE = 0.6F;
 
 	private static @Nullable ItemStack pendingStack;
 	private static int pendingMouseX;
@@ -141,27 +160,36 @@ public final class ShulkerPreviewRenderer {
 		}
 
 		int color = boxColor(pendingStack);
+		int gridLineColor = ARGB.scaleRGB(color, GRID_LINE_SHADE);
 		int gridWidth = COLUMNS * SLOT_SIZE;
 		int gridHeight = ROWS * SLOT_SIZE;
+		Font font = Minecraft.getInstance().font;
+		Component title = pendingStack.getHoverName();
+		int headerHeight = font.lineHeight + HEADER_PADDING;
+		int contentWidth = gridWidth;
+		int contentHeight = headerHeight + gridHeight;
 		int x = pendingMouseX + OFFSET_X;
 		int y = pendingMouseY + OFFSET_Y;
 
-		guiGraphics.fill(x - MARGIN, y - MARGIN, x + gridWidth + MARGIN, y + gridHeight + MARGIN, color);
-		guiGraphics.fill(x, y, x + gridWidth, y + gridHeight, BACKGROUND_COLOR);
+		// Same background+frame sprite a normal item tooltip draws (moved from hardcoded
+		// gradient colors to a 9-sliced sprite in 1.21.x) - free native border/rounding.
+		TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, contentWidth, contentHeight, null);
+		guiGraphics.drawString(font, title, x, y + HEADER_PADDING / 2, 0xFFFFFFFF);
 
-		// Slot separator lines, one shade lighter than the background fill rather than the
-		// (possibly very different) box border color, so they read as subtle grid lines instead
-		// of a second border.
+		int gridY = y + headerHeight;
+		guiGraphics.fill(x, gridY, x + gridWidth, gridY + gridHeight, color);
+
+		// Slot separator lines, a darker shade of the box's own color rather than a fixed gray -
+		// the fill above is now the box color itself (not a constant dark background), so a fixed
+		// line color would read fine against light boxes but vanish against dark ones.
 		for (int col = 0; col <= COLUMNS; col++) {
 			int lineX = x + col * SLOT_SIZE;
-			guiGraphics.fill(lineX, y, lineX + 1, y + gridHeight, GRID_LINE_COLOR);
+			guiGraphics.fill(lineX, gridY, lineX + 1, gridY + gridHeight, gridLineColor);
 		}
 		for (int row = 0; row <= ROWS; row++) {
-			int lineY = y + row * SLOT_SIZE;
-			guiGraphics.fill(x, lineY, x + gridWidth, lineY + 1, GRID_LINE_COLOR);
+			int lineY = gridY + row * SLOT_SIZE;
+			guiGraphics.fill(x, lineY, x + gridWidth, lineY + 1, gridLineColor);
 		}
-
-		var font = Minecraft.getInstance().font;
 		for (int index = 0; index < slots.size(); index++) {
 			ItemStack slotStack = slots.get(index);
 			if (slotStack.isEmpty()) {
@@ -169,7 +197,7 @@ public final class ShulkerPreviewRenderer {
 			}
 
 			int slotX = x + (index % COLUMNS) * SLOT_SIZE + 1;
-			int slotY = y + (index / COLUMNS) * SLOT_SIZE + 1;
+			int slotY = gridY + (index / COLUMNS) * SLOT_SIZE + 1;
 			guiGraphics.renderItem(slotStack, slotX, slotY);
 			guiGraphics.renderItemDecorations(font, slotStack, slotX, slotY);
 		}
