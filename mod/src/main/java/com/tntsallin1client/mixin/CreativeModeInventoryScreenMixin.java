@@ -59,10 +59,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * covers get darkened - transparent corners stay transparent, no more box.
  * The item icon is then re-rendered on top at full brightness, since it'd
  * otherwise be darkened along with the tab background it sits on.
+ *
+ * <p>Bugfix round 3: the category title ("Combat", "Building Blocks", ...)
+ * had gone invisible against the now-dark panel - this class overrides
+ * {@code renderLabels} itself (conditionally, via {@code CreativeModeTab#showTitle()} -
+ * some tabs like Search don't show one) with the same fixed vanilla dark-gray
+ * color {@code AbstractContainerScreenMixin} already had to fix for the
+ * default case; this override just never inherited that fix since it's a
+ * completely separate method body on a different class. Same treatment here:
+ * redraw in a light color when dark mode is on.
  */
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
 	private static final int DARK_OVERLAY_COLOR = 0xB0000000;
+	private static final int LIGHT_LABEL_COLOR = 0xFFE0E0E0;
 	private static final int TAB_WIDTH = 26;
 	private static final int TAB_HEIGHT = 32;
 
@@ -120,5 +130,16 @@ public abstract class CreativeModeInventoryScreenMixin extends AbstractContainer
 	/** Same formula as the private {@code CreativeModeInventoryScreen#getTabY}. */
 	private int tabY(CreativeModeTab tab) {
 		return tab.row() == CreativeModeTab.Row.TOP ? -32 : this.imageHeight;
+	}
+
+	@Inject(method = "renderLabels", at = @At("HEAD"), cancellable = true)
+	private void tntsallin1client$onRenderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci) {
+		if (!ClientConfig.get().darkInventoryEnabled) {
+			return;
+		}
+		if (selectedTab.showTitle()) {
+			guiGraphics.drawString(this.font, selectedTab.getDisplayName(), 8, 6, LIGHT_LABEL_COLOR, false);
+		}
+		ci.cancel();
 	}
 }
