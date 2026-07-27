@@ -15,6 +15,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simple JSON-backed config so each Phase 5 feature can be toggled independently
@@ -108,6 +110,9 @@ public class ClientConfig {
 	public boolean keystrokesEnabled = true;
 	public HudLayout keystrokesHudLayout = new HudLayout();
 	public int keystrokesActiveColor = 0xFF33CC33;
+	// Per-key on/off, keyed by KeystrokeKey#name() - a key absent from the map
+	// (the common case, nothing has been toggled off yet) counts as enabled.
+	public Map<String, Boolean> keystrokesKeyEnabled = new HashMap<>();
 
 	// 5n: Open/Copy popup after taking a screenshot.
 	public boolean screenshotToastEnabled = true;

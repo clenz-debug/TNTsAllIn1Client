@@ -70,6 +70,8 @@
   "gui.tntsallin1client.block_outline_options.title": "Blockumriss-Farbe - Optionen",
   "gui.tntsallin1client.menu.keystrokes": "Tastenanzeige",
   "gui.tntsallin1client.keystrokes_options.title": "Tastenanzeige - Optionen",
+  "gui.tntsallin1client.keystrokes_options.keys_button": "Tasten konfigurieren",
+  "gui.tntsallin1client.keystrokes_keys_options.title": "Tastenanzeige - Tasten",
   "gui.tntsallin1client.menu.screenshot_toast": "Screenshot-Chatnachricht",
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot erstellt: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Öffnen",

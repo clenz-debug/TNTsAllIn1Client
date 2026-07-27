@@ -7,8 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 /**
  * Phase 5m: small grid of key/mouse boxes that light up while held - the
@@ -33,7 +33,7 @@ public class KeystrokesHud implements HudElement {
 	private static final int ACTIVE_ALPHA = 0xC0000000;
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 
-	private record KeyEntry(String label, BooleanSupplier isDown) {
+	private record KeyEntry(KeystrokeKey key, boolean down) {
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class KeystrokesHud implements HudElement {
 			return;
 		}
 
-		List<List<KeyEntry>> rows = buildRows(client);
+		List<List<KeyEntry>> rows = buildRows(client, config);
 		Font font = client.font;
 		int totalWidth = totalWidth(rows, font);
 		int totalHeight = totalHeight(rows);
@@ -75,10 +75,10 @@ public class KeystrokesHud implements HudElement {
 			int rowWidth = rowWidth(row, font);
 			int boxX = (totalWidth - rowWidth) / 2;
 			for (KeyEntry entry : row) {
-				int boxWidth = boxWidth(entry.label(), font);
-				boolean down = entry.isDown().getAsBoolean();
-				guiGraphics.fill(boxX, rowY, boxX + boxWidth, rowY + BOX_HEIGHT, down ? activeColor : BOX_COLOR_IDLE);
-				guiGraphics.drawCenteredString(font, entry.label(), boxX + boxWidth / 2, rowY + (BOX_HEIGHT - font.lineHeight) / 2, TEXT_COLOR);
+				String label = entry.key().label;
+				int boxWidth = boxWidth(label, font);
+				guiGraphics.fill(boxX, rowY, boxX + boxWidth, rowY + BOX_HEIGHT, entry.down() ? activeColor : BOX_COLOR_IDLE);
+				guiGraphics.drawCenteredString(font, label, boxX + boxWidth / 2, rowY + (BOX_HEIGHT - font.lineHeight) / 2, TEXT_COLOR);
 				boxX += boxWidth + GAP;
 			}
 			rowY += BOX_HEIGHT + GAP;
@@ -89,12 +89,12 @@ public class KeystrokesHud implements HudElement {
 
 	/** Un-customized total box-grid width - shared with the HUD editor for accurate drag bounds. */
 	public static int computeTotalWidth(Minecraft client) {
-		return totalWidth(buildRows(client), client.font);
+		return totalWidth(buildRows(client, ClientConfig.get()), client.font);
 	}
 
 	/** Un-customized total box-grid height - shared with the HUD editor for accurate drag bounds. */
 	public static int computeTotalHeight(Minecraft client) {
-		return totalHeight(buildRows(client));
+		return totalHeight(buildRows(client, ClientConfig.get()));
 	}
 
 	private static int totalWidth(List<List<KeyEntry>> rows, Font font) {
@@ -106,13 +106,13 @@ public class KeystrokesHud implements HudElement {
 	}
 
 	private static int totalHeight(List<List<KeyEntry>> rows) {
-		return rows.size() * BOX_HEIGHT + (rows.size() - 1) * GAP;
+		return rows.isEmpty() ? 0 : rows.size() * BOX_HEIGHT + (rows.size() - 1) * GAP;
 	}
 
 	private static int rowWidth(List<KeyEntry> row, Font font) {
 		int width = 0;
 		for (KeyEntry entry : row) {
-			width += boxWidth(entry.label(), font);
+			width += boxWidth(entry.key().label, font);
 		}
 		return width + (row.size() - 1) * GAP;
 	}
@@ -121,22 +121,36 @@ public class KeystrokesHud implements HudElement {
 		return font.width(label) + BOX_PADDING;
 	}
 
-	private static List<List<KeyEntry>> buildRows(Minecraft client) {
+	/** Rows with any individually-disabled keys (see {@link KeystrokeKey}) filtered out; empty rows are dropped entirely rather than left as gaps. */
+	private static List<List<KeyEntry>> buildRows(Minecraft client, ClientConfig config) {
+		List<List<KeyEntry>> rows = new ArrayList<>();
+		for (List<KeystrokeKey> row : KeystrokeKey.ROWS) {
+			List<KeyEntry> visible = new ArrayList<>();
+			for (KeystrokeKey key : row) {
+				if (config.keystrokesKeyEnabled.getOrDefault(key.name(), true)) {
+					visible.add(new KeyEntry(key, isDown(client, key)));
+				}
+			}
+			if (!visible.isEmpty()) {
+				rows.add(visible);
+			}
+		}
+		return rows;
+	}
+
+	private static boolean isDown(Minecraft client, KeystrokeKey key) {
 		var options = client.options;
-		return List.of(
-				List.of(new KeyEntry("W", options.keyUp::isDown)),
-				List.of(
-						new KeyEntry("A", options.keyLeft::isDown),
-						new KeyEntry("S", options.keyDown::isDown),
-						new KeyEntry("D", options.keyRight::isDown)),
-				List.of(
-						new KeyEntry("Shift", options.keyShift::isDown),
-						new KeyEntry("Space", options.keyJump::isDown)),
-				List.of(
-						new KeyEntry("LMB", options.keyAttack::isDown),
-						new KeyEntry("RMB", options.keyUse::isDown)),
-				List.of(
-						new KeyEntry("Sprint", options.keySprint::isDown),
-						new KeyEntry("Drop", options.keyDrop::isDown)));
+		return switch (key) {
+			case W -> options.keyUp.isDown();
+			case A -> options.keyLeft.isDown();
+			case S -> options.keyDown.isDown();
+			case D -> options.keyRight.isDown();
+			case SHIFT -> options.keyShift.isDown();
+			case SPACE -> options.keyJump.isDown();
+			case LMB -> options.keyAttack.isDown();
+			case RMB -> options.keyUse.isDown();
+			case SPRINT -> options.keySprint.isDown();
+			case DROP -> options.keyDrop.isDown();
+		};
 	}
 }

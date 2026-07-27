@@ -10,10 +10,12 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5m: dedicated options screen for the keystrokes overlay - just the
+ * Phase 5m: dedicated options screen for the keystrokes overlay - the
  * active-box (pressed) color via the shared {@link ColorPickerPanel}, same as
- * {@link CrosshairOptionsScreen}/{@link HitboxColorOptionsScreen}. The idle
- * box color is not exposed - only the "lights up" color was asked for.
+ * {@link CrosshairOptionsScreen}/{@link HitboxColorOptionsScreen}, plus a
+ * button into {@link KeystrokesKeysOptionsScreen} for showing/hiding
+ * individual keys. The idle box color is not exposed - only the "lights up"
+ * color was asked for.
  */
 public class KeystrokesOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
@@ -40,6 +42,12 @@ public class KeystrokesOptionsScreen extends Screen {
 					config.save();
 				});
 		y += ColorPickerPanel.totalHeight() + 6;
+
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.keystrokes_options.keys_button"),
+						button -> this.minecraft.setScreen(new KeystrokesKeysOptionsScreen(this)))
+				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.build());
+		y += ROW_HEIGHT + 4;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)

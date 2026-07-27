@@ -70,6 +70,8 @@
   "gui.tntsallin1client.block_outline_options.title": "Block Outline Color Options",
   "gui.tntsallin1client.menu.keystrokes": "Keystrokes Display",
   "gui.tntsallin1client.keystrokes_options.title": "Keystrokes Options",
+  "gui.tntsallin1client.keystrokes_options.keys_button": "Configure Keys",
+  "gui.tntsallin1client.keystrokes_keys_options.title": "Keystrokes - Keys",
   "gui.tntsallin1client.menu.screenshot_toast": "Screenshot Chat Message",
   "gui.tntsallin1client.screenshot_toast.message": "Screenshot created: %s",
   "gui.tntsallin1client.screenshot_toast.open": "Open",
