@@ -20,13 +20,13 @@ import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
-import com.tntsallin1client.hud.LightLevelHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
+import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
@@ -54,9 +54,11 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5g: FPS counter HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "fps_counter_hud"), new FpsCounterHud());
 
-		// Phase 5j: light-level HUD + fullbright toggle.
-		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "light_level_hud"), new LightLevelHud());
+		// Phase 5j: fullbright toggle.
 		ClientTickEvents.END_CLIENT_TICK.register(FullbrightHandler::tick);
+
+		// Phase 5j redesigned: key-triggered mob-spawn overlay (was the light-level HUD line).
+		SpawnOverlayRenderer.register();
 
 		// Phase 5m: keystrokes overlay.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "keystrokes_hud"), new KeystrokesHud());

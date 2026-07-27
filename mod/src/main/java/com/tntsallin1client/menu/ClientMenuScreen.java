@@ -118,11 +118,12 @@ public class ClientMenuScreen extends Screen {
 					config.save();
 				});
 
-		list.addToggleRow(config.lightLevelHudEnabled, Component.translatable("gui.tntsallin1client.menu.light_level_hud"),
+		list.addToggleRow(config.spawnOverlayEnabled, Component.translatable("gui.tntsallin1client.menu.spawn_overlay"),
 				value -> {
-					config.lightLevelHudEnabled = value;
+					config.spawnOverlayEnabled = value;
 					config.save();
-				});
+				},
+				() -> new SpawnOverlayOptionsScreen(this));
 
 		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
 				value -> {

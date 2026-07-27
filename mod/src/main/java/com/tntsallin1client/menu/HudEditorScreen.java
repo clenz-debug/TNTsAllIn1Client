@@ -5,7 +5,6 @@ import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.hud.KeystrokesHud;
-import com.tntsallin1client.hud.LightLevelHud;
 import com.tntsallin1client.hud.MaterialCounterHud;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -61,10 +60,6 @@ public class HudEditorScreen extends Screen {
 				Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 				config.fpsCounterHudLayout,
 				this::fpsCounterBounds));
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.light_level_hud"),
-				config.lightLevelHudLayout,
-				this::lightLevelBounds));
 		entries.add(new Entry(
 				Component.translatable("gui.tntsallin1client.menu.keystrokes"),
 				config.keystrokesHudLayout,
@@ -172,7 +167,6 @@ public class HudEditorScreen extends Screen {
 		config.coordinatesHudLayout = new HudLayout();
 		config.materialCounterHudLayout = new HudLayout();
 		config.fpsCounterHudLayout = new HudLayout();
-		config.lightLevelHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
 		config.save();
 	}
@@ -231,25 +225,6 @@ public class HudEditorScreen extends Screen {
 		HudLayout layout = config.fpsCounterHudLayout;
 		float x = layout.customPosition ? layout.x : FpsCounterHud.defaultX(this.width, this.font, label);
 		float y = layout.customPosition ? layout.y : FpsCounterHud.defaultY();
-
-		int unscaledWidth = this.font.width(label);
-		int unscaledHeight = this.font.lineHeight;
-
-		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
-	}
-
-	private Rect lightLevelBounds() {
-		net.minecraft.world.entity.Entity camera = this.minecraft.getCameraEntity();
-		if (camera == null || this.minecraft.level == null) {
-			return null;
-		}
-
-		ClientConfig config = ClientConfig.get();
-		String label = LightLevelHud.buildLabel(this.minecraft, camera);
-
-		HudLayout layout = config.lightLevelHudLayout;
-		float x = layout.customPosition ? layout.x : 4f;
-		float y = layout.customPosition ? layout.y : LightLevelHud.defaultY(this.height, this.font);
 
 		int unscaledWidth = this.font.width(label);
 		int unscaledHeight = this.font.lineHeight;

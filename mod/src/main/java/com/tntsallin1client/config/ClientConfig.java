@@ -61,10 +61,16 @@ public class ClientConfig {
 	public boolean customCrosshairEnabled = true;
 	public int customCrosshairColor = 0xFFFFFFFF;
 
-	// 5j: fullbright (forced gamma override) and the always-visible light-level line.
+	// 5j: fullbright (forced gamma override).
 	public boolean fullbrightEnabled = false;
-	public boolean lightLevelHudEnabled = true;
-	public HudLayout lightLevelHudLayout = new HudLayout();
+
+	// 5j redesigned: was a plain "Light: N" text HUD line; replaced by a
+	// key-triggered in-world overlay marking nearby mob-spawnable positions
+	// with colored X marks (see SpawnOverlayRenderer). Hold-vs-toggle is a
+	// separate setting since either can be the more comfortable one depending
+	// on how someone plays.
+	public boolean spawnOverlayEnabled = true;
+	public boolean spawnOverlayHoldMode = true;
 
 	// 5k: hold-to-preview shulker box contents beyond vanilla's own 5-item cap.
 	public boolean shulkerPreviewEnabled = true;

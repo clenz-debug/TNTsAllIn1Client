@@ -62,6 +62,15 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// 5j redesigned: shows/hides the mob-spawn overlay - hold or toggle,
+	// selectable in the mod menu (see ClientConfig#spawnOverlayHoldMode).
+	public static final KeyMapping SPAWN_OVERLAY = new KeyMapping(
+			"key.tntsallin1client.spawn_overlay",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -71,5 +80,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(SYSTEM_INFO);
 		KeyBindingHelper.registerKeyBinding(ZOOM);
 		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
+		KeyBindingHelper.registerKeyBinding(SPAWN_OVERLAY);
 	}
 }
