@@ -32,7 +32,7 @@
   "gui.tntsallin1client.crosshair_options.title": "Fadenkreuz - Optionen",
   "gui.tntsallin1client.crosshair_options.color": "Farbe (Hex, ohne #)",
   "gui.tntsallin1client.menu.fullbright": "Fullbright",
-  "gui.tntsallin1client.menu.spawn_overlay": "Mob-Spawn-Overlay",
+  "gui.tntsallin1client.menu.spawn_overlay": "Lightlevel Overlay",
   "gui.tntsallin1client.spawn_overlay_options.title": "Mob-Spawn-Overlay - Optionen",
   "gui.tntsallin1client.spawn_overlay_options.key": "Overlay-Taste: %s",
   "gui.tntsallin1client.spawn_overlay_options.mode": "Tasten-Modus",

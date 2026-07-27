@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gizmos.Gizmos;
-import net.minecraft.gizmos.TextGizmo;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -26,14 +25,21 @@ import java.util.List;
  *
  * <p>Rendered via vanilla's own {@code Gizmos} system (the same one
  * {@code EntityHitboxDebugRendererMixin}/5l already uses) rather than any
- * custom {@code VertexConsumer} code - {@code Gizmos.billboardText(...)} is
- * exactly a colored, camera-facing text label at a world position, which is
- * literally what an "X" mark is. It only works while a {@code GizmoCollector}
+ * custom {@code VertexConsumer} code. It only works while a {@code GizmoCollector}
  * is active on the render thread, which vanilla itself opens for the
  * <em>entire</em> {@code LevelRenderer#renderLevel} call (see
  * {@code Minecraft.java}) - {@link WorldRenderEvents#BEFORE_DEBUG_RENDER}
- * fires from inside that same call, so calling {@code Gizmos.billboardText}
- * from there works without setting up any collector of our own.
+ * fires from inside that same call, so calling {@code Gizmos} methods from
+ * there works without setting up any collector of our own.
+ *
+ * <p><b>Bugfix (first version used {@code Gizmos.billboardText("X", ...)}):</b>
+ * billboarded text always rotates to face the camera - fine for a single
+ * label, but across a dense field of marks it reads as the whole overlay
+ * spinning/tilting as the camera moves, which is exactly what got reported.
+ * Switched to {@link #drawMark(BlockPos, int)} drawing two flat
+ * {@code Gizmos.line(...)} segments across the block's top face instead -
+ * real world-space geometry lying on the ground plane, so it stays fixed
+ * regardless of viewing angle.
  *
  * <p>Deliberately bounded and throttled: scanning every loaded block would be
  * far too expensive to redo every frame. Re-scans a fixed box around the
@@ -126,8 +132,19 @@ public final class SpawnOverlayRenderer {
 		}
 	}
 
+	/**
+	 * Drawn as two real world-space line segments across the block's top face
+	 * (corner to corner) rather than {@code Gizmos.billboardText("X", ...)} -
+	 * billboarded text always turns to face the camera, which reads as
+	 * spinning/tilting when moving through a dense field of marks (reported
+	 * after the first version). A flat line pair stays fixed to the ground
+	 * plane regardless of camera angle, matching the requested look.
+	 */
 	private static void drawMark(BlockPos pos, int color) {
-		Vec3 position = Vec3.atBottomCenterOf(pos).add(0.0, 0.02, 0.0);
-		Gizmos.billboardText("X", position, TextGizmo.Style.forColorAndCentered(color).withScale(1.5F));
+		double y = pos.getY() + 0.02;
+		double x = pos.getX();
+		double z = pos.getZ();
+		Gizmos.line(new Vec3(x, y, z), new Vec3(x + 1.0, y, z + 1.0), color, 1.5F);
+		Gizmos.line(new Vec3(x + 1.0, y, z), new Vec3(x, y, z + 1.0), color, 1.5F);
 	}
 }

@@ -32,7 +32,7 @@
   "gui.tntsallin1client.crosshair_options.title": "Crosshair Options",
   "gui.tntsallin1client.crosshair_options.color": "Color (Hex, no #)",
   "gui.tntsallin1client.menu.fullbright": "Fullbright",
-  "gui.tntsallin1client.menu.spawn_overlay": "Mob Spawn Overlay",
+  "gui.tntsallin1client.menu.spawn_overlay": "Lightlevel Overlay",
   "gui.tntsallin1client.spawn_overlay_options.title": "Mob Spawn Overlay Options",
   "gui.tntsallin1client.spawn_overlay_options.key": "Overlay Key: %s",
   "gui.tntsallin1client.spawn_overlay_options.mode": "Key Mode",
