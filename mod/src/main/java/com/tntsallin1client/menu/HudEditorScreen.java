@@ -99,7 +99,8 @@ public class HudEditorScreen extends Screen {
 			guiGraphics.drawString(this.font, entry.label, bounds.x, bounds.y - this.font.lineHeight - 2, 0xFFFFFF55);
 		}
 
-		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.hud_editor.hint"), this.width / 2, 8, 0xFFFFFFFF);
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 6, 0xFFFFFFFF);
+		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.hud_editor.hint"), this.width / 2, 6 + this.font.lineHeight + 2, 0xFFFFFFFF);
 	}
 
 	@Override

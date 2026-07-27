@@ -60,6 +60,7 @@ public class CrosshairTargetColorOptionsScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 	}
 

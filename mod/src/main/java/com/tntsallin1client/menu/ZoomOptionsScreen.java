@@ -58,6 +58,7 @@ public class ZoomOptionsScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.zoom_options.scroll_hint"),
 				this.width / 2, 40 + ROW_SPACING, 0xFFAAAAAA);
 	}

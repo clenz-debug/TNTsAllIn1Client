@@ -185,6 +185,7 @@ public class CrosshairOptionsScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 
 		ClientConfig config = ClientConfig.get();
 		if (config.crosshairMode == CrosshairMode.PRESET) {
