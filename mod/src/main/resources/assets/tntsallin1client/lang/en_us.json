@@ -77,7 +77,6 @@
   "gui.tntsallin1client.screenshot_toast.open": "Open",
   "gui.tntsallin1client.screenshot_toast.copy": "Copy",
   "gui.tntsallin1client.menu.item_tilt": "Item Physics",
-  "gui.tntsallin1client.menu.dark_inventory": "Dark Inventory",
   "gui.tntsallin1client.shulker_options.title": "Shulker Box Preview Options",
   "gui.tntsallin1client.shulker_options.key": "Preview Key: %s",
   "gui.tntsallin1client.zoom_options.title": "Zoom Options",

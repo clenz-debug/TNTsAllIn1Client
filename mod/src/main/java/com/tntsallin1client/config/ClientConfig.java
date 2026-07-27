@@ -120,13 +120,6 @@ public class ClientConfig {
 	// 5o: cosmetic dropped-item lean/tilt ("item physics" light).
 	public boolean itemTiltEnabled = true;
 
-	// 5r: darkens the light gray inventory/container background panel (chest,
-	// player inventory, furnace, crafting table, ...). Off by default, unlike
-	// the color-picker features above - unlike a picker that starts at "looks
-	// like vanilla", this changes the look the moment it's turned on, so it
-	// should be an explicit opt-in rather than a surprise.
-	public boolean darkInventoryEnabled = false;
-
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();
