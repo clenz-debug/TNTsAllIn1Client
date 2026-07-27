@@ -7,7 +7,6 @@ import com.tntsallin1client.crosshair.CrosshairPreset;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -28,11 +27,23 @@ import java.util.Locale;
  * already-tall screen, same "each feature gets a focused screen" reasoning
  * as everywhere else in this mod.
  *
- * <p>Re-runs {@link #init()} whenever the mode changes ({@link #rebuild()})
- * instead of trying to show/hide widgets conditionally - the PRESET and
- * CUSTOM sections have completely different shapes/heights (a cycle button
- * plus a small preview vs. a 9x9 clickable pixel grid), so recomputing the
- * whole layout is simpler and less bug-prone than juggling widget visibility.
+ * <p>Re-runs {@link #init()} whenever the mode changes or the page is
+ * scrolled ({@link #rebuild()}) instead of trying to show/hide widgets or
+ * reposition them individually - the PRESET and CUSTOM sections have
+ * completely different shapes/heights (a cycle button plus a small preview
+ * vs. a 9x9 clickable pixel grid), and re-running the same layout code with
+ * a different {@code scrollOffset} baked in is simpler and less bug-prone
+ * than juggling widget visibility or calling {@code setY} on everything by
+ * hand.
+ *
+ * <p><b>Bugfixes from the first live test:</b> the preset preview position
+ * used to be recomputed from scratch in {@link #render}, independently of
+ * the position actually used in {@link #init} - the two drifted apart
+ * (missing the preset cycle button's own row height), so the preview drew
+ * directly on top of that button. Fixed by storing {@link #previewX}/
+ * {@link #previewY} as fields set once in {@code init}, the same single
+ * source of truth {@link #gridX}/{@link #gridY} already used for the custom
+ * grid editor - {@code render} just reads them back instead of recalculating.
  */
 public class CrosshairOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
@@ -44,13 +55,20 @@ public class CrosshairOptionsScreen extends Screen {
 	private static final int GRID_AREA_SIZE = CrosshairGrid.SIZE * GRID_CELL_SIZE;
 	private static final int MIN_PIXEL_SIZE = 1;
 	private static final int MAX_PIXEL_SIZE = 6;
+	private static final int TOP_MARGIN = 40;
+	private static final int BOTTOM_MARGIN = 10;
+	private static final int SCROLL_STEP = 16;
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
 	private int gridX;
 	private int gridY;
+	private int previewX;
+	private int previewY;
 	private boolean painting;
 	private boolean paintingValue;
+	private int scrollOffset;
+	private int maxScroll;
 
 	public CrosshairOptionsScreen(Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.crosshair_options.title"));
@@ -60,8 +78,14 @@ public class CrosshairOptionsScreen extends Screen {
 	@Override
 	protected void init() {
 		ClientConfig config = ClientConfig.get();
+
+		int viewportHeight = this.height - TOP_MARGIN - BOTTOM_MARGIN;
+		int contentHeight = computeContentHeight(config) - TOP_MARGIN;
+		this.maxScroll = Math.max(0, contentHeight - viewportHeight);
+		this.scrollOffset = Mth.clamp(this.scrollOffset, 0, this.maxScroll);
+
 		int x = (this.width - ROW_WIDTH) / 2;
-		int y = 40;
+		int y = TOP_MARGIN - this.scrollOffset;
 
 		this.addRenderableWidget(CycleButton.builder(
 						(CrosshairMode mode) -> Component.translatable("gui.tntsallin1client.crosshair_options.mode." + mode.name().toLowerCase(Locale.ROOT)),
@@ -84,7 +108,8 @@ public class CrosshairOptionsScreen extends Screen {
 								config.save();
 							}));
 			y += ROW_SPACING;
-			this.gridX = -1;
+			this.previewX = x + (ROW_WIDTH - PREVIEW_AREA_SIZE) / 2;
+			this.previewY = y;
 			y += PREVIEW_AREA_SIZE + 6;
 		} else {
 			this.gridX = x + (ROW_WIDTH - GRID_AREA_SIZE) / 2;
@@ -92,21 +117,13 @@ public class CrosshairOptionsScreen extends Screen {
 			y += GRID_AREA_SIZE + 6;
 		}
 
-		int sizeFieldWidth = 60;
-		EditBox sizeField = new EditBox(this.font, x, y, sizeFieldWidth, ROW_HEIGHT,
-				Component.translatable("gui.tntsallin1client.crosshair_options.pixel_size"));
-		sizeField.setMaxLength(1);
-		sizeField.setFilter(v -> v.matches("[0-9]?"));
-		sizeField.setValue(String.valueOf(config.crosshairPixelSize));
-		sizeField.setResponder(value -> {
-			try {
-				config.crosshairPixelSize = Mth.clamp(Integer.parseInt(value.isEmpty() ? "0" : value), MIN_PIXEL_SIZE, MAX_PIXEL_SIZE);
-			} catch (NumberFormatException e) {
-				config.crosshairPixelSize = MIN_PIXEL_SIZE;
-			}
-			config.save();
-		});
-		this.addRenderableWidget(sizeField);
+		int sizeSliderWidth = 100;
+		this.addRenderableWidget(new IntSliderButton(x, y, sizeSliderWidth, ROW_HEIGHT, MIN_PIXEL_SIZE, MAX_PIXEL_SIZE, config.crosshairPixelSize,
+				size -> Component.translatable("gui.tntsallin1client.crosshair_options.pixel_size", size),
+				size -> {
+					config.crosshairPixelSize = size;
+					config.save();
+				}));
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.crosshairIgnoreGuiScale)
@@ -136,7 +153,30 @@ public class CrosshairOptionsScreen extends Screen {
 				.build());
 	}
 
-	/** Full re-layout after the mode toggle changes what section (preset picker vs. grid editor) is shown. */
+	/**
+	 * Mirrors the y-cursor arithmetic in {@link #init} to get the total
+	 * unscrolled content height without actually creating widgets - needed to
+	 * clamp {@link #scrollOffset} before laying anything out. Keep in sync
+	 * with {@link #init} if that layout ever changes.
+	 */
+	private static int computeContentHeight(ClientConfig config) {
+		int y = TOP_MARGIN;
+		y += ROW_SPACING;
+		if (config.crosshairMode == CrosshairMode.PRESET) {
+			y += ROW_SPACING;
+			y += PREVIEW_AREA_SIZE + 6;
+		} else {
+			y += GRID_AREA_SIZE + 6;
+		}
+		y += ROW_SPACING;
+		y += ROW_SPACING + 6;
+		y += ColorPickerPanel.totalHeight() + 6;
+		y += ROW_SPACING;
+		y += ROW_HEIGHT;
+		return y;
+	}
+
+	/** Full re-layout after the mode toggle or scroll offset changes what's shown/where. */
 	private void rebuild() {
 		this.clearWidgets();
 		this.init();
@@ -148,11 +188,9 @@ public class CrosshairOptionsScreen extends Screen {
 
 		ClientConfig config = ClientConfig.get();
 		if (config.crosshairMode == CrosshairMode.PRESET) {
-			int previewX = (this.width - ROW_WIDTH) / 2 + (ROW_WIDTH - PREVIEW_AREA_SIZE) / 2;
-			int previewY = 40 + ROW_SPACING;
-			guiGraphics.fill(previewX - 2, previewY - 2, previewX + PREVIEW_AREA_SIZE + 2, previewY + PREVIEW_AREA_SIZE + 2, 0x80000000);
+			guiGraphics.fill(this.previewX - 2, this.previewY - 2, this.previewX + PREVIEW_AREA_SIZE + 2, this.previewY + PREVIEW_AREA_SIZE + 2, 0x80000000);
 			CrosshairGrid.render(guiGraphics, config.crosshairPreset.grid(),
-					previewX + PREVIEW_AREA_SIZE / 2, previewY + PREVIEW_AREA_SIZE / 2, PREVIEW_PIXEL_SIZE, config.customCrosshairColor);
+					this.previewX + PREVIEW_AREA_SIZE / 2, this.previewY + PREVIEW_AREA_SIZE / 2, PREVIEW_PIXEL_SIZE, config.customCrosshairColor);
 		} else {
 			guiGraphics.fill(this.gridX, this.gridY, this.gridX + GRID_AREA_SIZE, this.gridY + GRID_AREA_SIZE, 0x80000000);
 			for (int row = 0; row < CrosshairGrid.SIZE; row++) {
@@ -205,6 +243,29 @@ public class CrosshairOptionsScreen extends Screen {
 			return true;
 		}
 		return super.mouseReleased(event);
+	}
+
+	/**
+	 * Lets widgets under the cursor (e.g. the mode/preset {@code CycleButton}s,
+	 * which already cycle their own value on scroll) handle the wheel first;
+	 * only scrolls the page if nothing consumed it, so hovering a cycle button
+	 * and scrolling still changes that button's value like anywhere else in
+	 * vanilla, instead of always scrolling the screen out from under it.
+	 */
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollDeltaX, double scrollDeltaY) {
+		if (super.mouseScrolled(mouseX, mouseY, scrollDeltaX, scrollDeltaY)) {
+			return true;
+		}
+		if (this.maxScroll <= 0) {
+			return false;
+		}
+		int newOffset = Mth.clamp(this.scrollOffset - (int) Math.round(scrollDeltaY * SCROLL_STEP), 0, this.maxScroll);
+		if (newOffset != this.scrollOffset) {
+			this.scrollOffset = newOffset;
+			this.rebuild();
+		}
+		return true;
 	}
 
 	private boolean isInGrid(double mouseX, double mouseY) {

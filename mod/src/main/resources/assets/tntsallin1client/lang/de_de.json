@@ -34,7 +34,7 @@
   "gui.tntsallin1client.crosshair_options.mode.preset": "Vorlage",
   "gui.tntsallin1client.crosshair_options.mode.custom": "Selbst zeichnen",
   "gui.tntsallin1client.crosshair_options.preset": "Form",
-  "gui.tntsallin1client.crosshair_options.pixel_size": "Größe",
+  "gui.tntsallin1client.crosshair_options.pixel_size": "Größe: %s",
   "gui.tntsallin1client.crosshair_options.ignore_gui_scale": "GUI-Skalierung ignorieren",
   "gui.tntsallin1client.crosshair_options.target_color_button": "Farbe beim Zielen auf ein Mob...",
   "gui.tntsallin1client.crosshair_target_options.title": "Fadenkreuz-Zielfarbe",

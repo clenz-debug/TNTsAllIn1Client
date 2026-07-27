@@ -82,26 +82,38 @@ public enum CrosshairPreset {
 			return CrosshairGrid.withCenterDot(CrosshairGrid.squareRing(3));
 		}
 	},
+	// The plus arms run the full width/height of the grid, straight through
+	// the square ring rather than stopping at its outside edge (bugfix -
+	// originally only drew short ticks outside the box, per user feedback:
+	// "die Arme sollen durch die Box durchgehen").
 	SQUARE_PLUS("gui.tntsallin1client.crosshair_preset.square_plus") {
 		@Override
 		public boolean[][] grid() {
 			boolean[][] grid = CrosshairGrid.squareRing(3);
 			int c = CrosshairGrid.CENTER;
-			grid[c][0] = true;
-			grid[c][1] = true;
-			grid[c][7] = true;
-			grid[c][8] = true;
-			grid[0][c] = true;
-			grid[1][c] = true;
-			grid[7][c] = true;
-			grid[8][c] = true;
+			for (int i = 0; i < CrosshairGrid.SIZE; i++) {
+				grid[c][i] = true;
+				grid[i][c] = true;
+			}
 			return grid;
 		}
 	},
+	// Same through-the-box arms as SQUARE_PLUS, but with a gap around the
+	// center dot (same gap width as PLUS_DOT) instead of one continuous line -
+	// otherwise the dot wouldn't stand out from the arms at all.
 	SQUARE_PLUS_DOT("gui.tntsallin1client.crosshair_preset.square_plus_dot") {
 		@Override
 		public boolean[][] grid() {
-			return CrosshairGrid.withCenterDot(SQUARE_PLUS.grid());
+			boolean[][] grid = CrosshairGrid.squareRing(3);
+			int c = CrosshairGrid.CENTER;
+			for (int i = 0; i < CrosshairGrid.SIZE; i++) {
+				if (i <= c - 2 || i >= c + 2) {
+					grid[c][i] = true;
+					grid[i][c] = true;
+				}
+			}
+			grid[c][c] = true;
+			return grid;
 		}
 	},
 	FOUR_ANGLED("gui.tntsallin1client.crosshair_preset.four_angled") {

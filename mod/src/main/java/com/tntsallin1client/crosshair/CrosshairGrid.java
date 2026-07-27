@@ -64,15 +64,25 @@ public final class CrosshairGrid {
 		return copy;
 	}
 
+	/**
+	 * {@code (centerX, centerY)} is where the exact center of the center cell
+	 * should land, not that cell's top-left corner - each cell is drawn
+	 * {@code pixelSize} wide starting from its top-left, so without the
+	 * {@code -pixelSize / 2} correction the whole grid would sit half a pixel
+	 * too far right/down (confirmed visually: the in-game crosshair and the
+	 * options-screen preset preview were both off-center from their intended
+	 * anchor point before this fix).
+	 */
 	public static void render(GuiGraphics guiGraphics, boolean[][] grid, int centerX, int centerY, int pixelSize, int color) {
 		int half = SIZE / 2;
+		int offset = pixelSize / 2;
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
 				if (!grid[row][col]) {
 					continue;
 				}
-				int pixelX = centerX + (col - half) * pixelSize;
-				int pixelY = centerY + (row - half) * pixelSize;
+				int pixelX = centerX + (col - half) * pixelSize - offset;
+				int pixelY = centerY + (row - half) * pixelSize - offset;
 				guiGraphics.fill(pixelX, pixelY, pixelX + pixelSize, pixelY + pixelSize, color);
 			}
 		}

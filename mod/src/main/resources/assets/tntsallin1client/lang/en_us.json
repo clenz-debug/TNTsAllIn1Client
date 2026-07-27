@@ -34,7 +34,7 @@
   "gui.tntsallin1client.crosshair_options.mode.preset": "Preset",
   "gui.tntsallin1client.crosshair_options.mode.custom": "Draw Your Own",
   "gui.tntsallin1client.crosshair_options.preset": "Shape",
-  "gui.tntsallin1client.crosshair_options.pixel_size": "Size",
+  "gui.tntsallin1client.crosshair_options.pixel_size": "Size: %s",
   "gui.tntsallin1client.crosshair_options.ignore_gui_scale": "Ignore GUI Scale",
   "gui.tntsallin1client.crosshair_options.target_color_button": "Color While Aiming at a Mob...",
   "gui.tntsallin1client.crosshair_target_options.title": "Crosshair Target Color",

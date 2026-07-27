@@ -49,6 +49,8 @@ public class ColorPickerPanel {
 	private static final int HUE_SLIDER_WIDTH = 16;
 	private static final int HUE_SLIDER_GAP = 10;
 	private static final int MARKER_HALF_SIZE = 3;
+	private static final int SWATCH_SIZE = 20;
+	private static final int SWATCH_GAP = 4;
 
 	private final int x;
 	private final int y;
@@ -78,11 +80,16 @@ public class ColorPickerPanel {
 		int fieldY = y + SQUARE_SIZE + 8;
 		int labelWidth = 42;
 		int fieldWidth = fieldRowWidth - labelWidth - 6;
+		// The hex field + its swatch together take up exactly one "field column"
+		// (same width as a single R/G/B box), so the "Hex" label lines up with
+		// the Red/Green/Blue labels instead of sitting way out past the hue
+		// slider where the old full-width hex field + misplaced swatch used to end.
+		int hexFieldWidth = fieldWidth - SWATCH_SIZE - SWATCH_GAP;
 
 		this.redField = new EditBox(font, x, fieldY, fieldWidth, 20, Component.translatable("gui.tntsallin1client.color_picker.red"));
 		this.greenField = new EditBox(font, x, fieldY + 24, fieldWidth, 20, Component.translatable("gui.tntsallin1client.color_picker.green"));
 		this.blueField = new EditBox(font, x, fieldY + 48, fieldWidth, 20, Component.translatable("gui.tntsallin1client.color_picker.blue"));
-		this.hexField = new EditBox(font, x, fieldY + 72, fieldRowWidth, 20, Component.translatable("gui.tntsallin1client.color_picker.hex"));
+		this.hexField = new EditBox(font, x, fieldY + 72, hexFieldWidth, 20, Component.translatable("gui.tntsallin1client.color_picker.hex"));
 		this.hexField.setMaxLength(6);
 		this.hexField.setFilter(v -> v.matches("[0-9a-fA-F]{0,6}"));
 		for (EditBox channelField : new EditBox[]{this.redField, this.greenField, this.blueField}) {
@@ -133,7 +140,9 @@ public class ColorPickerPanel {
 		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.color_picker.green"), labelX, this.greenField.getY() + 6, labelColor);
 		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.color_picker.blue"), labelX, this.blueField.getY() + 6, labelColor);
 
-		ColorPickerHelper.drawSwatch(guiGraphics, hueX, this.hexField.getY(), HUE_SLIDER_WIDTH + 4, Mth.hsvToArgb(this.hue, this.saturation, this.value, 255));
+		int swatchX = this.hexField.getX() + this.hexField.getWidth() + SWATCH_GAP;
+		ColorPickerHelper.drawSwatch(guiGraphics, swatchX, this.hexField.getY(), SWATCH_SIZE, Mth.hsvToArgb(this.hue, this.saturation, this.value, 255));
+		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.color_picker.hex"), labelX, this.hexField.getY() + 6, labelColor);
 	}
 
 	public boolean mouseClicked(MouseButtonEvent event) {
