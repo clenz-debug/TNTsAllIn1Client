@@ -7,6 +7,7 @@
 		"AbstractContainerScreenMixin",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
+		"CreativeModeInventoryScreenMixin",
 		"EntityHitboxDebugRendererMixin",
 		"GuiMixin",
 		"ItemEntityRenderStateMixin",
