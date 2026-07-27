@@ -2,6 +2,7 @@ package com.tntsallin1client.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.crosshair.CrosshairGrid;
 import com.tntsallin1client.crosshair.CrosshairMode;
@@ -120,7 +121,14 @@ public class ClientConfig {
 				if (loaded != null) {
 					return loaded;
 				}
-			} catch (IOException e) {
+			} catch (IOException | JsonParseException e) {
+				// JsonParseException (e.g. a saved field that no longer matches its
+				// current Java type - confirmed the hard way: crosshairPixelSize
+				// briefly went from int to float and back, leaving a fractional
+				// value on disk that GSON couldn't parse back into an int) used to
+				// propagate straight out of here uncaught, crashing the whole game
+				// at startup instead of just falling back to defaults like a bad
+				// config file always should.
 				TNTsAllIn1ClientMod.LOGGER.warn("[{}] Failed to read config, falling back to defaults.", TNTsAllIn1ClientMod.MOD_ID, e);
 			}
 		}
