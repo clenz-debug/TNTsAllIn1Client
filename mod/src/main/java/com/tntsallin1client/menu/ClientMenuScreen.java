@@ -17,6 +17,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.repository.PackRepository;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -47,6 +48,22 @@ public class ClientMenuScreen extends Screen {
 	private static final int TOGGLE_GAP = 4;
 	private static final int LIST_TOP = 32;
 	private static final int FOOTER_HEIGHT = 30;
+
+	/**
+	 * Exact filenames of the 5p 3D-block-model resource packs bundled in
+	 * {@code launcher/resourcepacks-bundle/} (pack IDs are "file/" + the file
+	 * name on disk, see vanilla's {@code FolderRepositorySource}) - excludes
+	 * the unrelated Default Dark Mode pack. Update this list if any of those
+	 * files are ever renamed or upgraded to a new version number, same
+	 * upkeep requirement as {@link CreditsScreen}'s own hardcoded entry list.
+	 */
+	private static final List<String> BLOCK_MODEL_PACK_IDS = List.of(
+			"file/3D-Default-1.21.2+-v1.15.0.zip",
+			"file/Bushy-Vegetation-3.5.2.zip",
+			"file/3D-Bushy-Bushie-1.0.zip",
+			"file/Mushrooms-Plus-26.1_v1.4.zip",
+			"file/Vanilla-Spinning-Stonecutter-3D-1.0.0.zip",
+			"file/VanillaTweaks_r346678_MC1.21.x.zip");
 
 	private final @Nullable Screen parent;
 
@@ -176,6 +193,18 @@ public class ClientMenuScreen extends Screen {
 					} else {
 						connectedTextures.disable();
 					}
+				});
+
+		PackRepository packRepository = this.minecraft.getResourcePackRepository();
+		boolean blockModels3dEnabled = BLOCK_MODEL_PACK_IDS.stream().anyMatch(packRepository.getSelectedIds()::contains);
+		list.addToggleRow(blockModels3dEnabled, Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
+				value -> {
+					if (value) {
+						BLOCK_MODEL_PACK_IDS.forEach(packRepository::addPack);
+					} else {
+						BLOCK_MODEL_PACK_IDS.forEach(packRepository::removePack);
+					}
+					this.minecraft.options.updateResourcePacks(packRepository);
 				});
 
 		boolean skinLayers3dEnabled = ModBase.config.enableHat || ModBase.config.enableJacket
