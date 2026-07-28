@@ -2,6 +2,9 @@ package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
+import dev.tr7zw.skinlayers.SkinLayersModBase;
+import dev.tr7zw.skinlayers.config.ConfigScreenProvider;
+import dev.tr7zw.skinlayers.versionless.ModBase;
 import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -174,6 +177,21 @@ public class ClientMenuScreen extends Screen {
 						connectedTextures.disable();
 					}
 				});
+
+		boolean skinLayers3dEnabled = ModBase.config.enableHat || ModBase.config.enableJacket
+				|| ModBase.config.enableLeftSleeve || ModBase.config.enableRightSleeve
+				|| ModBase.config.enableLeftPants || ModBase.config.enableRightPants;
+		list.addToggleRow(skinLayers3dEnabled, Component.translatable("gui.tntsallin1client.menu.skin_layers_3d"),
+				value -> {
+					ModBase.config.enableHat = value;
+					ModBase.config.enableJacket = value;
+					ModBase.config.enableLeftSleeve = value;
+					ModBase.config.enableRightSleeve = value;
+					ModBase.config.enableLeftPants = value;
+					ModBase.config.enableRightPants = value;
+					SkinLayersModBase.instance.writeConfig();
+				},
+				() -> ConfigScreenProvider.createConfigScreen(this));
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));

@@ -32,6 +32,11 @@ dependencies {
 	// Phase 5f: connected textures (3D glass etc.) - bundled rather than reimplemented,
 	// see https://github.com/PepperCode1/Continuity. Beta build - only release supporting 1.21.11.
 	modImplementation("maven.modrinth:continuity:3.0.1-beta.1+1.21.11")
+
+	// 3D skin layers - bundled rather than reimplemented, see https://github.com/tr7zw/3d-skin-layers.
+	// Compile-time only, for the mod menu toggle/options integration; the mod itself ships as its
+	// own jar via launcher/mods-bundle, same as Continuity above.
+	modImplementation("maven.modrinth:3dskinlayers:1.11.2")
 }
 
 tasks.processResources {

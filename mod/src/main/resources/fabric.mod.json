@@ -25,6 +25,7 @@
 		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": "*",
-		"continuity": ">=3.0.1-beta.1"
+		"continuity": ">=3.0.1-beta.1",
+		"skinlayers3d": ">=1.11.2"
 	}
 }

@@ -83,6 +83,7 @@
   "gui.tntsallin1client.zoom_options.key": "Zoom Key: %s",
   "gui.tntsallin1client.zoom_options.scroll_hint": "While zooming: scroll wheel = zoom in/out further",
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures",
+  "gui.tntsallin1client.menu.skin_layers_3d": "3D Skin Layers",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.menu.credits_button": "Third-Party Credits",
   "gui.tntsallin1client.credits.title": "Third-Party Credits",
