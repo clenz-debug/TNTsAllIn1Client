@@ -182,10 +182,19 @@ public class CrosshairOptionsScreen extends Screen {
 		this.init();
 	}
 
+	/**
+	 * Scrolled rows are just shifted by {@code -scrollOffset} (see {@link #init}),
+	 * nothing clips them - without this scissor, scrolling far enough pushes a
+	 * row up into the fixed title text at y=12 instead of disappearing off the
+	 * top like a real scrollable list would (vanilla's {@link ContainerObjectSelectionList},
+	 * used elsewhere in this mod, clips for exactly this reason). Bounds match
+	 * the same [TOP_MARGIN, height - BOTTOM_MARGIN] viewport already used to
+	 * compute {@link #maxScroll}.
+	 */
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 
 		ClientConfig config = ClientConfig.get();
 		if (config.crosshairMode == CrosshairMode.PRESET) {
@@ -206,6 +215,9 @@ public class CrosshairOptionsScreen extends Screen {
 		}
 
 		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
+		guiGraphics.disableScissor();
+
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override

@@ -102,16 +102,24 @@ public class KeystrokesOptionsScreen extends Screen {
 		this.init();
 	}
 
+	/**
+	 * Same scissor fix as {@link CrosshairOptionsScreen#render} - without it,
+	 * scrolling pushes the active-color label/picker up into the fixed title
+	 * text instead of disappearing off the top.
+	 */
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.active_color_label"),
 				this.labelX, this.activeLabelY, 0xFFFFFFFF);
 		this.activeColorPicker.render(guiGraphics, 0xFFFFFFFF);
 		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.text_color_label"),
 				this.labelX, this.textLabelY, 0xFFFFFFFF);
 		this.textColorPicker.render(guiGraphics, 0xFFFFFFFF);
+		guiGraphics.disableScissor();
+
+		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override
