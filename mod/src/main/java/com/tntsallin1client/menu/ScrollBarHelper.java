@@ -26,15 +26,27 @@ import java.util.function.IntSupplier;
  * originally pinned to the far screen edge, moved to sit right next to the
  * centered content column instead after user feedback that the screen-edge
  * position put it too far from the buttons it scrolls.
+ *
+ * <p><b>Must be kept as one persistent instance across a screen's
+ * {@code rebuild()} calls, not recreated every time</b> - dragging the bar
+ * changes {@code scrollOffset}, which triggers the owning screen's own
+ * {@code rebuild()} (clears and re-adds every widget so they land at their
+ * new scrolled position) on every single drag tick. Replacing this object
+ * on each of those rebuilds - which the screens did at first - reset
+ * {@link #dragging} to {@code false} every tick, so the bar moved one pixel
+ * and then stopped tracking the mouse. Callers must construct this once and
+ * call {@link #reposition} on subsequent {@code init()} calls instead of
+ * {@code new ScrollBarHelper(...)} again, so the same instance (and its drag
+ * state) survives the rebuild.
  */
 public class ScrollBarHelper {
 	public static final int WIDTH = 6;
 	private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("widget/scroller");
 	private static final Identifier SCROLLER_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("widget/scroller_background");
 
-	private final int x;
-	private final int viewportTop;
-	private final int viewportHeight;
+	private int x;
+	private int viewportTop;
+	private int viewportHeight;
 	private final IntSupplier scrollOffset;
 	private final IntSupplier maxScroll;
 	private final IntConsumer onDrag;
@@ -48,6 +60,13 @@ public class ScrollBarHelper {
 		this.scrollOffset = scrollOffset;
 		this.maxScroll = maxScroll;
 		this.onDrag = onDrag;
+	}
+
+	/** Re-applies geometry without touching {@link #dragging} - see the class doc for why this matters. */
+	public void reposition(int x, int viewportTop, int viewportHeight) {
+		this.x = x;
+		this.viewportTop = viewportTop;
+		this.viewportHeight = viewportHeight;
 	}
 
 	public void render(GuiGraphics guiGraphics) {

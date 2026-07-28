@@ -56,12 +56,16 @@ public class KeystrokesOptionsScreen extends Screen {
 		this.labelX = (this.width - ROW_WIDTH) / 2;
 		int y = TOP_MARGIN - this.scrollOffset;
 
-		this.scrollBar = new ScrollBarHelper(this.labelX + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
-				() -> this.scrollOffset, () -> this.maxScroll,
-				newOffset -> {
-					this.scrollOffset = newOffset;
-					this.rebuild();
-				});
+		if (this.scrollBar == null) {
+			this.scrollBar = new ScrollBarHelper(this.labelX + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
+					() -> this.scrollOffset, () -> this.maxScroll,
+					newOffset -> {
+						this.scrollOffset = newOffset;
+						this.rebuild();
+					});
+		} else {
+			this.scrollBar.reposition(this.labelX + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight);
+		}
 
 		this.activeLabelY = y;
 		y += LABEL_HEIGHT;

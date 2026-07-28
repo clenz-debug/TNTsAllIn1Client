@@ -89,12 +89,16 @@ public class CrosshairOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = TOP_MARGIN - this.scrollOffset;
 
-		this.scrollBar = new ScrollBarHelper(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
-				() -> this.scrollOffset, () -> this.maxScroll,
-				newOffset -> {
-					this.scrollOffset = newOffset;
-					this.rebuild();
-				});
+		if (this.scrollBar == null) {
+			this.scrollBar = new ScrollBarHelper(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
+					() -> this.scrollOffset, () -> this.maxScroll,
+					newOffset -> {
+						this.scrollOffset = newOffset;
+						this.rebuild();
+					});
+		} else {
+			this.scrollBar.reposition(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight);
+		}
 
 		this.addRenderableWidget(CycleButton.builder(
 						(CrosshairMode mode) -> Component.translatable("gui.tntsallin1client.crosshair_options.mode." + mode.name().toLowerCase(Locale.ROOT)),
