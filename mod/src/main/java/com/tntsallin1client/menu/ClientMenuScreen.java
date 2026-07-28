@@ -58,7 +58,6 @@ public class ClientMenuScreen extends Screen {
 	 * upkeep requirement as {@link CreditsScreen}'s own hardcoded entry list.
 	 */
 	private static final List<String> BLOCK_MODEL_PACK_IDS = List.of(
-			"file/3D-Default-1.21.2+-v1.15.0.zip",
 			"file/Bushy-Vegetation-3.5.2.zip",
 			"file/3D-Bushy-Bushie-1.0.zip",
 			"file/Mushrooms-Plus-26.1_v1.4.zip",

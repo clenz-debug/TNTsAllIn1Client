@@ -50,7 +50,6 @@ public class CreditsScreen extends Screen {
 			new CreditEntry("Lithium", "LGPL-3.0-only", "https://github.com/CaffeineMC/lithium-fabric"),
 			new CreditEntry("Continuity", "LGPL-3.0-only", "https://github.com/PepperCode1/Continuity"),
 			new CreditEntry("3D Skin Layers", "tr7zw Protective License", "https://github.com/tr7zw/3d-Skin-Layers"),
-			new CreditEntry("3D Default (resource pack)", "GPL-3.0-only", "https://modrinth.com/resourcepack/3d-default"),
 			new CreditEntry("Default Dark Mode (resource pack)", "CC-BY-NC-SA-4.0", "https://github.com/nebuIr/Default-Dark-Mode"),
 			new CreditEntry("Bushy Vegetation (resource pack)", "BSD-3-Clause", "https://modrinth.com/resourcepack/bushy-vegetation"),
 			new CreditEntry("3D Bushy Bushie (resource pack)", "Apache-2.0", "https://modrinth.com/resourcepack/3d-bushy-bushie"),
