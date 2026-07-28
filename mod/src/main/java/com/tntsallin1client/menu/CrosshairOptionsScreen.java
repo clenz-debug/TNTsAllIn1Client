@@ -61,6 +61,7 @@ public class CrosshairOptionsScreen extends Screen {
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
+	private @Nullable ScrollBarHelper scrollBar;
 	private int gridX;
 	private int gridY;
 	private int previewX;
@@ -83,6 +84,12 @@ public class CrosshairOptionsScreen extends Screen {
 		int contentHeight = computeContentHeight(config) - TOP_MARGIN;
 		this.maxScroll = Math.max(0, contentHeight - viewportHeight);
 		this.scrollOffset = Mth.clamp(this.scrollOffset, 0, this.maxScroll);
+		this.scrollBar = new ScrollBarHelper(this.width, TOP_MARGIN, viewportHeight,
+				() -> this.scrollOffset, () -> this.maxScroll,
+				newOffset -> {
+					this.scrollOffset = newOffset;
+					this.rebuild();
+				});
 
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = TOP_MARGIN - this.scrollOffset;
@@ -217,11 +224,15 @@ public class CrosshairOptionsScreen extends Screen {
 		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 		guiGraphics.disableScissor();
 
+		this.scrollBar.render(guiGraphics);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (this.scrollBar.mouseClicked(event)) {
+			return true;
+		}
 		if (this.colorPicker.mouseClicked(event)) {
 			return true;
 		}
@@ -238,6 +249,9 @@ public class CrosshairOptionsScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (this.scrollBar.mouseDragged(dragY)) {
+			return true;
+		}
 		if (this.colorPicker.mouseDragged(event)) {
 			return true;
 		}
@@ -252,7 +266,7 @@ public class CrosshairOptionsScreen extends Screen {
 	public boolean mouseReleased(MouseButtonEvent event) {
 		boolean wasPainting = this.painting;
 		this.painting = false;
-		if (this.colorPicker.mouseReleased() || wasPainting) {
+		if (this.scrollBar.mouseReleased() || this.colorPicker.mouseReleased() || wasPainting) {
 			return true;
 		}
 		return super.mouseReleased(event);

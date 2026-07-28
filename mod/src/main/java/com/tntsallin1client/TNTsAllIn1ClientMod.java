@@ -24,6 +24,7 @@ import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
+import com.tntsallin1client.menu.TitleScreenIntegration;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
@@ -72,6 +73,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5e: ingame mod menu (keybind + pause menu button).
 		PauseMenuIntegration.register();
+
+		// Phase 5u: mod menu button on the title screen too.
+		TitleScreenIntegration.register();
 
 		// Phase 5d: extra "Quick Info" block on the F3 debug screen, plus a
 		// separate F3+S page for CPU/GPU/version (moved out of the main screen).

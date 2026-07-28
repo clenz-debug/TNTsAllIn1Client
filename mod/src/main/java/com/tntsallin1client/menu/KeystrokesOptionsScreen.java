@@ -31,6 +31,7 @@ public class KeystrokesOptionsScreen extends Screen {
 	private final Screen parent;
 	private @Nullable ColorPickerPanel activeColorPicker;
 	private @Nullable ColorPickerPanel textColorPicker;
+	private @Nullable ScrollBarHelper scrollBar;
 	private int labelX;
 	private int activeLabelY;
 	private int textLabelY;
@@ -50,6 +51,12 @@ public class KeystrokesOptionsScreen extends Screen {
 		int contentHeight = computeContentHeight() - TOP_MARGIN;
 		this.maxScroll = Math.max(0, contentHeight - viewportHeight);
 		this.scrollOffset = Mth.clamp(this.scrollOffset, 0, this.maxScroll);
+		this.scrollBar = new ScrollBarHelper(this.width, TOP_MARGIN, viewportHeight,
+				() -> this.scrollOffset, () -> this.maxScroll,
+				newOffset -> {
+					this.scrollOffset = newOffset;
+					this.rebuild();
+				});
 
 		this.labelX = (this.width - ROW_WIDTH) / 2;
 		int y = TOP_MARGIN - this.scrollOffset;
@@ -119,11 +126,15 @@ public class KeystrokesOptionsScreen extends Screen {
 		this.textColorPicker.render(guiGraphics, 0xFFFFFFFF);
 		guiGraphics.disableScissor();
 
+		this.scrollBar.render(guiGraphics);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (this.scrollBar.mouseClicked(event)) {
+			return true;
+		}
 		if (this.activeColorPicker.mouseClicked(event) || this.textColorPicker.mouseClicked(event)) {
 			return true;
 		}
@@ -132,6 +143,9 @@ public class KeystrokesOptionsScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (this.scrollBar.mouseDragged(dragY)) {
+			return true;
+		}
 		if (this.activeColorPicker.mouseDragged(event) || this.textColorPicker.mouseDragged(event)) {
 			return true;
 		}
@@ -142,7 +156,7 @@ public class KeystrokesOptionsScreen extends Screen {
 	public boolean mouseReleased(MouseButtonEvent event) {
 		boolean releasedActive = this.activeColorPicker.mouseReleased();
 		boolean releasedText = this.textColorPicker.mouseReleased();
-		if (releasedActive || releasedText) {
+		if (this.scrollBar.mouseReleased() || releasedActive || releasedText) {
 			return true;
 		}
 		return super.mouseReleased(event);
