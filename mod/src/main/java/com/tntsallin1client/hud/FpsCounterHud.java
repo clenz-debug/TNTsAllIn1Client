@@ -13,7 +13,6 @@ import net.minecraft.client.gui.GuiGraphics;
  * {@link MaterialCounterHud} sits so the two don't overlap by default.
  */
 public class FpsCounterHud implements HudElement {
-	private static final int TEXT_COLOR = 0xFFFFFFFF;
 	private static final int DEFAULT_RIGHT_MARGIN = 4;
 	private static final int DEFAULT_TOP = 16;
 
@@ -41,7 +40,7 @@ public class FpsCounterHud implements HudElement {
 			x = defaultX(guiGraphics.guiWidth(), client.font, label);
 			y = DEFAULT_TOP;
 		}
-		drawLabel(guiGraphics, client.font, label, x, y, layout.scale);
+		drawLabel(guiGraphics, client.font, label, x, y, layout.scale, config.fpsCounterTextColor);
 	}
 
 	/** The label this HUD would currently show - shared with the HUD editor for accurate drag bounds. */
@@ -58,11 +57,11 @@ public class FpsCounterHud implements HudElement {
 		return DEFAULT_TOP;
 	}
 
-	public static void drawLabel(GuiGraphics guiGraphics, Font font, String label, float x, float y, float scale) {
+	public static void drawLabel(GuiGraphics guiGraphics, Font font, String label, float x, float y, float scale, int color) {
 		guiGraphics.pose().pushMatrix();
 		guiGraphics.pose().translate(x, y);
 		guiGraphics.pose().scale(scale);
-		guiGraphics.drawString(font, label, 0, 0, TEXT_COLOR);
+		guiGraphics.drawString(font, label, 0, 0, color);
 		guiGraphics.pose().popMatrix();
 	}
 }

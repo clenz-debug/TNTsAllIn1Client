@@ -12,20 +12,17 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Locale;
 
 /**
  * Phase 5e/5i, redesigned: dedicated options screen for the custom crosshair.
- * Originally just a hex color field; now picks between a preset shape
- * library ({@link CrosshairPreset}) or a hand-drawn 9x9 grid, a size
- * independent of GUI Scale, and the base color via {@link ColorPickerPanel} -
- * inspired by Dawn Client's crosshair editor (user-provided reference
- * screenshot). The target-color-while-aiming-at-a-mob setting lives in its
- * own {@link CrosshairTargetColorOptionsScreen} rather than crammed onto this
- * already-tall screen, same "each feature gets a focused screen" reasoning
- * as everywhere else in this mod.
+ * Picks between a preset shape library ({@link CrosshairPreset}) or a
+ * hand-drawn 9x9 grid, a size independent of GUI Scale, and whether aiming at
+ * an attackable mob switches to a second color - inspired by Dawn Client's
+ * crosshair editor (user-provided reference screenshot). Both colors
+ * themselves (base + target) live in the shared {@link ColorMenuScreen}
+ * (Phase 5t) rather than here, same as every other color setting in the mod.
  *
  * <p>Re-runs {@link #init()} whenever the mode changes or the page is
  * scrolled ({@link #rebuild()}) instead of trying to show/hide widgets or
@@ -60,7 +57,6 @@ public class CrosshairOptionsScreen extends Screen {
 	private static final int SCROLL_STEP = 16;
 
 	private final Screen parent;
-	private @Nullable ColorPickerPanel colorPicker;
 	private int gridX;
 	private int gridY;
 	private int previewX;
@@ -134,18 +130,12 @@ public class CrosshairOptionsScreen extends Screen {
 						}));
 		y += ROW_SPACING + 6;
 
-		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.customCrosshairColor,
-				this::addRenderableWidget,
-				argb -> {
-					config.customCrosshairColor = argb;
-					config.save();
-				});
-		y += ColorPickerPanel.totalHeight() + 6;
-
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.crosshair_options.target_color_button"),
-						button -> this.minecraft.setScreen(new CrosshairTargetColorOptionsScreen(this)))
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.crosshairTargetColorEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.crosshair_options.target_color_button"),
+						(button, value) -> {
+							config.crosshairTargetColorEnabled = value;
+							config.save();
+						}));
 		y += ROW_SPACING;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
@@ -170,7 +160,6 @@ public class CrosshairOptionsScreen extends Screen {
 		}
 		y += ROW_SPACING;
 		y += ROW_SPACING + 6;
-		y += ColorPickerPanel.totalHeight() + 6;
 		y += ROW_SPACING;
 		y += ROW_HEIGHT;
 		return y;
@@ -204,15 +193,10 @@ public class CrosshairOptionsScreen extends Screen {
 				}
 			}
 		}
-
-		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 	}
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (this.colorPicker.mouseClicked(event)) {
-			return true;
-		}
 		if (ClientConfig.get().crosshairMode == CrosshairMode.CUSTOM && isInGrid(event.x(), event.y())) {
 			int[] cell = cellAt(event.x(), event.y());
 			ClientConfig config = ClientConfig.get();
@@ -226,9 +210,6 @@ public class CrosshairOptionsScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-		if (this.colorPicker.mouseDragged(event)) {
-			return true;
-		}
 		if (this.painting) {
 			paintCell(event.x(), event.y());
 			return true;
@@ -240,7 +221,7 @@ public class CrosshairOptionsScreen extends Screen {
 	public boolean mouseReleased(MouseButtonEvent event) {
 		boolean wasPainting = this.painting;
 		this.painting = false;
-		if (this.colorPicker.mouseReleased() || wasPainting) {
+		if (wasPainting) {
 			return true;
 		}
 		return super.mouseReleased(event);

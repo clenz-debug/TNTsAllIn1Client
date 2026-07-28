@@ -15,9 +15,10 @@ import java.util.function.IntConsumer;
 /**
  * Slider/square-based color picker (hue/saturation/value square + a hue
  * slider, plus RGB number fields and the existing hex field), replacing the
- * hex-only input {@link CrosshairOptionsScreen}/{@link HitboxColorOptionsScreen}
- * used before - typing a hex code was the only way to change a color, no
- * visual picking at all. Not a full copy of the referenced MS Paint dialog
+ * hex-only input the crosshair/hitbox screens used before - typing a hex
+ * code was the only way to change a color, no visual picking at all. Now
+ * used by {@link SingleColorOptionsScreen}, reached from {@link ColorMenuScreen}.
+ * Not a full copy of the referenced MS Paint dialog
  * (which is HSL - a big hue/saturation square plus a separate luminosity
  * slider): built on HSV instead via {@code Mth.hsvToArgb}, already provided
  * by vanilla, and {@code java.awt.Color.RGBtoHSB} for the reverse direction

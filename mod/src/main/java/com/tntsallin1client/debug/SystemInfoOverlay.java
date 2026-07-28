@@ -1,5 +1,6 @@
 package com.tntsallin1client.debug;
 
+import com.tntsallin1client.config.ClientConfig;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -21,7 +22,6 @@ public class SystemInfoOverlay implements HudElement {
 	public static boolean visible = false;
 
 	private static final Identifier[] ENTRIES = {DebugScreenEntries.SYSTEM_SPECS, DebugScreenEntries.GAME_VERSION};
-	private static final int TEXT_COLOR = 0xFFFFFFFF;
 	private static final int BACKGROUND_COLOR = 0x90000000;
 	private static final int PADDING = 4;
 
@@ -52,9 +52,10 @@ public class SystemInfoOverlay implements HudElement {
 		int top = (guiGraphics.guiHeight() - height) / 2;
 
 		guiGraphics.fill(left - PADDING, top - PADDING, left + width + PADDING, top + height + PADDING, BACKGROUND_COLOR);
+		int textColor = ClientConfig.get().systemInfoTextColor;
 		int y = top;
 		for (String line : displayer.lines) {
-			guiGraphics.drawString(client.font, line, left, y, TEXT_COLOR);
+			guiGraphics.drawString(client.font, line, left, y, textColor);
 			y += client.font.lineHeight;
 		}
 	}

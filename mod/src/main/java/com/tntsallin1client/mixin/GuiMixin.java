@@ -39,7 +39,7 @@ public class GuiMixin {
 		if (client.getDebugOverlay().showDebugScreen()) {
 			return;
 		}
-		guiGraphics.drawString(client.font, "TNT's All-In-1 Client (Mixin active)", 4, 4, 0xFFFFFFFF);
+		guiGraphics.drawString(client.font, "TNT's All-In-1 Client (Mixin active)", 4, 4, ClientConfig.get().clientNameLabelColor);
 	}
 
 	/**

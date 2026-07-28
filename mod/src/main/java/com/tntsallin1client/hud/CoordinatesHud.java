@@ -21,7 +21,6 @@ import java.util.List;
  */
 public class CoordinatesHud implements HudElement {
 	private static final String[] COMPASS_DIRECTIONS = {"S", "SW", "W", "NW", "N", "NE", "E", "SE"};
-	private static final int TEXT_COLOR = 0xFFFFFFFF;
 	public static final int DEFAULT_LEFT = 4;
 	public static final int DEFAULT_TOP = 14;
 
@@ -46,7 +45,7 @@ public class CoordinatesHud implements HudElement {
 		HudLayout layout = config.coordinatesHudLayout;
 		float x = layout.customPosition ? layout.x : DEFAULT_LEFT;
 		float y = layout.customPosition ? layout.y : DEFAULT_TOP;
-		drawLines(guiGraphics, client.font, lines, x, y, layout.scale);
+		drawLines(guiGraphics, client.font, lines, x, y, layout.scale, config.coordinatesHudTextColor);
 	}
 
 	/** Lines this HUD would currently show, in render order. Shared with the HUD editor for accurate drag bounds. */
@@ -65,14 +64,14 @@ public class CoordinatesHud implements HudElement {
 		return lines;
 	}
 
-	public static void drawLines(GuiGraphics guiGraphics, Font font, List<String> lines, float x, float y, float scale) {
+	public static void drawLines(GuiGraphics guiGraphics, Font font, List<String> lines, float x, float y, float scale, int color) {
 		guiGraphics.pose().pushMatrix();
 		guiGraphics.pose().translate(x, y);
 		guiGraphics.pose().scale(scale);
 
 		int lineY = 0;
 		for (String line : lines) {
-			guiGraphics.drawString(font, line, 0, lineY, TEXT_COLOR);
+			guiGraphics.drawString(font, line, 0, lineY, color);
 			lineY += font.lineHeight;
 		}
 

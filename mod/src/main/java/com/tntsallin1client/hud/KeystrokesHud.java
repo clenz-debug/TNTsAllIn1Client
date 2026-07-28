@@ -31,7 +31,6 @@ public class KeystrokesHud implements HudElement {
 	private static final int DEFAULT_BOTTOM_MARGIN = 4;
 	private static final int BOX_COLOR_IDLE = 0x80333333;
 	private static final int ACTIVE_ALPHA = 0xC0000000;
-	private static final int TEXT_COLOR = 0xFFFFFFFF;
 
 	private record KeyEntry(KeystrokeKey key, boolean down) {
 	}
@@ -78,7 +77,7 @@ public class KeystrokesHud implements HudElement {
 				String label = entry.key().label;
 				int boxWidth = boxWidth(label, font);
 				guiGraphics.fill(boxX, rowY, boxX + boxWidth, rowY + BOX_HEIGHT, entry.down() ? activeColor : BOX_COLOR_IDLE);
-				guiGraphics.drawCenteredString(font, label, boxX + boxWidth / 2, rowY + (BOX_HEIGHT - font.lineHeight) / 2, TEXT_COLOR);
+				guiGraphics.drawCenteredString(font, label, boxX + boxWidth / 2, rowY + (BOX_HEIGHT - font.lineHeight) / 2, config.keystrokesTextColor);
 				boxX += boxWidth + GAP;
 			}
 			rowY += BOX_HEIGHT + GAP;

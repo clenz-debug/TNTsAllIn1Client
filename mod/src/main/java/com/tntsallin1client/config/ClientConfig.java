@@ -120,6 +120,18 @@ public class ClientConfig {
 	// 5o: cosmetic dropped-item lean/tilt ("item physics" light).
 	public boolean itemTiltEnabled = true;
 
+	// 5t: text colors for the plain-text HUD/overlay elements, all defaulting to
+	// white (vanilla's own text color) so adding this doesn't visibly change
+	// anything until picked. Edited from the central ColorMenuScreen, same as
+	// every other color setting in this file - see the class-level note there
+	// for why colors moved out of each feature's own options screen.
+	public int coordinatesHudTextColor = 0xFFFFFFFF;
+	public int materialCounterTextColor = 0xFFFFFFFF;
+	public int fpsCounterTextColor = 0xFFFFFFFF;
+	public int clientNameLabelColor = 0xFFFFFFFF;
+	public int systemInfoTextColor = 0xFFFFFFFF;
+	public int keystrokesTextColor = 0xFFFFFFFF;
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();
