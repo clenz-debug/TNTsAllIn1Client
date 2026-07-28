@@ -58,6 +58,7 @@ public class CrosshairOptionsScreen extends Screen {
 	private static final int TOP_MARGIN = 40;
 	private static final int BOTTOM_MARGIN = 10;
 	private static final int SCROLL_STEP = 16;
+	private static final int SCROLLBAR_GAP = 8;
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
@@ -84,15 +85,16 @@ public class CrosshairOptionsScreen extends Screen {
 		int contentHeight = computeContentHeight(config) - TOP_MARGIN;
 		this.maxScroll = Math.max(0, contentHeight - viewportHeight);
 		this.scrollOffset = Mth.clamp(this.scrollOffset, 0, this.maxScroll);
-		this.scrollBar = new ScrollBarHelper(this.width, TOP_MARGIN, viewportHeight,
+
+		int x = (this.width - ROW_WIDTH) / 2;
+		int y = TOP_MARGIN - this.scrollOffset;
+
+		this.scrollBar = new ScrollBarHelper(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
 				() -> this.scrollOffset, () -> this.maxScroll,
 				newOffset -> {
 					this.scrollOffset = newOffset;
 					this.rebuild();
 				});
-
-		int x = (this.width - ROW_WIDTH) / 2;
-		int y = TOP_MARGIN - this.scrollOffset;
 
 		this.addRenderableWidget(CycleButton.builder(
 						(CrosshairMode mode) -> Component.translatable("gui.tntsallin1client.crosshair_options.mode." + mode.name().toLowerCase(Locale.ROOT)),
