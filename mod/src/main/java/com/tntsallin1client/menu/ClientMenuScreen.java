@@ -34,13 +34,6 @@ import java.util.function.Supplier;
  * menu button ({@link PauseMenuIntegration}) or its own keybind
  * ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
  *
- * <p>Color settings are the one deliberate exception to "each feature owns
- * its options screen": every color in the mod (crosshair, hitbox, block
- * outline, keystrokes, plus each HUD element's text color) lives in the
- * shared {@link ColorMenuScreen} instead, reached via its own button below -
- * color is a cross-cutting concern shared by many otherwise-unrelated
- * features, not a per-feature setting.
- *
  * <p>The row list scrolls (a {@link ContainerObjectSelectionList}, the same
  * base class vanilla's own Controls screen uses for its key bindings) -
  * with 5a-5o's worth of features this no longer fits on screen at every GUI
@@ -116,13 +109,15 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.clientNameLabelEnabled = value;
 					config.save();
-				});
+				},
+				() -> new ClientNameLabelOptionsScreen(this));
 
 		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 				value -> {
 					config.fpsCounterEnabled = value;
 					config.save();
-				});
+				},
+				() -> new FpsCounterOptionsScreen(this));
 
 		list.addToggleRow(config.zoomEnabled, Component.translatable("gui.tntsallin1client.menu.zoom"),
 				value -> {
@@ -162,20 +157,22 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.customHitboxColorEnabled = value;
 					config.save();
-				});
+				},
+				() -> new HitboxColorOptionsScreen(this));
 
 		list.addToggleRow(config.customBlockOutlineColorEnabled, Component.translatable("gui.tntsallin1client.menu.block_outline_color"),
 				value -> {
 					config.customBlockOutlineColorEnabled = value;
 					config.save();
-				});
+				},
+				() -> new BlockOutlineColorOptionsScreen(this));
 
 		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
 				value -> {
 					config.keystrokesEnabled = value;
 					config.save();
 				},
-				() -> new KeystrokesKeysOptionsScreen(this));
+				() -> new KeystrokesOptionsScreen(this));
 
 		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
 				value -> {
@@ -228,9 +225,6 @@ public class ClientMenuScreen extends Screen {
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
-
-		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.color_menu_button"),
-				() -> this.minecraft.setScreen(new ColorMenuScreen(this)));
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
 				() -> this.minecraft.setScreen(new CreditsScreen(this)));

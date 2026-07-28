@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -14,9 +15,10 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5d: dedicated options screen for the F3 features, currently just the
- * F3+&lt;key&gt; binding for the system info page ({@link SystemInfoOverlay}).
- * Lets that key be changed from here directly instead of only via vanilla's
+ * Phase 5d, extended Phase 5t: dedicated options screen for the F3 features -
+ * the F3+&lt;key&gt; binding for the system info page ({@link SystemInfoOverlay}),
+ * plus that page's text color via the shared {@link ColorPickerPanel}. The
+ * key can be changed from here directly instead of only via vanilla's
  * Controls screen - both edit the same {@link ModKeyBindings#SYSTEM_INFO}
  * KeyMapping, so they can never fall out of sync. Rebind capture logic mirrors
  * vanilla's own {@code KeyBindsScreen}/{@code KeyBindsList} (same "click, then
@@ -29,6 +31,7 @@ public class F3OptionsScreen extends Screen {
 
 	private final Screen parent;
 	private @Nullable Button rebindButton;
+	private @Nullable ColorPickerPanel colorPicker;
 	private boolean awaitingKey;
 
 	public F3OptionsScreen(Screen parent) {
@@ -38,6 +41,7 @@ public class F3OptionsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
@@ -49,6 +53,14 @@ public class F3OptionsScreen extends Screen {
 				.build());
 		this.updateRebindButtonLabel();
 		y += ROW_SPACING + 6;
+
+		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.systemInfoTextColor,
+				this::addRenderableWidget,
+				argb -> {
+					config.systemInfoTextColor = argb;
+					config.save();
+				});
+		y += ColorPickerPanel.totalHeight() + 6;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
@@ -74,7 +86,26 @@ public class F3OptionsScreen extends Screen {
 			finishRebind();
 			return true;
 		}
+		if (this.colorPicker.mouseClicked(event)) {
+			return true;
+		}
 		return super.mouseClicked(event, doubleClick);
+	}
+
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (this.colorPicker.mouseDragged(event)) {
+			return true;
+		}
+		return super.mouseDragged(event, dragX, dragY);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		if (this.colorPicker.mouseReleased()) {
+			return true;
+		}
+		return super.mouseReleased(event);
 	}
 
 	@Override
@@ -99,6 +130,7 @@ public class F3OptionsScreen extends Screen {
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 	}
 
 	@Override

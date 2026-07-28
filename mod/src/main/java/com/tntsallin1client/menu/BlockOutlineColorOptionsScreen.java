@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -8,41 +9,34 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
-import java.util.function.IntConsumer;
-
 /**
- * Phase 5t: generic single-color editor, reused by every row in
- * {@link ColorMenuScreen} instead of a near-identical screen subclass per
- * color (the previous shape of {@code CrosshairTargetColorOptionsScreen},
- * {@code HitboxColorOptionsScreen}, {@code BlockOutlineColorOptionsScreen}
- * and {@code KeystrokesOptionsScreen}'s color half, all now removed) - each
- * of those wrapped the exact same {@link ColorPickerPanel} with nothing else
- * feature-specific left once the color moved out of the feature's own
- * options screen.
+ * Phase 5q: dedicated options screen for the block outline color - same
+ * {@link ColorPickerPanel} as {@link HitboxColorOptionsScreen}.
  */
-public class SingleColorOptionsScreen extends Screen {
+public class BlockOutlineColorOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 
 	private final Screen parent;
-	private final int initialColor;
-	private final IntConsumer onChange;
 	private @Nullable ColorPickerPanel colorPicker;
 
-	public SingleColorOptionsScreen(Screen parent, Component title, int initialColor, IntConsumer onChange) {
-		super(title);
+	public BlockOutlineColorOptionsScreen(Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.block_outline_options.title"));
 		this.parent = parent;
-		this.initialColor = initialColor;
-		this.onChange = onChange;
 	}
 
 	@Override
 	protected void init() {
+		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
-		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, this.initialColor,
-				this::addRenderableWidget, this.onChange);
+		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.customBlockOutlineColor,
+				this::addRenderableWidget,
+				argb -> {
+					config.customBlockOutlineColor = argb;
+					config.save();
+				});
 		y += ColorPickerPanel.totalHeight() + 6;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())

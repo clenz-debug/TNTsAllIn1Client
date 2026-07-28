@@ -4,7 +4,6 @@ import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -12,15 +11,13 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5e, extended Phase 5t: dedicated options screen for the material
- * counter feature only. Each feature that grows beyond a simple on/off
- * toggle gets its own screen like this one, reached from
- * {@link ClientMenuScreen}, rather than a single shared options screen for
- * every feature - keeps each one focused instead of turning into one long,
- * unrelated settings list. Includes the text color via the shared
- * {@link ColorPickerPanel}.
+ * Phase 5i redesign: separate sub-screen (reached from {@link CrosshairOptionsScreen})
+ * for the "different color while aiming at an attackable mob" toggle and its
+ * own color, kept off the already-tall main crosshair screen. See
+ * {@link com.tntsallin1client.crosshair.CustomCrosshair} for how "aiming at
+ * an attackable mob" is actually detected.
  */
-public class MaterialCounterOptionsScreen extends Screen {
+public class CrosshairTargetColorOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
@@ -28,8 +25,8 @@ public class MaterialCounterOptionsScreen extends Screen {
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
 
-	public MaterialCounterOptionsScreen(Screen parent) {
-		super(Component.translatable("gui.tntsallin1client.material_counter_options.title"));
+	public CrosshairTargetColorOptionsScreen(Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.crosshair_target_options.title"));
 		this.parent = parent;
 	}
 
@@ -39,37 +36,18 @@ public class MaterialCounterOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
-		EditBox itemIdBox = new EditBox(this.font, x, y + ROW_SPACING, ROW_WIDTH, ROW_HEIGHT,
-				Component.translatable("gui.tntsallin1client.material_counter_options.item_id"));
-		itemIdBox.setMaxLength(64);
-		itemIdBox.setValue(config.materialCounterItemId);
-		itemIdBox.setEditable(!config.materialCounterUseHeldItem);
-		itemIdBox.active = !config.materialCounterUseHeldItem;
-		itemIdBox.setResponder(value -> {
-			config.materialCounterItemId = value;
-			config.save();
-		});
-
-		this.addRenderableWidget(CycleButton.booleanBuilder(
-						Component.translatable("gui.tntsallin1client.material_counter_options.source.held"),
-						Component.translatable("gui.tntsallin1client.material_counter_options.source.fixed"),
-						config.materialCounterUseHeldItem)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.material_counter_options.source"),
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.crosshairTargetColorEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.crosshair_target_options.enabled"),
 						(button, value) -> {
-							config.materialCounterUseHeldItem = value;
+							config.crosshairTargetColorEnabled = value;
 							config.save();
-							itemIdBox.setEditable(!value);
-							itemIdBox.active = !value;
 						}));
-		y += ROW_SPACING;
-
-		this.addRenderableWidget(itemIdBox);
 		y += ROW_SPACING + 6;
 
-		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.materialCounterTextColor,
+		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.crosshairTargetColor,
 				this::addRenderableWidget,
 				argb -> {
-					config.materialCounterTextColor = argb;
+					config.crosshairTargetColor = argb;
 					config.save();
 				});
 		y += ColorPickerPanel.totalHeight() + 6;

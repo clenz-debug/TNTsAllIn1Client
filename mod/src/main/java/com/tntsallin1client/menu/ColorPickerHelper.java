@@ -4,8 +4,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Shared hex-color field parsing/rendering, used by {@link ColorPickerPanel}
- * and the color swatch previews in {@link ColorMenuScreen}'s row list.
+ * Shared hex-color field parsing/rendering for the mod's per-feature color
+ * pickers ({@link CrosshairOptionsScreen}, {@link HitboxColorOptionsScreen}) -
+ * each feature still gets its own dedicated options screen, this just avoids
+ * duplicating the small hex-parsing/swatch-drawing logic between them.
  */
 public final class ColorPickerHelper {
 	private ColorPickerHelper() {
