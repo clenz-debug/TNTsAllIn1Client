@@ -90,6 +90,17 @@ public final class QuickSortUi {
 			return;
 		}
 
+		if (!client.player.inventoryMenu.getCarried().isEmpty()) {
+			// InventorySorter assumes an empty cursor at every step (each of its PICKUP
+			// clicks either grabs onto or places from an empty cursor) - an item already
+			// riding the cursor (e.g. just grabbed from the creative palette) throws that
+			// off and silently merges/swaps it into whatever slot gets clicked first,
+			// which is exactly the "one item turned into two" duplication bug reported
+			// after sorting in creative.
+			client.player.displayClientMessage(Component.translatable("gui.tntsallin1client.sort_button.carried_item"), true);
+			return;
+		}
+
 		InventorySorter.sort(client.gameMode, client.player.inventoryMenu, client.player);
 	}
 }

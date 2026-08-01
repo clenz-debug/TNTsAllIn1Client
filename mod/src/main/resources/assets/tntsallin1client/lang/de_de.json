@@ -9,6 +9,7 @@
   "gui.tntsallin1client.sort_button": "Sort.",
   "gui.tntsallin1client.sort_button.tooltip": "Inventar sortieren",
   "gui.tntsallin1client.sort_button.wrong_tab": "Zum Inventar-Tab wechseln, um zu sortieren",
+  "gui.tntsallin1client.sort_button.carried_item": "Erst das Item am Cursor ablegen oder platzieren",
   "gui.tntsallin1client.menu.title": "Mod-Menü",
   "gui.tntsallin1client.menu.open_button": "Mod-Menü",
   "gui.tntsallin1client.menu.search": "Suchen...",
