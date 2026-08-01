@@ -12,6 +12,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,7 +21,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackRepository;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -46,7 +49,8 @@ public class ClientMenuScreen extends Screen {
 	private static final int ITEM_HEIGHT = 24;
 	private static final int OPTIONS_BUTTON_WIDTH = 56;
 	private static final int TOGGLE_GAP = 4;
-	private static final int LIST_TOP = 32;
+	private static final int SEARCH_BOX_Y = 30;
+	private static final int LIST_TOP = SEARCH_BOX_Y + ROW_HEIGHT + 6;
 	private static final int FOOTER_HEIGHT = 30;
 
 	/**
@@ -229,6 +233,12 @@ public class ClientMenuScreen extends Screen {
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
 				() -> this.minecraft.setScreen(new CreditsScreen(this)));
 
+		EditBox searchBox = new EditBox(this.font, (this.width - ROW_WIDTH) / 2, SEARCH_BOX_Y, ROW_WIDTH, ROW_HEIGHT,
+				Component.translatable("gui.tntsallin1client.menu.search"));
+		searchBox.setHint(Component.translatable("gui.tntsallin1client.menu.search"));
+		searchBox.setResponder(list::filter);
+		this.addRenderableWidget(searchBox);
+
 		this.addRenderableWidget(list);
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
@@ -247,8 +257,17 @@ public class ClientMenuScreen extends Screen {
 		this.minecraft.setScreen(this.parent);
 	}
 
-	/** Scrollable row list - {@link ContainerObjectSelectionList}, same base class as vanilla's Controls screen. */
+	/**
+	 * Scrollable row list - {@link ContainerObjectSelectionList}, same base class as vanilla's Controls screen.
+	 *
+	 * <p>Phase 5v: keeps every row it was ever given in {@link #allRows}, independent of what
+	 * {@link ContainerObjectSelectionList} currently displays - {@link #filter(String)} re-derives the
+	 * visible subset from that full list via {@code replaceEntries}, so filtering never loses a row
+	 * permanently even after narrowing the search down to nothing and back.
+	 */
 	private static class FeatureList extends ContainerObjectSelectionList<FeatureList.Row> {
+		private final List<Row> allRows = new ArrayList<>();
+
 		FeatureList(Minecraft minecraft, int width, int height, int y) {
 			super(minecraft, width, height, y, ITEM_HEIGHT);
 		}
@@ -274,21 +293,38 @@ public class ClientMenuScreen extends Screen {
 							.bounds(0, 0, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
 							.build()
 					: null;
-			this.addEntry(new Row(toggle, options));
+			addRow(new Row(toggle, options, label.getString()));
 		}
 
 		void addButtonRow(Component label, Runnable onPress) {
 			Button button = Button.builder(label, b -> onPress.run()).bounds(0, 0, ROW_WIDTH, ROW_HEIGHT).build();
-			this.addEntry(new Row(button, null));
+			addRow(new Row(button, null, label.getString()));
+		}
+
+		private void addRow(Row row) {
+			this.allRows.add(row);
+			this.addEntry(row);
+		}
+
+		/** Empty query shows every row again; otherwise a case-insensitive substring match on the row's label. */
+		void filter(String query) {
+			String needle = query.strip().toLowerCase(Locale.ROOT);
+			if (needle.isEmpty()) {
+				this.replaceEntries(this.allRows);
+			} else {
+				this.replaceEntries(this.allRows.stream().filter(row -> row.searchKey.contains(needle)).toList());
+			}
 		}
 
 		static final class Row extends ContainerObjectSelectionList.Entry<Row> {
 			private final AbstractWidget primary;
 			private final @Nullable AbstractWidget secondary;
+			private final String searchKey;
 
-			Row(AbstractWidget primary, @Nullable AbstractWidget secondary) {
+			Row(AbstractWidget primary, @Nullable AbstractWidget secondary, String label) {
 				this.primary = primary;
 				this.secondary = secondary;
+				this.searchKey = label.toLowerCase(Locale.ROOT);
 			}
 
 			@Override
