@@ -65,8 +65,8 @@
     - fps anzeige [check] (5g — gebaut, noch nicht live getestet)
     - Shulkerbox inhalts anzeige (wenn bestimmter key gedrükt wird) [check] (5k — gebaut, noch nicht live getestet; Vanilla zeigt seit 1.21.11 selbst schon die ersten 5 Items im Tooltip, unser Zusatz zeigt den Rest beim Tastehalten)
     - suchfunktion für mods [check] (5v — live bestätigt, "klappt gut")
-    - Abschnitte in dem Mod options wo man quasie bereiche hat in denen die mods separiert werden, explizit keine Extra menüs nur einzelne Abschnitte [check] (5w — gebaut, noch nicht live getestet)
-    - dark mode toggle
+    - Abschnitte in dem Mod options wo man quasie bereiche hat in denen die mods separiert werden, explizit keine Extra menüs nur einzelne Abschnitte [check] (5w — live bestätigt, "das passt")
+    - dark mode toggle [check] (5x — gebaut, noch nicht live getestet; schaltet das seit 5r gebündelte "Default Dark Mode"-Resourcepack, gleiches Muster wie der 3D-Block-Modelle-Toggle)
     - material counter verschiebbar machen und item als bild einblenden (wenn in der Material counter mod option eingeschaltet)
     - feinschleifen von sort funktion (z.B. nicht nur nach Name sondern wenn eingestellt nach Item Gruppe wie redstone stuff, building blocks, funktionale blöcke, etc.)
     - custom hitbox blickrichtung und das was mann sonst bei f3 + b sichtbar machen (wenn in custom hitbox mod option eingeschaltet)

@@ -69,6 +69,9 @@ public class ClientMenuScreen extends Screen {
 			"file/Vanilla-Spinning-Stonecutter-3D-1.0.0.zip",
 			"file/VanillaTweaks_r346678_MC1.21.x.zip");
 
+	/** Same "file/" + filename scheme as {@link #BLOCK_MODEL_PACK_IDS}, see there - the 5r dark-inventory resource pack. */
+	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-1.21.11-2026.4.0.zip";
+
 	private final @Nullable Screen parent;
 
 	public ClientMenuScreen(@Nullable Screen parent) {
@@ -212,6 +215,17 @@ public class ClientMenuScreen extends Screen {
 					SkinLayersModBase.instance.writeConfig();
 				},
 				() -> ConfigScreenProvider.createConfigScreen(this));
+
+		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
+		list.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
+				value -> {
+					if (value) {
+						packRepository.addPack(DARK_MODE_PACK_ID);
+					} else {
+						packRepository.removePack(DARK_MODE_PACK_ID);
+					}
+					this.minecraft.options.updateResourcePacks(packRepository);
+				});
 
 		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_inventory"));
 
