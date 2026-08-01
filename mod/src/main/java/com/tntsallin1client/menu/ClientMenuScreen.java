@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -81,6 +82,8 @@ public class ClientMenuScreen extends Screen {
 		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT;
 		FeatureList list = new FeatureList(this.minecraft, this.width, listHeight, LIST_TOP);
 
+		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_hud"));
+
 		list.addToggleRow(config.coordinatesHudEnabled, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
 				value -> {
 					config.coordinatesHudEnabled = value;
@@ -95,11 +98,26 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new MaterialCounterOptionsScreen(this));
 
-		list.addToggleRow(config.quickSortEnabled, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
+		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 				value -> {
-					config.quickSortEnabled = value;
+					config.fpsCounterEnabled = value;
 					config.save();
-				});
+				},
+				() -> new FpsCounterOptionsScreen(this));
+
+		list.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
+				value -> {
+					config.clientNameLabelEnabled = value;
+					config.save();
+				},
+				() -> new ClientNameLabelOptionsScreen(this));
+
+		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
+				value -> {
+					config.keystrokesEnabled = value;
+					config.save();
+				},
+				() -> new KeystrokesOptionsScreen(this));
 
 		list.addToggleRow(config.f3QuickInfoEnabled, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
 				value -> {
@@ -109,19 +127,7 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new F3OptionsScreen(this));
 
-		list.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
-				value -> {
-					config.clientNameLabelEnabled = value;
-					config.save();
-				},
-				() -> new ClientNameLabelOptionsScreen(this));
-
-		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
-				value -> {
-					config.fpsCounterEnabled = value;
-					config.save();
-				},
-				() -> new FpsCounterOptionsScreen(this));
+		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_rendering"));
 
 		list.addToggleRow(config.zoomEnabled, Component.translatable("gui.tntsallin1client.menu.zoom"),
 				value -> {
@@ -150,13 +156,6 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new SpawnOverlayOptionsScreen(this));
 
-		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
-				value -> {
-					config.shulkerPreviewEnabled = value;
-					config.save();
-				},
-				() -> new ShulkerPreviewOptionsScreen(this));
-
 		list.addToggleRow(config.customHitboxColorEnabled, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
 				value -> {
 					config.customHitboxColorEnabled = value;
@@ -170,19 +169,6 @@ public class ClientMenuScreen extends Screen {
 					config.save();
 				},
 				() -> new BlockOutlineColorOptionsScreen(this));
-
-		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
-				value -> {
-					config.keystrokesEnabled = value;
-					config.save();
-				},
-				() -> new KeystrokesOptionsScreen(this));
-
-		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
-				value -> {
-					config.screenshotToastEnabled = value;
-					config.save();
-				});
 
 		list.addToggleRow(config.itemTiltEnabled, Component.translatable("gui.tntsallin1client.menu.item_tilt"),
 				value -> {
@@ -227,11 +213,36 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> ConfigScreenProvider.createConfigScreen(this));
 
+		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_inventory"));
+
+		list.addToggleRow(config.quickSortEnabled, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
+				value -> {
+					config.quickSortEnabled = value;
+					config.save();
+				});
+
+		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
+				value -> {
+					config.shulkerPreviewEnabled = value;
+					config.save();
+				},
+				() -> new ShulkerPreviewOptionsScreen(this));
+
+		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
+				value -> {
+					config.screenshotToastEnabled = value;
+					config.save();
+				});
+
+		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_misc"));
+
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
 				() -> this.minecraft.setScreen(new CreditsScreen(this)));
+
+		list.finishBuilding();
 
 		EditBox searchBox = new EditBox(this.font, (this.width - ROW_WIDTH) / 2, SEARCH_BOX_Y, ROW_WIDTH, ROW_HEIGHT,
 				Component.translatable("gui.tntsallin1client.menu.search"));
@@ -260,13 +271,16 @@ public class ClientMenuScreen extends Screen {
 	/**
 	 * Scrollable row list - {@link ContainerObjectSelectionList}, same base class as vanilla's Controls screen.
 	 *
-	 * <p>Phase 5v: keeps every row it was ever given in {@link #allRows}, independent of what
-	 * {@link ContainerObjectSelectionList} currently displays - {@link #filter(String)} re-derives the
-	 * visible subset from that full list via {@code replaceEntries}, so filtering never loses a row
-	 * permanently even after narrowing the search down to nothing and back.
+	 * <p>Phase 5w: rows are grouped into {@link Section}s (a header {@link Row} plus its member rows) via
+	 * {@link #beginSection(Component)} - explicitly plain in-list headers, not separate screens, per the
+	 * idea list's own wording. {@link #filter(String)} rebuilds the visible entries from {@link #sections}
+	 * on every keystroke (a section whose rows are all filtered out drops its header too, so searching
+	 * never leaves a heading floating above an empty group), the same {@code replaceEntries} mechanism
+	 * used before sections existed (Phase 5v).
 	 */
 	private static class FeatureList extends ContainerObjectSelectionList<FeatureList.Row> {
-		private final List<Row> allRows = new ArrayList<>();
+		private final List<Section> sections = new ArrayList<>();
+		private @Nullable Section currentSection;
 
 		FeatureList(Minecraft minecraft, int width, int height, int y) {
 			super(minecraft, width, height, y, ITEM_HEIGHT);
@@ -275,6 +289,12 @@ public class ClientMenuScreen extends Screen {
 		@Override
 		public int getRowWidth() {
 			return ROW_WIDTH;
+		}
+
+		/** Starts a new in-list section; every row added afterwards belongs to it, until the next call. */
+		void beginSection(Component label) {
+			this.currentSection = new Section(Row.header(label, this.minecraft.font));
+			this.sections.add(this.currentSection);
 		}
 
 		void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle) {
@@ -293,26 +313,42 @@ public class ClientMenuScreen extends Screen {
 							.bounds(0, 0, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
 							.build()
 					: null;
-			addRow(new Row(toggle, options, label.getString()));
+			this.currentSection.rows.add(new Row(toggle, options, label.getString()));
 		}
 
 		void addButtonRow(Component label, Runnable onPress) {
 			Button button = Button.builder(label, b -> onPress.run()).bounds(0, 0, ROW_WIDTH, ROW_HEIGHT).build();
-			addRow(new Row(button, null, label.getString()));
+			this.currentSection.rows.add(new Row(button, null, label.getString()));
 		}
 
-		private void addRow(Row row) {
-			this.allRows.add(row);
-			this.addEntry(row);
+		/** Populates the list for the first time - call once after the last {@code add*Row}/{@code beginSection}. */
+		void finishBuilding() {
+			filter("");
 		}
 
-		/** Empty query shows every row again; otherwise a case-insensitive substring match on the row's label. */
+		/** Empty query shows every row again; otherwise a case-insensitive substring match per row, section by section. */
 		void filter(String query) {
 			String needle = query.strip().toLowerCase(Locale.ROOT);
-			if (needle.isEmpty()) {
-				this.replaceEntries(this.allRows);
-			} else {
-				this.replaceEntries(this.allRows.stream().filter(row -> row.searchKey.contains(needle)).toList());
+			List<Row> visible = new ArrayList<>();
+			for (Section section : this.sections) {
+				List<Row> matches = needle.isEmpty()
+						? section.rows
+						: section.rows.stream().filter(row -> row.searchKey.contains(needle)).toList();
+				if (!matches.isEmpty()) {
+					visible.add(section.header);
+					visible.addAll(matches);
+				}
+			}
+			this.replaceEntries(visible);
+		}
+
+		/** A section header plus the rows added while it was the current section. */
+		private static final class Section {
+			final Row header;
+			final List<Row> rows = new ArrayList<>();
+
+			Section(Row header) {
+				this.header = header;
 			}
 		}
 
@@ -320,16 +356,39 @@ public class ClientMenuScreen extends Screen {
 			private final AbstractWidget primary;
 			private final @Nullable AbstractWidget secondary;
 			private final String searchKey;
+			private final boolean header;
 
 			Row(AbstractWidget primary, @Nullable AbstractWidget secondary, String label) {
 				this.primary = primary;
 				this.secondary = secondary;
 				this.searchKey = label.toLowerCase(Locale.ROOT);
+				this.header = false;
+			}
+
+			private Row(AbstractWidget primary, String label) {
+				this.primary = primary;
+				this.secondary = null;
+				this.searchKey = label.toLowerCase(Locale.ROOT);
+				this.header = true;
+			}
+
+			/** Centered, bottom-aligned label with no click behavior - same look as vanilla's Controls-screen categories. */
+			static Row header(Component label, net.minecraft.client.gui.Font font) {
+				FocusableTextWidget widget = FocusableTextWidget.builder(label, font)
+						.alwaysShowBorder(false)
+						.backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS)
+						.build();
+				return new Row(widget, label.getString());
 			}
 
 			@Override
 			public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
-				this.primary.setPosition(this.getContentX(), this.getContentY());
+				if (this.header) {
+					this.primary.setPosition(this.getContentX() + (ROW_WIDTH - this.primary.getWidth()) / 2,
+							this.getContentBottom() - this.primary.getHeight());
+				} else {
+					this.primary.setPosition(this.getContentX(), this.getContentY());
+				}
 				this.primary.render(guiGraphics, mouseX, mouseY, partialTick);
 				if (this.secondary != null) {
 					this.secondary.setPosition(this.getContentX() + this.primary.getWidth() + TOGGLE_GAP, this.getContentY());
