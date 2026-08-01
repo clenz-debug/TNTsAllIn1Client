@@ -10,8 +10,9 @@ import net.minecraft.network.chat.Component;
 
 /**
  * Phase 5z: dedicated options screen for the quick-sort feature - just the
- * "group by creative-tab category instead of plain item id" toggle, same
- * minimal shape as {@link FpsCounterOptionsScreen}.
+ * sort-mode switch, same minimal shape as {@link FpsCounterOptionsScreen}.
+ * Reads as a plain "Sort by Name"/"Sort by Item Group" button (no separate
+ * on/off label prefix) via {@link CycleButton.Builder#displayOnlyValue()}.
  */
 public class QuickSortOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
@@ -30,8 +31,12 @@ public class QuickSortOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.quickSortGroupByCategory)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.quick_sort_options.group_by_category"),
+		this.addRenderableWidget(CycleButton.booleanBuilder(
+						Component.translatable("gui.tntsallin1client.quick_sort_options.mode.category"),
+						Component.translatable("gui.tntsallin1client.quick_sort_options.mode.name"),
+						config.quickSortGroupByCategory)
+				.displayOnlyValue()
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.empty(),
 						(button, value) -> {
 							config.quickSortGroupByCategory = value;
 							config.save();
