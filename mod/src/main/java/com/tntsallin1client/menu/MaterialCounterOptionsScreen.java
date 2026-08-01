@@ -66,6 +66,14 @@ public class MaterialCounterOptionsScreen extends Screen {
 		this.addRenderableWidget(itemIdBox);
 		y += ROW_SPACING + 6;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterShowItemIcon)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.material_counter_options.show_item_icon"),
+						(button, value) -> {
+							config.materialCounterShowItemIcon = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.materialCounterTextColor,
 				this::addRenderableWidget,
 				argb -> {

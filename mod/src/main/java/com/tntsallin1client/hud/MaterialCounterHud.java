@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Phase 5b: total count of one item across the player's inventory. Either a
@@ -25,6 +26,8 @@ import net.minecraft.world.item.Items;
 public class MaterialCounterHud implements HudElement {
 	private static final int DEFAULT_RIGHT_MARGIN = 4;
 	private static final int DEFAULT_TOP = 4;
+	private static final int ICON_SIZE = 16;
+	private static final int ICON_GAP = 2;
 
 	@Override
 	public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -44,6 +47,9 @@ public class MaterialCounterHud implements HudElement {
 			return;
 		}
 
+		boolean showIcon = config.materialCounterShowItemIcon;
+		ItemStack iconStack = showIcon ? new ItemStack(resolveTrackedItem(config, player)) : null;
+
 		HudLayout layout = config.materialCounterHudLayout;
 		float x;
 		float y;
@@ -51,26 +57,44 @@ public class MaterialCounterHud implements HudElement {
 			x = layout.x;
 			y = layout.y;
 		} else {
-			x = defaultX(guiGraphics.guiWidth(), client.font, label);
+			x = defaultX(guiGraphics.guiWidth(), client.font, label, showIcon);
 			y = DEFAULT_TOP;
 		}
-		drawLabel(guiGraphics, client.font, label, x, y, layout.scale, config.materialCounterTextColor);
+		drawLabel(guiGraphics, client.font, label, iconStack, x, y, layout.scale, config.materialCounterTextColor);
 	}
 
 	/** Right-aligned default X for the un-customized position - shared with the HUD editor for accurate drag bounds. */
-	public static int defaultX(int guiWidth, Font font, String label) {
-		return guiWidth - DEFAULT_RIGHT_MARGIN - font.width(label);
+	public static int defaultX(int guiWidth, Font font, String label, boolean showIcon) {
+		return guiWidth - DEFAULT_RIGHT_MARGIN - contentWidth(font, label, showIcon);
 	}
 
 	public static int defaultY() {
 		return DEFAULT_TOP;
 	}
 
-	public static void drawLabel(GuiGraphics guiGraphics, Font font, String label, float x, float y, float scale, int color) {
+	/** Unscaled pixel width of the whole row (icon + gap + text, or just text) - shared with the HUD editor's drag bounds. */
+	public static int contentWidth(Font font, String label, boolean showIcon) {
+		int textWidth = font.width(label);
+		return showIcon ? textWidth + ICON_SIZE + ICON_GAP : textWidth;
+	}
+
+	/** Unscaled pixel height of the whole row - the 16px icon is taller than a text line once it's shown. */
+	public static int contentHeight(Font font, boolean showIcon) {
+		return showIcon ? Math.max(ICON_SIZE, font.lineHeight) : font.lineHeight;
+	}
+
+	public static void drawLabel(GuiGraphics guiGraphics, Font font, String label, @Nullable ItemStack iconStack,
+			float x, float y, float scale, int color) {
 		guiGraphics.pose().pushMatrix();
 		guiGraphics.pose().translate(x, y);
 		guiGraphics.pose().scale(scale);
-		guiGraphics.drawString(font, label, 0, 0, color);
+		if (iconStack != null) {
+			guiGraphics.renderItem(iconStack, 0, 0);
+			int textY = (ICON_SIZE - font.lineHeight) / 2;
+			guiGraphics.drawString(font, label, ICON_SIZE + ICON_GAP, textY, color);
+		} else {
+			guiGraphics.drawString(font, label, 0, 0, color);
+		}
 		guiGraphics.pose().popMatrix();
 	}
 

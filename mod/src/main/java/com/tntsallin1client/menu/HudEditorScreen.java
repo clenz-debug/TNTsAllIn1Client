@@ -209,12 +209,13 @@ public class HudEditorScreen extends Screen {
 			return null;
 		}
 
+		boolean showIcon = config.materialCounterShowItemIcon;
 		HudLayout layout = config.materialCounterHudLayout;
-		float x = layout.customPosition ? layout.x : MaterialCounterHud.defaultX(this.width, this.font, label);
+		float x = layout.customPosition ? layout.x : MaterialCounterHud.defaultX(this.width, this.font, label, showIcon);
 		float y = layout.customPosition ? layout.y : MaterialCounterHud.defaultY();
 
-		int unscaledWidth = this.font.width(label);
-		int unscaledHeight = this.font.lineHeight;
+		int unscaledWidth = MaterialCounterHud.contentWidth(this.font, label, showIcon);
+		int unscaledHeight = MaterialCounterHud.contentHeight(this.font, showIcon);
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

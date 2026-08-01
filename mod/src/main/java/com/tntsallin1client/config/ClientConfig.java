@@ -42,6 +42,7 @@ public class ClientConfig {
 	public boolean materialCounterUseHeldItem = false;
 	public String materialCounterItemId = "minecraft:diamond";
 	public HudLayout materialCounterHudLayout = new HudLayout();
+	public boolean materialCounterShowItemIcon = false;
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.
 	public boolean quickSortEnabled = true;
