@@ -19,6 +19,8 @@
   "gui.tntsallin1client.menu.coordinates_hud": "Coordinates HUD",
   "gui.tntsallin1client.menu.material_counter": "Material Counter",
   "gui.tntsallin1client.menu.quick_sort": "Inventory Quick-Sort",
+  "gui.tntsallin1client.quick_sort_options.title": "Quick-Sort Options",
+  "gui.tntsallin1client.quick_sort_options.group_by_category": "Group by Category",
   "gui.tntsallin1client.menu.options_button": "Options",
   "gui.tntsallin1client.material_counter_options.title": "Material Counter Options",
   "gui.tntsallin1client.material_counter_options.item_id": "Item ID",

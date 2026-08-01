@@ -233,7 +233,8 @@ public class ClientMenuScreen extends Screen {
 				value -> {
 					config.quickSortEnabled = value;
 					config.save();
-				});
+				},
+				() -> new QuickSortOptionsScreen(this));
 
 		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
 				value -> {

@@ -19,6 +19,8 @@
   "gui.tntsallin1client.menu.coordinates_hud": "Koordinaten-HUD",
   "gui.tntsallin1client.menu.material_counter": "Material-Zähler",
   "gui.tntsallin1client.menu.quick_sort": "Inventar-Schnellsortierung",
+  "gui.tntsallin1client.quick_sort_options.title": "Schnellsortierung - Optionen",
+  "gui.tntsallin1client.quick_sort_options.group_by_category": "Nach Kategorie gruppieren",
   "gui.tntsallin1client.menu.options_button": "Optionen",
   "gui.tntsallin1client.material_counter_options.title": "Material-Zähler - Optionen",
   "gui.tntsallin1client.material_counter_options.item_id": "Item-ID",

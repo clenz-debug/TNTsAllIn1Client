@@ -46,6 +46,7 @@ public class ClientConfig {
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.
 	public boolean quickSortEnabled = true;
+	public boolean quickSortGroupByCategory = false;
 
 	// 5d: extra "Quick Info" block on the F3 debug screen.
 	public boolean f3QuickInfoEnabled = true;

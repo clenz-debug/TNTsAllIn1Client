@@ -1,14 +1,22 @@
 package com.tntsallin1client.inventory;
 
+import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Phase 5c: reorders the player's main inventory + hotbar (armor and offhand are
@@ -61,7 +69,12 @@ public final class InventorySorter {
 		return -1;
 	}
 
-	/** Groups the now-consolidated stacks together at the front, sorted by item id. */
+	/**
+	 * Groups the now-consolidated stacks together at the front, sorted by item id -
+	 * or, with {@link ClientConfig#quickSortGroupByCategory}, first by the item's
+	 * creative-inventory category (Building Blocks, Redstone Blocks, ... same order
+	 * as the creative tab row) and by item id within each category.
+	 */
 	private static void reorderByItem(MultiPlayerGameMode gameMode, InventoryMenu menu, Player player) {
 		List<String> targetKeys = new ArrayList<>();
 		for (int i = FIRST_SLOT; i < LAST_SLOT; i++) {
@@ -70,7 +83,13 @@ public final class InventorySorter {
 				targetKeys.add(itemKey(stack));
 			}
 		}
-		targetKeys.sort(String::compareTo);
+
+		if (ClientConfig.get().quickSortGroupByCategory) {
+			Map<String, Integer> categoryRanks = categoryRanks(targetKeys);
+			targetKeys.sort(Comparator.<String>comparingInt(categoryRanks::get).thenComparing(Comparator.naturalOrder()));
+		} else {
+			targetKeys.sort(String::compareTo);
+		}
 
 		for (int rank = 0; rank < targetKeys.size(); rank++) {
 			int targetPos = FIRST_SLOT + rank;
@@ -108,6 +127,35 @@ public final class InventorySorter {
 
 	private static String itemKey(ItemStack stack) {
 		return stack.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+	}
+
+	/** One rank per distinct item key - computed once so repeated keys (stacks split across slots) aren't looked up twice. */
+	private static Map<String, Integer> categoryRanks(List<String> keys) {
+		List<CreativeModeTab> categories = CreativeModeTabs.allTabs().stream()
+				.filter(tab -> tab.getType() == CreativeModeTab.Type.CATEGORY)
+				.toList();
+		Map<String, Integer> ranks = new HashMap<>();
+		for (String key : keys) {
+			ranks.computeIfAbsent(key, k -> categoryRankOf(categories, k));
+		}
+		return ranks;
+	}
+
+	/** Index of the first creative-tab category (Building Blocks, Redstone Blocks, ...) the item belongs to. */
+	private static int categoryRankOf(List<CreativeModeTab> categories, String key) {
+		Identifier id = Identifier.tryParse(key);
+		Item item = id == null ? null : BuiltInRegistries.ITEM.getValue(id);
+		if (item == null) {
+			return categories.size();
+		}
+
+		ItemStack stack = new ItemStack(item);
+		for (int i = 0; i < categories.size(); i++) {
+			if (categories.get(i).contains(stack)) {
+				return i;
+			}
+		}
+		return categories.size();
 	}
 
 	private static void click(MultiPlayerGameMode gameMode, InventoryMenu menu, Player player, int slot, ClickType type) {
