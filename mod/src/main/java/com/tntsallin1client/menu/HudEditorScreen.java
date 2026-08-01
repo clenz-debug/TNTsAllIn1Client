@@ -206,7 +206,10 @@ public class HudEditorScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		String label = MaterialCounterHud.buildLabel(config, player);
 		if (label == null) {
-			return null;
+			// Nothing to actually count right now (e.g. "track held item" with an empty hand) - the real
+			// HUD correctly shows nothing then, but the editor still needs a box to drag/resize, otherwise
+			// positioning this element is only possible while holding a trackable item.
+			label = Component.translatable("gui.tntsallin1client.menu.material_counter").getString();
 		}
 
 		boolean showIcon = config.materialCounterShowItemIcon;
