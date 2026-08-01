@@ -69,5 +69,7 @@
     - dark mode toggle [check] (5x — live bestätigt, "das passt")
     - material counter verschiebbar machen und item als bild einblenden (wenn in der Material counter mod option eingeschaltet) [check] (5y — live bestätigt, "passt")
     - feinschleifen von sort funktion (z.B. nicht nur nach Name sondern wenn eingestellt nach Item Gruppe wie redstone stuff, building blocks, funktionale blöcke, etc.) [check] (5z — live bestätigt, "passt"; ein Bugfix unterwegs: Cursor-Item-Duplizierung in Creative)
-    - custom hitbox blickrichtung und das was mann sonst bei f3 + b sichtbar machen (wenn in custom hitbox mod option eingeschaltet) [check] (5aa — gebaut, noch nicht live getestet; Fahrzeug-Marker, Augenhöhen-Linie, Blickrichtungs-Pfeil, Enderdrache-Teile wiederhergestellt)
-    - andere crosshair form wenn auf mob geaimt wird (in crosshair mod option ein und ausschaltbar machen) [check] (5ac — gebaut, noch nicht live getestet; unabhängig von der schon vorhandenen Zielfarbe ein/ausschaltbar)
+    - custom hitbox blickrichtung und das was mann sonst bei f3 + b sichtbar machen (wenn in custom hitbox mod option eingeschaltet) [check] (5aa — live bestätigt, "passt"; plus 5ab: jeder Indikator einzeln ein/ausschaltbar + einfärbbar)
+    - andere crosshair form wenn auf mob geaimt wird (in crosshair mod option ein und ausschaltbar machen) [check] (5ac — live bestätigt, "klappt")
+
+    
