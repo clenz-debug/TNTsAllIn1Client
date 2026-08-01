@@ -4,7 +4,6 @@ import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.renderer.debug.EntityHitboxDebugRenderer;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -17,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Phase 5l, extended Phase 5aa: recolors the F3+B hitbox outline. Vanilla
+ * Phase 5l, extended 5aa/5ab: recolors the F3+B hitbox outline. Vanilla
  * hardcodes it to white (int {@code -1}) inside the private {@code
  * showHitboxes(Entity, float, boolean)} - no clean extension point like 5d's
  * DebugScreenEntries API this time, so this cancels the whole method and
@@ -28,19 +27,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * <p>5l originally only redrew the main box + position point and dropped the
  * secondary vanilla indicators (vehicle mount marker, eye-height line,
  * view-direction arrow, ender dragon sub-parts) as a simplification. 5aa
- * restores all of them, 1:1 copied from vanilla's own method body (including
- * its hardcoded colors - only the main box and position point use our custom
- * color, the rest stays visually distinct exactly like in vanilla F3+B).
+ * restored all of them with vanilla's own hardcoded colors; 5ab made each one
+ * independently toggleable and colorable ({@link ClientConfig}'s
+ * {@code customHitboxShow*}/{@code customHitbox*Color} fields), so a chosen
+ * main hitbox color can't end up matching one of them.
  */
 @Mixin(EntityHitboxDebugRenderer.class)
 public class EntityHitboxDebugRendererMixin {
 	@Inject(method = "showHitboxes", at = @At("HEAD"), cancellable = true)
 	private void tntsallin1client$onShowHitboxes(Entity entity, float partialTick, boolean bl, CallbackInfo ci) {
-		if (bl || !ClientConfig.get().customHitboxColorEnabled) {
+		ClientConfig config = ClientConfig.get();
+		if (bl || !config.customHitboxColorEnabled) {
 			return;
 		}
 
-		int color = ClientConfig.get().customHitboxColor;
+		int color = config.customHitboxColor;
 		Vec3 vec3 = entity.position();
 		Vec3 renderPos = entity.getPosition(partialTick);
 		Vec3 delta = renderPos.subtract(vec3);
@@ -48,29 +49,33 @@ public class EntityHitboxDebugRendererMixin {
 		Gizmos.point(renderPos, color, 2.0F);
 
 		Entity vehicle = entity.getVehicle();
-		if (vehicle != null) {
+		if (vehicle != null && config.customHitboxShowVehicleMarker) {
 			float halfWidth = Math.min(vehicle.getBbWidth(), entity.getBbWidth()) / 2.0F;
 			Vec3 mountPos = vehicle.getPassengerRidingPosition(entity).add(delta);
 			Gizmos.cuboid(new AABB(mountPos.x - halfWidth, mountPos.y, mountPos.z - halfWidth,
-					mountPos.x + halfWidth, mountPos.y + 0.0625, mountPos.z + halfWidth), GizmoStyle.stroke(-256));
+					mountPos.x + halfWidth, mountPos.y + 0.0625, mountPos.z + halfWidth),
+					GizmoStyle.stroke(config.customHitboxVehicleMarkerColor));
 		}
 
-		if (entity instanceof LivingEntity) {
+		if (entity instanceof LivingEntity && config.customHitboxShowEyeHeight) {
 			AABB box = entity.getBoundingBox().move(delta);
 			Gizmos.cuboid(new AABB(box.minX, box.minY + entity.getEyeHeight() - 0.01F, box.minZ,
-					box.maxX, box.minY + entity.getEyeHeight() + 0.01F, box.maxZ), GizmoStyle.stroke(-65536));
+					box.maxX, box.minY + entity.getEyeHeight() + 0.01F, box.maxZ),
+					GizmoStyle.stroke(config.customHitboxEyeHeightColor));
 		}
 
-		if (entity instanceof EnderDragon enderDragon) {
+		if (entity instanceof EnderDragon enderDragon && config.customHitboxShowDragonParts) {
 			for (EnderDragonPart part : enderDragon.getSubEntities()) {
 				Vec3 partDelta = part.getPosition(partialTick).subtract(part.position());
-				Gizmos.cuboid(part.getBoundingBox().move(partDelta), GizmoStyle.stroke(ARGB.colorFromFloat(1.0F, 0.25F, 1.0F, 0.0F)));
+				Gizmos.cuboid(part.getBoundingBox().move(partDelta), GizmoStyle.stroke(config.customHitboxDragonPartsColor));
 			}
 		}
 
-		Vec3 eyePos = renderPos.add(0.0, entity.getEyeHeight(), 0.0);
-		Vec3 viewVector = entity.getViewVector(partialTick);
-		Gizmos.arrow(eyePos, eyePos.add(viewVector.scale(2.0)), -16776961);
+		if (config.customHitboxShowViewDirection) {
+			Vec3 eyePos = renderPos.add(0.0, entity.getEyeHeight(), 0.0);
+			Vec3 viewVector = entity.getViewVector(partialTick);
+			Gizmos.arrow(eyePos, eyePos.add(viewVector.scale(2.0)), config.customHitboxViewDirectionColor);
+		}
 
 		ci.cancel();
 	}

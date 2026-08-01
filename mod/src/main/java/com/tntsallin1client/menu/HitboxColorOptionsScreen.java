@@ -11,11 +11,16 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Phase 5l: dedicated options screen for the F3+B hitbox color - same
- * {@link ColorPickerPanel} as {@link CrosshairOptionsScreen}.
+ * {@link ColorPickerPanel} as {@link CrosshairOptionsScreen}. The four
+ * secondary indicators 5aa restored (eye height, vehicle marker, view
+ * direction, dragon parts) get their own on/off + color each in
+ * {@link HitboxIndicatorsOptionsScreen} (5ab), opened via the button below -
+ * too much for this already-focused screen to also carry.
  */
 public class HitboxColorOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
+	private static final int ROW_SPACING = 24;
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
@@ -38,6 +43,12 @@ public class HitboxColorOptionsScreen extends Screen {
 					config.save();
 				});
 		y += ColorPickerPanel.totalHeight() + 6;
+
+		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.hitbox_options.indicators_button"),
+						button -> this.minecraft.setScreen(new HitboxIndicatorsOptionsScreen(this)))
+				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.build());
+		y += ROW_SPACING;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)

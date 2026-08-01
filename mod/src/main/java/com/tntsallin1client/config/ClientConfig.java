@@ -97,6 +97,19 @@ public class ClientConfig {
 	public boolean customHitboxColorEnabled = true;
 	public int customHitboxColor = 0xFFFFFFFF;
 
+	// 5aa/5ab: the four secondary F3+B indicators vanilla draws alongside the
+	// main hitbox - each independently toggleable and colorable so a chosen
+	// main hitbox color can't end up matching (and visually blending into) one
+	// of them. Colors default to vanilla's own hardcoded ones for each.
+	public boolean customHitboxShowEyeHeight = true;
+	public int customHitboxEyeHeightColor = 0xFFFF0000;
+	public boolean customHitboxShowVehicleMarker = true;
+	public int customHitboxVehicleMarkerColor = 0xFFFFFF00;
+	public boolean customHitboxShowViewDirection = true;
+	public int customHitboxViewDirectionColor = 0xFF0000FF;
+	public boolean customHitboxShowDragonParts = true;
+	public int customHitboxDragonPartsColor = 0xFF3FFF00;
+
 	// 5q: the black wireframe box drawn around whatever block is being looked
 	// at. Same "alpha byte never shown as-is" pattern as keystrokesActiveColor -
 	// vanilla's own alpha (translucent normally, opaque in high-contrast mode)
