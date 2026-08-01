@@ -31,6 +31,13 @@ import net.minecraft.world.entity.player.Player;
  * exactly "would a left click hit this," no separate distance check needed
  * here.
  *
+ * <p><b>Target shape (Phase 5ac):</b> same idea, independently toggleable -
+ * swaps to a second preset-or-custom-grid ({@code crosshairTargetShapeXxx}
+ * fields) while aiming at an attackable mob, reusing the exact same
+ * {@code isTargetingAttackableMob()} check as the color swap. Pixel size and
+ * "ignore GUI Scale" stay shared between both shapes - only the grid itself
+ * changes, not how big it's drawn.
+ *
  * <p><b>Size independent of GUI Scale:</b> HUD rendering already runs inside
  * an ambient pose-stack scale matching the current GUI Scale (confirmed by
  * every other scaled HUD element in this project, e.g. {@code KeystrokesHud}).
@@ -44,10 +51,9 @@ public final class CustomCrosshair {
 
 	public static void render(GuiGraphics guiGraphics) {
 		ClientConfig config = ClientConfig.get();
-		boolean[][] grid = config.crosshairMode == CrosshairMode.CUSTOM
-				? config.crosshairCustomGrid
-				: config.crosshairPreset.grid();
-		int color = resolveColor(config);
+		boolean targeting = isTargetingAttackableMob();
+		boolean[][] grid = resolveGrid(config, targeting);
+		int color = resolveColor(config, targeting);
 
 		Minecraft client = Minecraft.getInstance();
 		int guiScale = client.getWindow().getGuiScale();
@@ -60,8 +66,17 @@ public final class CustomCrosshair {
 		guiGraphics.pose().popMatrix();
 	}
 
-	private static int resolveColor(ClientConfig config) {
-		if (config.crosshairTargetColorEnabled && isTargetingAttackableMob()) {
+	private static boolean[][] resolveGrid(ClientConfig config, boolean targeting) {
+		if (config.crosshairTargetShapeEnabled && targeting) {
+			return config.crosshairTargetShapeMode == CrosshairMode.CUSTOM
+					? config.crosshairTargetShapeCustomGrid
+					: config.crosshairTargetShapePreset.grid();
+		}
+		return config.crosshairMode == CrosshairMode.CUSTOM ? config.crosshairCustomGrid : config.crosshairPreset.grid();
+	}
+
+	private static int resolveColor(ClientConfig config, boolean targeting) {
+		if (config.crosshairTargetColorEnabled && targeting) {
 			return config.crosshairTargetColor;
 		}
 		return config.customCrosshairColor;

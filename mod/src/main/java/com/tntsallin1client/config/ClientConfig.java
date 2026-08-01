@@ -78,6 +78,16 @@ public class ClientConfig {
 	public boolean crosshairTargetColorEnabled = false;
 	public int crosshairTargetColor = 0xFFFF5555;
 
+	// 5ac: optional second *shape* (same preset-or-custom-grid representation
+	// as the base crosshair) while aiming at an attackable mob, independent of
+	// the target-color toggle above. Default preset deliberately different from
+	// the base crosshair's own SMALLER default, so turning this on has an
+	// obvious effect immediately.
+	public boolean crosshairTargetShapeEnabled = false;
+	public CrosshairMode crosshairTargetShapeMode = CrosshairMode.PRESET;
+	public CrosshairPreset crosshairTargetShapePreset = CrosshairPreset.CIRCLE_DOT;
+	public boolean[][] crosshairTargetShapeCustomGrid = CrosshairGrid.empty();
+
 	// 5j: fullbright (forced gamma override).
 	public boolean fullbrightEnabled = false;
 
