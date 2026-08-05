@@ -80,12 +80,27 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * Path resolution (`app.getAppPath()`, `mod/` as a sibling of `launcher/`) only holds for the
  * current unpackaged dev setup — needs revisiting once Phase 6 adds real electron-builder
  * packaging (`extraResources` or similar).
+ *
+ * `bundleCompatible` (Phase 6a) gates the whole sync (see `isBundleCompatibleVersion` in
+ * shared/types.ts): every jar here (including our own mod) and every resourcepack is built
+ * against `MINECRAFT_VERSION` specifically. Fabric Loader hard-rejects a mod whose
+ * `fabric.mod.json` declares a Minecraft-version range that doesn't include the game version
+ * actually being launched, so syncing them into a differently-versioned instance wouldn't
+ * silently degrade the experience — it would break the launch outright. Skipping here instead
+ * means a non-pinned version launches as plain vanilla-through-Fabric, no mods, which the caller
+ * surfaces to the user via the returned flag.
  */
 export async function syncBundledContent(
   instanceDir: string,
-  onProgress: InstallProgressCallback
-): Promise<void> {
+  onProgress: InstallProgressCallback,
+  bundleCompatible: boolean
+): Promise<{ skipped: boolean }> {
   onProgress('bundles', 0, 1)
+  if (!bundleCompatible) {
+    onProgress('bundles', 1, 1)
+    return { skipped: true }
+  }
+
   const appRoot = app.getAppPath()
   const repoRoot = join(appRoot, '..')
   const gameDir = join(instanceDir, 'game')
@@ -95,4 +110,5 @@ export async function syncBundledContent(
   await syncBundleDir(join(appRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
   await syncOwnModJar(repoRoot, destModsDir)
   onProgress('bundles', 1, 1)
+  return { skipped: false }
 }

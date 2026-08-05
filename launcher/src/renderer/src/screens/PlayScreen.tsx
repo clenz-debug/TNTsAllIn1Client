@@ -1,10 +1,18 @@
-import { useState } from 'react'
-import type { GameLogEvent, LaunchProgressEvent, MinecraftProfile } from '../../../shared/types'
+import { useEffect, useState } from 'react'
+import type { GameLogEvent, GameVersionSummary, LaunchProgressEvent, MinecraftProfile } from '../../../shared/types'
+import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 
 interface Props {
   profile: MinecraftProfile
   onLogout: () => void
+}
+
+/** Prefers the bundle-pinned version if it's in the list (should always be, it's a stable
+ * release), otherwise falls back to the newest entry so the dropdown never starts empty. */
+function pickDefaultVersion(list: GameVersionSummary[]): string {
+  if (list.some((v) => v.id === MINECRAFT_VERSION)) return MINECRAFT_VERSION
+  return list[0]?.id ?? MINECRAFT_VERSION
 }
 
 export function PlayScreen({ profile, onLogout }: Props) {
@@ -13,6 +21,33 @@ export function PlayScreen({ profile, onLogout }: Props) {
   const [logs, setLogs] = useState<GameLogEvent[]>([])
   const [showCredits, setShowCredits] = useState(false)
 
+  const [versions, setVersions] = useState<GameVersionSummary[]>([])
+  const [versionsError, setVersionsError] = useState<string | null>(null)
+  const [showSnapshots, setShowSnapshots] = useState(false)
+  const [selectedVersion, setSelectedVersion] = useState(MINECRAFT_VERSION)
+
+  useEffect(() => {
+    window.api
+      .listVersions()
+      .then((list) => {
+        setVersions(list)
+        setSelectedVersion(pickDefaultVersion(list))
+      })
+      .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
+  }, [])
+
+  const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
+
+  useEffect(() => {
+    if (visibleVersions.length === 0) return
+    if (!visibleVersions.some((v) => v.id === selectedVersion)) {
+      setSelectedVersion(pickDefaultVersion(visibleVersions))
+    }
+    // Deliberately keyed on the joined id list, not `visibleVersions`/`selectedVersion` directly -
+    // only re-run when the visible set itself changes (snapshot toggle / initial load), not on
+    // every selectedVersion change, which would fight the user's own dropdown pick.
+  }, [visibleVersions.map((v) => v.id).join(',')])
+
   async function handlePlay(): Promise<void> {
     setBusy(true)
     setLogs([])
@@ -20,7 +55,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
     const unsubscribeProgress = window.api.onLaunchProgress(setProgress)
     const unsubscribeLog = window.api.onGameLog((event) => setLogs((prev) => [...prev.slice(-499), event]))
     try {
-      await window.api.play(profile)
+      await window.api.play(profile, selectedVersion)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       setLogs((prev) => [...prev, { source: 'launcher', level: 'error', message }])
@@ -51,6 +86,39 @@ export function PlayScreen({ profile, onLogout }: Props) {
           </button>
         </div>
       </header>
+
+      <div className="version-picker">
+        <label htmlFor="version-select">Minecraft-Version</label>
+        <select
+          id="version-select"
+          value={selectedVersion}
+          onChange={(e) => setSelectedVersion(e.target.value)}
+          disabled={busy || visibleVersions.length === 0}
+        >
+          {visibleVersions.length === 0 && <option value={selectedVersion}>{selectedVersion}</option>}
+          {visibleVersions.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.id}
+            </option>
+          ))}
+        </select>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={showSnapshots}
+            onChange={(e) => setShowSnapshots(e.target.checked)}
+            disabled={busy}
+          />
+          Snapshots anzeigen
+        </label>
+        {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
+        {!isBundleCompatibleVersion(selectedVersion) && (
+          <span className="version-warning">
+            Nur {MINECRAFT_VERSION} enthält die gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod,
+            …) — {selectedVersion} startet als reines Fabric+Vanilla ohne Mods.
+          </span>
+        )}
+      </div>
 
       <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy}>
         {busy ? 'Läuft…' : 'Play'}

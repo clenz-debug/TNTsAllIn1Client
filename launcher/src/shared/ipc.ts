@@ -8,6 +8,7 @@ export const IpcChannel = {
   AuthProfile: 'auth:profile',
   LaunchPlay: 'launch:play',
   LaunchProgress: 'launch:progress',
+  VersionsList: 'versions:list',
   GameLog: 'game:log',
   ShellOpenExternal: 'shell:open-external'
 } as const

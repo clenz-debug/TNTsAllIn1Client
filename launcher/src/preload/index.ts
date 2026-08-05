@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel } from '../shared/ipc'
-import type { AuthProgressEvent, GameLogEvent, LaunchProgressEvent, MinecraftProfile } from '../shared/types'
+import type {
+  AuthProgressEvent,
+  GameLogEvent,
+  GameVersionSummary,
+  LaunchProgressEvent,
+  MinecraftProfile
+} from '../shared/types'
 
 function subscribe<T>(channel: string, callback: (event: T) => void): () => void {
   const listener = (_: Electron.IpcRendererEvent, payload: T): void => callback(payload)
@@ -12,8 +18,10 @@ const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
   loginMock: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLoginMock),
-  play: (profile: MinecraftProfile): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchPlay, profile),
+  play: (profile: MinecraftProfile, versionId: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, versionId),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
+  listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

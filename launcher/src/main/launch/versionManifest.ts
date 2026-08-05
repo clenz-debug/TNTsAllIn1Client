@@ -4,11 +4,29 @@ const VERSION_MANIFEST_URL = 'https://piston-meta.mojang.com/mc/game/version_man
 
 interface VersionManifestEntry {
   id: string
+  type: string
   url: string
+  releaseTime: string
 }
 
 interface VersionManifest {
   versions: VersionManifestEntry[]
+}
+
+async function fetchManifest(): Promise<VersionManifest> {
+  const manifestResponse = await fetch(VERSION_MANIFEST_URL)
+  if (!manifestResponse.ok) {
+    throw new Error(`Failed to fetch version manifest: ${manifestResponse.status}`)
+  }
+  return (await manifestResponse.json()) as VersionManifest
+}
+
+/** Raw Mojang manifest entries (release/snapshot/old_beta/old_alpha, newest first) — used by
+ * `versionList.ts` to cross-reference against Fabric's supported-game-versions list for the
+ * Phase 6a version picker. */
+export async function fetchManifestVersions(): Promise<VersionManifestEntry[]> {
+  const manifest = await fetchManifest()
+  return manifest.versions
 }
 
 export interface Rule {
@@ -47,11 +65,7 @@ export interface VersionDetail {
 }
 
 export async function fetchVersionDetail(versionId: string = MINECRAFT_VERSION): Promise<VersionDetail> {
-  const manifestResponse = await fetch(VERSION_MANIFEST_URL)
-  if (!manifestResponse.ok) {
-    throw new Error(`Failed to fetch version manifest: ${manifestResponse.status}`)
-  }
-  const manifest = (await manifestResponse.json()) as VersionManifest
+  const manifest = await fetchManifest()
   const entry = manifest.versions.find((v) => v.id === versionId)
   if (!entry) {
     throw new Error(`Minecraft version ${versionId} not found in version manifest.`)

@@ -38,4 +38,22 @@ export interface GameLogEvent {
   message: string
 }
 
+/** Default pre-selection for the version picker (Phase 6a) — also the exact version the bundled
+ * mods/resourcepacks in `mods-bundle`/`resourcepacks-bundle` (and our own mod jar) are built
+ * against. Picking a different version in the UI still installs vanilla+Fabric fine, but
+ * `bundleSync.syncBundledContent` skips the bundle entirely for any other id (see
+ * `isBundleCompatibleVersion`) rather than handing Fabric Loader mods declaring a
+ * `1.21.11`-only dependency range for a different game version, which Loader hard-rejects. */
 export const MINECRAFT_VERSION = '1.21.11'
+
+export function isBundleCompatibleVersion(versionId: string): boolean {
+  return versionId === MINECRAFT_VERSION
+}
+
+export type GameVersionType = 'release' | 'snapshot'
+
+export interface GameVersionSummary {
+  id: string
+  type: GameVersionType
+  releaseTime: string
+}

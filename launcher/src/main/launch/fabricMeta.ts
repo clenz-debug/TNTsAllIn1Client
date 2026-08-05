@@ -4,6 +4,23 @@ interface FabricLoaderVersionEntry {
   loader: { version: string; stable: boolean }
 }
 
+interface FabricGameVersionEntry {
+  version: string
+  stable: boolean
+}
+
+/** Game versions Fabric maintains intermediary mappings for — i.e. versions Fabric Loader can
+ * actually run. Cross-referenced against the Mojang manifest in `versionList.ts` so the version
+ * picker only ever offers versions this launcher can install through Fabric. */
+export async function fetchFabricGameVersions(): Promise<Set<string>> {
+  const response = await fetch(`${FABRIC_META_BASE}/versions/game`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Fabric game versions: ${response.status}`)
+  }
+  const versions = (await response.json()) as FabricGameVersionEntry[]
+  return new Set(versions.map((v) => v.version))
+}
+
 export interface FabricLibrary {
   name: string
   url: string
