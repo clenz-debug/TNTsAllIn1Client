@@ -16,5 +16,6 @@ export const IpcChannel = {
   ModsListBundled: 'mods:list-bundled',
   ModsListCustom: 'mods:list-custom',
   ModsAddCustom: 'mods:add-custom',
-  ModsRemoveCustom: 'mods:remove-custom'
+  ModsRemoveCustom: 'mods:remove-custom',
+  UpdateCheck: 'update:check'
 } as const

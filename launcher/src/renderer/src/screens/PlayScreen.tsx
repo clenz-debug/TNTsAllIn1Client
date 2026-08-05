@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { GameLogEvent, GameVersionSummary, LaunchProgressEvent, MinecraftProfile } from '../../../shared/types'
+import type {
+  GameLogEvent,
+  GameVersionSummary,
+  LaunchProgressEvent,
+  MinecraftProfile,
+  UpdateCheckResult
+} from '../../../shared/types'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { ModsScreen } from './ModsScreen'
@@ -55,6 +61,19 @@ export function PlayScreen({ profile, onLogout }: Props) {
   function handleToggleBundledMod(fileName: string, enabled: boolean): void {
     setDisabledBundledMods((prev) => (enabled ? prev.filter((f) => f !== fileName) : [...prev, fileName]))
   }
+
+  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null)
+  const [updateDismissed, setUpdateDismissed] = useState(false)
+
+  useEffect(() => {
+    // Purely informational, so a failed check (offline, manifest unreachable) just means no
+    // banner shows - never worth surfacing as an error to the user the way a failed version-list
+    // fetch is, since nothing they'd want to do depends on it.
+    window.api
+      .checkForUpdate()
+      .then(setUpdateInfo)
+      .catch(() => undefined)
+  }, [])
 
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
 
@@ -120,6 +139,24 @@ export function PlayScreen({ profile, onLogout }: Props) {
           </button>
         </div>
       </header>
+
+      {updateInfo?.updateAvailable && !updateDismissed && (
+        <div className="update-banner">
+          <span>
+            Update verfügbar: {updateInfo.latestVersion} (aktuell {updateInfo.currentVersion})
+          </span>
+          <div className="header-actions">
+            {updateInfo.releaseNotesUrl && (
+              <button className="link-button" onClick={() => void window.api.openExternal(updateInfo.releaseNotesUrl!)}>
+                Änderungen ansehen
+              </button>
+            )}
+            <button className="link-button" onClick={() => setUpdateDismissed(true)}>
+              Ausblenden
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="version-picker">
         <label htmlFor="version-select">Minecraft-Version</label>

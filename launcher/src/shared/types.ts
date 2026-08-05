@@ -78,3 +78,13 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   showSnapshots: false,
   disabledBundledMods: []
 }
+
+/** Phase 6d - see `main/updateCheck.ts`. Purely informational (a link to see what changed), not
+ * an auto-updater - actually downloading/installing a new launcher build is Phase 9's job
+ * (`electron-builder`/`electron-updater`), this just answers "is there something newer". */
+export interface UpdateCheckResult {
+  currentVersion: string
+  latestVersion: string
+  updateAvailable: boolean
+  releaseNotesUrl?: string
+}

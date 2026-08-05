@@ -6,7 +6,8 @@ import type {
   GameVersionSummary,
   LaunchProgressEvent,
   LauncherSettings,
-  MinecraftProfile
+  MinecraftProfile,
+  UpdateCheckResult
 } from '../shared/types'
 
 function subscribe<T>(channel: string, callback: (event: T) => void): () => void {
@@ -30,6 +31,7 @@ const api = {
   addCustomMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, versionId),
   removeCustomMod: (versionId: string, fileName: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, versionId, fileName),
+  checkForUpdate: (): Promise<UpdateCheckResult> => ipcRenderer.invoke(IpcChannel.UpdateCheck),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

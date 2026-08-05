@@ -22,6 +22,7 @@ import { addCustomMods, listBundledMods, listCustomMods, removeCustomMod } from 
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
+import { checkForUpdate } from '../updateCheck'
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
  * channel is registered twice, which would happen if this ran again from a second createWindow()
@@ -64,6 +65,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.ModsRemoveCustom, async (_event: IpcMainInvokeEvent, versionId: string, fileName: string) =>
     removeCustomMod(versionId, fileName)
   )
+
+  ipcMain.handle(IpcChannel.UpdateCheck, async () => checkForUpdate())
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
