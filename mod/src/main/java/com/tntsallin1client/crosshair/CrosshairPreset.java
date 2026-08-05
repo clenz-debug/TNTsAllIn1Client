@@ -9,7 +9,11 @@ import net.minecraft.network.chat.Component;
  * a small screenshot, and not the point - the point was having a varied,
  * clearly distinguishable set of shapes to pick from, not matching another
  * client's art asset for asset's sake). "Heart" was intentionally left out
- * per explicit request. Each shape is a {@link CrosshairGrid#SIZE}x{@code SIZE}
+ * per explicit request. {@link #STANDARD} is the one exception - reproduces
+ * vanilla's actual crosshair sprite pixel-for-pixel (extracted from the
+ * client jar and inspected directly), added so vanilla's shape is pickable
+ * in a custom color instead of only vanilla's own fixed color. Each shape
+ * is a {@link CrosshairGrid#SIZE}x{@code SIZE}
  * boolean grid, same representation {@link CrosshairMode#CUSTOM} user-drawn
  * crosshairs use.
  */
@@ -18,6 +22,23 @@ public enum CrosshairPreset {
 		@Override
 		public boolean[][] grid() {
 			return CrosshairGrid.empty();
+		}
+	},
+	// Reproduces vanilla's own crosshair sprite (assets/minecraft/textures/gui/sprites/hud/crosshair.png,
+	// extracted and inspected directly: a 15x15 image with a solid, unbroken 9-long/1-thick plus
+	// through the center) - added on request so a full-width/height cross like vanilla's is
+	// pickable in any color, not just SMALLER's shorter arms. SIZE here is also 9, so this maps
+	// onto the grid at the same proportions as the real sprite, not just a similar-looking guess.
+	STANDARD("gui.tntsallin1client.crosshair_preset.standard") {
+		@Override
+		public boolean[][] grid() {
+			boolean[][] grid = CrosshairGrid.empty();
+			int c = CrosshairGrid.CENTER;
+			for (int i = 0; i < CrosshairGrid.SIZE; i++) {
+				grid[c][i] = true;
+				grid[i][c] = true;
+			}
+			return grid;
 		}
 	},
 	SMALLER("gui.tntsallin1client.crosshair_preset.smaller") {
