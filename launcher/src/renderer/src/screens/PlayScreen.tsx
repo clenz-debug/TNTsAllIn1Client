@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { GameLogEvent, GameVersionSummary, LaunchProgressEvent, MinecraftProfile } from '../../../shared/types'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
+import { ModsScreen } from './ModsScreen'
 
 interface Props {
   profile: MinecraftProfile
@@ -20,11 +21,13 @@ export function PlayScreen({ profile, onLogout }: Props) {
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
   const [logs, setLogs] = useState<GameLogEvent[]>([])
   const [showCredits, setShowCredits] = useState(false)
+  const [showMods, setShowMods] = useState(false)
 
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [showSnapshots, setShowSnapshots] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState(MINECRAFT_VERSION)
+  const [disabledBundledMods, setDisabledBundledMods] = useState<string[]>([])
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -35,6 +38,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
       .then(([settings, list]) => {
         setVersions(list)
         setShowSnapshots(settings.showSnapshots)
+        setDisabledBundledMods(settings.disabledBundledMods)
         const visible = list.filter((v) => settings.showSnapshots || v.type === 'release')
         const persistedIsVisible = visible.some((v) => v.id === settings.selectedVersion)
         setSelectedVersion(persistedIsVisible ? settings.selectedVersion : pickDefaultVersion(visible))
@@ -45,8 +49,12 @@ export function PlayScreen({ profile, onLogout }: Props) {
 
   useEffect(() => {
     if (!settingsLoaded) return
-    void window.api.saveSettings({ selectedVersion, showSnapshots })
-  }, [settingsLoaded, selectedVersion, showSnapshots])
+    void window.api.saveSettings({ selectedVersion, showSnapshots, disabledBundledMods })
+  }, [settingsLoaded, selectedVersion, showSnapshots, disabledBundledMods])
+
+  function handleToggleBundledMod(fileName: string, enabled: boolean): void {
+    setDisabledBundledMods((prev) => (enabled ? prev.filter((f) => f !== fileName) : [...prev, fileName]))
+  }
 
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
 
@@ -82,6 +90,17 @@ export function PlayScreen({ profile, onLogout }: Props) {
     return <CreditsScreen onClose={() => setShowCredits(false)} />
   }
 
+  if (showMods) {
+    return (
+      <ModsScreen
+        selectedVersion={selectedVersion}
+        disabledBundledMods={disabledBundledMods}
+        onToggleBundledMod={handleToggleBundledMod}
+        onClose={() => setShowMods(false)}
+      />
+    )
+  }
+
   return (
     <div className="play-screen">
       <header>
@@ -90,6 +109,9 @@ export function PlayScreen({ profile, onLogout }: Props) {
           {profile.isMock && <span className="mock-badge">Dev-Mock-Profil</span>}
         </div>
         <div className="header-actions">
+          <button className="link-button" onClick={() => setShowMods(true)}>
+            Mods
+          </button>
           <button className="link-button" onClick={() => setShowCredits(true)}>
             Credits
           </button>

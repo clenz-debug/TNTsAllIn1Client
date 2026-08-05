@@ -25,6 +25,11 @@ const api = {
   listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
   loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
   saveSettings: (settings: LauncherSettings): Promise<void> => ipcRenderer.invoke(IpcChannel.SettingsSave, settings),
+  listBundledMods: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled),
+  listCustomMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, versionId),
+  addCustomMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, versionId),
+  removeCustomMod: (versionId: string, fileName: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, versionId, fileName),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

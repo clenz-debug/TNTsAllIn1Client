@@ -61,13 +61,20 @@ export interface GameVersionSummary {
 
 /** Persisted across app restarts (Phase 6b) - see `main/launcherSettings.ts` for the on-disk
  * JSON file, same hand-rolled pattern as `main/auth/tokenCache.ts` rather than pulling in a new
- * dependency for two small fields. */
+ * dependency for two small fields. `disabledBundledMods` (Phase 6c) added later the same way. */
 export interface LauncherSettings {
   selectedVersion: string
   showSnapshots: boolean
+  /** Filenames (from `mods-bundle/`, e.g. `sodium-fabric-0.8.13+mc1.21.11.jar`) the user has
+   * turned off in the Mods screen - only has any effect while the selected version is bundle-
+   * compatible (see `isBundleCompatibleVersion`), since the whole bundle is skipped otherwise
+   * regardless of individual toggles. Our own mod jar is deliberately never in this list - it's
+   * not optional, it's what makes this "our" client. */
+  disabledBundledMods: string[]
 }
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   selectedVersion: MINECRAFT_VERSION,
-  showSnapshots: false
+  showSnapshots: false,
+  disabledBundledMods: []
 }

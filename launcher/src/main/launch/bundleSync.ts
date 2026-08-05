@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { copyFile, mkdir, readdir, stat } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 
@@ -20,12 +20,21 @@ async function listBundleFiles(bundleDir: string): Promise<string[]> {
   }
 }
 
-async function syncBundleDir(bundleDir: string, destinationDir: string): Promise<void> {
-  const files = await listBundleFiles(bundleDir)
-  if (files.length === 0) return
-
-  await mkdir(destinationDir, { recursive: true })
-  await Promise.all(files.map((file) => copyFile(join(bundleDir, file), join(destinationDir, file))))
+/**
+ * `excluded` (Phase 6c) is the one deliberate exception to "only ever adds/overwrites, never
+ * deletes" below: a mod the user just disabled in the Mods screen has to actually disappear from
+ * `destinationDir`, not merely stop being re-copied - otherwise a jar synced in from an earlier,
+ * still-enabled launch would keep sitting there and Fabric Loader would keep loading it regardless
+ * of the toggle. Only ever removes filenames from `excluded` itself, nothing else the user or a
+ * previous sync put there.
+ */
+async function syncBundleDir(bundleDir: string, destinationDir: string, excluded: Set<string> = new Set()): Promise<void> {
+  const files = (await listBundleFiles(bundleDir)).filter((file) => !excluded.has(file))
+  if (files.length > 0) {
+    await mkdir(destinationDir, { recursive: true })
+    await Promise.all(files.map((file) => copyFile(join(bundleDir, file), join(destinationDir, file))))
+  }
+  await Promise.all([...excluded].map((file) => rm(join(destinationDir, file), { force: true })))
 }
 
 /**
@@ -70,8 +79,9 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * Previously all of this was a one-off manual copy (see Phase 4/5p in Aktuelle_Phase.md) — meaning
  * a fresh or reset instance directory silently lost it, and (worse) a stale manual copy of our own
  * mod jar could sit there indefinitely without anyone noticing. Only ever adds/overwrites the
- * synced files, never deletes anything else already in those folders, so anything the user places
- * there by hand survives a sync.
+ * synced files, never deletes anything else already in those folders (see `syncBundleDir`'s own
+ * doc comment for the one deliberate exception: `disabledBundledMods`), so anything the user
+ * places there by hand survives a sync.
  *
  * Doesn't touch `options.txt` — a resourcepack still has to be enabled once in-game (Optionen ->
  * Ressourcenpakete), same as any resourcepack in vanilla Minecraft. This only guarantees the file
@@ -93,7 +103,8 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
 export async function syncBundledContent(
   instanceDir: string,
   onProgress: InstallProgressCallback,
-  bundleCompatible: boolean
+  bundleCompatible: boolean,
+  disabledBundledMods: string[] = []
 ): Promise<{ skipped: boolean }> {
   onProgress('bundles', 0, 1)
   if (!bundleCompatible) {
@@ -106,7 +117,7 @@ export async function syncBundledContent(
   const gameDir = join(instanceDir, 'game')
   const destModsDir = join(gameDir, 'mods')
 
-  await syncBundleDir(join(appRoot, 'mods-bundle'), destModsDir)
+  await syncBundleDir(join(appRoot, 'mods-bundle'), destModsDir, new Set(disabledBundledMods))
   await syncBundleDir(join(appRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
   await syncOwnModJar(repoRoot, destModsDir)
   onProgress('bundles', 1, 1)

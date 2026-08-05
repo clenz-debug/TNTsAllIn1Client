@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from 'electron'
-import { ipcMain, shell } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import {
@@ -18,6 +18,7 @@ import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
+import { addCustomMods, listBundledMods, listCustomMods, removeCustomMod } from '../launch/modsManager'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
@@ -48,6 +49,20 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.SettingsSave, async (_event: IpcMainInvokeEvent, settings: LauncherSettings) =>
     saveLauncherSettings(settings)
+  )
+
+  ipcMain.handle(IpcChannel.ModsListBundled, async () => listBundledMods())
+
+  ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, versionId: string) =>
+    listCustomMods(versionId)
+  )
+
+  ipcMain.handle(IpcChannel.ModsAddCustom, async (event: IpcMainInvokeEvent, versionId: string) =>
+    addCustomMods(versionId, BrowserWindow.fromWebContents(event.sender))
+  )
+
+  ipcMain.handle(IpcChannel.ModsRemoveCustom, async (_event: IpcMainInvokeEvent, versionId: string, fileName: string) =>
+    removeCustomMod(versionId, fileName)
   )
 
   ipcMain.handle(
@@ -87,7 +102,8 @@ export function registerIpcHandlers(): void {
 
       const vanilla = await installVersion(sendProgress, versionId)
       const installed = await installFabricLoader(vanilla, sendProgress)
-      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible)
+      const { disabledBundledMods } = await loadLauncherSettings()
+      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, disabledBundledMods)
       const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
       const args = buildLaunchArgs({
         detail: installed.detail,

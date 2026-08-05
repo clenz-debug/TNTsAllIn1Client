@@ -12,5 +12,9 @@ export const IpcChannel = {
   GameLog: 'game:log',
   ShellOpenExternal: 'shell:open-external',
   SettingsLoad: 'settings:load',
-  SettingsSave: 'settings:save'
+  SettingsSave: 'settings:save',
+  ModsListBundled: 'mods:list-bundled',
+  ModsListCustom: 'mods:list-custom',
+  ModsAddCustom: 'mods:add-custom',
+  ModsRemoveCustom: 'mods:remove-custom'
 } as const
