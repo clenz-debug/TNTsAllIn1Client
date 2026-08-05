@@ -43,7 +43,7 @@
 - beim ersten starten nach installieren des clients soll sich der user eine willkommensnachricht bekommen, dann soll ein menü sich öffnen wo er die Farben einstellen kann (das kann man skippen, dann bekommt man den Standartfarbcode) und als letztes soll sich ein Tutorial öffnen (das soll man auch überspringen können)
 - in Discord soll angezeigt werden das man MC über meinen Client spielt
 - 3D Overlay für skin (Ingame) statt den flachen etwas vom skin abstehenden elementen jetzt würfel, sodass es besser aussieht [check] (5s, schon vorher erledigt — 3D Skin Layers gebündelt + Mod-Menü-Toggle)
-- speichung von einstelungen in MC wenn die Vesrsion gewechselt wird
+- speichung von einstelungen in MC wenn die Vesrsion gewechselt wird [check] (6e — geteilte options.txt über alle Versionen hinweg)
 
 ### Launcher:
 

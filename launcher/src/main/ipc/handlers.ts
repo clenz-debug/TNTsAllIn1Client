@@ -19,6 +19,7 @@ import { installVersion } from '../launch/installer'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { addCustomMods, listBundledMods, listCustomMods, removeCustomMod } from '../launch/modsManager'
+import { applySharedOptions, saveSharedOptions } from '../launch/sharedSettings'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
@@ -115,6 +116,12 @@ export function registerIpcHandlers(): void {
         profile
       })
 
+      const gameDir = join(installed.instanceDir, 'game')
+      // Carries options.txt (graphics/controls/sound/...) across version switches - instanceDir
+      // is per-version since Phase 6a, but these are personal preferences the player wants
+      // everywhere, not something meaningfully different per version. See sharedSettings.ts.
+      await applySharedOptions(gameDir)
+
       sendProgress('launching', 0, 1, installed.detail.id)
       sendLog({
         source: 'launcher',
@@ -122,7 +129,8 @@ export function registerIpcHandlers(): void {
         message: `Starte Minecraft ${installed.detail.id}${profile.isMock ? ' (Dev-Mock-Profil)' : ''}…`
       })
 
-      await launchGame(javaBinaryPath, args, join(installed.instanceDir, 'game'), sendLog)
+      await launchGame(javaBinaryPath, args, gameDir, sendLog)
+      await saveSharedOptions(gameDir)
       sendProgress('done', 1, 1)
     }
   )
