@@ -42,6 +42,11 @@ public class CrosshairTargetShapeOptionsScreen extends Screen {
 	private static final int BOTTOM_MARGIN = 10;
 	private static final int SCROLL_STEP = 16;
 	private static final int SCROLLBAR_GAP = 8;
+	// 5ad: see the identical constants in CrosshairOptionsScreen - the paint
+	// grid's "on" cells always render white regardless of the configured
+	// color, for contrast against the dark "off" cells while painting.
+	private static final int PAINT_ON_COLOR = 0xFFFFFFFF;
+	private static final int PAINT_OFF_COLOR = 0xFF3A3A3A;
 
 	private final Screen parent;
 	private ScrollBarHelper scrollBar;
@@ -163,7 +168,7 @@ public class CrosshairTargetShapeOptionsScreen extends Screen {
 					int cellY = this.gridY + row * GRID_CELL_SIZE;
 					boolean on = config.crosshairTargetShapeCustomGrid[row][col];
 					guiGraphics.fill(cellX, cellY, cellX + GRID_CELL_SIZE - 1, cellY + GRID_CELL_SIZE - 1,
-							on ? config.customCrosshairColor : 0xFF3A3A3A);
+							on ? PAINT_ON_COLOR : PAINT_OFF_COLOR);
 				}
 			}
 		}
