@@ -249,6 +249,13 @@ public class ClientMenuScreen extends Screen {
 					config.save();
 				});
 
+		list.addToggleRow(config.pinnedRecipeEnabled, Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
+				value -> {
+					config.pinnedRecipeEnabled = value;
+					config.save();
+				},
+				() -> new PinnedRecipeOptionsScreen(this));
+
 		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_misc"));
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),

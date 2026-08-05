@@ -25,6 +25,8 @@ import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
 import com.tntsallin1client.menu.TitleScreenIntegration;
+import com.tntsallin1client.recipe.PinnedRecipeHud;
+import com.tntsallin1client.recipe.PinnedRecipeManager;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
@@ -97,5 +99,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5k: hold-to-preview shulker box contents.
 		ShulkerPreviewRenderer.registerScreenTracking();
+
+		// Phase 5ah: pin a recipe from the recipe book, shown as a movable HUD reminder.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "pinned_recipe_hud"), new PinnedRecipeHud());
+		PinnedRecipeManager.register();
 	}
 }

@@ -6,6 +6,8 @@ import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.hud.ItemCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
+import com.tntsallin1client.recipe.PinnedRecipe;
+import com.tntsallin1client.recipe.PinnedRecipeHud;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -64,6 +66,10 @@ public class HudEditorScreen extends Screen {
 				Component.translatable("gui.tntsallin1client.menu.keystrokes"),
 				config.keystrokesHudLayout,
 				this::keystrokesBounds));
+		entries.add(new Entry(
+				Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
+				config.pinnedRecipeHudLayout,
+				this::pinnedRecipeBounds));
 
 		this.addRenderableWidget(Button.builder(
 						Component.translatable("gui.tntsallin1client.hud_editor.reset_all"),
@@ -169,6 +175,7 @@ public class HudEditorScreen extends Screen {
 		config.itemCounterHudLayout = new HudLayout();
 		config.fpsCounterHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
+		config.pinnedRecipeHudLayout = new HudLayout();
 		config.save();
 	}
 
@@ -219,6 +226,27 @@ public class HudEditorScreen extends Screen {
 
 		int unscaledWidth = ItemCounterHud.contentWidth(this.font, label, showIcon);
 		int unscaledHeight = ItemCounterHud.contentHeight(this.font, showIcon);
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect pinnedRecipeBounds() {
+		ClientConfig config = ClientConfig.get();
+		PinnedRecipe recipe = config.pinnedRecipe;
+		if (recipe == null) {
+			// Unlike coordinatesBounds/itemCounterBounds, there is no sensible placeholder here -
+			// nothing is pinned yet, so there is nothing to position. The element simply can't be
+			// dragged in the editor until the player actually pins a recipe once.
+			return null;
+		}
+
+		int ingredientCount = PinnedRecipeHud.ingredientStacks(recipe).size();
+		HudLayout layout = config.pinnedRecipeHudLayout;
+		float x = layout.customPosition ? layout.x : PinnedRecipeHud.defaultX(this.width, this.font, ingredientCount);
+		float y = layout.customPosition ? layout.y : PinnedRecipeHud.defaultY();
+
+		int unscaledWidth = PinnedRecipeHud.contentWidth(this.font, ingredientCount);
+		int unscaledHeight = PinnedRecipeHud.contentHeight();
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

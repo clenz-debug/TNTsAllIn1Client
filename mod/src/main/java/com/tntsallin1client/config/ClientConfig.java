@@ -8,7 +8,9 @@ import com.tntsallin1client.crosshair.CrosshairGrid;
 import com.tntsallin1client.crosshair.CrosshairMode;
 import com.tntsallin1client.crosshair.CrosshairPreset;
 import com.tntsallin1client.hud.HudLayout;
+import com.tntsallin1client.recipe.PinnedRecipe;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -156,6 +158,12 @@ public class ClientConfig {
 	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;
 	public int keystrokesTextColor = 0xFFFFFFFF;
+
+	// 5ah: recipe pinned from the crafting-table/inventory recipe book, shown as a
+	// movable HUD reminder. Null until the player actually pins something.
+	public boolean pinnedRecipeEnabled = true;
+	public @Nullable PinnedRecipe pinnedRecipe = null;
+	public HudLayout pinnedRecipeHudLayout = new HudLayout();
 
 	public static ClientConfig get() {
 		if (instance == null) {

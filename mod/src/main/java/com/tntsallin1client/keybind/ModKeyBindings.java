@@ -71,6 +71,15 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// 5ah: press while hovering a recipe in the crafting-table/inventory recipe book
+	// to pin/unpin it. Unbound by default like most binds here.
+	public static final KeyMapping PIN_RECIPE = new KeyMapping(
+			"key.tntsallin1client.pin_recipe",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -81,5 +90,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(ZOOM);
 		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
 		KeyBindingHelper.registerKeyBinding(SPAWN_OVERLAY);
+		KeyBindingHelper.registerKeyBinding(PIN_RECIPE);
 	}
 }

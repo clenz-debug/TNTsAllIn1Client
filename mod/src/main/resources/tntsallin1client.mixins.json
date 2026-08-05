@@ -5,6 +5,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"AbstractContainerScreenMixin",
+		"AbstractRecipeBookScreenAccessor",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
 		"EntityHitboxDebugRendererMixin",
@@ -13,6 +14,8 @@
 		"ItemEntityRendererMixin",
 		"MouseHandlerMixin",
 		"OptionInstanceAccessor",
+		"RecipeBookComponentAccessor",
+		"RecipeBookPageAccessor",
 		"ScreenMixin"
 	],
 	"injectors": {
