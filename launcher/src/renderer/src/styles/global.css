@@ -108,6 +108,13 @@ body {
   border: 1px solid var(--green-2);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
+  /* Fixed width (not min-width) so toggling "Snapshots anzeigen" never resizes the box - sized in
+     ch so it scales with font size, wide enough for the longest real version ids Mojang's manifest
+     has ever produced under type "snapshot" (e.g. "22w13oneblockatatime", "1.14.2 Pre-Release 1",
+     both 20 chars) with a little headroom, not just the common "26.x-snapshot-N" case. */
+  width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .checkbox-label {

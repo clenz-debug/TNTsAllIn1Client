@@ -519,4 +519,6 @@ Statt einer neuen Abhängigkeit (`electron-store`, in der Roadmap nur als Beispi
 
 `npm run typecheck`/`npm run build` grün. Noch nicht live getestet - insbesondere ob Version/Snapshot-Toggle nach einem echten Neustart der Launcher-App tatsächlich wie erwartet wieder auftauchen.
 
+**Live bestätigt** ("passt") - direkt danach ein UI-Nachtrag: das Versions-`<select>` zog sich bis dahin auf die Breite des jeweils längsten *sichtbaren* Eintrags zusammen, dadurch sichtbarer Größensprung beim Umschalten von "Snapshots anzeigen" (Snapshot-IDs wie `26.3-snapshot-7` sind länger als Release-IDs wie `1.21.11`). Fix in `global.css`: `.version-picker select` bekommt jetzt eine feste `width: 22ch` statt automatischer Inhaltsbreite - in `ch` statt `px`, damit es mit der Schriftgröße mitskaliert, großzügig genug bemessen für die längsten tatsächlich im Mojang-Manifest vorkommenden "snapshot"-Typ-IDs (u.a. Kuriositäten wie `22w13oneblockatatime`, `1.14.2 Pre-Release 1` - beide 20 Zeichen, per Direktabruf des Manifests nachgemessen statt geschätzt), nicht nur für den üblichen Fall. `npm run build` grün.
+
 **Live bestätigt** ("passt").
