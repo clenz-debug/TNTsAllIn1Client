@@ -10,7 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 /**
  * Phase 5g: always-visible FPS counter, so it's not necessary to open F3 just
  * to see the frame rate. Defaults to the top-right corner, below where
- * {@link MaterialCounterHud} sits so the two don't overlap by default.
+ * {@link ItemCounterHud} sits so the two don't overlap by default.
  */
 public class FpsCounterHud implements HudElement {
 	private static final int DEFAULT_RIGHT_MARGIN = 4;

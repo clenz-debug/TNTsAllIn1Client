@@ -36,13 +36,14 @@ public class ClientConfig {
 	public boolean coordinatesHudShowDegrees = true;
 	public HudLayout coordinatesHudLayout = new HudLayout();
 
-	// 5b: which item to tally across the inventory. Either a fixed item id, or
-	// whatever is currently in the main hand.
-	public boolean materialCounterEnabled = true;
-	public boolean materialCounterUseHeldItem = false;
-	public String materialCounterItemId = "minecraft:diamond";
-	public HudLayout materialCounterHudLayout = new HudLayout();
-	public boolean materialCounterShowItemIcon = false;
+	// 5b, renamed 5ag ("Material Counter" -> "Item Counter"): which item to tally
+	// across the inventory. Either a fixed item id, or whatever is currently in
+	// the main hand.
+	public boolean itemCounterEnabled = true;
+	public boolean itemCounterUseHeldItem = false;
+	public String itemCounterItemId = "minecraft:diamond";
+	public HudLayout itemCounterHudLayout = new HudLayout();
+	public boolean itemCounterShowItemIcon = false;
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.
 	public boolean quickSortEnabled = true;
@@ -150,7 +151,7 @@ public class ClientConfig {
 	// anything until picked. Edited from each feature's own options screen,
 	// same as every other color setting in this file.
 	public int coordinatesHudTextColor = 0xFFFFFFFF;
-	public int materialCounterTextColor = 0xFFFFFFFF;
+	public int itemCounterTextColor = 0xFFFFFFFF;
 	public int fpsCounterTextColor = 0xFFFFFFFF;
 	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;

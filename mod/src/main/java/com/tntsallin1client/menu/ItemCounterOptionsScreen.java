@@ -12,15 +12,15 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5e, extended Phase 5t: dedicated options screen for the material
- * counter feature only. Each feature that grows beyond a simple on/off
- * toggle gets its own screen like this one, reached from
+ * Phase 5e, extended Phase 5t, renamed 5ag ("Material Counter" -> "Item Counter"): dedicated
+ * options screen for the item counter feature only. Each feature that grows beyond a simple
+ * on/off toggle gets its own screen like this one, reached from
  * {@link ClientMenuScreen}, rather than a single shared options screen for
  * every feature - keeps each one focused instead of turning into one long,
  * unrelated settings list. Includes the text color via the shared
  * {@link ColorPickerPanel}.
  */
-public class MaterialCounterOptionsScreen extends Screen {
+public class ItemCounterOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
@@ -28,8 +28,8 @@ public class MaterialCounterOptionsScreen extends Screen {
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
 
-	public MaterialCounterOptionsScreen(Screen parent) {
-		super(Component.translatable("gui.tntsallin1client.material_counter_options.title"));
+	public ItemCounterOptionsScreen(Screen parent) {
+		super(Component.translatable("gui.tntsallin1client.item_counter_options.title"));
 		this.parent = parent;
 	}
 
@@ -40,23 +40,23 @@ public class MaterialCounterOptionsScreen extends Screen {
 		int y = 40;
 
 		EditBox itemIdBox = new EditBox(this.font, x, y + ROW_SPACING, ROW_WIDTH, ROW_HEIGHT,
-				Component.translatable("gui.tntsallin1client.material_counter_options.item_id"));
+				Component.translatable("gui.tntsallin1client.item_counter_options.item_id"));
 		itemIdBox.setMaxLength(64);
-		itemIdBox.setValue(config.materialCounterItemId);
-		itemIdBox.setEditable(!config.materialCounterUseHeldItem);
-		itemIdBox.active = !config.materialCounterUseHeldItem;
+		itemIdBox.setValue(config.itemCounterItemId);
+		itemIdBox.setEditable(!config.itemCounterUseHeldItem);
+		itemIdBox.active = !config.itemCounterUseHeldItem;
 		itemIdBox.setResponder(value -> {
-			config.materialCounterItemId = value;
+			config.itemCounterItemId = value;
 			config.save();
 		});
 
 		this.addRenderableWidget(CycleButton.booleanBuilder(
-						Component.translatable("gui.tntsallin1client.material_counter_options.source.held"),
-						Component.translatable("gui.tntsallin1client.material_counter_options.source.fixed"),
-						config.materialCounterUseHeldItem)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.material_counter_options.source"),
+						Component.translatable("gui.tntsallin1client.item_counter_options.source.held"),
+						Component.translatable("gui.tntsallin1client.item_counter_options.source.fixed"),
+						config.itemCounterUseHeldItem)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.item_counter_options.source"),
 						(button, value) -> {
-							config.materialCounterUseHeldItem = value;
+							config.itemCounterUseHeldItem = value;
 							config.save();
 							itemIdBox.setEditable(!value);
 							itemIdBox.active = !value;
@@ -66,18 +66,18 @@ public class MaterialCounterOptionsScreen extends Screen {
 		this.addRenderableWidget(itemIdBox);
 		y += ROW_SPACING + 6;
 
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.materialCounterShowItemIcon)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.material_counter_options.show_item_icon"),
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.itemCounterShowItemIcon)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.item_counter_options.show_item_icon"),
 						(button, value) -> {
-							config.materialCounterShowItemIcon = value;
+							config.itemCounterShowItemIcon = value;
 							config.save();
 						}));
 		y += ROW_SPACING;
 
-		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.materialCounterTextColor,
+		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.itemCounterTextColor,
 				this::addRenderableWidget,
 				argb -> {
-					config.materialCounterTextColor = argb;
+					config.itemCounterTextColor = argb;
 					config.save();
 				});
 		y += ColorPickerPanel.totalHeight() + 6;

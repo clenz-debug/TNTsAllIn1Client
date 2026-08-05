@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 /**
  * Phase 5e: ingame mod menu, top level. Just the on/off switch per feature.
  * Features with more to configure than a toggle get their own dedicated
- * options screen (e.g. {@link MaterialCounterOptionsScreen}), opened via a
+ * options screen (e.g. {@link ItemCounterOptionsScreen}), opened via a
  * small button next to that feature's toggle - deliberately not one shared
  * options screen for every feature, which would turn into an unrelated,
  * ever-growing list as more features gain settings. Reachable via the pause
@@ -94,12 +94,12 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new CoordinatesHudOptionsScreen(this));
 
-		list.addToggleRow(config.materialCounterEnabled, Component.translatable("gui.tntsallin1client.menu.material_counter"),
+		list.addToggleRow(config.itemCounterEnabled, Component.translatable("gui.tntsallin1client.menu.item_counter"),
 				value -> {
-					config.materialCounterEnabled = value;
+					config.itemCounterEnabled = value;
 					config.save();
 				},
-				() -> new MaterialCounterOptionsScreen(this));
+				() -> new ItemCounterOptionsScreen(this));
 
 		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 				value -> {

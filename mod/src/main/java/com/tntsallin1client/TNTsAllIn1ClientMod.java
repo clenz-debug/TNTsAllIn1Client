@@ -19,8 +19,8 @@ import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
+import com.tntsallin1client.hud.ItemCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
-import com.tntsallin1client.hud.MaterialCounterHud;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
@@ -49,8 +49,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5a: coordinates + compass HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "coordinates_hud"), new CoordinatesHud());
 
-		// Phase 5b: material counter HUD.
-		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "material_counter_hud"), new MaterialCounterHud());
+		// Phase 5b, renamed 5ag: item counter HUD.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "item_counter_hud"), new ItemCounterHud());
 
 		// Phase 5g: FPS counter HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "fps_counter_hud"), new FpsCounterHud());

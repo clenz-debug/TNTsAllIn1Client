@@ -74,5 +74,5 @@
     - andere crosshair form wenn auf mob geaimt wird (in crosshair mod option ein und ausschaltbar machen) [check] (5ac — live bestätigt, "klappt")
     - farbe von den pixeln beim drawing vom crosshair auf weiß ändern weil das ist besser für leute mit rot grünschwäche [check] (5ad — live bestätigt, "passt")
     - im recipie book rezepte anpinnen
-    - material counter in item counter umbennen
+    - material counter in item counter umbennen [check] (5ag — Klassen/Config-Felder/Lang-Keys durchgehend umbenannt)
     - hitbox color und blockoutline color das custom entfernen [check] (5ae — reine Lang-Key-Änderung)

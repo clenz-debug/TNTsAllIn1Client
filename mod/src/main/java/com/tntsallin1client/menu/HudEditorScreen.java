@@ -4,8 +4,8 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
+import com.tntsallin1client.hud.ItemCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
-import com.tntsallin1client.hud.MaterialCounterHud;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -53,9 +53,9 @@ public class HudEditorScreen extends Screen {
 				config.coordinatesHudLayout,
 				this::coordinatesBounds));
 		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.material_counter"),
-				config.materialCounterHudLayout,
-				this::materialCounterBounds));
+				Component.translatable("gui.tntsallin1client.menu.item_counter"),
+				config.itemCounterHudLayout,
+				this::itemCounterBounds));
 		entries.add(new Entry(
 				Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 				config.fpsCounterHudLayout,
@@ -166,7 +166,7 @@ public class HudEditorScreen extends Screen {
 	private void resetAll() {
 		ClientConfig config = ClientConfig.get();
 		config.coordinatesHudLayout = new HudLayout();
-		config.materialCounterHudLayout = new HudLayout();
+		config.itemCounterHudLayout = new HudLayout();
 		config.fpsCounterHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
 		config.save();
@@ -197,28 +197,28 @@ public class HudEditorScreen extends Screen {
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}
 
-	private Rect materialCounterBounds() {
+	private Rect itemCounterBounds() {
 		LocalPlayer player = this.minecraft.player;
 		if (player == null) {
 			return null;
 		}
 
 		ClientConfig config = ClientConfig.get();
-		String label = MaterialCounterHud.buildLabel(config, player);
+		String label = ItemCounterHud.buildLabel(config, player);
 		if (label == null) {
 			// Nothing to actually count right now (e.g. "track held item" with an empty hand) - the real
 			// HUD correctly shows nothing then, but the editor still needs a box to drag/resize, otherwise
 			// positioning this element is only possible while holding a trackable item.
-			label = Component.translatable("gui.tntsallin1client.menu.material_counter").getString();
+			label = Component.translatable("gui.tntsallin1client.menu.item_counter").getString();
 		}
 
-		boolean showIcon = config.materialCounterShowItemIcon;
-		HudLayout layout = config.materialCounterHudLayout;
-		float x = layout.customPosition ? layout.x : MaterialCounterHud.defaultX(this.width, this.font, label, showIcon);
-		float y = layout.customPosition ? layout.y : MaterialCounterHud.defaultY();
+		boolean showIcon = config.itemCounterShowItemIcon;
+		HudLayout layout = config.itemCounterHudLayout;
+		float x = layout.customPosition ? layout.x : ItemCounterHud.defaultX(this.width, this.font, label, showIcon);
+		float y = layout.customPosition ? layout.y : ItemCounterHud.defaultY();
 
-		int unscaledWidth = MaterialCounterHud.contentWidth(this.font, label, showIcon);
-		int unscaledHeight = MaterialCounterHud.contentHeight(this.font, showIcon);
+		int unscaledWidth = ItemCounterHud.contentWidth(this.font, label, showIcon);
+		int unscaledHeight = ItemCounterHud.contentHeight(this.font, showIcon);
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

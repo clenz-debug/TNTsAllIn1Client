@@ -16,14 +16,15 @@ import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Phase 5b: total count of one item across the player's inventory. Either a
- * fixed item id or whatever is currently in the main hand, per
- * {@link ClientConfig#materialCounterUseHeldItem} (set via the ingame menu).
+ * Phase 5b, renamed 5ag ("Material Counter" -> "Item Counter", on user request - it counts any
+ * item, "material" was never quite the right word). Total count of one item across the player's
+ * inventory. Either a fixed item id or whatever is currently in the main hand, per
+ * {@link ClientConfig#itemCounterUseHeldItem} (set via the ingame menu).
  * Defaults to hugging the top-right corner (recomputed every frame so it stays
  * put if the label's width changes); {@link HudLayout#customPosition} overrides
  * that with a fixed, draggable position/scale (see the HUD editor).
  */
-public class MaterialCounterHud implements HudElement {
+public class ItemCounterHud implements HudElement {
 	private static final int DEFAULT_RIGHT_MARGIN = 4;
 	private static final int DEFAULT_TOP = 4;
 	private static final int ICON_SIZE = 16;
@@ -32,7 +33,7 @@ public class MaterialCounterHud implements HudElement {
 	@Override
 	public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
 		ClientConfig config = ClientConfig.get();
-		if (!config.materialCounterEnabled) {
+		if (!config.itemCounterEnabled) {
 			return;
 		}
 
@@ -47,10 +48,10 @@ public class MaterialCounterHud implements HudElement {
 			return;
 		}
 
-		boolean showIcon = config.materialCounterShowItemIcon;
+		boolean showIcon = config.itemCounterShowItemIcon;
 		ItemStack iconStack = showIcon ? new ItemStack(resolveTrackedItem(config, player)) : null;
 
-		HudLayout layout = config.materialCounterHudLayout;
+		HudLayout layout = config.itemCounterHudLayout;
 		float x;
 		float y;
 		if (layout.customPosition) {
@@ -60,7 +61,7 @@ public class MaterialCounterHud implements HudElement {
 			x = defaultX(guiGraphics.guiWidth(), client.font, label, showIcon);
 			y = DEFAULT_TOP;
 		}
-		drawLabel(guiGraphics, client.font, label, iconStack, x, y, layout.scale, config.materialCounterTextColor);
+		drawLabel(guiGraphics, client.font, label, iconStack, x, y, layout.scale, config.itemCounterTextColor);
 	}
 
 	/** Right-aligned default X for the un-customized position - shared with the HUD editor for accurate drag bounds. */
@@ -110,11 +111,11 @@ public class MaterialCounterHud implements HudElement {
 	}
 
 	private static Item resolveTrackedItem(ClientConfig config, LocalPlayer player) {
-		if (config.materialCounterUseHeldItem) {
+		if (config.itemCounterUseHeldItem) {
 			return player.getMainHandItem().getItem();
 		}
 
-		Identifier itemId = Identifier.tryParse(config.materialCounterItemId);
+		Identifier itemId = Identifier.tryParse(config.itemCounterItemId);
 		return itemId == null ? null : BuiltInRegistries.ITEM.getValue(itemId);
 	}
 
