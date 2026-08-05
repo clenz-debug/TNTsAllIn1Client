@@ -62,6 +62,11 @@ export interface VersionDetail {
     jvm: Array<string | ConditionalArgument>
     game: Array<string | ConditionalArgument>
   }
+  /** The Java runtime Mojang's own launcher would download for this version (e.g.
+   * `{ component: 'java-runtime-delta', majorVersion: 21 }`). We don't manage per-version
+   * runtimes ourselves (see `gameProcess.ts`'s `getInstalledJavaMajorVersion` doc comment) - this
+   * is only read to pre-flight-check the system `java` on PATH before spawning it. */
+  javaVersion?: { component: string; majorVersion: number }
 }
 
 export async function fetchVersionDetail(versionId: string = MINECRAFT_VERSION): Promise<VersionDetail> {

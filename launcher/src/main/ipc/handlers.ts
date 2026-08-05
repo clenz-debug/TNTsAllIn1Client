@@ -13,10 +13,11 @@ import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
-import { checkJavaAvailable, launchGame } from '../launch/gameProcess'
+import { checkJavaAvailable, getInstalledJavaMajorVersion, launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { fetchAvailableVersions } from '../launch/versionList'
+import { fetchVersionDetail } from '../launch/versionManifest'
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
  * channel is registered twice, which would happen if this ran again from a second createWindow()
@@ -55,6 +56,20 @@ export function registerIpcHandlers(): void {
         const message = 'java wurde nicht gefunden. Ist JDK 21 installiert und im PATH?'
         sendLog({ source: 'launcher', level: 'error', message })
         throw new Error(message)
+      }
+
+      // Cheap detail-only fetch (no downloads) so an incompatible JVM is caught before spending
+      // time/bandwidth on installVersion's client-jar/library/asset download - see
+      // getInstalledJavaMajorVersion's doc comment for why this can't just be left to fail at
+      // spawn time.
+      const requiredJavaMajor = (await fetchVersionDetail(versionId)).javaVersion?.majorVersion
+      if (requiredJavaMajor) {
+        const installedJavaMajor = await getInstalledJavaMajorVersion()
+        if (installedJavaMajor !== null && installedJavaMajor < requiredJavaMajor) {
+          const message = `${versionId} benötigt Java ${requiredJavaMajor}+, installiert ist Java ${installedJavaMajor}. Bitte ein passendes JDK installieren (z.B. Adoptium Temurin ${requiredJavaMajor}) oder eine andere Version wählen.`
+          sendLog({ source: 'launcher', level: 'error', message })
+          throw new Error(message)
+        }
       }
 
       const bundleCompatible = isBundleCompatibleVersion(versionId)
