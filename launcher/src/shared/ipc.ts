@@ -10,5 +10,7 @@ export const IpcChannel = {
   LaunchProgress: 'launch:progress',
   VersionsList: 'versions:list',
   GameLog: 'game:log',
-  ShellOpenExternal: 'shell:open-external'
+  ShellOpenExternal: 'shell:open-external',
+  SettingsLoad: 'settings:load',
+  SettingsSave: 'settings:save'
 } as const

@@ -7,6 +7,7 @@ import {
   MINECRAFT_VERSION,
   type GameLogEvent,
   type LaunchStage,
+  type LauncherSettings,
   type MinecraftProfile
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
@@ -19,6 +20,7 @@ import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
+import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
  * channel is registered twice, which would happen if this ran again from a second createWindow()
@@ -41,6 +43,12 @@ export function registerIpcHandlers(): void {
   })
 
   ipcMain.handle(IpcChannel.VersionsList, async () => fetchAvailableVersions())
+
+  ipcMain.handle(IpcChannel.SettingsLoad, async () => loadLauncherSettings())
+
+  ipcMain.handle(IpcChannel.SettingsSave, async (_event: IpcMainInvokeEvent, settings: LauncherSettings) =>
+    saveLauncherSettings(settings)
+  )
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,

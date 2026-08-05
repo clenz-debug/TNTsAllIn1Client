@@ -25,16 +25,28 @@ export function PlayScreen({ profile, onLogout }: Props) {
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [showSnapshots, setShowSnapshots] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState(MINECRAFT_VERSION)
+  // Gates the save-effect below until the persisted settings have actually been applied - without
+  // this, that effect's first run (on mount, still holding the plain useState defaults above)
+  // would immediately overwrite whatever was saved from a previous session with those defaults.
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   useEffect(() => {
-    window.api
-      .listVersions()
-      .then((list) => {
+    Promise.all([window.api.loadSettings(), window.api.listVersions()])
+      .then(([settings, list]) => {
         setVersions(list)
-        setSelectedVersion(pickDefaultVersion(list))
+        setShowSnapshots(settings.showSnapshots)
+        const visible = list.filter((v) => settings.showSnapshots || v.type === 'release')
+        const persistedIsVisible = visible.some((v) => v.id === settings.selectedVersion)
+        setSelectedVersion(persistedIsVisible ? settings.selectedVersion : pickDefaultVersion(visible))
+        setSettingsLoaded(true)
       })
       .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
   }, [])
+
+  useEffect(() => {
+    if (!settingsLoaded) return
+    void window.api.saveSettings({ selectedVersion, showSnapshots })
+  }, [settingsLoaded, selectedVersion, showSnapshots])
 
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
 

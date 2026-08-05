@@ -5,6 +5,7 @@ import type {
   GameLogEvent,
   GameVersionSummary,
   LaunchProgressEvent,
+  LauncherSettings,
   MinecraftProfile
 } from '../shared/types'
 
@@ -22,6 +23,8 @@ const api = {
     ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, versionId),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
   listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
+  loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
+  saveSettings: (settings: LauncherSettings): Promise<void> => ipcRenderer.invoke(IpcChannel.SettingsSave, settings),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

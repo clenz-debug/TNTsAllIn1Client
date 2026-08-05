@@ -58,3 +58,16 @@ export interface GameVersionSummary {
   type: GameVersionType
   releaseTime: string
 }
+
+/** Persisted across app restarts (Phase 6b) - see `main/launcherSettings.ts` for the on-disk
+ * JSON file, same hand-rolled pattern as `main/auth/tokenCache.ts` rather than pulling in a new
+ * dependency for two small fields. */
+export interface LauncherSettings {
+  selectedVersion: string
+  showSnapshots: boolean
+}
+
+export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
+  selectedVersion: MINECRAFT_VERSION,
+  showSnapshots: false
+}
