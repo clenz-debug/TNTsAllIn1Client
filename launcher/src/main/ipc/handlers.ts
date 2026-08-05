@@ -13,8 +13,9 @@ import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
-import { checkJavaAvailable, getInstalledJavaMajorVersion, launchGame } from '../launch/gameProcess'
+import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
+import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
@@ -51,26 +52,21 @@ export function registerIpcHandlers(): void {
         event.sender.send(IpcChannel.GameLog, log)
       }
 
-      const javaAvailable = await checkJavaAvailable()
-      if (!javaAvailable) {
-        const message = 'java wurde nicht gefunden. Ist JDK 21 installiert und im PATH?'
-        sendLog({ source: 'launcher', level: 'error', message })
-        throw new Error(message)
-      }
-
-      // Cheap detail-only fetch (no downloads) so an incompatible JVM is caught before spending
-      // time/bandwidth on installVersion's client-jar/library/asset download - see
-      // getInstalledJavaMajorVersion's doc comment for why this can't just be left to fail at
-      // spawn time.
-      const requiredJavaMajor = (await fetchVersionDetail(versionId)).javaVersion?.majorVersion
-      if (requiredJavaMajor) {
-        const installedJavaMajor = await getInstalledJavaMajorVersion()
-        if (installedJavaMajor !== null && installedJavaMajor < requiredJavaMajor) {
-          const message = `${versionId} benötigt Java ${requiredJavaMajor}+, installiert ist Java ${installedJavaMajor}. Bitte ein passendes JDK installieren (z.B. Adoptium Temurin ${requiredJavaMajor}) oder eine andere Version wählen.`
-          sendLog({ source: 'launcher', level: 'error', message })
-          throw new Error(message)
-        }
-      }
+      // Cheap detail-only fetch (no downloads) purely to read `javaVersion` before committing to
+      // the full (potentially large) installVersion download below - installVersion re-fetches
+      // the same detail itself, a small duplicate JSON request is an easy trade for not
+      // downloading gigabytes of assets for a runtime that then fails to provision.
+      const targetDetail = await fetchVersionDetail(versionId)
+      // Versions old enough to predate Mojang's own javaVersion field (pre-1.17-ish) ran on
+      // whatever JRE 8 provided - jre-legacy is Mojang's own component name for exactly that,
+      // and still shows up in the runtime manifest today.
+      const javaComponent = targetDetail.javaVersion?.component ?? 'jre-legacy'
+      const javaBinaryPath = await ensureJavaRuntime(javaComponent, sendProgress)
+      sendLog({
+        source: 'launcher',
+        level: 'info',
+        message: `Java-Runtime bereit (${javaComponent}).`
+      })
 
       const bundleCompatible = isBundleCompatibleVersion(versionId)
       if (!bundleCompatible) {
@@ -99,7 +95,7 @@ export function registerIpcHandlers(): void {
         message: `Starte Minecraft ${installed.detail.id}${profile.isMock ? ' (Dev-Mock-Profil)' : ''}…`
       })
 
-      await launchGame(args, join(installed.instanceDir, 'game'), sendLog)
+      await launchGame(javaBinaryPath, args, join(installed.instanceDir, 'game'), sendLog)
       sendProgress('done', 1, 1)
     }
   )

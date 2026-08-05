@@ -14,6 +14,7 @@ export interface AuthProgressEvent {
 
 export type LaunchStage =
   | 'manifest'
+  | 'java-runtime'
   | 'client-jar'
   | 'libraries'
   | 'assets'
