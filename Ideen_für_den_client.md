@@ -75,3 +75,4 @@
     - farbe von den pixeln beim drawing vom crosshair auf weiß ändern weil das ist besser für leute mit rot grünschwäche [check] (5ad — live bestätigt, "passt")
     - im recipie book rezepte anpinnen
     - material counter in item counter umbennen
+    -hitbox color und blockoutline color das custom entfernen
