@@ -32,7 +32,7 @@ public class ClientConfig {
 
 	// 5a: which parts of the coordinates HUD to show - independent toggles, not
 	// mutually exclusive (all three on is "show everything").
-	public boolean coordinatesHudEnabled = true;
+	public boolean coordinatesHudEnabled = false;
 	public boolean coordinatesHudShowCoordinates = true;
 	public boolean coordinatesHudShowDirection = true;
 	public boolean coordinatesHudShowDegrees = true;
@@ -41,28 +41,28 @@ public class ClientConfig {
 	// 5b, renamed 5ag ("Material Counter" -> "Item Counter"): which item to tally
 	// across the inventory. Either a fixed item id, or whatever is currently in
 	// the main hand.
-	public boolean itemCounterEnabled = true;
+	public boolean itemCounterEnabled = false;
 	public boolean itemCounterUseHeldItem = false;
 	public String itemCounterItemId = "minecraft:diamond";
 	public HudLayout itemCounterHudLayout = new HudLayout();
 	public boolean itemCounterShowItemIcon = false;
 
 	// 5c: quick-sort button + keybind in the player's own inventory screen.
-	public boolean quickSortEnabled = true;
+	public boolean quickSortEnabled = false;
 	public boolean quickSortGroupByCategory = false;
 
 	// 5d: extra "Quick Info" block on the F3 debug screen.
-	public boolean f3QuickInfoEnabled = true;
+	public boolean f3QuickInfoEnabled = false;
 
 	// Phase 2 leftover: the "TNT's All-In-1 Client (Mixin active)" top-left label.
-	public boolean clientNameLabelEnabled = true;
+	public boolean clientNameLabelEnabled = false;
 
 	// 5g: always-visible FPS counter, no F3 needed.
-	public boolean fpsCounterEnabled = true;
+	public boolean fpsCounterEnabled = false;
 	public HudLayout fpsCounterHudLayout = new HudLayout();
 
 	// 5h: hold-to-zoom.
-	public boolean zoomEnabled = true;
+	public boolean zoomEnabled = false;
 	// Scroll-adjustable while zooming (see ZoomHandler); persists as the
 	// "remembered" zoom level between sessions, same as every other setting here.
 	public int zoomFov = 15;
@@ -71,7 +71,7 @@ public class ClientConfig {
 	// on doesn't visibly change anything until a color is picked), a shape
 	// (preset library or user-drawn 9x9 grid), a size independent of GUI Scale,
 	// and an optional second color while aiming at an attackable mob.
-	public boolean customCrosshairEnabled = true;
+	public boolean customCrosshairEnabled = false;
 	public int customCrosshairColor = 0xFFFFFFFF;
 	public CrosshairMode crosshairMode = CrosshairMode.PRESET;
 	public CrosshairPreset crosshairPreset = CrosshairPreset.SMALLER;
@@ -99,28 +99,28 @@ public class ClientConfig {
 	// with colored X marks (see SpawnOverlayRenderer). Hold-vs-toggle is a
 	// separate setting since either can be the more comfortable one depending
 	// on how someone plays.
-	public boolean spawnOverlayEnabled = true;
+	public boolean spawnOverlayEnabled = false;
 	public boolean spawnOverlayHoldMode = true;
 
 	// 5k: hold-to-preview shulker box contents beyond vanilla's own 5-item cap.
-	public boolean shulkerPreviewEnabled = true;
+	public boolean shulkerPreviewEnabled = false;
 
 	// 5l: F3+B hitbox outline color. Defaults to white, vanilla's own color, so
 	// turning this on doesn't visibly change anything until a color is picked.
-	public boolean customHitboxColorEnabled = true;
+	public boolean customHitboxColorEnabled = false;
 	public int customHitboxColor = 0xFFFFFFFF;
 
 	// 5aa/5ab: the four secondary F3+B indicators vanilla draws alongside the
 	// main hitbox - each independently toggleable and colorable so a chosen
 	// main hitbox color can't end up matching (and visually blending into) one
 	// of them. Colors default to vanilla's own hardcoded ones for each.
-	public boolean customHitboxShowEyeHeight = true;
+	public boolean customHitboxShowEyeHeight = false;
 	public int customHitboxEyeHeightColor = 0xFFFF0000;
-	public boolean customHitboxShowVehicleMarker = true;
+	public boolean customHitboxShowVehicleMarker = false;
 	public int customHitboxVehicleMarkerColor = 0xFFFFFF00;
-	public boolean customHitboxShowViewDirection = true;
+	public boolean customHitboxShowViewDirection = false;
 	public int customHitboxViewDirectionColor = 0xFF0000FF;
-	public boolean customHitboxShowDragonParts = true;
+	public boolean customHitboxShowDragonParts = false;
 	public int customHitboxDragonPartsColor = 0xFF3FFF00;
 
 	// 5q: the black wireframe box drawn around whatever block is being looked
@@ -128,14 +128,14 @@ public class ClientConfig {
 	// vanilla's own alpha (translucent normally, opaque in high-contrast mode)
 	// is always kept, only the RGB comes from here. Defaults to black, vanilla's
 	// own color, so turning this on doesn't visibly change anything until picked.
-	public boolean customBlockOutlineColorEnabled = true;
+	public boolean customBlockOutlineColorEnabled = false;
 	public int customBlockOutlineColor = 0xFF000000;
 
 	// 5m: keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop).
 	// Active-box color, same green as the original hardcoded default; the
 	// alpha byte here is never actually shown as-is (KeystrokesHud always
 	// re-applies its own translucent glow alpha on top), only the RGB matters.
-	public boolean keystrokesEnabled = true;
+	public boolean keystrokesEnabled = false;
 	public HudLayout keystrokesHudLayout = new HudLayout();
 	public int keystrokesActiveColor = 0xFF33CC33;
 	// Per-key on/off, keyed by KeystrokeKey#name() - a key absent from the map
@@ -143,10 +143,10 @@ public class ClientConfig {
 	public Map<String, Boolean> keystrokesKeyEnabled = new HashMap<>();
 
 	// 5n: Open/Copy popup after taking a screenshot.
-	public boolean screenshotToastEnabled = true;
+	public boolean screenshotToastEnabled = false;
 
 	// 5o: cosmetic dropped-item lean/tilt ("item physics" light).
-	public boolean itemTiltEnabled = true;
+	public boolean itemTiltEnabled = false;
 
 	// 5t: text colors for the plain-text HUD/overlay elements, all defaulting to
 	// white (vanilla's own text color) so adding this doesn't visibly change
@@ -161,7 +161,7 @@ public class ClientConfig {
 
 	// 5ah: recipe pinned from the crafting-table/inventory recipe book, shown as a
 	// movable HUD reminder. Null until the player actually pins something.
-	public boolean pinnedRecipeEnabled = true;
+	public boolean pinnedRecipeEnabled = false;
 	public @Nullable PinnedRecipe pinnedRecipe = null;
 	public HudLayout pinnedRecipeHudLayout = new HudLayout();
 
