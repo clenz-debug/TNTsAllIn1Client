@@ -58,8 +58,8 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
       <section className="mods-section">
         <h3>Gebündelte Mods</h3>
         <p className="version-warning">
-          Standardmäßig aus - hier gezielt aktivieren. Fabric API läuft immer mit (Voraussetzung für alle anderen),
-          taucht deshalb nicht als eigener Schalter auf.
+          Standardmäßig aus - hier gezielt aktivieren. Fabric API sowie Sodium/Lithium (Performance, für gute
+          Leistung auch auf schwächeren Geräten) laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
         </p>
         {!isBundleCompatibleVersion(selectedVersion) && (
           <p className="version-warning">

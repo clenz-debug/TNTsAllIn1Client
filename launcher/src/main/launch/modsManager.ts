@@ -10,13 +10,23 @@ import { instanceDir } from './installer'
  * removes here, it's what makes this "our" client to begin with. */
 const OWN_MOD_PREFIX = 'tntsallin1client-'
 
-/** Fabric API's own jar filename in `mods-bundle/` (e.g. `fabric-api-0.141.5+1.21.11.jar`) - a
- * hard dependency every other bundled mod declares in its own `fabric.mod.json`, not an optional
- * "feature" a user would toggle. Excluded from the toggle list in `listToggleableBundledMods` and
- * force-enabled in `bundleSync.ts` regardless of `enabledBundledMods`, same reasoning as
- * `OWN_MOD_PREFIX` above - if it were off while e.g. Sodium was on, Fabric Loader would reject the
- * whole launch on Sodium's unmet dependency instead of degrading gracefully. */
-export const FABRIC_API_PREFIX = 'fabric-api-'
+/**
+ * Bundled jar filename prefixes that are never optional via the Mods screen's toggle - always
+ * synced regardless of `enabledBundledMods`, for two different reasons:
+ *  - `fabric-api-`: a hard dependency every other bundled mod declares in its own
+ *    `fabric.mod.json`. If it were off while e.g. Sodium was on, Fabric Loader would reject the
+ *    whole launch on Sodium's unmet dependency instead of degrading gracefully.
+ *  - `sodium-fabric-`/`lithium-fabric-`: explicit user request. `enabledBundledMods` itself
+ *    defaults to nothing enabled specifically so a first launch doesn't silently carry visible
+ *    behavior changes the user never asked for - but Sodium/Lithium are pure performance, no
+ *    visible behavior change, and losing "good performance even on weak hardware" by default
+ *    would work against this project's whole point (see Projekt_Roadmap.md's stated goal).
+ */
+const ALWAYS_ENABLED_PREFIXES = ['fabric-api-', 'sodium-fabric-', 'lithium-fabric-']
+
+export function isAlwaysEnabledBundledMod(fileName: string): boolean {
+  return ALWAYS_ENABLED_PREFIXES.some((prefix) => fileName.startsWith(prefix))
+}
 
 async function listJarsIn(dir: string): Promise<string[]> {
   try {
@@ -35,11 +45,11 @@ export async function listBundledMods(): Promise<string[]> {
   return listJarsIn(join(app.getAppPath(), 'mods-bundle'))
 }
 
-/** The subset of {@link listBundledMods} the Mods screen actually offers a checkbox for - Fabric
- * API is deliberately left out, see {@link FABRIC_API_PREFIX}. */
+/** The subset of {@link listBundledMods} the Mods screen actually offers a checkbox for - the
+ * always-enabled ones are deliberately left out, see {@link isAlwaysEnabledBundledMod}. */
 export async function listToggleableBundledMods(): Promise<string[]> {
   const all = await listBundledMods()
-  return all.filter((name) => !name.startsWith(FABRIC_API_PREFIX))
+  return all.filter((name) => !isAlwaysEnabledBundledMod(name))
 }
 
 /** Whatever's sitting in a version's `game/mods` folder that isn't a bundled mod and isn't our

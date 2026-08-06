@@ -2,7 +2,7 @@ import { app } from 'electron'
 import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
-import { FABRIC_API_PREFIX } from './modsManager'
+import { isAlwaysEnabledBundledMod } from './modsManager'
 
 export type InstallProgressCallback = (
   stage: LaunchStage,
@@ -105,13 +105,12 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * surfaces to the user via the returned flag.
  *
  * `enabledBundledMods` (Phase 6c, opt-in per later user request) lists which third-party mods the
- * user has actively turned on - defaults to none, so a fresh install starts with every bundled mod
- * off rather than everything silently active. Translated into `syncBundleDir`'s opt-out `excluded`
- * set here (every bundled filename NOT in the enabled list), with one forced exception: Fabric API
- * itself (see `modsManager.ts`'s `FABRIC_API_PREFIX`) is never excluded regardless of the setting -
- * it's a hard dependency every other bundled mod's own `fabric.mod.json` declares, not an optional
- * extra, so turning it off while e.g. Sodium is on would just make Fabric Loader reject the launch
- * on an unmet dependency instead of degrading anything gracefully.
+ * user has actively turned on - defaults to none, so a fresh install starts with every *optional*
+ * bundled mod off rather than everything silently active. Translated into `syncBundleDir`'s
+ * opt-out `excluded` set here (every bundled filename NOT in the enabled list), with a few forced
+ * exceptions that are never excluded regardless of the setting - see `modsManager.ts`'s
+ * `isAlwaysEnabledBundledMod` for exactly which and why (Fabric API as a hard dependency, Sodium/
+ * Lithium on explicit user request so performance doesn't regress by default either).
  */
 export async function syncBundledContent(
   instanceDir: string,
@@ -134,7 +133,7 @@ export async function syncBundledContent(
   const allBundledMods = await listBundleFiles(modsBundleDir)
   const enabledSet = new Set(enabledBundledMods)
   const disabledMods = new Set(
-    allBundledMods.filter((file) => !enabledSet.has(file) && !file.startsWith(FABRIC_API_PREFIX))
+    allBundledMods.filter((file) => !enabledSet.has(file) && !isAlwaysEnabledBundledMod(file))
   )
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
