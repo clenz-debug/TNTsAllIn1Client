@@ -73,6 +73,6 @@
     - custom hitbox blickrichtung und das was mann sonst bei f3 + b sichtbar machen (wenn in custom hitbox mod option eingeschaltet) [check] (5aa — live bestätigt, "passt"; plus 5ab: jeder Indikator einzeln ein/ausschaltbar + einfärbbar)
     - andere crosshair form wenn auf mob geaimt wird (in crosshair mod option ein und ausschaltbar machen) [check] (5ac — live bestätigt, "klappt")
     - farbe von den pixeln beim drawing vom crosshair auf weiß ändern weil das ist besser für leute mit rot grünschwäche [check] (5ad — live bestätigt, "passt")
-    - im recipie book rezepte anpinnen [check] (5ah — Anpinnen per Taste beim Hovern, angepinntes Rezept als verschiebbares HUD-Element)
+    - im recipie book rezepte anpinnen, anzahl der benötigten materialien runterzählen wenn man ein item was benötigt wird ins inventar packt [check] (5ah — Anpinnen per Taste beim Hovern, angepinntes Rezept als verschiebbares HUD-Element, zählt Restmenge live gegen das Inventar runter)
     - material counter in item counter umbennen [check] (5ag — Klassen/Config-Felder/Lang-Keys durchgehend umbenannt)
     - hitbox color und blockoutline color das custom entfernen [check] (5ae — reine Lang-Key-Änderung)

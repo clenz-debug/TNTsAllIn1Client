@@ -119,7 +119,10 @@ public class ItemCounterHud implements HudElement {
 		return itemId == null ? null : BuiltInRegistries.ITEM.getValue(itemId);
 	}
 
-	private static int countInInventory(LocalPlayer player, Item item) {
+	/** Also used by {@link com.tntsallin1client.recipe.PinnedRecipeHud} (5ah) to count down how many
+	 * of a pinned recipe's ingredients are already in the player's inventory - same "sum across the
+	 * main inventory plus offhand" logic either way, no reason to duplicate it. */
+	public static int countInInventory(LocalPlayer player, Item item) {
 		int total = 0;
 		NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
 		for (ItemStack stack : items) {

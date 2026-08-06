@@ -233,14 +233,17 @@ public class HudEditorScreen extends Screen {
 	private Rect pinnedRecipeBounds() {
 		ClientConfig config = ClientConfig.get();
 		PinnedRecipe recipe = config.pinnedRecipe;
-		if (recipe == null) {
+		LocalPlayer player = this.minecraft.player;
+		if (recipe == null || player == null) {
 			// Unlike coordinatesBounds/itemCounterBounds, there is no sensible placeholder here -
 			// nothing is pinned yet, so there is nothing to position. The element simply can't be
 			// dragged in the editor until the player actually pins a recipe once.
 			return null;
 		}
 
-		int ingredientCount = PinnedRecipeHud.ingredientStacks(recipe).size();
+		// Same live inventory-countdown as the actual HudElement render, not the static full
+		// requirement - otherwise the drag handles here wouldn't line up with what's actually drawn.
+		int ingredientCount = PinnedRecipeHud.remainingIngredientStacks(recipe, player).size();
 		HudLayout layout = config.pinnedRecipeHudLayout;
 		float x = layout.customPosition ? layout.x : PinnedRecipeHud.defaultX(this.width, this.font, ingredientCount);
 		float y = layout.customPosition ? layout.y : PinnedRecipeHud.defaultY();
