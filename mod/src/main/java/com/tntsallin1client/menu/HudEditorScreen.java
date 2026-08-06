@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * Lets HUD elements (coordinates HUD, material counter) be dragged to any
+ * Lets HUD elements (coordinates HUD, item counter, ...) be dragged to any
  * position and resized by dragging their bottom-right handle, instead of only
- * being toggled on/off. Deliberately not a normal {@link Screen}-with-dark-
- * background: {@link #renderBackground} is a no-op so the real game HUD keeps
- * rendering live underneath our drag handles (Minecraft renders the HUD before
- * the open screen every frame regardless of whether a screen is open, so this
- * works without any extra plumbing).
+ * being toggled on/off. Only elements the player actually has enabled show up
+ * here at all - {@link #init} skips adding an {@link Entry} for anything
+ * that's toggled off in the mod menu. Deliberately not a normal
+ * {@link Screen}-with-dark-background: {@link #renderBackground} is a no-op
+ * so the real game HUD keeps rendering live underneath our drag handles
+ * (Minecraft renders the HUD before the open screen every frame regardless
+ * of whether a screen is open, so this works without any extra plumbing).
  */
 public class HudEditorScreen extends Screen {
 	private static final int HANDLE_SIZE = 6;
@@ -50,26 +52,39 @@ public class HudEditorScreen extends Screen {
 	protected void init() {
 		entries.clear();
 		ClientConfig config = ClientConfig.get();
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
-				config.coordinatesHudLayout,
-				this::coordinatesBounds));
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.item_counter"),
-				config.itemCounterHudLayout,
-				this::itemCounterBounds));
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.fps_counter"),
-				config.fpsCounterHudLayout,
-				this::fpsCounterBounds));
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.keystrokes"),
-				config.keystrokesHudLayout,
-				this::keystrokesBounds));
-		entries.add(new Entry(
-				Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
-				config.pinnedRecipeHudLayout,
-				this::pinnedRecipeBounds));
+		// Only offer elements the player actually has turned on - dragging/resizing a box for a
+		// feature that's toggled off in the mod menu (and so never actually renders ingame) was
+		// confusing, per user feedback.
+		if (config.coordinatesHudEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
+					config.coordinatesHudLayout,
+					this::coordinatesBounds));
+		}
+		if (config.itemCounterEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.item_counter"),
+					config.itemCounterHudLayout,
+					this::itemCounterBounds));
+		}
+		if (config.fpsCounterEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.fps_counter"),
+					config.fpsCounterHudLayout,
+					this::fpsCounterBounds));
+		}
+		if (config.keystrokesEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.keystrokes"),
+					config.keystrokesHudLayout,
+					this::keystrokesBounds));
+		}
+		if (config.pinnedRecipeEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
+					config.pinnedRecipeHudLayout,
+					this::pinnedRecipeBounds));
+		}
 
 		this.addRenderableWidget(Button.builder(
 						Component.translatable("gui.tntsallin1client.hud_editor.reset_all"),
