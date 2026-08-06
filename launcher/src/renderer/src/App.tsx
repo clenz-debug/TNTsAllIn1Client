@@ -24,7 +24,7 @@ export default function App() {
   }
 
   return profile ? (
-    <PlayScreen profile={profile} onLogout={() => setProfile(null)} />
+    <PlayScreen profile={profile} onProfileUpdate={setProfile} onLogout={() => setProfile(null)} />
   ) : (
     <LoginScreen onLoggedIn={setProfile} />
   )

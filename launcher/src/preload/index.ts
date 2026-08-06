@@ -32,6 +32,9 @@ const api = {
   removeCustomMod: (versionId: string, fileName: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, versionId, fileName),
   checkForUpdate: (): Promise<UpdateCheckResult> => ipcRenderer.invoke(IpcChannel.UpdateCheck),
+  fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
+  uploadSkin: (profile: MinecraftProfile, variant: 'classic' | 'slim'): Promise<MinecraftProfile | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

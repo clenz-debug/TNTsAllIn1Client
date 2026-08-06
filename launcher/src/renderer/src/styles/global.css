@@ -288,6 +288,15 @@ body {
   padding: 0.5rem 0;
 }
 
+.skin-preview {
+  width: 128px;
+  height: 128px;
+  image-rendering: pixelated;
+  border: 1px solid var(--green-1);
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+
 .credits-license {
   color: var(--text-dim);
   white-space: nowrap;

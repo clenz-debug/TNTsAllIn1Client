@@ -9,9 +9,11 @@ import type {
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { ModsScreen } from './ModsScreen'
+import { SkinScreen } from './SkinScreen'
 
 interface Props {
   profile: MinecraftProfile
+  onProfileUpdate: (profile: MinecraftProfile) => void
   onLogout: () => void
 }
 
@@ -22,12 +24,13 @@ function pickDefaultVersion(list: GameVersionSummary[]): string {
   return list[0]?.id ?? MINECRAFT_VERSION
 }
 
-export function PlayScreen({ profile, onLogout }: Props) {
+export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
   const [logs, setLogs] = useState<GameLogEvent[]>([])
   const [showCredits, setShowCredits] = useState(false)
   const [showMods, setShowMods] = useState(false)
+  const [showSkin, setShowSkin] = useState(false)
 
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
   const [versionsError, setVersionsError] = useState<string | null>(null)
@@ -120,6 +123,10 @@ export function PlayScreen({ profile, onLogout }: Props) {
     )
   }
 
+  if (showSkin) {
+    return <SkinScreen profile={profile} onProfileUpdate={onProfileUpdate} onClose={() => setShowSkin(false)} />
+  }
+
   return (
     <div className="play-screen">
       <header>
@@ -128,6 +135,9 @@ export function PlayScreen({ profile, onLogout }: Props) {
           {profile.isMock && <span className="mock-badge">Dev-Mock-Profil</span>}
         </div>
         <div className="header-actions">
+          <button className="link-button" onClick={() => setShowSkin(true)}>
+            Skin
+          </button>
           <button className="link-button" onClick={() => setShowMods(true)}>
             Mods
           </button>

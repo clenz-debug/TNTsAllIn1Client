@@ -1,3 +1,21 @@
+/** Mirrors `minecraft/profile`'s own `skins[]`/`capes[]` entries (Phase 7) - `url` points at
+ * Mojang's texture CDN (`textures.minecraft.net`), fetched through the main process and handed to
+ * the renderer as a data: URI rather than loaded directly (see `skinApi.ts` - the renderer's CSP
+ * only allows `img-src 'self' data:'`). */
+export interface MinecraftSkin {
+  id: string
+  state: 'ACTIVE' | 'INACTIVE'
+  url: string
+  variant: 'CLASSIC' | 'SLIM'
+}
+
+export interface MinecraftCape {
+  id: string
+  state: 'ACTIVE' | 'INACTIVE'
+  url: string
+  alias: string
+}
+
 export interface MinecraftProfile {
   id: string
   name: string
@@ -5,6 +23,8 @@ export interface MinecraftProfile {
   /** true when steps 4/5 of the auth chain (login_with_xbox, profile) were mocked because the
    * Mojang API allowlist request (aka.ms/mce-reviewappid) has not been approved yet. */
   isMock: boolean
+  skins: MinecraftSkin[]
+  capes: MinecraftCape[]
 }
 
 export interface AuthProgressEvent {

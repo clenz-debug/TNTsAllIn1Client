@@ -1,4 +1,4 @@
-import type { MinecraftProfile } from '../../shared/types'
+import type { MinecraftCape, MinecraftProfile, MinecraftSkin } from '../../shared/types'
 import type { XstsResult } from './xboxLive'
 
 interface MinecraftLoginResponse {
@@ -8,13 +8,28 @@ interface MinecraftLoginResponse {
 interface MinecraftProfileResponse {
   id: string
   name: string
+  skins: MinecraftSkin[]
+  capes: MinecraftCape[]
 }
 
 const MOCK_PROFILE: MinecraftProfile = {
   id: '00000000-0000-0000-0000-000000000000',
   name: 'DevPlayer',
   accessToken: 'dev-fake-token',
-  isMock: true
+  isMock: true,
+  // Mojang's own well-known default Steve texture (public, unauthenticated) - lets the Phase 7
+  // skin screen's render pipeline (main-process fetch -> data URI -> <img>) be exercised even
+  // while real Mojang API access is still pending approval, same "build/verify against a mock"
+  // approach the rest of the auth chain already relies on.
+  skins: [
+    {
+      id: 'mock-skin',
+      state: 'ACTIVE',
+      url: 'https://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb',
+      variant: 'CLASSIC'
+    }
+  ],
+  capes: []
 }
 
 class MinecraftApiError extends Error {
@@ -58,7 +73,7 @@ export async function completeMinecraftLogin(xsts: XstsResult): Promise<Minecraf
   try {
     const accessToken = await loginWithXbox(xsts)
     const profile = await fetchProfile(accessToken)
-    return { id: profile.id, name: profile.name, accessToken, isMock: false }
+    return { id: profile.id, name: profile.name, accessToken, isMock: false, skins: profile.skins, capes: profile.capes }
   } catch (error) {
     console.warn('[auth] Minecraft API not available yet, falling back to dev mock profile:', error)
     return MOCK_PROFILE

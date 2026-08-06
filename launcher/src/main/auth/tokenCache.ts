@@ -25,3 +25,12 @@ export async function saveCachedAuth(entry: CachedAuth): Promise<void> {
   await mkdir(app.getPath('userData'), { recursive: true })
   await writeFile(cachePath(), JSON.stringify(entry, null, 2), 'utf-8')
 }
+
+/** Refreshes just the cached `profile` (e.g. after a skin upload, Phase 7) without touching the
+ * cached `msRefreshToken` - a no-op if nothing's cached yet (shouldn't happen in practice, since
+ * this is only ever called right after a successful authenticated API call). */
+export async function updateCachedProfile(profile: MinecraftProfile): Promise<void> {
+  const existing = await loadCachedAuth()
+  if (!existing) return
+  await saveCachedAuth({ ...existing, profile })
+}

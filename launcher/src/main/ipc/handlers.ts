@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from 'electron'
-import { BrowserWindow, ipcMain, shell } from 'electron'
+import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import {
@@ -11,6 +11,8 @@ import {
   type MinecraftProfile
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
+import { fetchTextureDataUri, uploadSkin, type SkinVariant } from '../auth/skinApi'
+import { updateCachedProfile } from '../auth/tokenCache'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
@@ -68,6 +70,32 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle(IpcChannel.UpdateCheck, async () => checkForUpdate())
+
+  ipcMain.handle(IpcChannel.SkinFetchTexture, async (_event: IpcMainInvokeEvent, url: string) => fetchTextureDataUri(url))
+
+  // Skin PNGs picked via a native dialog (same "no HTML5 drag&drop under sandbox:true" reasoning
+  // as ModsScreen's "add custom mod" flow, see modsManager.ts) - null return means the dialog was
+  // cancelled, not an error. The upload endpoint's own response already contains the fresh
+  // skins/capes, so the renderer never needs a separate refetch - just merge it into its copy of
+  // the profile and hand it back here to keep auth.json's cached profile in sync too.
+  ipcMain.handle(
+    IpcChannel.SkinUpload,
+    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, variant: SkinVariant): Promise<MinecraftProfile | null> => {
+      const dialogOptions: Electron.OpenDialogOptions = {
+        title: 'Skin-PNG auswählen',
+        properties: ['openFile'],
+        filters: [{ name: 'PNG-Bild', extensions: ['png'] }]
+      }
+      const window = BrowserWindow.fromWebContents(event.sender)
+      const result = window ? await dialog.showOpenDialog(window, dialogOptions) : await dialog.showOpenDialog(dialogOptions)
+      if (result.canceled || result.filePaths.length === 0) return null
+
+      const { skins, capes } = await uploadSkin(profile.accessToken, result.filePaths[0], variant)
+      const updatedProfile: MinecraftProfile = { ...profile, skins, capes }
+      await updateCachedProfile(updatedProfile)
+      return updatedProfile
+    }
+  )
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
