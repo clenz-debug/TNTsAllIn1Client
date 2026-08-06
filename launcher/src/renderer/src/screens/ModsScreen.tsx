@@ -3,12 +3,12 @@ import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/ty
 
 interface Props {
   selectedVersion: string
-  disabledBundledMods: string[]
+  enabledBundledMods: string[]
   onToggleBundledMod: (fileName: string, enabled: boolean) => void
   onClose: () => void
 }
 
-export function ModsScreen({ selectedVersion, disabledBundledMods, onToggleBundledMod, onClose }: Props) {
+export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundledMod, onClose }: Props) {
   const [bundledMods, setBundledMods] = useState<string[]>([])
   const [customMods, setCustomMods] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
@@ -57,6 +57,10 @@ export function ModsScreen({ selectedVersion, disabledBundledMods, onToggleBundl
 
       <section className="mods-section">
         <h3>Gebündelte Mods</h3>
+        <p className="version-warning">
+          Standardmäßig aus - hier gezielt aktivieren. Fabric API läuft immer mit (Voraussetzung für alle anderen),
+          taucht deshalb nicht als eigener Schalter auf.
+        </p>
         {!isBundleCompatibleVersion(selectedVersion) && (
           <p className="version-warning">
             Wirkt sich aktuell nicht aus - gebündelte Mods laufen nur bei {MINECRAFT_VERSION}, {selectedVersion}{' '}
@@ -69,7 +73,7 @@ export function ModsScreen({ selectedVersion, disabledBundledMods, onToggleBundl
               <label className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={!disabledBundledMods.includes(fileName)}
+                  checked={enabledBundledMods.includes(fileName)}
                   onChange={(e) => onToggleBundledMod(fileName, e.target.checked)}
                 />
                 {fileName}

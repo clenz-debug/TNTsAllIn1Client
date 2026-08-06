@@ -2,6 +2,7 @@ import { app } from 'electron'
 import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
+import { FABRIC_API_PREFIX } from './modsManager'
 
 export type InstallProgressCallback = (
   stage: LaunchStage,
@@ -22,11 +23,14 @@ async function listBundleFiles(bundleDir: string): Promise<string[]> {
 
 /**
  * `excluded` (Phase 6c) is the one deliberate exception to "only ever adds/overwrites, never
- * deletes" below: a mod the user just disabled in the Mods screen has to actually disappear from
+ * deletes" below: a mod that's currently off in the Mods screen has to actually disappear from
  * `destinationDir`, not merely stop being re-copied - otherwise a jar synced in from an earlier,
  * still-enabled launch would keep sitting there and Fabric Loader would keep loading it regardless
  * of the toggle. Only ever removes filenames from `excluded` itself, nothing else the user or a
- * previous sync put there.
+ * previous sync put there. Callers translate the opt-in `enabledBundledMods` setting into this
+ * opt-out `excluded` set (see `syncBundledContent`) rather than this function knowing about
+ * enable/disable semantics itself - it stays a generic "sync exactly these files" primitive,
+ * reused unconditionally for `resourcepacks-bundle` too (no toggle concept there at all).
  */
 async function syncBundleDir(bundleDir: string, destinationDir: string, excluded: Set<string> = new Set()): Promise<void> {
   const files = (await listBundleFiles(bundleDir)).filter((file) => !excluded.has(file))
@@ -80,7 +84,7 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * a fresh or reset instance directory silently lost it, and (worse) a stale manual copy of our own
  * mod jar could sit there indefinitely without anyone noticing. Only ever adds/overwrites the
  * synced files, never deletes anything else already in those folders (see `syncBundleDir`'s own
- * doc comment for the one deliberate exception: `disabledBundledMods`), so anything the user
+ * doc comment for the one deliberate exception: mods currently toggled off), so anything the user
  * places there by hand survives a sync.
  *
  * Doesn't touch `options.txt` — a resourcepack still has to be enabled once in-game (Optionen ->
@@ -99,12 +103,21 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * silently degrade the experience — it would break the launch outright. Skipping here instead
  * means a non-pinned version launches as plain vanilla-through-Fabric, no mods, which the caller
  * surfaces to the user via the returned flag.
+ *
+ * `enabledBundledMods` (Phase 6c, opt-in per later user request) lists which third-party mods the
+ * user has actively turned on - defaults to none, so a fresh install starts with every bundled mod
+ * off rather than everything silently active. Translated into `syncBundleDir`'s opt-out `excluded`
+ * set here (every bundled filename NOT in the enabled list), with one forced exception: Fabric API
+ * itself (see `modsManager.ts`'s `FABRIC_API_PREFIX`) is never excluded regardless of the setting -
+ * it's a hard dependency every other bundled mod's own `fabric.mod.json` declares, not an optional
+ * extra, so turning it off while e.g. Sodium is on would just make Fabric Loader reject the launch
+ * on an unmet dependency instead of degrading anything gracefully.
  */
 export async function syncBundledContent(
   instanceDir: string,
   onProgress: InstallProgressCallback,
   bundleCompatible: boolean,
-  disabledBundledMods: string[] = []
+  enabledBundledMods: string[] = []
 ): Promise<{ skipped: boolean }> {
   onProgress('bundles', 0, 1)
   if (!bundleCompatible) {
@@ -117,7 +130,14 @@ export async function syncBundledContent(
   const gameDir = join(instanceDir, 'game')
   const destModsDir = join(gameDir, 'mods')
 
-  await syncBundleDir(join(appRoot, 'mods-bundle'), destModsDir, new Set(disabledBundledMods))
+  const modsBundleDir = join(appRoot, 'mods-bundle')
+  const allBundledMods = await listBundleFiles(modsBundleDir)
+  const enabledSet = new Set(enabledBundledMods)
+  const disabledMods = new Set(
+    allBundledMods.filter((file) => !enabledSet.has(file) && !file.startsWith(FABRIC_API_PREFIX))
+  )
+
+  await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
   await syncBundleDir(join(appRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
   await syncOwnModJar(repoRoot, destModsDir)
   onProgress('bundles', 1, 1)

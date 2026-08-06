@@ -33,7 +33,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [showSnapshots, setShowSnapshots] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState(MINECRAFT_VERSION)
-  const [disabledBundledMods, setDisabledBundledMods] = useState<string[]>([])
+  const [enabledBundledMods, setEnabledBundledMods] = useState<string[]>([])
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -44,7 +44,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
       .then(([settings, list]) => {
         setVersions(list)
         setShowSnapshots(settings.showSnapshots)
-        setDisabledBundledMods(settings.disabledBundledMods)
+        setEnabledBundledMods(settings.enabledBundledMods)
         const visible = list.filter((v) => settings.showSnapshots || v.type === 'release')
         const persistedIsVisible = visible.some((v) => v.id === settings.selectedVersion)
         setSelectedVersion(persistedIsVisible ? settings.selectedVersion : pickDefaultVersion(visible))
@@ -55,11 +55,11 @@ export function PlayScreen({ profile, onLogout }: Props) {
 
   useEffect(() => {
     if (!settingsLoaded) return
-    void window.api.saveSettings({ selectedVersion, showSnapshots, disabledBundledMods })
-  }, [settingsLoaded, selectedVersion, showSnapshots, disabledBundledMods])
+    void window.api.saveSettings({ selectedVersion, showSnapshots, enabledBundledMods })
+  }, [settingsLoaded, selectedVersion, showSnapshots, enabledBundledMods])
 
   function handleToggleBundledMod(fileName: string, enabled: boolean): void {
-    setDisabledBundledMods((prev) => (enabled ? prev.filter((f) => f !== fileName) : [...prev, fileName]))
+    setEnabledBundledMods((prev) => (enabled ? [...prev, fileName] : prev.filter((f) => f !== fileName)))
   }
 
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null)
@@ -113,7 +113,7 @@ export function PlayScreen({ profile, onLogout }: Props) {
     return (
       <ModsScreen
         selectedVersion={selectedVersion}
-        disabledBundledMods={disabledBundledMods}
+        enabledBundledMods={enabledBundledMods}
         onToggleBundledMod={handleToggleBundledMod}
         onClose={() => setShowMods(false)}
       />

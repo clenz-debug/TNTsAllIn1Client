@@ -18,7 +18,7 @@ import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
-import { addCustomMods, listBundledMods, listCustomMods, removeCustomMod } from '../launch/modsManager'
+import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
 import { applySharedOptions, saveSharedOptions } from '../launch/sharedSettings'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
@@ -53,7 +53,7 @@ export function registerIpcHandlers(): void {
     saveLauncherSettings(settings)
   )
 
-  ipcMain.handle(IpcChannel.ModsListBundled, async () => listBundledMods())
+  ipcMain.handle(IpcChannel.ModsListBundled, async () => listToggleableBundledMods())
 
   ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, versionId: string) =>
     listCustomMods(versionId)
@@ -106,8 +106,8 @@ export function registerIpcHandlers(): void {
 
       const vanilla = await installVersion(sendProgress, versionId)
       const installed = await installFabricLoader(vanilla, sendProgress)
-      const { disabledBundledMods } = await loadLauncherSettings()
-      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, disabledBundledMods)
+      const { enabledBundledMods } = await loadLauncherSettings()
+      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, enabledBundledMods)
       const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
       const args = buildLaunchArgs({
         detail: installed.detail,

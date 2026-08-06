@@ -10,6 +10,14 @@ import { instanceDir } from './installer'
  * removes here, it's what makes this "our" client to begin with. */
 const OWN_MOD_PREFIX = 'tntsallin1client-'
 
+/** Fabric API's own jar filename in `mods-bundle/` (e.g. `fabric-api-0.141.5+1.21.11.jar`) - a
+ * hard dependency every other bundled mod declares in its own `fabric.mod.json`, not an optional
+ * "feature" a user would toggle. Excluded from the toggle list in `listToggleableBundledMods` and
+ * force-enabled in `bundleSync.ts` regardless of `enabledBundledMods`, same reasoning as
+ * `OWN_MOD_PREFIX` above - if it were off while e.g. Sodium was on, Fabric Loader would reject the
+ * whole launch on Sodium's unmet dependency instead of degrading gracefully. */
+export const FABRIC_API_PREFIX = 'fabric-api-'
+
 async function listJarsIn(dir: string): Promise<string[]> {
   try {
     return (await readdir(dir)).filter((name) => name.endsWith('.jar'))
@@ -18,12 +26,20 @@ async function listJarsIn(dir: string): Promise<string[]> {
   }
 }
 
-/** The third-party jars in `launcher/mods-bundle/` (Sodium, Lithium, ...) - the Mods screen's
- * per-mod enable/disable toggles (Phase 6c) operate on this list, read fresh every time rather
- * than cached, since it only changes when someone edits the (dev-populated, git-ignored) folder
- * itself. */
+/** Every third-party jar in `launcher/mods-bundle/`, Fabric API included - the full-fidelity list
+ * used to recognize "this filename is a bundled mod" (see `listCustomMods` below and
+ * `bundleSync.ts`), read fresh every time rather than cached, since it only changes when someone
+ * edits the (dev-populated, git-ignored) folder itself. Not what the Mods screen shows as
+ * toggleable - see {@link listToggleableBundledMods} for that. */
 export async function listBundledMods(): Promise<string[]> {
   return listJarsIn(join(app.getAppPath(), 'mods-bundle'))
+}
+
+/** The subset of {@link listBundledMods} the Mods screen actually offers a checkbox for - Fabric
+ * API is deliberately left out, see {@link FABRIC_API_PREFIX}. */
+export async function listToggleableBundledMods(): Promise<string[]> {
+  const all = await listBundledMods()
+  return all.filter((name) => !name.startsWith(FABRIC_API_PREFIX))
 }
 
 /** Whatever's sitting in a version's `game/mods` folder that isn't a bundled mod and isn't our
