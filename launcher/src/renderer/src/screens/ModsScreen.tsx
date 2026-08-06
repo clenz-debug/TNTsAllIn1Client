@@ -58,8 +58,9 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
       <section className="mods-section">
         <h3>Gebündelte Mods</h3>
         <p className="version-warning">
-          Standardmäßig aus - hier gezielt aktivieren. Fabric API sowie Sodium/Lithium (Performance, für gute
-          Leistung auch auf schwächeren Geräten) laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
+          Standardmäßig aus - hier gezielt aktivieren. Fabric API und Sodium/Lithium (Performance, für gute Leistung
+          auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame)
+          laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
         </p>
         {!isBundleCompatibleVersion(selectedVersion) && (
           <p className="version-warning">
@@ -80,7 +81,11 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
               </label>
             </li>
           ))}
-          {bundledMods.length === 0 && <li className="mods-empty">Kein mods-bundle/ vorhanden.</li>}
+          {bundledMods.length === 0 && (
+            <li className="mods-empty">
+              Aktuell nichts zum Umschalten - alle derzeit gebündelten Mods laufen immer mit (siehe Hinweis oben).
+            </li>
+          )}
         </ul>
       </section>
 

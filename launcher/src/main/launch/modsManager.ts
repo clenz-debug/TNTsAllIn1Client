@@ -12,17 +12,31 @@ const OWN_MOD_PREFIX = 'tntsallin1client-'
 
 /**
  * Bundled jar filename prefixes that are never optional via the Mods screen's toggle - always
- * synced regardless of `enabledBundledMods`, for two different reasons:
+ * synced regardless of `enabledBundledMods`, for a few different reasons:
  *  - `fabric-api-`: a hard dependency every other bundled mod declares in its own
  *    `fabric.mod.json`. If it were off while e.g. Sodium was on, Fabric Loader would reject the
  *    whole launch on Sodium's unmet dependency instead of degrading gracefully.
- *  - `sodium-fabric-`/`lithium-fabric-`: explicit user request. `enabledBundledMods` itself
- *    defaults to nothing enabled specifically so a first launch doesn't silently carry visible
- *    behavior changes the user never asked for - but Sodium/Lithium are pure performance, no
- *    visible behavior change, and losing "good performance even on weak hardware" by default
- *    would work against this project's whole point (see Projekt_Roadmap.md's stated goal).
+ *  - `sodium-fabric-`/`lithium-fabric-`: explicit user request - pure performance, no visible
+ *    behavior change, and losing "good performance even on weak hardware" by default would work
+ *    against this project's whole point (see Projekt_Roadmap.md's stated goal).
+ *  - `continuity-`/`skinlayers3d-fabric-`: also explicit user request, different reasoning - both
+ *    already have their own dedicated on/off switch in the ingame mod menu (`ClientMenuScreen`'s
+ *    "Connected Textures"/"3D Skin Layers" rows), which is the actually meaningful control surface
+ *    for them. Gating them a second time behind the launcher's toggle first would just be a
+ *    redundant, easy-to-forget extra step before the ingame toggle even becomes reachable.
+ *
+ * With the current bundle, this happens to cover every jar in `mods-bundle/` - the Mods screen's
+ * toggle list is empty until a *future* bundled mod without its own ingame control gets added.
+ * That's fine: the opt-in mechanism (`listToggleableBundledMods`, `enabledBundledMods`) stays
+ * correct and ready for that case rather than being removed just because it's unused today.
  */
-const ALWAYS_ENABLED_PREFIXES = ['fabric-api-', 'sodium-fabric-', 'lithium-fabric-']
+const ALWAYS_ENABLED_PREFIXES = [
+  'fabric-api-',
+  'sodium-fabric-',
+  'lithium-fabric-',
+  'continuity-',
+  'skinlayers3d-fabric-'
+]
 
 export function isAlwaysEnabledBundledMod(fileName: string): boolean {
   return ALWAYS_ENABLED_PREFIXES.some((prefix) => fileName.startsWith(prefix))
