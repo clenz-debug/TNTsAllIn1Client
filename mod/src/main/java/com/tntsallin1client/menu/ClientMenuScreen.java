@@ -74,6 +74,16 @@ public class ClientMenuScreen extends Screen {
 
 	private final @Nullable Screen parent;
 
+	/**
+	 * Survives across {@link #init()} reruns because it lives on this Screen instance, not the
+	 * {@link EditBox} widget itself - opening a feature's own options screen and clicking back
+	 * calls {@code setScreen} on this same instance again (see {@code onClose}/the per-feature
+	 * screens' own "back" buttons), which rebuilds every widget from scratch including a brand new,
+	 * empty search box. Without this field, that meant re-typing the same search after every single
+	 * options-screen visit - not just annoying, actively defeats the point of Phase 5v's search.
+	 */
+	private String searchQuery = "";
+
 	public ClientMenuScreen(@Nullable Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.menu.title"));
 		this.parent = parent;
@@ -265,11 +275,16 @@ public class ClientMenuScreen extends Screen {
 				() -> this.minecraft.setScreen(new CreditsScreen(this)));
 
 		list.finishBuilding();
+		list.filter(this.searchQuery);
 
 		EditBox searchBox = new EditBox(this.font, (this.width - ROW_WIDTH) / 2, SEARCH_BOX_Y, ROW_WIDTH, ROW_HEIGHT,
 				Component.translatable("gui.tntsallin1client.menu.search"));
 		searchBox.setHint(Component.translatable("gui.tntsallin1client.menu.search"));
-		searchBox.setResponder(list::filter);
+		searchBox.setValue(this.searchQuery);
+		searchBox.setResponder(value -> {
+			this.searchQuery = value;
+			list.filter(value);
+		});
 		this.addRenderableWidget(searchBox);
 
 		this.addRenderableWidget(list);
