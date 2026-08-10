@@ -171,7 +171,11 @@ public class WaypointListScreen extends Screen {
 								button -> owner.minecraft.setScreen(new WaypointEditScreen(owner, waypoint)))
 						.bounds(0, 0, ROW_WIDTH - VISIBLE_TOGGLE_WIDTH - TOGGLE_GAP, ROW_HEIGHT)
 						.build();
+				// displayOnlyValue() - same fix as QuickSortOptionsScreen (5z) - an empty name Component
+				// through the default NAME_AND_VALUE display state renders vanilla's "%s: %s" template
+				// with a blank first half, i.e. a stray leading ": " before "On"/"Off".
 				this.visibleToggle = CycleButton.onOffBuilder(waypoint.visible)
+						.displayOnlyValue()
 						.create(0, 0, VISIBLE_TOGGLE_WIDTH, ROW_HEIGHT, Component.empty(), (button, value) -> {
 							waypoint.visible = value;
 							ClientConfig.get().save();
