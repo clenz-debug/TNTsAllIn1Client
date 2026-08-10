@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -89,9 +90,11 @@ public class WaypointEditScreen extends Screen {
 
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_edit.delete_button"),
 						button -> {
-							config.waypoints.remove(this.waypoint);
-							config.save();
-							this.onClose();
+							if (config.waypointConfirmDelete) {
+								this.confirmDelete();
+							} else {
+								this.deleteWaypoint();
+							}
 						})
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
 				.build());
@@ -117,6 +120,24 @@ public class WaypointEditScreen extends Screen {
 			}
 		});
 		return field;
+	}
+
+	private void deleteWaypoint() {
+		ClientConfig.get().waypoints.remove(this.waypoint);
+		ClientConfig.get().save();
+		this.onClose();
+	}
+
+	/** Vanilla's own "are you sure?" dialog (same one world deletion etc. uses) - "No"/Escape returns here unchanged. */
+	private void confirmDelete() {
+		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+			if (confirmed) {
+				this.deleteWaypoint();
+			} else {
+				this.minecraft.setScreen(this);
+			}
+		}, Component.translatable("gui.tntsallin1client.waypoint_edit.delete_confirm_title"),
+				Component.translatable("gui.tntsallin1client.waypoint_edit.delete_confirm_message", this.waypoint.name)));
 	}
 
 	@Override

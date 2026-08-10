@@ -65,6 +65,14 @@ public class WaypointOptionsScreen extends Screen {
 							config.waypointShowDistance = value;
 							config.save();
 						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointConfirmDelete)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.confirm_delete"),
+						(button, value) -> {
+							config.waypointConfirmDelete = value;
+							config.save();
+						}));
 		y += ROW_SPACING + 6;
 
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_options.manage_button"),

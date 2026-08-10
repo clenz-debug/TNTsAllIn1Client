@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -58,18 +59,43 @@ public class WaypointListScreen extends Screen {
 
 		int buttonX = (this.width - ROW_WIDTH) / 2;
 		int newButtonY = LIST_TOP + listHeight + 6;
+		int halfWidth = (ROW_WIDTH - TOGGLE_GAP) / 2;
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_list.new_button"),
 						button -> {
 							addWaypointAtPlayer();
 							this.clearWidgets();
 							this.init();
 						})
-				.bounds(buttonX, newButtonY, ROW_WIDTH, ROW_HEIGHT)
+				.bounds(buttonX, newButtonY, halfWidth, ROW_HEIGHT)
 				.build());
+
+		Button deleteAllButton = Button.builder(Component.translatable("gui.tntsallin1client.waypoint_list.delete_all_button"),
+						button -> this.confirmDeleteAll())
+				.bounds(buttonX + halfWidth + TOGGLE_GAP, newButtonY, halfWidth, ROW_HEIGHT)
+				.build();
+		deleteAllButton.active = !waypoints.isEmpty();
+		this.addRenderableWidget(deleteAllButton);
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
 				.bounds(buttonX, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH, ROW_HEIGHT)
 				.build());
+	}
+
+	/** Always confirms, regardless of {@link ClientConfig#waypointConfirmDelete} - that setting only
+	 * covers deleting a single waypoint (see {@link WaypointEditScreen}), this is a bulk, unrecoverable
+	 * action and asks every time. */
+	private void confirmDeleteAll() {
+		int count = ClientConfig.get().waypoints.size();
+		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+			if (confirmed) {
+				ClientConfig.get().waypoints.clear();
+				ClientConfig.get().save();
+			}
+			// setScreen on this same instance re-runs init() regardless (see ClientMenuScreen's own
+			// doc comment on the same behavior) - rebuilds the list from the now-cleared config either way.
+			this.minecraft.setScreen(this);
+		}, Component.translatable("gui.tntsallin1client.waypoint_list.delete_all_confirm_title"),
+				Component.translatable("gui.tntsallin1client.waypoint_list.delete_all_confirm_message", count)));
 	}
 
 	private void addWaypointAtPlayer() {

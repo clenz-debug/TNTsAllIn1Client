@@ -175,6 +175,9 @@ public class ClientConfig {
 	public List<Waypoint> waypoints = new ArrayList<>();
 	public boolean waypointShowBeam = true;
 	public boolean waypointShowDistance = true;
+	// Whether deleting a single waypoint asks for confirmation first - the "delete all" button
+	// always confirms regardless of this setting (see WaypointListScreen).
+	public boolean waypointConfirmDelete = true;
 
 	public static ClientConfig get() {
 		if (instance == null) {
