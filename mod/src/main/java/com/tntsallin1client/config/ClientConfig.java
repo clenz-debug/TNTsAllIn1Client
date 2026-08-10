@@ -9,6 +9,7 @@ import com.tntsallin1client.crosshair.CrosshairMode;
 import com.tntsallin1client.crosshair.CrosshairPreset;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.recipe.PinnedRecipe;
+import com.tntsallin1client.waypoint.Waypoint;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jspecify.annotations.Nullable;
 
@@ -17,7 +18,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -164,6 +167,14 @@ public class ClientConfig {
 	public boolean pinnedRecipeEnabled = false;
 	public @Nullable PinnedRecipe pinnedRecipe = null;
 	public HudLayout pinnedRecipeHudLayout = new HudLayout();
+
+	// Waypoint system: user-created markers shown in-world as a beam + name label (see
+	// WaypointRenderer), managed from their own list/edit screens (see WaypointListScreen),
+	// reachable both from the mod menu and directly from gameplay via their own keybind.
+	public boolean waypointsEnabled = false;
+	public List<Waypoint> waypoints = new ArrayList<>();
+	public boolean waypointShowBeam = true;
+	public boolean waypointShowDistance = true;
 
 	public static ClientConfig get() {
 		if (instance == null) {

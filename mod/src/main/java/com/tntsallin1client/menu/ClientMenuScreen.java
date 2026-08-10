@@ -189,6 +189,13 @@ public class ClientMenuScreen extends Screen {
 					config.save();
 				});
 
+		list.addToggleRow(config.waypointsEnabled, Component.translatable("gui.tntsallin1client.menu.waypoints"),
+				value -> {
+					config.waypointsEnabled = value;
+					config.save();
+				},
+				() -> new WaypointOptionsScreen(this));
+
 		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
 		list.addToggleRow(connectedTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
 				value -> {

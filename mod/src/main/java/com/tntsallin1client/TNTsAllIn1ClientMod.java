@@ -25,11 +25,13 @@ import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
 import com.tntsallin1client.menu.TitleScreenIntegration;
+import com.tntsallin1client.menu.WaypointMenuIntegration;
 import com.tntsallin1client.recipe.PinnedRecipeHud;
 import com.tntsallin1client.recipe.PinnedRecipeManager;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
+import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 
 public class TNTsAllIn1ClientMod implements ClientModInitializer {
@@ -103,5 +105,10 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5ah: pin a recipe from the recipe book, shown as a movable HUD reminder.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "pinned_recipe_hud"), new PinnedRecipeHud());
 		PinnedRecipeManager.register();
+
+		// Waypoint system: in-world beam/label markers plus their own list/edit menu,
+		// reachable from the mod menu or directly via their own keybind.
+		WaypointRenderer.register();
+		WaypointMenuIntegration.register();
 	}
 }

@@ -80,6 +80,16 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// Waypoint system: opens the waypoint list/management screen directly from gameplay,
+	// same "own keybind in addition to the mod menu" pattern as OPEN_MENU itself.
+	// Unbound by default like most binds here.
+	public static final KeyMapping OPEN_WAYPOINTS = new KeyMapping(
+			"key.tntsallin1client.open_waypoints",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -91,5 +101,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
 		KeyBindingHelper.registerKeyBinding(SPAWN_OVERLAY);
 		KeyBindingHelper.registerKeyBinding(PIN_RECIPE);
+		KeyBindingHelper.registerKeyBinding(OPEN_WAYPOINTS);
 	}
 }

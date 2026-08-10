@@ -41,7 +41,7 @@
 - man sollte einfach updates aufspielen können, wenn z.B. neue features hinzugefügt wurden [?]
 - jeder User soll sein Farbschema mit Hauptfarben und hintergrundfarbe selbst einstellen können 
 - beim ersten starten nach installieren des clients soll sich der user eine willkommensnachricht bekommen, dann soll ein menü sich öffnen wo er die Farben einstellen kann (das kann man skippen, dann bekommt man den Standartfarbcode) und als letztes soll sich ein Tutorial öffnen (das soll man auch überspringen können)
-- in Discord soll angezeigt werden das man MC über meinen Client spielt
+- in Discord soll angezeigt werden das man MC über meinen Client spielt — Timing-Entscheidung 2026-08-10: bewusst spät (nahe Packaging/Phase 9), siehe Chat-Begründung in Aktuelle_Phase.md
 - 3D Overlay für skin (Ingame) statt den flachen etwas vom skin abstehenden elementen jetzt würfel, sodass es besser aussieht [check] (5s, schon vorher erledigt — 3D Skin Layers gebündelt + Mod-Menü-Toggle)
 - speichung von einstelungen in MC wenn die Vesrsion gewechselt wird [check] (6e — geteilte options.txt über alle Versionen hinweg)
 
@@ -52,6 +52,9 @@
     - Skin und Cape Editor (und gutes Auswahlfenster für Skin und Cape)
     - gute Versionsauswahl
     - Freundes bereich
+- Instanz-System statt reinem Versionswechsel: pro Version mehrere eigene Instanzen anlegbar (z.B. gleiche Version einmal mit, einmal ohne bestimmten Mods), statt bei jedem Wechsel hin- und herzuschalten [Entscheidung 2026-08-10: ja, sinnvoll — siehe Chat; heute gibt es technisch schon einen Ordner pro Version (`instances/<versionId>/`), aber noch keine echte Mehrfach-Instanz pro Version und `enabledBundledMods` ist aktuell noch ein einziger globaler Wert statt pro Instanz]
+- Finales Launcher-Layout (Buttons, Versions-/Instanzauswahl) erst überarbeiten, wenn alle Launcher-Features fertig sind, nicht schon jetzt am aktuellen Zwischenstand [Entscheidung 2026-08-10: ja, Redesign bewusst ans Ende schieben — siehe Chat]
+- Launcher muss beim Schließen wirklich komplett beendet sein, darf nicht wie bei Lunar im Hintergrund weiterlaufen [Status 2026-08-10: aktuell schon so — kein Tray-Icon, `window-all-closed` beendet den Prozess; vor Release nochmal gegenchecken, v.a. ob ein laufendes Spiel den Launcher-Schließen-Vorgang überlebt]
 
 ### Ingame Features:
 - Gutes Ingame Menü um die featurs / mods auzuwählen (auch über taste(-nkombie) zu öffnen welche mann selbst einstellen kann) [check] (5e)
@@ -76,3 +79,4 @@
     - im recipie book rezepte anpinnen, anzahl der benötigten materialien runterzählen wenn man ein item was benötigt wird ins inventar packt [check] (5ah — Anpinnen per Taste beim Hovern, angepinntes Rezept als verschiebbares HUD-Element, zählt Restmenge live gegen das Inventar runter)
     - material counter in item counter umbennen [check] (5ag — Klassen/Config-Felder/Lang-Keys durchgehend umbenannt)
     - hitbox color und blockoutline color das custom entfernen [check] (5ae — reine Lang-Key-Änderung)
+    - Waypoint System die graphisch angezeigt werden und ein eigenes menü haben das man über einen key öffnen kann [check] (5ai — gebaut, noch nicht live getestet; In-World-Leuchtsäule + Namensschild inkl. Entfernung, eigenes Wegpunkt-Menü über eigene Taste ODER Mod-Menü erreichbar, Anlegen/Bearbeiten/Löschen/Sichtbarkeit pro Wegpunkt, farbwählbar)
