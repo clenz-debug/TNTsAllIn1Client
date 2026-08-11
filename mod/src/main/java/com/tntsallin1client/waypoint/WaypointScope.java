@@ -34,7 +34,13 @@ public final class WaypointScope {
 
 	public static @Nullable String currentKey(Minecraft client) {
 		if (client.isLocalServer() && client.getSingleplayerServer() != null) {
-			String saveFolder = client.getSingleplayerServer().getWorldPath(LevelResource.ROOT).getFileName().toString();
+			// LevelResource.ROOT resolves to ".../<saveFolder>/." (a literal trailing "." path segment,
+			// Path#resolve is purely syntactic) - getFileName() on that returns "." itself, not the save
+			// folder, which made every singleplayer world collapse onto the same "sp:." key (confirmed
+			// live: a second world showed the first world's waypoints). normalize() collapses the "."
+			// away first, so getFileName() actually returns the save folder name - verified directly
+			// against java.nio.file.Path's documented behavior, not just assumed.
+			String saveFolder = client.getSingleplayerServer().getWorldPath(LevelResource.ROOT).normalize().getFileName().toString();
 			return SINGLEPLAYER_PREFIX + saveFolder;
 		}
 
