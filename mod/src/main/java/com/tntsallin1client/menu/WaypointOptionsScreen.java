@@ -59,10 +59,26 @@ public class WaypointOptionsScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointShowMarker)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.show_marker"),
+						(button, value) -> {
+							config.waypointShowMarker = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointShowDistance)
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.show_distance"),
 						(button, value) -> {
 							config.waypointShowDistance = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointFadeNearby)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.fade_nearby"),
+						(button, value) -> {
+							config.waypointFadeNearby = value;
 							config.save();
 						}));
 		y += ROW_SPACING;

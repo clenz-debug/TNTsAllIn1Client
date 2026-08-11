@@ -176,7 +176,12 @@ public class ClientConfig {
 	// waypoints from one world never show up in another. See #waypointsFor below.
 	public Map<String, List<Waypoint>> waypointsByWorld = new HashMap<>();
 	public boolean waypointShowBeam = true;
+	public boolean waypointShowMarker = true;
 	public boolean waypointShowDistance = true;
+	// When enabled, a waypoint's beam/marker/label fade out smoothly as the player gets close,
+	// fully invisible within WaypointRenderer's fade-end distance - off by default so turning the
+	// feature on doesn't visibly change anything until picked.
+	public boolean waypointFadeNearby = false;
 	// Whether deleting a single waypoint asks for confirmation first - the "delete all" button
 	// always confirms regardless of this setting (see WaypointListScreen).
 	public boolean waypointConfirmDelete = true;
