@@ -13,6 +13,7 @@ import {
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, uploadSkin, type SkinVariant } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
+import { installUpdateNow } from '../autoUpdate'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
@@ -26,7 +27,6 @@ import { applySharedOptions, saveSharedOptions } from '../launch/sharedSettings'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
-import { checkForUpdate } from '../updateCheck'
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
  * channel is registered twice, which would happen if this ran again from a second createWindow()
@@ -74,7 +74,7 @@ export function registerIpcHandlers(): void {
     deleteInstance(instanceId)
   )
 
-  ipcMain.handle(IpcChannel.UpdateCheck, async () => checkForUpdate())
+  ipcMain.handle(IpcChannel.UpdateInstallNow, async () => installUpdateNow())
 
   ipcMain.handle(IpcChannel.SkinFetchTexture, async (_event: IpcMainInvokeEvent, url: string) => fetchTextureDataUri(url))
 

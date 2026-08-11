@@ -7,7 +7,7 @@ import type {
   LaunchProgressEvent,
   LauncherSettings,
   MinecraftProfile,
-  UpdateCheckResult
+  UpdateStatus
 } from '../shared/types'
 
 function subscribe<T>(channel: string, callback: (event: T) => void): () => void {
@@ -32,7 +32,7 @@ const api = {
   removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, instanceId, fileName),
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
-  checkForUpdate: (): Promise<UpdateCheckResult> => ipcRenderer.invoke(IpcChannel.UpdateCheck),
+  installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
   uploadSkin: (profile: MinecraftProfile, variant: 'classic' | 'slim'): Promise<MinecraftProfile | null> =>
     ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
@@ -41,7 +41,8 @@ const api = {
     subscribe(IpcChannel.AuthProgress, callback),
   onLaunchProgress: (callback: (event: LaunchProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.LaunchProgress, callback),
-  onGameLog: (callback: (event: GameLogEvent) => void): (() => void) => subscribe(IpcChannel.GameLog, callback)
+  onGameLog: (callback: (event: GameLogEvent) => void): (() => void) => subscribe(IpcChannel.GameLog, callback),
+  onUpdateStatus: (callback: (event: UpdateStatus) => void): (() => void) => subscribe(IpcChannel.UpdateStatus, callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

@@ -1,0 +1,58 @@
+# Phase 9: packaging config for electron-builder. No custom icon yet (falls back to Electron's
+# own default) - not something to invent branding for without the user's input, easy to add later
+# by pointing `win.icon`/`mac.icon`/`linux.icon` at a real asset.
+appId: com.tntsallin1client.launcher
+productName: TNT's All-In-1 Client
+copyright: Copyright © 2026 clenz-debug
+
+directories:
+  output: dist
+
+# Only out/ (electron-vite's build output) and package.json are needed at runtime - everything
+# else (src/, the bundle folders, dev configs) is either irrelevant to a packaged app or handled
+# separately below via extraResources. node_modules (production deps only, e.g. electron-updater)
+# is included automatically by electron-builder's own default file set.
+files:
+  - out/**/*
+  - package.json
+  - '!mods-bundle/**'
+  - '!resourcepacks-bundle/**'
+
+# Copied into <packaged-app>/resources/ at package time - see resourcePaths.ts's bundledResourcesRoot()
+# for how the app finds these at runtime (dev mode reads the same three names directly from the
+# launcher/ folder instead). mods-bundle/resourcepacks-bundle are git-ignored, dev-populated
+# folders (see Aktuelle_Phase.md) - they must actually contain the intended third-party jars/packs
+# on the machine running this build, nothing here downloads them. own-mod grabs whatever
+# `gradlew build` in ../mod most recently produced, excluding Loom's sources/dev jar variants -
+# run that build fresh right before packaging so the newest mod code ships, not a stale one.
+extraResources:
+  - from: mods-bundle
+    to: mods-bundle
+    filter:
+      - '**/*'
+  - from: resourcepacks-bundle
+    to: resourcepacks-bundle
+    filter:
+      - '**/*'
+  - from: ../mod/build/libs
+    to: own-mod
+    filter:
+      - '*.jar'
+      - '!*-sources.jar'
+      - '!*-dev.jar'
+
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+# electron-updater checks this repo's GitHub Releases for newer versions (see main/autoUpdate.ts).
+# `electron-builder --publish` is the only command that actually uploads anything here - a normal
+# `electron-builder`/`npm run package:win` build never touches GitHub, it just needs this section
+# present so electron-updater's generated `app-update.yml` points at the right place.
+publish:
+  provider: github
+  owner: clenz-debug
+  repo: TNTsAllIn1Client

@@ -115,12 +115,19 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   selectedInstanceId: null
 }
 
-/** Phase 6d - see `main/updateCheck.ts`. Purely informational (a link to see what changed), not
- * an auto-updater - actually downloading/installing a new launcher build is Phase 9's job
- * (`electron-builder`/`electron-updater`), this just answers "is there something newer". */
-export interface UpdateCheckResult {
-  currentVersion: string
-  latestVersion: string
-  updateAvailable: boolean
-  releaseNotesUrl?: string
+/** Phase 9 - pushed from `main/autoUpdate.ts` (wraps `electron-updater`'s own event stream, see
+ * that file) over the `update:status` channel whenever it changes; the renderer just mirrors
+ * whatever it's given rather than polling. Replaces the old Phase 6d `update-manifest.json`-based
+ * check, which only ever told you "something's newer" with a link, never downloaded or installed
+ * anything - `electron-updater` does both, driven straight off this repo's GitHub Releases instead
+ * of a hand-maintained JSON file that had to be bumped in lockstep with `package.json`'s version. */
+export interface UpdateStatus {
+  state: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+  version?: string
+  /** 0-100, only meaningful while `state === 'downloading'`. */
+  percent?: number
+  /** Only meaningful while `state === 'downloaded'`. */
+  releaseNotes?: string
+  /** Only meaningful while `state === 'error'`. */
+  message?: string
 }

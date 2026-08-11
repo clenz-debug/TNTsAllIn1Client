@@ -5,7 +5,7 @@ import type {
   Instance,
   LaunchProgressEvent,
   MinecraftProfile,
-  UpdateCheckResult
+  UpdateStatus
 } from '../../../shared/types'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
@@ -78,17 +78,17 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     )
   }
 
-  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [updateDismissed, setUpdateDismissed] = useState(false)
 
   useEffect(() => {
-    // Purely informational, so a failed check (offline, manifest unreachable) just means no
-    // banner shows - never worth surfacing as an error to the user the way a failed version-list
-    // fetch is, since nothing they'd want to do depends on it.
-    window.api
-      .checkForUpdate()
-      .then(setUpdateInfo)
-      .catch(() => undefined)
+    // Long-lived subscription, not a one-shot check - main only pushes when electron-updater's own
+    // state actually changes (see autoUpdate.ts). No-ops entirely in dev builds (electron-updater
+    // requires a packaged app), so this simply never fires outside a real installed launcher.
+    return window.api.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+      setUpdateDismissed(false)
+    })
   }, [])
 
   async function handlePlay(): Promise<void> {
@@ -169,15 +169,23 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         </div>
       </header>
 
-      {updateInfo?.updateAvailable && !updateDismissed && (
+      {/* 'checking'/'not-available'/'error' deliberately show no banner - same "purely informational,
+          a failed check is never worth surfacing" reasoning the old Phase 6d check already had.
+          That matters concretely right now: this repo has no GitHub Release yet, so every real
+          check errors out until the first one is published - showing that as a visible error every
+          single launch would just be noise, not a genuine problem to react to. */}
+      {updateStatus && !updateDismissed && (updateStatus.state === 'available' || updateStatus.state === 'downloading' || updateStatus.state === 'downloaded') && (
         <div className="update-banner">
           <span>
-            Update verfügbar: {updateInfo.latestVersion} (aktuell {updateInfo.currentVersion})
+            {updateStatus.state === 'available' && `Update gefunden (Version ${updateStatus.version}) - wird heruntergeladen…`}
+            {updateStatus.state === 'downloading' && `Update wird heruntergeladen… (${updateStatus.percent ?? 0}%)`}
+            {updateStatus.state === 'downloaded' &&
+              `Update heruntergeladen (Version ${updateStatus.version}) - bereit zum Installieren.`}
           </span>
           <div className="header-actions">
-            {updateInfo.releaseNotesUrl && (
-              <button className="link-button" onClick={() => void window.api.openExternal(updateInfo.releaseNotesUrl!)}>
-                Änderungen ansehen
+            {updateStatus.state === 'downloaded' && (
+              <button className="link-button" onClick={() => void window.api.installUpdateNow()}>
+                Jetzt neu starten
               </button>
             )}
             <button className="link-button" onClick={() => setUpdateDismissed(true)}>

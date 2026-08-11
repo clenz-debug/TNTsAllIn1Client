@@ -1,8 +1,9 @@
 import type { BrowserWindow } from 'electron'
-import { app, dialog } from 'electron'
+import { dialog } from 'electron'
 import { basename, join } from 'node:path'
 import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
 import { instanceDir } from './installer'
+import { bundledResourcesRoot } from './resourcePaths'
 
 /** Matches `rootProject.name` in `mod/settings.gradle.kts` - every jar `bundleSync.syncOwnModJar`
  * produces starts with this, regardless of version (`tntsallin1client-0.1.0.jar` etc.). Used to
@@ -56,7 +57,7 @@ async function listJarsIn(dir: string): Promise<string[]> {
  * edits the (dev-populated, git-ignored) folder itself. Not what the Mods screen shows as
  * toggleable - see {@link listToggleableBundledMods} for that. */
 export async function listBundledMods(): Promise<string[]> {
-  return listJarsIn(join(app.getAppPath(), 'mods-bundle'))
+  return listJarsIn(join(bundledResourcesRoot(), 'mods-bundle'))
 }
 
 /** The subset of {@link listBundledMods} the Mods screen actually offers a checkbox for - the

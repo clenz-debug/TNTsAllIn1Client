@@ -3,6 +3,7 @@ import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
+import { bundledResourcesRoot } from './resourcePaths'
 
 export type InstallProgressCallback = (
   stage: LaunchStage,
@@ -42,19 +43,25 @@ async function syncBundleDir(bundleDir: string, destinationDir: string, excluded
 }
 
 /**
- * Copies whichever jar in `mod/build/libs/` is newest into `destModsDir`, overwriting whatever's
- * already there under that name. Our own mod jar changes constantly during development — unlike
- * the third-party jars in `mods-bundle/`, keeping a manually-updated copy of it there reliably
- * goes stale (that's exactly what happened: a 4 KB Phase-1 stub sat in `mods-bundle/` for days
- * while `mod/build/libs/` moved on through all of Phase 5, so every launcher-based test ran an
- * almost-empty mod with none of the actual features). Pulling straight from the build output
- * every launch makes that impossible - whatever `gradlew build` last produced is what runs, no
- * separate copy step to forget. Excludes `-sources.jar`/`-dev.jar` (Loom's unremapped
- * intermediary-names jar, not safe to run standalone) so only the real, remapped runtime jar is
- * ever picked.
+ * Copies whichever jar in `libsDir` is newest into `destModsDir`, overwriting whatever's already
+ * there under that name. In dev mode `libsDir` is `mod/build/libs/` directly - our own mod jar
+ * changes constantly during development, unlike the third-party jars in `mods-bundle/`, so keeping
+ * a manually-updated copy of it there reliably goes stale (that's exactly what happened once: a
+ * 4 KB Phase-1 stub sat in `mods-bundle/` for days while `mod/build/libs/` moved on through all of
+ * Phase 5, so every launcher-based test ran an almost-empty mod with none of the actual features).
+ * Pulling straight from the build output every launch makes that impossible - whatever
+ * `gradlew build` last produced is what runs, no separate copy step to forget.
+ *
+ * Packaged builds have no `mod/` sibling project at all - `libsDir` there is instead
+ * `resources/own-mod/`, a one-time snapshot electron-builder copies in at package time (see
+ * `electron-builder.yml`'s `extraResources`) from whatever `mod/build/libs/` held at that moment.
+ * Same "newest wins" logic still applies even though there's normally only one candidate there -
+ * keeps this one function correct for both cases without an `isPackaged` branch inside it.
+ *
+ * Either way, excludes `-sources.jar`/`-dev.jar` (Loom's unremapped intermediary-names jar, not
+ * safe to run standalone) so only the real, remapped runtime jar is ever picked.
  */
-async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<void> {
-  const libsDir = join(repoRoot, 'mod', 'build', 'libs')
+async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void> {
   let entries: string[]
   try {
     entries = await readdir(libsDir)
@@ -91,9 +98,9 @@ async function syncOwnModJar(repoRoot: string, destModsDir: string): Promise<voi
  * Ressourcenpakete), same as any resourcepack in vanilla Minecraft. This only guarantees the file
  * itself is always there to enable.
  *
- * Path resolution (`app.getAppPath()`, `mod/` as a sibling of `launcher/`) only holds for the
- * current unpackaged dev setup — needs revisiting once Phase 6 adds real electron-builder
- * packaging (`extraResources` or similar).
+ * Path resolution goes through {@link bundledResourcesRoot} - dev-mode a sibling of `launcher/`,
+ * packaged mode `electron-builder`'s `extraResources` directory (Phase 9, see `resourcePaths.ts`'s
+ * own doc comment for the full story - this used to only work in the unpackaged dev setup).
  *
  * `bundleCompatible` (Phase 6a) gates the whole sync (see `isBundleCompatibleVersion` in
  * shared/types.ts): every jar here (including our own mod) and every resourcepack is built
@@ -124,21 +131,25 @@ export async function syncBundledContent(
     return { skipped: true }
   }
 
-  const appRoot = app.getAppPath()
-  const repoRoot = join(appRoot, '..')
+  const resourcesRoot = bundledResourcesRoot()
   const gameDir = join(instanceDir, 'game')
   const destModsDir = join(gameDir, 'mods')
 
-  const modsBundleDir = join(appRoot, 'mods-bundle')
+  const modsBundleDir = join(resourcesRoot, 'mods-bundle')
   const allBundledMods = await listBundleFiles(modsBundleDir)
   const enabledSet = new Set(enabledBundledMods)
   const disabledMods = new Set(
     allBundledMods.filter((file) => !enabledSet.has(file) && !isAlwaysEnabledBundledMod(file))
   )
 
+  // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/ (see
+  // electron-builder.yml) instead of a live sibling mod/build/libs/ - there is no mod/ project at
+  // all once the launcher is actually installed on someone else's machine.
+  const ownModLibsDir = app.isPackaged ? join(resourcesRoot, 'own-mod') : join(resourcesRoot, '..', 'mod', 'build', 'libs')
+
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
-  await syncBundleDir(join(appRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
-  await syncOwnModJar(repoRoot, destModsDir)
+  await syncBundleDir(join(resourcesRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
+  await syncOwnModJar(ownModLibsDir, destModsDir)
   onProgress('bundles', 1, 1)
   return { skipped: false }
 }
