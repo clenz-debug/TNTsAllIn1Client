@@ -9,12 +9,40 @@ function settingsPath(): string {
   return join(app.getPath('userData'), 'launcher-settings.json')
 }
 
-/** Pre-instance-system layout (Phase 6a-6e): one folder per version directly under `instances/`,
- * e.g. `instances/1.21.11/`. Turns any such folder that was actually launched at least once
- * (has a `game` subfolder) into a real {@link Instance} pointing at that exact same folder - the
- * folder's name doubles as the migrated instance's id, so nothing has to be moved or re-downloaded.
- * Folders that were only ever partially created (no `game` dir yet) are ignored rather than
- * migrated into a half-broken instance. */
+/** The real, installed Minecraft version inside a legacy instance folder - found by looking for
+ * `versions/<x>/<x>.jar` (exactly the path `installer.ts#installVersion` itself downloads the
+ * client jar to), not by assuming the folder's own name is the version id. That assumption held
+ * for every folder created from Phase 6a onward (named directly after the version, e.g.
+ * `instances/1.21.11/`), but not for the one folder that predates even that - `instances/default/`,
+ * the single shared instance dir from Phase 3/4 before per-version folders existed at all, whose
+ * name is literally the word "default", not a version id. Migrating it with `versionId: 'default'`
+ * (the first version of this migration did exactly that) makes every launch fail immediately -
+ * `default` isn't a real entry in Mojang's version manifest. */
+async function findInstalledVersionId(instanceFolder: string): Promise<string | null> {
+  const versionsDir = join(instanceFolder, 'versions')
+  let entries: string[]
+  try {
+    entries = await readdir(versionsDir)
+  } catch {
+    return null
+  }
+
+  for (const entry of entries) {
+    const hasJar = await stat(join(versionsDir, entry, `${entry}.jar`))
+      .then((s) => s.isFile())
+      .catch(() => false)
+    if (hasJar) return entry
+  }
+  return null
+}
+
+/** Pre-instance-system layout (Phase 3-6e): a folder per version (or, before that, a single
+ * `default` folder) directly under `instances/`. Turns any such folder that actually has an
+ * installed game version in it into a real {@link Instance} pointing at that exact same folder -
+ * the folder's own name becomes the migrated instance's id (whatever it happened to be called),
+ * its *real* version comes from {@link findInstalledVersionId} instead of being assumed from the
+ * folder name - nothing has to be moved or re-downloaded either way. Folders with nothing
+ * installed in them (no version jar found) are ignored rather than migrated into a broken instance. */
 async function migrateLegacyInstances(legacyEnabledBundledMods: string[]): Promise<Instance[]> {
   const instancesRoot = join(app.getPath('userData'), 'instances')
   let entries: string[]
@@ -26,11 +54,9 @@ async function migrateLegacyInstances(legacyEnabledBundledMods: string[]): Promi
 
   const migrated: Instance[] = []
   for (const entry of entries) {
-    const hasGameDir = await stat(join(instancesRoot, entry, 'game'))
-      .then((s) => s.isDirectory())
-      .catch(() => false)
-    if (hasGameDir) {
-      migrated.push({ id: entry, name: `Migriert (${entry})`, versionId: entry, enabledBundledMods: legacyEnabledBundledMods })
+    const versionId = await findInstalledVersionId(join(instancesRoot, entry))
+    if (versionId) {
+      migrated.push({ id: entry, name: `Migriert (${entry})`, versionId, enabledBundledMods: legacyEnabledBundledMods })
     }
   }
   return migrated

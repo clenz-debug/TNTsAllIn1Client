@@ -49,6 +49,12 @@ export function InstancesScreen({
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Which instance's name is currently being edited inline (id), plus the in-progress text for it -
+  // window.prompt() would have been simpler, but Electron's renderer doesn't implement it (unlike
+  // alert()/confirm(), which do show a native dialog - confirmed the hard way: the "Löschen"
+  // confirm() worked fine while "Umbenennen"'s prompt() silently did nothing at all).
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameDraft, setRenameDraft] = useState('')
 
   useEffect(() => {
     if (visibleVersions.length === 0) return
@@ -69,13 +75,20 @@ export function InstancesScreen({
     setNewName('')
   }
 
-  function handleRename(instance: Instance): void {
-    const name = window.prompt('Neuer Name für die Instanz:', instance.name)
-    if (!name || !name.trim() || name.trim() === instance.name) return
-    onInstancesChange(
-      instances.map((candidate) => (candidate.id === instance.id ? { ...candidate, name: name.trim() } : candidate)),
-      selectedInstanceId
-    )
+  function startRename(instance: Instance): void {
+    setRenamingId(instance.id)
+    setRenameDraft(instance.name)
+  }
+
+  function commitRename(): void {
+    const name = renameDraft.trim()
+    if (name) {
+      onInstancesChange(
+        instances.map((candidate) => (candidate.id === renamingId ? { ...candidate, name } : candidate)),
+        selectedInstanceId
+      )
+    }
+    setRenamingId(null)
   }
 
   async function handleDelete(instance: Instance): Promise<void> {
@@ -95,9 +108,11 @@ export function InstancesScreen({
     }
   }
 
+  // Deliberately does not call onClose() - a misclick here used to force reopening the whole
+  // screen just to fix it (own user feedback). Selecting now just updates which instance is
+  // active while staying on this screen; "Zurück" leaves whenever the user is actually done.
   function handleSelect(instance: Instance): void {
     onSelect(instance.id)
-    onClose()
   }
 
   return (
@@ -143,28 +158,52 @@ export function InstancesScreen({
       <section className="instances-section">
         <h3>Vorhandene Instanzen</h3>
         <ul className="instances-list">
-          {instances.map((instance) => (
-            <li key={instance.id} className="instances-row">
-              <div className="instance-info">
-                <strong>{instance.name}</strong>
-                <span className="instance-version">{instance.versionId}</span>
-                {instance.id === selectedInstanceId && <span className="mock-badge">Aktiv</span>}
-              </div>
-              <div className="header-actions">
-                {instance.id !== selectedInstanceId && (
-                  <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy}>
-                    Auswählen
+          {instances.map((instance) =>
+            renamingId === instance.id ? (
+              <li key={instance.id} className="instances-row">
+                <input
+                  type="text"
+                  className="instance-name-input"
+                  autoFocus
+                  value={renameDraft}
+                  onChange={(e) => setRenameDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitRename()
+                    if (e.key === 'Escape') setRenamingId(null)
+                  }}
+                />
+                <div className="header-actions">
+                  <button className="link-button" onClick={commitRename}>
+                    Speichern
                   </button>
-                )}
-                <button className="link-button" onClick={() => handleRename(instance)} disabled={busy}>
-                  Umbenennen
-                </button>
-                <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy}>
-                  Löschen
-                </button>
-              </div>
-            </li>
-          ))}
+                  <button className="link-button" onClick={() => setRenamingId(null)}>
+                    Abbrechen
+                  </button>
+                </div>
+              </li>
+            ) : (
+              <li key={instance.id} className="instances-row">
+                <div className="instance-info">
+                  <strong>{instance.name}</strong>
+                  <span className="instance-version">{instance.versionId}</span>
+                  {instance.id === selectedInstanceId && <span className="mock-badge">Aktiv</span>}
+                </div>
+                <div className="header-actions">
+                  {instance.id !== selectedInstanceId && (
+                    <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy}>
+                      Auswählen
+                    </button>
+                  )}
+                  <button className="link-button" onClick={() => startRename(instance)} disabled={busy}>
+                    Umbenennen
+                  </button>
+                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy}>
+                    Löschen
+                  </button>
+                </div>
+              </li>
+            )
+          )}
           {instances.length === 0 && <li className="mods-empty">Noch keine Instanz angelegt.</li>}
         </ul>
       </section>
