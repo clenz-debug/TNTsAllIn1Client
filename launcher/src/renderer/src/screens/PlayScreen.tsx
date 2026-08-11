@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import type {
   GameLogEvent,
   GameVersionSummary,
+  Instance,
   LaunchProgressEvent,
   MinecraftProfile,
   UpdateCheckResult
 } from '../../../shared/types'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
+import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
 import { SkinScreen } from './SkinScreen'
 
@@ -17,13 +19,6 @@ interface Props {
   onLogout: () => void
 }
 
-/** Prefers the bundle-pinned version if it's in the list (should always be, it's a stable
- * release), otherwise falls back to the newest entry so the dropdown never starts empty. */
-function pickDefaultVersion(list: GameVersionSummary[]): string {
-  if (list.some((v) => v.id === MINECRAFT_VERSION)) return MINECRAFT_VERSION
-  return list[0]?.id ?? MINECRAFT_VERSION
-}
-
 export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
@@ -31,26 +26,27 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [showCredits, setShowCredits] = useState(false)
   const [showMods, setShowMods] = useState(false)
   const [showSkin, setShowSkin] = useState(false)
+  const [showInstances, setShowInstances] = useState(false)
 
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [showSnapshots, setShowSnapshots] = useState(false)
-  const [selectedVersion, setSelectedVersion] = useState(MINECRAFT_VERSION)
-  const [enabledBundledMods, setEnabledBundledMods] = useState<string[]>([])
+  const [instances, setInstances] = useState<Instance[]>([])
+  const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+
+  const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
 
   useEffect(() => {
     Promise.all([window.api.loadSettings(), window.api.listVersions()])
       .then(([settings, list]) => {
         setVersions(list)
         setShowSnapshots(settings.showSnapshots)
-        setEnabledBundledMods(settings.enabledBundledMods)
-        const visible = list.filter((v) => settings.showSnapshots || v.type === 'release')
-        const persistedIsVisible = visible.some((v) => v.id === settings.selectedVersion)
-        setSelectedVersion(persistedIsVisible ? settings.selectedVersion : pickDefaultVersion(visible))
+        setInstances(settings.instances)
+        setSelectedInstanceId(settings.selectedInstanceId)
         setSettingsLoaded(true)
       })
       .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
@@ -58,11 +54,28 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
 
   useEffect(() => {
     if (!settingsLoaded) return
-    void window.api.saveSettings({ selectedVersion, showSnapshots, enabledBundledMods })
-  }, [settingsLoaded, selectedVersion, showSnapshots, enabledBundledMods])
+    void window.api.saveSettings({ showSnapshots, instances, selectedInstanceId })
+  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId])
+
+  function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
+    setInstances(newInstances)
+    setSelectedInstanceId(newSelectedId)
+  }
 
   function handleToggleBundledMod(fileName: string, enabled: boolean): void {
-    setEnabledBundledMods((prev) => (enabled ? [...prev, fileName] : prev.filter((f) => f !== fileName)))
+    if (!selectedInstance) return
+    setInstances((prev) =>
+      prev.map((instance) =>
+        instance.id !== selectedInstance.id
+          ? instance
+          : {
+              ...instance,
+              enabledBundledMods: enabled
+                ? [...instance.enabledBundledMods, fileName]
+                : instance.enabledBundledMods.filter((f) => f !== fileName)
+            }
+      )
+    )
   }
 
   const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null)
@@ -78,26 +91,15 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       .catch(() => undefined)
   }, [])
 
-  const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
-
-  useEffect(() => {
-    if (visibleVersions.length === 0) return
-    if (!visibleVersions.some((v) => v.id === selectedVersion)) {
-      setSelectedVersion(pickDefaultVersion(visibleVersions))
-    }
-    // Deliberately keyed on the joined id list, not `visibleVersions`/`selectedVersion` directly -
-    // only re-run when the visible set itself changes (snapshot toggle / initial load), not on
-    // every selectedVersion change, which would fight the user's own dropdown pick.
-  }, [visibleVersions.map((v) => v.id).join(',')])
-
   async function handlePlay(): Promise<void> {
+    if (!selectedInstance) return
     setBusy(true)
     setLogs([])
     setProgress(null)
     const unsubscribeProgress = window.api.onLaunchProgress(setProgress)
     const unsubscribeLog = window.api.onGameLog((event) => setLogs((prev) => [...prev.slice(-499), event]))
     try {
-      await window.api.play(profile, selectedVersion)
+      await window.api.play(profile, selectedInstance.id)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       setLogs((prev) => [...prev, { source: 'launcher', level: 'error', message }])
@@ -112,11 +114,28 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     return <CreditsScreen onClose={() => setShowCredits(false)} />
   }
 
-  if (showMods) {
+  if (showInstances) {
+    return (
+      <InstancesScreen
+        instances={instances}
+        selectedInstanceId={selectedInstanceId}
+        versions={versions}
+        versionsError={versionsError}
+        showSnapshots={showSnapshots}
+        onShowSnapshotsChange={setShowSnapshots}
+        onInstancesChange={handleInstancesChange}
+        onSelect={setSelectedInstanceId}
+        onClose={() => setShowInstances(false)}
+      />
+    )
+  }
+
+  if (showMods && selectedInstance) {
     return (
       <ModsScreen
-        selectedVersion={selectedVersion}
-        enabledBundledMods={enabledBundledMods}
+        instanceId={selectedInstance.id}
+        versionId={selectedInstance.versionId}
+        enabledBundledMods={selectedInstance.enabledBundledMods}
         onToggleBundledMod={handleToggleBundledMod}
         onClose={() => setShowMods(false)}
       />
@@ -138,7 +157,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
           <button className="link-button" onClick={() => setShowSkin(true)}>
             Skin
           </button>
-          <button className="link-button" onClick={() => setShowMods(true)}>
+          <button className="link-button" onClick={() => setShowMods(true)} disabled={!selectedInstance}>
             Mods
           </button>
           <button className="link-button" onClick={() => setShowCredits(true)}>
@@ -169,39 +188,36 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       )}
 
       <div className="version-picker">
-        <label htmlFor="version-select">Minecraft-Version</label>
+        <label htmlFor="instance-select">Instanz</label>
         <select
-          id="version-select"
-          value={selectedVersion}
-          onChange={(e) => setSelectedVersion(e.target.value)}
-          disabled={busy || visibleVersions.length === 0}
+          id="instance-select"
+          value={selectedInstanceId ?? ''}
+          onChange={(e) => setSelectedInstanceId(e.target.value)}
+          disabled={busy || instances.length === 0}
         >
-          {visibleVersions.length === 0 && <option value={selectedVersion}>{selectedVersion}</option>}
-          {visibleVersions.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.id}
+          {instances.length === 0 && <option value="">Keine Instanz</option>}
+          {instances.map((instance) => (
+            <option key={instance.id} value={instance.id}>
+              {instance.name} ({instance.versionId})
             </option>
           ))}
         </select>
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={showSnapshots}
-            onChange={(e) => setShowSnapshots(e.target.checked)}
-            disabled={busy}
-          />
-          Snapshots anzeigen
-        </label>
+        <button className="secondary-button" onClick={() => setShowInstances(true)} disabled={busy}>
+          Instanzen verwalten…
+        </button>
         {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
-        {!isBundleCompatibleVersion(selectedVersion) && (
+        {instances.length === 0 && (
+          <span className="version-warning">Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.</span>
+        )}
+        {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId) && (
           <span className="version-warning">
             Nur {MINECRAFT_VERSION} enthält die gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod,
-            …) — {selectedVersion} startet als reines Fabric+Vanilla ohne Mods.
+            …) — {selectedInstance.versionId} startet als reines Fabric+Vanilla ohne Mods.
           </span>
         )}
       </div>
 
-      <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy}>
+      <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy || !selectedInstance}>
         {busy ? 'Läuft…' : 'Play'}
       </button>
 

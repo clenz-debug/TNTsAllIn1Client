@@ -17,6 +17,7 @@ export const IpcChannel = {
   ModsListCustom: 'mods:list-custom',
   ModsAddCustom: 'mods:add-custom',
   ModsRemoveCustom: 'mods:remove-custom',
+  InstancesDelete: 'instances:delete',
   UpdateCheck: 'update:check',
   SkinFetchTexture: 'skin:fetch-texture',
   SkinUpload: 'skin:upload'

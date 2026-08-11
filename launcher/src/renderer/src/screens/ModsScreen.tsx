@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 
 interface Props {
-  selectedVersion: string
+  instanceId: string
+  versionId: string
   enabledBundledMods: string[]
   onToggleBundledMod: (fileName: string, enabled: boolean) => void
   onClose: () => void
 }
 
-export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundledMod, onClose }: Props) {
+export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggleBundledMod, onClose }: Props) {
   const [bundledMods, setBundledMods] = useState<string[]>([])
   const [customMods, setCustomMods] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
@@ -19,13 +20,13 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
   }, [])
 
   useEffect(() => {
-    window.api.listCustomMods(selectedVersion).then(setCustomMods).catch((err) => setError(String(err)))
-  }, [selectedVersion])
+    window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(String(err)))
+  }, [instanceId])
 
   async function handleAdd(): Promise<void> {
     setBusy(true)
     try {
-      setCustomMods(await window.api.addCustomMods(selectedVersion))
+      setCustomMods(await window.api.addCustomMods(instanceId))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -36,7 +37,7 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
   async function handleRemove(fileName: string): Promise<void> {
     setBusy(true)
     try {
-      setCustomMods(await window.api.removeCustomMod(selectedVersion, fileName))
+      setCustomMods(await window.api.removeCustomMod(instanceId, fileName))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -62,10 +63,10 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
           auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame)
           laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
         </p>
-        {!isBundleCompatibleVersion(selectedVersion) && (
+        {!isBundleCompatibleVersion(versionId) && (
           <p className="version-warning">
-            Wirkt sich aktuell nicht aus - gebündelte Mods laufen nur bei {MINECRAFT_VERSION}, {selectedVersion}{' '}
-            startet ohnehin ohne sie.
+            Wirkt sich aktuell nicht aus - gebündelte Mods laufen nur bei {MINECRAFT_VERSION}, {versionId} startet
+            ohnehin ohne sie.
           </p>
         )}
         <ul className="mods-list">
@@ -90,7 +91,7 @@ export function ModsScreen({ selectedVersion, enabledBundledMods, onToggleBundle
       </section>
 
       <section className="mods-section">
-        <h3>Eigene Mods ({selectedVersion})</h3>
+        <h3>Eigene Mods</h3>
         <button className="secondary-button" onClick={() => void handleAdd()} disabled={busy}>
           Mod hinzufügen…
         </button>

@@ -79,28 +79,40 @@ export interface GameVersionSummary {
   releaseTime: string
 }
 
-/** Persisted across app restarts (Phase 6b) - see `main/launcherSettings.ts` for the on-disk
- * JSON file, same hand-rolled pattern as `main/auth/tokenCache.ts` rather than pulling in a new
- * dependency for two small fields. `enabledBundledMods` (Phase 6c, opt-in since a later user
- * request) added later the same way. */
-export interface LauncherSettings {
-  selectedVersion: string
-  showSnapshots: boolean
-  /** Filenames (from `mods-bundle/`, e.g. `sodium-fabric-0.8.13+mc1.21.11.jar`) the user has
-   * turned ON in the Mods screen - opt-in, not opt-out: a fresh install starts with this empty, so
-   * every bundled mod is off until the user actively enables it (on user request - having
-   * everything silently active on first launch was confusing). Only has any effect while the
-   * selected version is bundle-compatible (see `isBundleCompatibleVersion`), since the whole
-   * bundle is skipped otherwise regardless of individual toggles. Our own mod jar and Fabric API
-   * itself are deliberately never entries here - neither is optional (Fabric API is a hard
-   * dependency every other bundled mod needs to even load), see `modsManager.ts`. */
+/** A single named instance (own user request: "statt einem Wechsel der Version ein System... das
+ * man einzelne Instanzen erstellen kann", so e.g. the same Minecraft version can exist twice - once
+ * with a mod, once without - without constantly toggling mods back and forth on one shared folder).
+ * Each instance owns its own on-disk game directory (`instances/<id>/`, see `main/launch/installer.ts`'s
+ * `instanceDir`), so its saves/options/mods/resourcepacks never mix with another instance's. */
+export interface Instance {
+  /** Stable, filesystem-safe id - also the literal folder name under `instances/`. Never shown to
+   * the user directly (that's `name`), generated once at creation time and never reused. */
+  id: string
+  name: string
+  versionId: string
+  /** Filenames (from `mods-bundle/`) turned ON for this specific instance - see the equivalent
+   * field's own doc comment history on the old, pre-instance `LauncherSettings.enabledBundledMods`
+   * this replaces. Opt-in per instance now instead of one shared global list, for the same reason
+   * instances exist at all: two instances of the same version can have different mods enabled. */
   enabledBundledMods: string[]
 }
 
+/** Persisted across app restarts (Phase 6b) - see `main/launcherSettings.ts` for the on-disk
+ * JSON file, same hand-rolled pattern as `main/auth/tokenCache.ts` rather than pulling in a new
+ * dependency for two small fields. Was a single `selectedVersion`/`enabledBundledMods` pair
+ * (Phase 6a/6c) until the instance system replaced "one shared install per version" with real,
+ * independent instances - `main/launcherSettings.ts#loadLauncherSettings` migrates any old-shape
+ * file (and any already-downloaded legacy `instances/<versionId>/` folder) into this shape once. */
+export interface LauncherSettings {
+  showSnapshots: boolean
+  instances: Instance[]
+  selectedInstanceId: string | null
+}
+
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
-  selectedVersion: MINECRAFT_VERSION,
   showSnapshots: false,
-  enabledBundledMods: []
+  instances: [],
+  selectedInstanceId: null
 }
 
 /** Phase 6d - see `main/updateCheck.ts`. Purely informational (a link to see what changed), not

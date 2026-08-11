@@ -66,23 +66,23 @@ export async function listToggleableBundledMods(): Promise<string[]> {
   return all.filter((name) => !isAlwaysEnabledBundledMod(name))
 }
 
-/** Whatever's sitting in a version's `game/mods` folder that isn't a bundled mod and isn't our
- * own jar - i.e. mods the user added themselves via `addCustomMods`. Tied to a specific version
- * because a Fabric mod jar only ever targets one Minecraft version, same reasoning `instanceDir`
- * itself is per-version since Phase 6a. */
-export async function listCustomMods(versionId: string): Promise<string[]> {
-  const modsDir = join(instanceDir(versionId), 'game', 'mods')
+/** Whatever's sitting in an instance's `game/mods` folder that isn't a bundled mod and isn't our
+ * own jar - i.e. mods the user added themselves via `addCustomMods`. Tied to a specific instance
+ * (not just a version) since the whole point of instances is that two of them can target the same
+ * Minecraft version with a different mod set. */
+export async function listCustomMods(instanceId: string): Promise<string[]> {
+  const modsDir = join(instanceDir(instanceId), 'game', 'mods')
   const bundled = new Set(await listBundledMods())
   return (await listJarsIn(modsDir)).filter((name) => !bundled.has(name) && !name.startsWith(OWN_MOD_PREFIX))
 }
 
 /**
  * Opens a native "choose file(s)" dialog (not literal drag & drop - see Aktuelle_Phase.md for why)
- * scoped to `.jar` files, copies whatever was picked into the given version's `game/mods`, and
+ * scoped to `.jar` files, copies whatever was picked into the given instance's `game/mods`, and
  * returns the refreshed custom-mods list. A cancelled dialog is not an error, just returns the
  * unchanged list.
  */
-export async function addCustomMods(versionId: string, parentWindow: BrowserWindow | null): Promise<string[]> {
+export async function addCustomMods(instanceId: string, parentWindow: BrowserWindow | null): Promise<string[]> {
   const dialogOptions: Electron.OpenDialogOptions = {
     title: 'Fabric-Mod-Jar(s) auswählen',
     properties: ['openFile', 'multiSelections'],
@@ -92,14 +92,14 @@ export async function addCustomMods(versionId: string, parentWindow: BrowserWind
     ? await dialog.showOpenDialog(parentWindow, dialogOptions)
     : await dialog.showOpenDialog(dialogOptions)
   if (!result.canceled && result.filePaths.length > 0) {
-    const modsDir = join(instanceDir(versionId), 'game', 'mods')
+    const modsDir = join(instanceDir(instanceId), 'game', 'mods')
     await mkdir(modsDir, { recursive: true })
     await Promise.all(result.filePaths.map((filePath) => copyFile(filePath, join(modsDir, basename(filePath)))))
   }
-  return listCustomMods(versionId)
+  return listCustomMods(instanceId)
 }
 
-export async function removeCustomMod(versionId: string, fileName: string): Promise<string[]> {
-  await rm(join(instanceDir(versionId), 'game', 'mods', fileName), { force: true })
-  return listCustomMods(versionId)
+export async function removeCustomMod(instanceId: string, fileName: string): Promise<string[]> {
+  await rm(join(instanceDir(instanceId), 'game', 'mods', fileName), { force: true })
+  return listCustomMods(instanceId)
 }

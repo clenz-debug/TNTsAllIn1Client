@@ -288,6 +288,74 @@ body {
   padding: 0.5rem 0;
 }
 
+.instances-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.instances-screen header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.instances-section h3 {
+  margin: 0 0 0.5rem;
+}
+
+.instance-create-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.instance-name-input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--green-2);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  width: 18ch;
+}
+
+.instances-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.instances-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-panel);
+  color: var(--text);
+  border: 1px solid var(--green-1);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.instance-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.instance-version {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
 .skin-preview {
   width: 128px;
   height: 128px;

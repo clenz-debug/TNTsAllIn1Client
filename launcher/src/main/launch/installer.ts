@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import { join } from 'node:path'
-import { MINECRAFT_VERSION, type LaunchStage } from '../../shared/types'
+import type { LaunchStage } from '../../shared/types'
 import { librariesForCurrentOs, libraryDestinationPath } from './classpath'
 import { downloadAll, type DownloadTask } from './downloader'
 import { fetchVersionDetail, type VersionDetail } from './versionManifest'
@@ -12,14 +12,16 @@ export interface InstalledVersion {
   libraryPaths: string[]
 }
 
-/** One instance dir per Minecraft version (`instances/<versionId>/`), not a single shared
- * "default" — `game/mods` and `game/resourcepacks` get synced per launch (see `bundleSync.ts`)
- * but never cleared, so a shared dir would let e.g. 1.21.11-only mod jars from a previous launch
- * sit around and make Fabric Loader reject the next launch on a different version. True
- * multi-instance management (rename/delete/switch in the UI) is still a later Phase 6 item —
- * this just keeps per-version state from colliding now that more than one version is selectable. */
-export function instanceDir(versionId: string = MINECRAFT_VERSION): string {
-  return join(app.getPath('userData'), 'instances', versionId)
+/** One directory per real, user-created {@link Instance} (`instances/<instanceId>/`) - each
+ * instance keeps its own saves/options/mods/resourcepacks, never shared with another instance even
+ * if both target the same Minecraft version (that's the whole point of the instance system, see
+ * `shared/types.ts`'s `Instance` doc comment). Before the instance system existed (Phase 6a-6e)
+ * this was keyed by version id directly, one shared folder per version - `launcherSettings.ts`'s
+ * migration turns any such leftover folder into a real instance whose id equals the old folder
+ * name, so this function itself didn't need to change shape, only what its argument conceptually
+ * means. */
+export function instanceDir(instanceId: string): string {
+  return join(app.getPath('userData'), 'instances', instanceId)
 }
 
 interface AssetIndex {
@@ -43,13 +45,14 @@ export type InstallProgressCallback = (
 
 export async function installVersion(
   onProgress: InstallProgressCallback,
-  versionId: string = MINECRAFT_VERSION
+  versionId: string,
+  instanceId: string
 ): Promise<InstalledVersion> {
   onProgress('manifest', 0, 1, versionId)
   const detail = await fetchVersionDetail(versionId)
   onProgress('manifest', 1, 1, versionId)
 
-  const dir = instanceDir(versionId)
+  const dir = instanceDir(instanceId)
   const clientJarPath = join(dir, 'versions', detail.id, `${detail.id}.jar`)
 
   await downloadAll(

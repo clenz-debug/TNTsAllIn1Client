@@ -18,6 +18,7 @@ import { buildClasspath } from '../launch/classpath'
 import { installFabricLoader } from '../launch/fabricInstaller'
 import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
+import { deleteInstance } from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
@@ -57,16 +58,20 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.ModsListBundled, async () => listToggleableBundledMods())
 
-  ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, versionId: string) =>
-    listCustomMods(versionId)
+  ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    listCustomMods(instanceId)
   )
 
-  ipcMain.handle(IpcChannel.ModsAddCustom, async (event: IpcMainInvokeEvent, versionId: string) =>
-    addCustomMods(versionId, BrowserWindow.fromWebContents(event.sender))
+  ipcMain.handle(IpcChannel.ModsAddCustom, async (event: IpcMainInvokeEvent, instanceId: string) =>
+    addCustomMods(instanceId, BrowserWindow.fromWebContents(event.sender))
   )
 
-  ipcMain.handle(IpcChannel.ModsRemoveCustom, async (_event: IpcMainInvokeEvent, versionId: string, fileName: string) =>
-    removeCustomMod(versionId, fileName)
+  ipcMain.handle(IpcChannel.ModsRemoveCustom, async (_event: IpcMainInvokeEvent, instanceId: string, fileName: string) =>
+    removeCustomMod(instanceId, fileName)
+  )
+
+  ipcMain.handle(IpcChannel.InstancesDelete, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    deleteInstance(instanceId)
   )
 
   ipcMain.handle(IpcChannel.UpdateCheck, async () => checkForUpdate())
@@ -99,13 +104,20 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
-    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, versionId: string = MINECRAFT_VERSION) => {
+    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string) => {
       const sendProgress = (stage: LaunchStage, completed: number, total: number, label?: string): void => {
         event.sender.send(IpcChannel.LaunchProgress, { stage, completed, total, label })
       }
       const sendLog = (log: GameLogEvent): void => {
         event.sender.send(IpcChannel.GameLog, log)
       }
+
+      const settings = await loadLauncherSettings()
+      const instance = settings.instances.find((candidate) => candidate.id === instanceId)
+      if (!instance) {
+        throw new Error(`Unbekannte Instanz: ${instanceId}`)
+      }
+      const versionId = instance.versionId
 
       // Cheap detail-only fetch (no downloads) purely to read `javaVersion` before committing to
       // the full (potentially large) installVersion download below - installVersion re-fetches
@@ -132,10 +144,9 @@ export function registerIpcHandlers(): void {
         })
       }
 
-      const vanilla = await installVersion(sendProgress, versionId)
+      const vanilla = await installVersion(sendProgress, versionId, instance.id)
       const installed = await installFabricLoader(vanilla, sendProgress)
-      const { enabledBundledMods } = await loadLauncherSettings()
-      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, enabledBundledMods)
+      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, instance.enabledBundledMods)
       const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
       const args = buildLaunchArgs({
         detail: installed.detail,
@@ -145,9 +156,10 @@ export function registerIpcHandlers(): void {
       })
 
       const gameDir = join(installed.instanceDir, 'game')
-      // Carries options.txt (graphics/controls/sound/...) across version switches - instanceDir
-      // is per-version since Phase 6a, but these are personal preferences the player wants
-      // everywhere, not something meaningfully different per version. See sharedSettings.ts.
+      // Carries options.txt (graphics/controls/sound/...) across instances, same reasoning as
+      // before the instance system existed when this carried settings across version switches -
+      // these are personal preferences the player wants everywhere, not something meaningfully
+      // different per instance. See sharedSettings.ts.
       await applySharedOptions(gameDir)
 
       sendProgress('launching', 0, 1, installed.detail.id)

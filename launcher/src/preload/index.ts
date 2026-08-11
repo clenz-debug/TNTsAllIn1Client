@@ -20,17 +20,18 @@ const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
   loginMock: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLoginMock),
-  play: (profile: MinecraftProfile, versionId: string): Promise<void> =>
-    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, versionId),
+  play: (profile: MinecraftProfile, instanceId: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
   listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
   loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
   saveSettings: (settings: LauncherSettings): Promise<void> => ipcRenderer.invoke(IpcChannel.SettingsSave, settings),
   listBundledMods: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled),
-  listCustomMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, versionId),
-  addCustomMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, versionId),
-  removeCustomMod: (versionId: string, fileName: string): Promise<string[]> =>
-    ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, versionId, fileName),
+  listCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
+  addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
+  removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, instanceId, fileName),
+  deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
   checkForUpdate: (): Promise<UpdateCheckResult> => ipcRenderer.invoke(IpcChannel.UpdateCheck),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
   uploadSkin: (profile: MinecraftProfile, variant: 'classic' | 'slim'): Promise<MinecraftProfile | null> =>
