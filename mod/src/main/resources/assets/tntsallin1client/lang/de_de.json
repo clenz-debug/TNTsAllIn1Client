@@ -114,6 +114,7 @@
   "gui.tntsallin1client.waypoint_list.delete_all_confirm_title": "Alle Wegpunkte löschen",
   "gui.tntsallin1client.waypoint_list.delete_all_confirm_message": "Wirklich alle %s Wegpunkte löschen? Das kann nicht rückgängig gemacht werden.",
   "gui.tntsallin1client.waypoint_list.empty": "Noch keine Wegpunkte angelegt.",
+  "gui.tntsallin1client.waypoint_list.no_world": "Nur verfügbar, während eine Welt/ein Server geladen ist.",
   "gui.tntsallin1client.waypoint_list.default_name": "Wegpunkt %s",
   "gui.tntsallin1client.waypoint_list.dimension.overworld": "Oberwelt",
   "gui.tntsallin1client.waypoint_list.dimension.the_nether": "Nether",

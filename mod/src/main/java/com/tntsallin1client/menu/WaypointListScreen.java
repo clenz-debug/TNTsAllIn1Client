@@ -3,6 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.waypoint.Waypoint;
 import com.tntsallin1client.waypoint.WaypointDimensions;
+import com.tntsallin1client.waypoint.WaypointScope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -33,6 +34,11 @@ import java.util.List;
  * and a compact visibility toggle - same {@code primary + secondary} row shape as
  * {@code ClientMenuScreen.FeatureList.Row}. Deleting lives inside the edit screen instead of a
  * third per-row button, to keep rows from getting cramped.
+ *
+ * <p>The list is scoped to the current singleplayer save / multiplayer server ({@link WaypointScope}) -
+ * this screen is reachable from the title screen too (mod menu button, 5u), where no world is
+ * loaded and {@link WaypointScope#currentKey} returns {@code null}; that case shows an explanatory
+ * message instead of a list, with the add/delete-all buttons disabled.
  */
 public class WaypointListScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
@@ -44,6 +50,7 @@ public class WaypointListScreen extends Screen {
 	private static final int FOOTER_HEIGHT = 30;
 
 	private final @Nullable Screen parent;
+	private @Nullable String worldKey;
 
 	public WaypointListScreen(@Nullable Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.waypoint_list.title"));
@@ -52,7 +59,9 @@ public class WaypointListScreen extends Screen {
 
 	@Override
 	protected void init() {
-		List<Waypoint> waypoints = ClientConfig.get().waypoints;
+		this.worldKey = WaypointScope.currentKey(this.minecraft);
+		List<Waypoint> waypoints = this.worldKey != null ? ClientConfig.get().waypointsFor(this.worldKey) : List.of();
+
 		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT - ROW_HEIGHT - 6;
 		WaypointList list = new WaypointList(this.minecraft, this.width, listHeight, LIST_TOP, waypoints, this);
 		this.addRenderableWidget(list);
@@ -60,20 +69,22 @@ public class WaypointListScreen extends Screen {
 		int buttonX = (this.width - ROW_WIDTH) / 2;
 		int newButtonY = LIST_TOP + listHeight + 6;
 		int halfWidth = (ROW_WIDTH - TOGGLE_GAP) / 2;
-		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_list.new_button"),
+		Button newButton = Button.builder(Component.translatable("gui.tntsallin1client.waypoint_list.new_button"),
 						button -> {
 							addWaypointAtPlayer();
 							this.clearWidgets();
 							this.init();
 						})
 				.bounds(buttonX, newButtonY, halfWidth, ROW_HEIGHT)
-				.build());
+				.build();
+		newButton.active = this.worldKey != null;
+		this.addRenderableWidget(newButton);
 
 		Button deleteAllButton = Button.builder(Component.translatable("gui.tntsallin1client.waypoint_list.delete_all_button"),
 						button -> this.confirmDeleteAll())
 				.bounds(buttonX + halfWidth + TOGGLE_GAP, newButtonY, halfWidth, ROW_HEIGHT)
 				.build();
-		deleteAllButton.active = !waypoints.isEmpty();
+		deleteAllButton.active = this.worldKey != null && !waypoints.isEmpty();
 		this.addRenderableWidget(deleteAllButton);
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
@@ -85,10 +96,14 @@ public class WaypointListScreen extends Screen {
 	 * covers deleting a single waypoint (see {@link WaypointEditScreen}), this is a bulk, unrecoverable
 	 * action and asks every time. */
 	private void confirmDeleteAll() {
-		int count = ClientConfig.get().waypoints.size();
+		if (this.worldKey == null) {
+			return;
+		}
+		String key = this.worldKey;
+		int count = ClientConfig.get().waypointsFor(key).size();
 		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
 			if (confirmed) {
-				ClientConfig.get().waypoints.clear();
+				ClientConfig.get().waypointsFor(key).clear();
 				ClientConfig.get().save();
 			}
 			// setScreen on this same instance re-runs init() regardless (see ClientMenuScreen's own
@@ -100,20 +115,21 @@ public class WaypointListScreen extends Screen {
 
 	private void addWaypointAtPlayer() {
 		LocalPlayer player = this.minecraft.player;
-		if (player == null || this.minecraft.level == null) {
+		if (player == null || this.minecraft.level == null || this.worldKey == null) {
 			return;
 		}
 
 		ClientConfig config = ClientConfig.get();
+		List<Waypoint> waypoints = config.waypointsFor(this.worldKey);
 		Waypoint waypoint = new Waypoint();
-		waypoint.name = Component.translatable("gui.tntsallin1client.waypoint_list.default_name", config.waypoints.size() + 1).getString();
+		waypoint.name = Component.translatable("gui.tntsallin1client.waypoint_list.default_name", waypoints.size() + 1).getString();
 		BlockPos pos = player.blockPosition();
 		waypoint.x = pos.getX();
 		waypoint.y = pos.getY();
 		waypoint.z = pos.getZ();
 		waypoint.dimension = this.minecraft.level.dimension().identifier().toString();
 
-		config.waypoints.add(waypoint);
+		waypoints.add(waypoint);
 		config.save();
 	}
 
@@ -121,7 +137,10 @@ public class WaypointListScreen extends Screen {
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
-		if (ClientConfig.get().waypoints.isEmpty()) {
+		if (this.worldKey == null) {
+			guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_list.no_world"),
+					this.width / 2, LIST_TOP + 10, 0xFFAAAAAA);
+		} else if (ClientConfig.get().waypointsFor(this.worldKey).isEmpty()) {
 			guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_list.empty"),
 					this.width / 2, LIST_TOP + 10, 0xFFAAAAAA);
 		}

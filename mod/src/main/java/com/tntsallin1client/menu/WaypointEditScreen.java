@@ -3,6 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.waypoint.Waypoint;
 import com.tntsallin1client.waypoint.WaypointDimensions;
+import com.tntsallin1client.waypoint.WaypointScope;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -123,8 +124,13 @@ public class WaypointEditScreen extends Screen {
 	}
 
 	private void deleteWaypoint() {
-		ClientConfig.get().waypoints.remove(this.waypoint);
-		ClientConfig.get().save();
+		// Always the same world/server this waypoint was listed from - WaypointListScreen only ever
+		// shows the current world's own waypoints, so re-deriving the key here still lands correctly.
+		String worldKey = WaypointScope.currentKey(this.minecraft);
+		if (worldKey != null) {
+			ClientConfig.get().waypointsFor(worldKey).remove(this.waypoint);
+			ClientConfig.get().save();
+		}
 		this.onClose();
 	}
 

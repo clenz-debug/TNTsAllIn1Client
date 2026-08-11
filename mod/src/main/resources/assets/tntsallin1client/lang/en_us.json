@@ -114,6 +114,7 @@
   "gui.tntsallin1client.waypoint_list.delete_all_confirm_title": "Delete All Waypoints",
   "gui.tntsallin1client.waypoint_list.delete_all_confirm_message": "Really delete all %s waypoints? This cannot be undone.",
   "gui.tntsallin1client.waypoint_list.empty": "No waypoints yet.",
+  "gui.tntsallin1client.waypoint_list.no_world": "Only available while a world/server is loaded.",
   "gui.tntsallin1client.waypoint_list.default_name": "Waypoint %s",
   "gui.tntsallin1client.waypoint_list.dimension.overworld": "Overworld",
   "gui.tntsallin1client.waypoint_list.dimension.the_nether": "Nether",

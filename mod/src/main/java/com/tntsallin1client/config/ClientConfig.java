@@ -172,12 +172,19 @@ public class ClientConfig {
 	// WaypointRenderer), managed from their own list/edit screens (see WaypointListScreen),
 	// reachable both from the mod menu and directly from gameplay via their own keybind.
 	public boolean waypointsEnabled = false;
-	public List<Waypoint> waypoints = new ArrayList<>();
+	// Keyed by WaypointScope#currentKey (per singleplayer save / per multiplayer server address) -
+	// waypoints from one world never show up in another. See #waypointsFor below.
+	public Map<String, List<Waypoint>> waypointsByWorld = new HashMap<>();
 	public boolean waypointShowBeam = true;
 	public boolean waypointShowDistance = true;
 	// Whether deleting a single waypoint asks for confirmation first - the "delete all" button
 	// always confirms regardless of this setting (see WaypointListScreen).
 	public boolean waypointConfirmDelete = true;
+
+	/** The live, mutable waypoint list for one world/server key - callers add/remove/save directly on it. */
+	public List<Waypoint> waypointsFor(String worldKey) {
+		return this.waypointsByWorld.computeIfAbsent(worldKey, key -> new ArrayList<>());
+	}
 
 	public static ClientConfig get() {
 		if (instance == null) {

@@ -22,7 +22,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Deliberately does not attempt any Nether/Overworld coordinate-scale conversion - a waypoint
  * only ever shows while standing in the exact dimension it was created in ({@link Waypoint#dimension}
- * compared against {@code Level#dimension()}), never across dimensions.
+ * compared against {@code Level#dimension()}), never across dimensions. Filtered a level further up
+ * too - {@link WaypointScope#currentKey} scopes the whole list to the current singleplayer save /
+ * multiplayer server first, so waypoints from one world never bleed into an unrelated one.
  */
 public final class WaypointRenderer {
 	private static final float BEAM_HEIGHT = 256F;
@@ -48,10 +50,15 @@ public final class WaypointRenderer {
 			return;
 		}
 
+		String worldKey = WaypointScope.currentKey(client);
+		if (worldKey == null) {
+			return;
+		}
+
 		String currentDimension = client.level.dimension().identifier().toString();
 		Vec3 playerPos = client.player.position();
 
-		for (Waypoint waypoint : config.waypoints) {
+		for (Waypoint waypoint : config.waypointsFor(worldKey)) {
 			if (!waypoint.visible || !waypoint.dimension.equals(currentDimension)) {
 				continue;
 			}
