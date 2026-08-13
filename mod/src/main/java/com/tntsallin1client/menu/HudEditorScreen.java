@@ -1,6 +1,11 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.hud.ArmorStatusBundledHud;
+import com.tntsallin1client.hud.ArmorStatusHud;
+import com.tntsallin1client.hud.ArmorStatusLayoutMode;
+import com.tntsallin1client.hud.ArmorStatusSlot;
+import com.tntsallin1client.hud.ArmorStatusSlotHud;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
@@ -18,6 +23,7 @@ import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
@@ -84,6 +90,24 @@ public class HudEditorScreen extends Screen {
 					Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
 					config.pinnedRecipeHudLayout,
 					this::pinnedRecipeBounds));
+		}
+		if (config.armorStatusEnabled) {
+			if (config.armorStatusLayoutMode == ArmorStatusLayoutMode.BUNDLED) {
+				entries.add(new Entry(
+						Component.translatable("gui.tntsallin1client.menu.armor_status"),
+						config.armorStatusBundledHudLayout,
+						this::armorStatusBundledBounds));
+			} else {
+				for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
+					if (!ArmorStatusHud.isSlotEnabled(config, slot)) {
+						continue;
+					}
+					entries.add(new Entry(
+							Component.translatable("gui.tntsallin1client.armor_status_slot." + slot.name().toLowerCase(Locale.ROOT)),
+							config.armorStatusLayoutFor(slot),
+							() -> this.armorStatusSlotBounds(slot)));
+				}
+			}
 		}
 
 		this.addRenderableWidget(Button.builder(
@@ -191,6 +215,8 @@ public class HudEditorScreen extends Screen {
 		config.fpsCounterHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
 		config.pinnedRecipeHudLayout = new HudLayout();
+		config.armorStatusBundledHudLayout = new HudLayout();
+		config.armorStatusSlotHudLayout.clear();
 		config.save();
 	}
 
@@ -294,6 +320,53 @@ public class HudEditorScreen extends Screen {
 		int unscaledHeight = KeystrokesHud.computeTotalHeight(this.minecraft);
 		float x = layout.customPosition ? layout.x : this.width - 4 - unscaledWidth;
 		float y = layout.customPosition ? layout.y : this.height - 4 - unscaledHeight;
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect armorStatusBundledBounds() {
+		LocalPlayer player = this.minecraft.player;
+		if (player == null) {
+			return null;
+		}
+
+		ClientConfig config = ClientConfig.get();
+		List<ArmorStatusHud.Entry> entries = ArmorStatusHud.buildEntries(config, player);
+		if (entries.isEmpty()) {
+			return null;
+		}
+
+		HudLayout layout = config.armorStatusBundledHudLayout;
+		float x = layout.customPosition ? layout.x : ArmorStatusBundledHud.defaultX();
+		float y = layout.customPosition ? layout.y : ArmorStatusBundledHud.defaultY();
+
+		int unscaledWidth = ArmorStatusHud.bundledWidth(this.font, config, entries);
+		int unscaledHeight = ArmorStatusHud.bundledHeight(this.font, config, entries);
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect armorStatusSlotBounds(ArmorStatusSlot slot) {
+		LocalPlayer player = this.minecraft.player;
+		if (player == null) {
+			return null;
+		}
+
+		ClientConfig config = ClientConfig.get();
+		ArmorStatusHud.Entry entry = ArmorStatusHud.buildEntry(config, player, slot);
+		// Same reasoning as itemCounterBounds's placeholder: the slot may currently be empty (no item
+		// worn/held), but the editor still needs a box to drag/resize, otherwise positioning this
+		// element is only possible while something is actually equipped in it.
+		String text = entry != null ? entry.text()
+				: Component.translatable("gui.tntsallin1client.armor_status_slot." + slot.name().toLowerCase(Locale.ROOT)).getString();
+
+		boolean showIcon = config.armorStatusShowIcon;
+		HudLayout layout = config.armorStatusLayoutFor(slot);
+		float x = layout.customPosition ? layout.x : ArmorStatusSlotHud.defaultX();
+		float y = layout.customPosition ? layout.y : ArmorStatusSlotHud.defaultY(slot);
+
+		int unscaledWidth = ArmorStatusHud.contentWidth(this.font, text, showIcon);
+		int unscaledHeight = ArmorStatusHud.contentHeight(this.font, showIcon);
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

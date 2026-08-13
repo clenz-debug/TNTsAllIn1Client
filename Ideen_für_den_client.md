@@ -82,3 +82,10 @@
     - Waypoint System die graphisch angezeigt werden und ein eigenes menü haben das man über einen key öffnen kann [check] (5ai — gebaut, noch nicht live getestet; In-World-Leuchtsäule + Namensschild inkl. Entfernung, eigenes Wegpunkt-Menü über eigene Taste ODER Mod-Menü erreichbar, Anlegen/Bearbeiten/Löschen/Sichtbarkeit pro Wegpunkt, farbwählbar; Nachtrag: Lösch-Bestätigung für einzelne Wegpunkte optional ein/ausschaltbar, "Alle löschen"-Button fragt immer nach)
     - Waypoints sollen pro Welt und pro Server getrennt sein (sofern technisch möglich), nicht eine gemeinsame Liste für alle [check] (Nachtrag zu 5ai — ging technisch: Singleplayer wird über den Speicherordner-Namen der Welt identifiziert, Multiplayer über die Server-Adresse; Achtung, siehe Aktuelle_Phase.md: dadurch werden eventuell schon angelegte Test-Wegpunkte aus der alten, noch nicht welten-getrennten Speicherung nicht automatisch übernommen)
     - dazu prüfen, ob (zusätzlich) auch eine Trennung nach Dimension möglich ist [check] (war schon seit 5ai selbst so - jeder Wegpunkt merkt sich seine Dimension und wird nur dort angezeigt/gezählt, keine neue Änderung nötig)
+    - Armor & Tool Status Anzeige: zeigt Durability von angelegter Rüstung (Helm, Brustpanzer, Hose, Schuhe), Mainhand und Offhand [check] (Nachtrag zu Phase 5 — gebaut, noch nicht live getestet, siehe Aktuelle_Phase.md)
+        - bei stackbaren Items (Blöcke etc.) statt Durability die Anzahl im jeweiligen Stack anzeigen (nur dieser Stack, nicht das gesamte Inventar)
+        - jede Anzeige (Helm/Brustpanzer/Hose/Schuhe/Mainhand/Offhand) einzeln ein-/ausschaltbar
+        - Item-Name Anzeige ein-/ausschaltbar
+        - Zahlenfarbe: frei wählbare Standardfarbe ODER Farbverlauf je nach Restdurability; stackbare Items immer mit fester Standardfarbe, nie mit Verlauf
+        - Item-Icon Anzeige ein-/ausschaltbar (passendes Icon zum jeweiligen Item)
+        - Layout wählbar: entweder alle 6 Slots einzeln als eigene, frei verschiebbare HUD-Elemente, oder gebündelt als eine Anzeige (gebündelt: horizontal oder vertikal wählbar)

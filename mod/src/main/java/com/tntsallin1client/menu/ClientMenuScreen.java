@@ -132,6 +132,13 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new KeystrokesOptionsScreen(this));
 
+		list.addToggleRow(config.armorStatusEnabled, Component.translatable("gui.tntsallin1client.menu.armor_status"),
+				value -> {
+					config.armorStatusEnabled = value;
+					config.save();
+				},
+				() -> new ArmorStatusOptionsScreen(this));
+
 		list.addToggleRow(config.f3QuickInfoEnabled, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
 				value -> {
 					config.f3QuickInfoEnabled = value;

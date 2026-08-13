@@ -7,6 +7,10 @@ import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.crosshair.CrosshairGrid;
 import com.tntsallin1client.crosshair.CrosshairMode;
 import com.tntsallin1client.crosshair.CrosshairPreset;
+import com.tntsallin1client.hud.ArmorStatusColorMode;
+import com.tntsallin1client.hud.ArmorStatusDirection;
+import com.tntsallin1client.hud.ArmorStatusLayoutMode;
+import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.recipe.PinnedRecipe;
 import com.tntsallin1client.waypoint.Waypoint;
@@ -189,6 +193,33 @@ public class ClientConfig {
 	/** The live, mutable waypoint list for one world/server key - callers add/remove/save directly on it. */
 	public List<Waypoint> waypointsFor(String worldKey) {
 		return this.waypointsByWorld.computeIfAbsent(worldKey, key -> new ArrayList<>());
+	}
+
+	// Armor & Tool Status: durability of the four worn armor pieces plus main-hand/offhand, or -
+	// for stackable items like blocks - the count in that one stack, never the whole inventory
+	// (unlike the item counter above). Each of the six slots is independently toggleable (see
+	// armorStatusSlotEnabled, same "absent = enabled" convention as keystrokesKeyEnabled) and can be
+	// shown either as six separate, individually movable HUD elements or bundled into a single one
+	// (see armorStatusLayoutMode/armorStatusBundledDirection) - see ArmorStatusHud for the render logic.
+	public boolean armorStatusEnabled = false;
+	public Map<String, Boolean> armorStatusSlotEnabled = new HashMap<>();
+	public boolean armorStatusShowName = true;
+	public boolean armorStatusShowIcon = true;
+	public ArmorStatusColorMode armorStatusColorMode = ArmorStatusColorMode.FIXED;
+	// Also the color stackable-item counts always use, even in GRADIENT mode - only damageable
+	// items get the durability-based gradient. Defaults to white, vanilla's own text color, so
+	// turning this on doesn't visibly change anything until a color is picked.
+	public int armorStatusColor = 0xFFFFFFFF;
+	public ArmorStatusLayoutMode armorStatusLayoutMode = ArmorStatusLayoutMode.BUNDLED;
+	public ArmorStatusDirection armorStatusBundledDirection = ArmorStatusDirection.VERTICAL;
+	public HudLayout armorStatusBundledHudLayout = new HudLayout();
+	// Keyed by ArmorStatusSlot#name(), one independent HudLayout per slot for INDIVIDUAL mode - see
+	// armorStatusLayoutFor below.
+	public Map<String, HudLayout> armorStatusSlotHudLayout = new HashMap<>();
+
+	/** The live HudLayout for one armor status slot, created on first use - callers may mutate it directly (same pattern as waypointsFor above). */
+	public HudLayout armorStatusLayoutFor(ArmorStatusSlot slot) {
+		return this.armorStatusSlotHudLayout.computeIfAbsent(slot.name(), key -> new HudLayout());
 	}
 
 	public static ClientConfig get() {

@@ -14,9 +14,14 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
+
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.fullbright.FullbrightHandler;
+import com.tntsallin1client.hud.ArmorStatusBundledHud;
+import com.tntsallin1client.hud.ArmorStatusSlot;
+import com.tntsallin1client.hud.ArmorStatusSlotHud;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.ItemCounterHud;
@@ -110,5 +115,14 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// reachable from the mod menu or directly via their own keybind.
 		WaypointRenderer.register();
 		WaypointMenuIntegration.register();
+
+		// Armor & Tool Status: durability/stack-count of worn armor + mainhand/offhand, either as
+		// six individually draggable elements or bundled into one (see ArmorStatusLayoutMode) -
+		// both are registered unconditionally, each checks the active mode itself before rendering.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "armor_status_bundled_hud"), new ArmorStatusBundledHud());
+		for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
+			Identifier slotId = Identifier.fromNamespaceAndPath(MOD_ID, "armor_status_" + slot.name().toLowerCase(Locale.ROOT) + "_hud");
+			HudElementRegistry.addLast(slotId, new ArmorStatusSlotHud(slot));
+		}
 	}
 }
