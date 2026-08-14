@@ -3,6 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -35,6 +36,14 @@ public class HitboxColorOptionsScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.customHitboxColorEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.hitbox_options.enabled"),
+						(button, value) -> {
+							config.customHitboxColorEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
 
 		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.customHitboxColor,
 				this::addRenderableWidget,

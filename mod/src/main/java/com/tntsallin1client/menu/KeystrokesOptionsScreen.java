@@ -3,6 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -67,6 +68,14 @@ public class KeystrokesOptionsScreen extends Screen {
 			this.scrollBar.reposition(this.labelX + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight);
 		}
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.keystrokesEnabled)
+				.create(this.labelX, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.keystrokes_options.enabled"),
+						(button, value) -> {
+							config.keystrokesEnabled = value;
+							config.save();
+						}));
+		y += ROW_HEIGHT + 10;
+
 		this.activeLabelY = y;
 		y += LABEL_HEIGHT;
 		this.activeColorPicker = new ColorPickerPanel(this.font, this.labelX, y, ROW_WIDTH, config.keystrokesActiveColor,
@@ -101,6 +110,7 @@ public class KeystrokesOptionsScreen extends Screen {
 	/** Mirrors the y-cursor arithmetic in {@link #init} - keep in sync if that layout ever changes. */
 	private static int computeContentHeight() {
 		int y = TOP_MARGIN;
+		y += ROW_HEIGHT + 10;
 		y += LABEL_HEIGHT;
 		y += ColorPickerPanel.totalHeight() + 10;
 		y += LABEL_HEIGHT;

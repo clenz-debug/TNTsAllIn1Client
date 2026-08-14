@@ -1,11 +1,13 @@
 package com.tntsallin1client.menu;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -38,8 +40,17 @@ public class ZoomOptionsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.zoomEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.zoom_options.enabled"),
+						(button, value) -> {
+							config.zoomEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
 
 		this.rebindButton = this.addRenderableWidget(Button.builder(Component.empty(), button -> {
 					this.awaitingKey = true;
@@ -60,7 +71,7 @@ public class ZoomOptionsScreen extends Screen {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.zoom_options.scroll_hint"),
-				this.width / 2, 40 + ROW_SPACING, 0xFFAAAAAA);
+				this.width / 2, 40 + 2 * ROW_SPACING, 0xFFAAAAAA);
 	}
 
 	private void updateRebindButtonLabel() {

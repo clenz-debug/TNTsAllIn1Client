@@ -36,6 +36,14 @@ public class CoordinatesHudOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.coordinatesHudEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.coordinates_hud_options.enabled"),
+						(button, value) -> {
+							config.coordinatesHudEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.coordinatesHudShowCoordinates)
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.coordinates_hud_options.show_coordinates"),
 						(button, value) -> {

@@ -39,6 +39,14 @@ public class ItemCounterOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.itemCounterEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.item_counter_options.enabled"),
+						(button, value) -> {
+							config.itemCounterEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		EditBox itemIdBox = new EditBox(this.font, x, y + ROW_SPACING, ROW_WIDTH, ROW_HEIGHT,
 				Component.translatable("gui.tntsallin1client.item_counter_options.item_id"));
 		itemIdBox.setMaxLength(64);

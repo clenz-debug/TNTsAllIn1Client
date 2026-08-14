@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -36,8 +37,17 @@ public class PinnedRecipeOptionsScreen extends Screen {
 
 	@Override
 	protected void init() {
+		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.pinnedRecipeEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.pinned_recipe_options.enabled"),
+						(button, value) -> {
+							config.pinnedRecipeEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
 
 		this.rebindButton = this.addRenderableWidget(Button.builder(Component.empty(), button -> {
 					this.awaitingKey = true;
@@ -50,7 +60,6 @@ public class PinnedRecipeOptionsScreen extends Screen {
 
 		this.unpinButton = this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.pinned_recipe_options.unpin_button"),
 						button -> {
-							ClientConfig config = ClientConfig.get();
 							config.pinnedRecipe = null;
 							config.save();
 							this.updateUnpinButtonState();
@@ -70,7 +79,7 @@ public class PinnedRecipeOptionsScreen extends Screen {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.hint"),
-				this.width / 2, 40 + ROW_SPACING, 0xFFAAAAAA);
+				this.width / 2, 40 + 2 * ROW_SPACING, 0xFFAAAAAA);
 	}
 
 	private void updateRebindButtonLabel() {

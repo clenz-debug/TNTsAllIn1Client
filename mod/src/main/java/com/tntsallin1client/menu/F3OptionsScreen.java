@@ -2,11 +2,13 @@ package com.tntsallin1client.menu;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -44,6 +46,15 @@ public class F3OptionsScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.f3QuickInfoEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.f3_options.enabled"),
+						(button, value) -> {
+							config.f3QuickInfoEnabled = value;
+							config.save();
+							QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
+						}));
+		y += ROW_SPACING;
 
 		this.rebindButton = this.addRenderableWidget(Button.builder(Component.empty(), button -> {
 					this.awaitingKey = true;

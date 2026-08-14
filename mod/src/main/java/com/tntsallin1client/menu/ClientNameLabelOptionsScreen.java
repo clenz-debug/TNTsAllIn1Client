@@ -3,6 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -17,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 public class ClientNameLabelOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
+	private static final int ROW_SPACING = 24;
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
@@ -31,6 +33,14 @@ public class ClientNameLabelOptionsScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.clientNameLabelEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.client_name_label_options.enabled"),
+						(button, value) -> {
+							config.clientNameLabelEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING + 6;
 
 		this.colorPicker = new ColorPickerPanel(this.font, x, y, ROW_WIDTH, config.clientNameLabelColor,
 				this::addRenderableWidget,

@@ -42,6 +42,14 @@ public class WaypointOptionsScreen extends Screen {
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointsEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.enabled"),
+						(button, value) -> {
+							config.waypointsEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.rebindButton = this.addRenderableWidget(Button.builder(Component.empty(), button -> {
 					this.awaitingKey = true;
 					this.updateRebindButtonLabel();

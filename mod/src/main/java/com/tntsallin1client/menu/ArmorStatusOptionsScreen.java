@@ -76,6 +76,14 @@ public class ArmorStatusOptionsScreen extends Screen {
 			this.scrollBar.reposition(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight);
 		}
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.armorStatusEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.armor_status_options.enabled"),
+						(button, value) -> {
+							config.armorStatusEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.armorStatusShowName)
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.armor_status_options.show_name"),
 						(button, value) -> {
@@ -152,6 +160,7 @@ public class ArmorStatusOptionsScreen extends Screen {
 	/** Mirrors the y-cursor arithmetic in {@link #init} - keep in sync if that layout ever changes. */
 	private static int computeContentHeight(ClientConfig config) {
 		int y = TOP_MARGIN;
+		y += ROW_SPACING; // enabled
 		y += ROW_SPACING; // show name
 		y += ROW_SPACING; // show icon
 		y += ROW_SPACING + 6; // color mode

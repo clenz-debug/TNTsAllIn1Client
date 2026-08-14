@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 public class QuickSortOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
+	private static final int ROW_SPACING = 24;
 
 	private final Screen parent;
 
@@ -30,6 +31,14 @@ public class QuickSortOptionsScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 40;
+
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.quickSortEnabled)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.quick_sort_options.enabled"),
+						(button, value) -> {
+							config.quickSortEnabled = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
 
 		this.addRenderableWidget(CycleButton.booleanBuilder(
 						Component.translatable("gui.tntsallin1client.quick_sort_options.mode.category"),
