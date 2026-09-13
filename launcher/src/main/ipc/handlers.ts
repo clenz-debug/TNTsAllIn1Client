@@ -8,7 +8,9 @@ import {
   type GameLogEvent,
   type LaunchStage,
   type LauncherSettings,
-  type MinecraftProfile
+  type MinecraftProfile,
+  type StorageInfo,
+  type StorageMoveProgressEvent
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, uploadSkin, type SkinVariant } from '../auth/skinApi'
@@ -23,10 +25,25 @@ import { deleteInstance } from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
-import { applySharedOptions, saveSharedOptions } from '../launch/sharedSettings'
+import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
+import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
+
+/** Guards the two operations that can both touch the shared `versions/`/`libraries/`/`assets/`
+ * tree at the same time: a `LaunchPlay` install and a `StorageChangeLocation` move. Without this,
+ * `dataRoot()` could get read mid-flip inside a single `installVersion()` call (some paths resolved
+ * against the old root, some against the new), or a move could `rm()` a file `downloadFile()` is
+ * still mid-write to. Small, in-process, main-process-only (this app only ever runs one instance of
+ * itself) - no need for anything heavier than a module-level flag. */
+let storageBusy = false
+
+function assertStorageNotBusy(): void {
+  if (storageBusy) {
+    throw new Error('Spieldaten werden gerade verschoben oder installiert — bitte kurz warten.')
+  }
+}
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
  * channel is registered twice, which would happen if this ran again from a second createWindow()
@@ -76,6 +93,22 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.UpdateInstallNow, async () => installUpdateNow())
 
+  ipcMain.handle(IpcChannel.StorageInfo, async (): Promise<StorageInfo> => getStorageInfo())
+
+  ipcMain.handle(IpcChannel.StorageChangeLocation, async (event: IpcMainInvokeEvent) => {
+    assertStorageNotBusy()
+    storageBusy = true
+    try {
+      const window = BrowserWindow.fromWebContents(event.sender)
+      return await changeStorageLocation(window, (subfolder, completed, total, label) => {
+        const progress: StorageMoveProgressEvent = { subfolder, completed, total, label }
+        event.sender.send(IpcChannel.StorageMoveProgress, progress)
+      })
+    } finally {
+      storageBusy = false
+    }
+  })
+
   ipcMain.handle(IpcChannel.SkinFetchTexture, async (_event: IpcMainInvokeEvent, url: string) => fetchTextureDataUri(url))
 
   // Skin PNGs picked via a native dialog (same "no HTML5 drag&drop under sandbox:true" reasoning
@@ -105,6 +138,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     IpcChannel.LaunchPlay,
     async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string) => {
+      assertStorageNotBusy()
       const sendProgress = (stage: LaunchStage, completed: number, total: number, label?: string): void => {
         event.sender.send(IpcChannel.LaunchProgress, { stage, completed, total, label })
       }
@@ -151,16 +185,18 @@ export function registerIpcHandlers(): void {
       const args = buildLaunchArgs({
         detail: installed.detail,
         instanceDir: installed.instanceDir,
+        assetsDir: installed.assetsDir,
         classpath,
         profile
       })
 
       const gameDir = join(installed.instanceDir, 'game')
-      // Carries options.txt (graphics/controls/sound/...) across instances, same reasoning as
-      // before the instance system existed when this carried settings across version switches -
-      // these are personal preferences the player wants everywhere, not something meaningfully
-      // different per instance. See sharedSettings.ts.
+      // Carries options.txt (graphics/controls/sound/...) and the multiplayer server list across
+      // instances, same reasoning as before the instance system existed when this carried settings
+      // across version switches - these are personal preferences the player wants everywhere, not
+      // something meaningfully different per instance. See sharedSettings.ts.
       await applySharedOptions(gameDir)
+      await applySharedServers(gameDir)
 
       sendProgress('launching', 0, 1, installed.detail.id)
       sendLog({
@@ -171,6 +207,7 @@ export function registerIpcHandlers(): void {
 
       await launchGame(javaBinaryPath, args, gameDir, sendLog)
       await saveSharedOptions(gameDir)
+      await saveSharedServers(gameDir)
       sendProgress('done', 1, 1)
     }
   )

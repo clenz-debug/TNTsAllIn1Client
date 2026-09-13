@@ -1,7 +1,9 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { registerAutoUpdater } from './autoUpdate'
+import { initDataRoot } from './dataRoot'
 import { registerIpcHandlers } from './ipc/handlers'
+import { consolidateInstanceStorage } from './launch/storageConsolidation'
 
 function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -33,7 +35,15 @@ function createWindow(): BrowserWindow {
   return window
 }
 
-void app.whenReady().then(() => {
+void app.whenReady().then(async () => {
+  // Must resolve dataRoot() (and, in the same pass, consolidate any pre-shared-storage per-instance
+  // duplicates into it - see storageConsolidation.ts) before anything else touches the filesystem:
+  // registerIpcHandlers()'s LaunchPlay/StorageChangeLocation handlers and createWindow() itself
+  // (autoUpdate downloads into userData) can all end up calling dataRoot(), which throws if it
+  // isn't primed yet.
+  const settings = await initDataRoot()
+  await consolidateInstanceStorage(settings.instances)
+
   registerIpcHandlers()
   const window = createWindow()
   registerAutoUpdater(window)

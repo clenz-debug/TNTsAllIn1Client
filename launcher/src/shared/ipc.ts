@@ -21,5 +21,8 @@ export const IpcChannel = {
   UpdateStatus: 'update:status',
   UpdateInstallNow: 'update:install-now',
   SkinFetchTexture: 'skin:fetch-texture',
-  SkinUpload: 'skin:upload'
+  SkinUpload: 'skin:upload',
+  StorageInfo: 'storage:info',
+  StorageChangeLocation: 'storage:change-location',
+  StorageMoveProgress: 'storage:move-progress'
 } as const

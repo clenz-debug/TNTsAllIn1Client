@@ -1,6 +1,6 @@
-import { app } from 'electron'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
+import { dataRoot } from '../dataRoot'
 import { librariesForCurrentOs, libraryDestinationPath } from './classpath'
 import { downloadAll, type DownloadTask } from './downloader'
 import { fetchVersionDetail, type VersionDetail } from './versionManifest'
@@ -8,6 +8,10 @@ import { fetchVersionDetail, type VersionDetail } from './versionManifest'
 export interface InstalledVersion {
   detail: VersionDetail
   instanceDir: string
+  /** Shared across every instance/version (see `sharedAssetsDir` below) - not `assets_root`'s old
+   * per-instance path (removed for the same duplication reason as `libraries/`, see
+   * `classpath.ts#libraryDestinationPath`'s doc comment). */
+  assetsDir: string
   clientJarPath: string
   libraryPaths: string[]
 }
@@ -21,7 +25,21 @@ export interface InstalledVersion {
  * name, so this function itself didn't need to change shape, only what its argument conceptually
  * means. */
 export function instanceDir(instanceId: string): string {
-  return join(app.getPath('userData'), 'instances', instanceId)
+  return join(dataRoot(), 'instances', instanceId)
+}
+
+/** Shared, version-keyed home for the vanilla client jar - siblings across every instance targeting
+ * the same version download/reuse the exact same file instead of each keeping its own copy (own
+ * user request: instances were multiplying multi-GB downloads for identical content). */
+function sharedVersionDir(versionId: string): string {
+  return join(dataRoot(), 'versions', versionId)
+}
+
+/** Shared home for the Mojang asset store (`indexes/`+`objects/`, typically 1 GB+) - same
+ * deduplication reasoning as {@link sharedVersionDir}, just not version-keyed since asset objects
+ * are content-addressed by hash already and safely reused across versions too. */
+function sharedAssetsDir(): string {
+  return join(dataRoot(), 'assets')
 }
 
 interface AssetIndex {
@@ -53,7 +71,7 @@ export async function installVersion(
   onProgress('manifest', 1, 1, versionId)
 
   const dir = instanceDir(instanceId)
-  const clientJarPath = join(dir, 'versions', detail.id, `${detail.id}.jar`)
+  const clientJarPath = join(sharedVersionDir(detail.id), `${detail.id}.jar`)
 
   await downloadAll(
     [{ url: detail.downloads.client.url, destination: clientJarPath, sha1: detail.downloads.client.sha1 }],
@@ -67,21 +85,22 @@ export async function installVersion(
   for (const lib of libraries) {
     const artifact = lib.downloads?.artifact
     if (!artifact) continue
-    const destination = libraryDestinationPath(dir, artifact.path)
+    const destination = libraryDestinationPath(artifact.path)
     libraryTasks.push({ url: artifact.url, destination, sha1: artifact.sha1 })
     libraryPaths.push(destination)
   }
   await downloadAll(libraryTasks, 8, (completed, total, label) => onProgress('libraries', completed, total, label))
 
+  const assetsDir = sharedAssetsDir()
   const assetIndex = await fetchAssetIndex(detail.assetIndex.url)
-  const assetIndexDestination = join(dir, 'assets', 'indexes', `${detail.assetIndex.id}.json`)
+  const assetIndexDestination = join(assetsDir, 'indexes', `${detail.assetIndex.id}.json`)
   await downloadAll(
     [{ url: detail.assetIndex.url, destination: assetIndexDestination, sha1: detail.assetIndex.sha1 }],
     1,
     () => undefined
   )
 
-  const objectsDir = join(dir, 'assets', 'objects')
+  const objectsDir = join(assetsDir, 'objects')
   const assetTasks: DownloadTask[] = Object.values(assetIndex.objects).map((object) => ({
     url: `https://resources.download.minecraft.net/${object.hash.slice(0, 2)}/${object.hash}`,
     destination: join(objectsDir, object.hash.slice(0, 2), object.hash),
@@ -89,5 +108,5 @@ export async function installVersion(
   }))
   await downloadAll(assetTasks, 16, (completed, total, label) => onProgress('assets', completed, total, label))
 
-  return { detail, instanceDir: dir, clientJarPath, libraryPaths }
+  return { detail, instanceDir: dir, assetsDir, clientJarPath, libraryPaths }
 }

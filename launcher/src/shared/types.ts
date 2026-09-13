@@ -107,12 +107,39 @@ export interface LauncherSettings {
   showSnapshots: boolean
   instances: Instance[]
   selectedInstanceId: string | null
+  /** Custom root for the movable game-data tree (`instances/`, `versions/`, `libraries/`,
+   * `assets/`, `java-runtimes/` - see `main/dataRoot.ts#RELOCATABLE_SUBDIRS`), chosen via the
+   * Instances screen's "Speicherort" section. `null` means the default, `app.getPath('userData')`.
+   * Never covers `launcher-settings.json`/`auth.json`/`shared-settings/` themselves, which always
+   * stay at the fixed OS profile folder. */
+  dataRootOverride: string | null
 }
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   showSnapshots: false,
   instances: [],
-  selectedInstanceId: null
+  selectedInstanceId: null,
+  dataRootOverride: null
+}
+
+/** Current storage location + free space, shown in the Instances screen's "Speicherort" section
+ * (`main/launch/storageManager.ts#getStorageInfo`). `freeBytes` is `null` when `statfs` isn't
+ * available or the folder doesn't exist yet - the renderer just hides that line then. */
+export interface StorageInfo {
+  path: string
+  freeBytes: number | null
+}
+
+/** Progress for `main/launch/storageManager.ts#changeStorageLocation`'s file move - deliberately a
+ * separate shape from `LaunchProgressEvent`/`LaunchStage`: a storage move is an independent,
+ * Instances-screen-scoped operation (not part of a "Play click"'s install+launch pipeline), and
+ * there's only one kind of "stage" here (moving files), so `subfolder` + `label` already carry
+ * enough info without a `stage` field. */
+export interface StorageMoveProgressEvent {
+  subfolder: string
+  completed: number
+  total: number
+  label?: string
 }
 
 /** Phase 9 - pushed from `main/autoUpdate.ts` (wraps `electron-updater`'s own event stream, see

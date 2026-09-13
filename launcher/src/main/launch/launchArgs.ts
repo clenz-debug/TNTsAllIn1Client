@@ -6,6 +6,9 @@ import type { ConditionalArgument, VersionDetail } from './versionManifest'
 export interface LaunchContext {
   detail: VersionDetail
   instanceDir: string
+  /** Shared `assets/` root (`installer.ts#InstalledVersion.assetsDir`) - not `instanceDir`-relative
+   * any more, see that file's doc comment. */
+  assetsDir: string
   classpath: string
   profile: MinecraftProfile
 }
@@ -33,12 +36,12 @@ function flattenArguments(
 }
 
 export function buildLaunchArgs(context: LaunchContext): string[] {
-  const { detail, instanceDir, classpath, profile } = context
+  const { detail, instanceDir, assetsDir, classpath, profile } = context
   const vars: Record<string, string> = {
     auth_player_name: profile.name,
     version_name: detail.id,
     game_directory: join(instanceDir, 'game'),
-    assets_root: join(instanceDir, 'assets'),
+    assets_root: assetsDir,
     assets_index_name: detail.assetIndex.id,
     auth_uuid: profile.id,
     auth_access_token: profile.accessToken,

@@ -30,6 +30,17 @@ import net.minecraft.util.Mth;
  * instead. The resulting FOV, {@link ClientConfig#zoomFov}, is saved like any
  * other setting, so the chosen zoom level is remembered next time zoom is
  * pressed rather than resetting every time.
+ *
+ * <p><b>Sensitivity reduction (follow-up feedback):</b> {@code MouseHandler#turnPlayer}
+ * reads {@code options.sensitivity()} but never accounts for FOV, so the same
+ * mouse movement that used to pan a fraction of the normal view now swings
+ * across a much larger share of the narrow zoomed view - it feels like
+ * sensitivity spiked. Fixed the same way as the FOV itself: scale sensitivity
+ * down by {@link ClientConfig#zoomSensitivityPercent} while the key is held,
+ * restore the original value on release. Unlike FOV's [30, 110] IntRange,
+ * sensitivity's ValueSet is a plain {@code UnitDouble} ([0.0, 1.0]) and the
+ * scaled-down value is always within that range, so the normal validated
+ * {@code set()} works here - no {@link OptionInstanceAccessor} bypass needed.
  */
 public final class ZoomHandler {
 	private static final int MIN_ZOOM_FOV = 2;
@@ -38,6 +49,7 @@ public final class ZoomHandler {
 
 	private static boolean zooming = false;
 	private static int previousFov;
+	private static double previousSensitivity;
 
 	private ZoomHandler() {
 	}
@@ -47,9 +59,12 @@ public final class ZoomHandler {
 		if (holding && !zooming) {
 			previousFov = client.options.fov().get();
 			setFovBypassingValidation(client, ClientConfig.get().zoomFov);
+			previousSensitivity = client.options.sensitivity().get();
+			client.options.sensitivity().set(previousSensitivity * ClientConfig.get().zoomSensitivityPercent / 100.0);
 			zooming = true;
 		} else if (!holding && zooming) {
 			client.options.fov().set(previousFov);
+			client.options.sensitivity().set(previousSensitivity);
 			zooming = false;
 		}
 	}

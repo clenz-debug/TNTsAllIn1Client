@@ -1,7 +1,7 @@
-import { app } from 'electron'
 import { chmod, mkdir, readFile, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
+import { dataRoot } from '../dataRoot'
 import { downloadAll, type DownloadTask } from './downloader'
 
 /** Fixed, well-known manifest URL Mojang's own launcher uses to look up Java runtimes - not tied
@@ -64,7 +64,7 @@ function javaBinaryRelativePath(osKey: string): string {
 }
 
 function runtimeDir(component: string): string {
-  return join(app.getPath('userData'), 'java-runtimes', component)
+  return join(dataRoot(), 'java-runtimes', component)
 }
 
 /**

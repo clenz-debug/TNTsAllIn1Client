@@ -3,7 +3,6 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import dev.tr7zw.skinlayers.SkinLayersModBase;
-import dev.tr7zw.skinlayers.config.ConfigScreenProvider;
 import dev.tr7zw.skinlayers.versionless.ModBase;
 import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
 import net.minecraft.client.Minecraft;
@@ -213,6 +212,16 @@ public class ClientMenuScreen extends Screen {
 					}
 				});
 
+		ContinuityFeatureStates.FeatureState emissiveTextures = ContinuityFeatureStates.get().getEmissiveTexturesState();
+		list.addToggleRow(emissiveTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.emissive_textures"),
+				value -> {
+					if (value) {
+						emissiveTextures.enable();
+					} else {
+						emissiveTextures.disable();
+					}
+				});
+
 		PackRepository packRepository = this.minecraft.getResourcePackRepository();
 		boolean blockModels3dEnabled = BLOCK_MODEL_PACK_IDS.stream().anyMatch(packRepository.getSelectedIds()::contains);
 		list.addToggleRow(blockModels3dEnabled, Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
@@ -221,6 +230,17 @@ public class ClientMenuScreen extends Screen {
 						BLOCK_MODEL_PACK_IDS.forEach(packRepository::addPack);
 					} else {
 						BLOCK_MODEL_PACK_IDS.forEach(packRepository::removePack);
+					}
+					this.minecraft.options.updateResourcePacks(packRepository);
+				});
+
+		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
+		list.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
+				value -> {
+					if (value) {
+						packRepository.addPack(DARK_MODE_PACK_ID);
+					} else {
+						packRepository.removePack(DARK_MODE_PACK_ID);
 					}
 					this.minecraft.options.updateResourcePacks(packRepository);
 				});
@@ -237,18 +257,6 @@ public class ClientMenuScreen extends Screen {
 					ModBase.config.enableLeftPants = value;
 					ModBase.config.enableRightPants = value;
 					SkinLayersModBase.instance.writeConfig();
-				},
-				() -> ConfigScreenProvider.createConfigScreen(this));
-
-		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
-		list.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
-				value -> {
-					if (value) {
-						packRepository.addPack(DARK_MODE_PACK_ID);
-					} else {
-						packRepository.removePack(DARK_MODE_PACK_ID);
-					}
-					this.minecraft.options.updateResourcePacks(packRepository);
 				});
 
 		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_inventory"));
@@ -284,6 +292,9 @@ public class ClientMenuScreen extends Screen {
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
+
+		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.external_mods_button"),
+				() -> this.minecraft.setScreen(new ExternalModsScreen(this)));
 
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
 				() -> this.minecraft.setScreen(new CreditsScreen(this)));

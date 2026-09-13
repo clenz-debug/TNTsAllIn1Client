@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { dataRoot } from '../dataRoot'
 import type { LibraryEntry, Rule } from './versionManifest'
 
 const OS_NAME = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'osx' : 'linux'
@@ -27,8 +28,13 @@ export function librariesForCurrentOs(libraries: LibraryEntry[]): LibraryEntry[]
   return libraries.filter((lib) => matchesRules(lib.rules))
 }
 
-export function libraryDestinationPath(instanceDir: string, libraryRelativePath: string): string {
-  return join(instanceDir, 'libraries', libraryRelativePath)
+/** Shared across every instance and every version (own user request: instances of the same version
+ * were each downloading a full separate copy) - a Maven coordinate already encodes its own
+ * group/artifact/version/classifier into `libraryRelativePath`, so different libraries (Vanilla's
+ * own, and Fabric Loader's, see `fabricInstaller.ts`) never collide on the same path even across
+ * differently-versioned installs. */
+export function libraryDestinationPath(libraryRelativePath: string): string {
+  return join(dataRoot(), 'libraries', libraryRelativePath)
 }
 
 export function buildClasspath(libraryPaths: string[], clientJarPath: string): string {

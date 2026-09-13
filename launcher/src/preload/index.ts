@@ -7,6 +7,8 @@ import type {
   LaunchProgressEvent,
   LauncherSettings,
   MinecraftProfile,
+  StorageInfo,
+  StorageMoveProgressEvent,
   UpdateStatus
 } from '../shared/types'
 
@@ -36,13 +38,17 @@ const api = {
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
   uploadSkin: (profile: MinecraftProfile, variant: 'classic' | 'slim'): Promise<MinecraftProfile | null> =>
     ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
+  getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
+  changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),
   onLaunchProgress: (callback: (event: LaunchProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.LaunchProgress, callback),
   onGameLog: (callback: (event: GameLogEvent) => void): (() => void) => subscribe(IpcChannel.GameLog, callback),
-  onUpdateStatus: (callback: (event: UpdateStatus) => void): (() => void) => subscribe(IpcChannel.UpdateStatus, callback)
+  onUpdateStatus: (callback: (event: UpdateStatus) => void): (() => void) => subscribe(IpcChannel.UpdateStatus, callback),
+  onStorageMoveProgress: (callback: (event: StorageMoveProgressEvent) => void): (() => void) =>
+    subscribe(IpcChannel.StorageMoveProgress, callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

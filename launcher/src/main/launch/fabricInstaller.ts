@@ -38,7 +38,7 @@ export async function installFabricLoader(
   const libraryPaths: string[] = []
   for (const lib of profile.libraries) {
     const relativePath = mavenCoordinateToPath(lib.name)
-    const destination = libraryDestinationPath(vanilla.instanceDir, relativePath)
+    const destination = libraryDestinationPath(relativePath)
     tasks.push({ url: `${lib.url}${relativePath}`, destination, sha1: lib.sha1 })
     libraryPaths.push(destination)
   }

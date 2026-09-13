@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { GameVersionSummary, Instance } from '../../../shared/types'
+import type { GameVersionSummary, Instance, StorageInfo, StorageMoveProgressEvent } from '../../../shared/types'
 import { MINECRAFT_VERSION } from '../../../shared/types'
+
+function formatBytes(bytes: number): string {
+  const gb = bytes / 1024 ** 3
+  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / 1024 ** 2).toFixed(0)} MB`
+}
 
 interface Props {
   instances: Instance[]
@@ -13,6 +18,11 @@ interface Props {
    * main process, see `handleDelete`) funnel through here - the caller (PlayScreen) just mirrors
    * whatever it's given into its own state and lets its existing save effect persist it. */
   onInstancesChange: (instances: Instance[], selectedInstanceId: string | null) => void
+  /** Called right after a successful `changeStorageLocation()` so PlayScreen's own mirrored
+   * `dataRootOverride` state stays in sync - without this, PlayScreen's next unrelated save-effect
+   * run (e.g. toggling `showSnapshots`) would round-trip its now-stale cached value and silently
+   * clobber the just-changed location back in `launcher-settings.json`. */
+  onDataRootOverrideChange: (path: string) => void
   onSelect: (id: string) => void
   onClose: () => void
 }
@@ -40,6 +50,7 @@ export function InstancesScreen({
   showSnapshots,
   onShowSnapshotsChange,
   onInstancesChange,
+  onDataRootOverrideChange,
   onSelect,
   onClose
 }: Props) {
@@ -55,6 +66,37 @@ export function InstancesScreen({
   // confirm() worked fine while "Umbenennen"'s prompt() silently did nothing at all).
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameDraft, setRenameDraft] = useState('')
+
+  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
+  const [moveProgress, setMoveProgress] = useState<StorageMoveProgressEvent | null>(null)
+  const [movingStorage, setMovingStorage] = useState(false)
+
+  useEffect(() => {
+    window.api
+      .getStorageInfo()
+      .then(setStorageInfo)
+      .catch(() => undefined)
+  }, [])
+
+  async function handleChangeStorageLocation(): Promise<void> {
+    setMovingStorage(true)
+    setMoveProgress(null)
+    const unsubscribe = window.api.onStorageMoveProgress(setMoveProgress)
+    try {
+      const result = await window.api.changeStorageLocation()
+      if (result) {
+        const info = await window.api.getStorageInfo()
+        setStorageInfo(info)
+        onDataRootOverrideChange(result.path)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      unsubscribe()
+      setMovingStorage(false)
+      setMoveProgress(null)
+    }
+  }
 
   useEffect(() => {
     if (visibleVersions.length === 0) return
@@ -127,6 +169,32 @@ export function InstancesScreen({
       {error && <span className="error">{error}</span>}
 
       <section className="instances-section">
+        <h3>Speicherort</h3>
+        <div className="instance-info">
+          <span>{storageInfo?.path ?? 'Lädt…'}</span>
+          {storageInfo?.freeBytes != null && (
+            <span className="instance-version">{formatBytes(storageInfo.freeBytes)} frei</span>
+          )}
+        </div>
+        <button
+          className="secondary-button"
+          onClick={() => void handleChangeStorageLocation()}
+          disabled={busy || movingStorage}
+        >
+          Ändern…
+        </button>
+        {movingStorage && moveProgress && (
+          <div className="progress">
+            <span>
+              {moveProgress.subfolder}
+              {moveProgress.label ? ` — ${moveProgress.label}` : ''} ({moveProgress.completed}/{moveProgress.total})
+            </span>
+            <progress value={moveProgress.completed} max={Math.max(moveProgress.total, 1)} />
+          </div>
+        )}
+      </section>
+
+      <section className="instances-section">
         <h3>Neue Instanz</h3>
         <div className="instance-create-form">
           <input
@@ -148,7 +216,7 @@ export function InstancesScreen({
             <input type="checkbox" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
             Snapshots anzeigen
           </label>
-          <button className="secondary-button" onClick={handleCreate}>
+          <button className="secondary-button" onClick={handleCreate} disabled={movingStorage}>
             Erstellen
           </button>
         </div>
@@ -190,14 +258,14 @@ export function InstancesScreen({
                 </div>
                 <div className="header-actions">
                   {instance.id !== selectedInstanceId && (
-                    <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy}>
+                    <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy || movingStorage}>
                       Auswählen
                     </button>
                   )}
-                  <button className="link-button" onClick={() => startRename(instance)} disabled={busy}>
+                  <button className="link-button" onClick={() => startRename(instance)} disabled={busy || movingStorage}>
                     Umbenennen
                   </button>
-                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy}>
+                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy || movingStorage}>
                     Löschen
                   </button>
                 </div>

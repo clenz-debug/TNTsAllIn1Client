@@ -78,7 +78,8 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
       const settings: LauncherSettings = {
         showSnapshots: parsed.showSnapshots ?? DEFAULT_LAUNCHER_SETTINGS.showSnapshots,
         instances: migrated,
-        selectedInstanceId: migrated[0]?.id ?? null
+        selectedInstanceId: migrated[0]?.id ?? null,
+        dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride
       }
       await saveLauncherSettings(settings)
       return settings

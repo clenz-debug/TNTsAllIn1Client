@@ -33,6 +33,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [showSnapshots, setShowSnapshots] = useState(false)
   const [instances, setInstances] = useState<Instance[]>([])
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
+  // Never read or changed by this screen itself (only `storageManager.ts#changeStorageLocation`
+  // in the main process sets it, via its own direct `saveLauncherSettings` call) - kept here purely
+  // so this screen's own save-effect below round-trips it unchanged instead of wiping it back to
+  // `null` every time showSnapshots/instances/selectedInstanceId change.
+  const [dataRootOverride, setDataRootOverride] = useState<string | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -47,6 +52,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         setShowSnapshots(settings.showSnapshots)
         setInstances(settings.instances)
         setSelectedInstanceId(settings.selectedInstanceId)
+        setDataRootOverride(settings.dataRootOverride)
         setSettingsLoaded(true)
       })
       .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
@@ -54,8 +60,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
 
   useEffect(() => {
     if (!settingsLoaded) return
-    void window.api.saveSettings({ showSnapshots, instances, selectedInstanceId })
-  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId])
+    void window.api.saveSettings({ showSnapshots, instances, selectedInstanceId, dataRootOverride })
+  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId, dataRootOverride])
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
     setInstances(newInstances)
@@ -124,6 +130,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         showSnapshots={showSnapshots}
         onShowSnapshotsChange={setShowSnapshots}
         onInstancesChange={handleInstancesChange}
+        onDataRootOverrideChange={setDataRootOverride}
         onSelect={setSelectedInstanceId}
         onClose={() => setShowInstances(false)}
       />

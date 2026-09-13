@@ -28,6 +28,8 @@ public class ZoomOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
+	private static final int MIN_SENSITIVITY_PERCENT = 5;
+	private static final int MAX_SENSITIVITY_PERCENT = 100;
 
 	private final Screen parent;
 	private @Nullable Button rebindButton;
@@ -59,6 +61,15 @@ public class ZoomOptionsScreen extends Screen {
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
 				.build());
 		this.updateRebindButtonLabel();
+		y += ROW_SPACING;
+
+		this.addRenderableWidget(new IntSliderButton(x, y, ROW_WIDTH, ROW_HEIGHT,
+				MIN_SENSITIVITY_PERCENT, MAX_SENSITIVITY_PERCENT, config.zoomSensitivityPercent,
+				percent -> Component.translatable("gui.tntsallin1client.zoom_options.sensitivity", percent),
+				percent -> {
+					config.zoomSensitivityPercent = percent;
+					config.save();
+				}));
 		y += ROW_SPACING + 16;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
@@ -71,7 +82,7 @@ public class ZoomOptionsScreen extends Screen {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.zoom_options.scroll_hint"),
-				this.width / 2, 40 + 2 * ROW_SPACING, 0xFFAAAAAA);
+				this.width / 2, 40 + 3 * ROW_SPACING, 0xFFAAAAAA);
 	}
 
 	private void updateRebindButtonLabel() {

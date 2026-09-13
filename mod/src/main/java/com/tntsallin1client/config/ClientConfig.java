@@ -73,6 +73,12 @@ public class ClientConfig {
 	// Scroll-adjustable while zooming (see ZoomHandler); persists as the
 	// "remembered" zoom level between sessions, same as every other setting here.
 	public int zoomFov = 15;
+	// Vanilla's own mouse-turn speed isn't scaled by FOV, so at a narrow zoom FOV
+	// the same physical mouse movement swings the view across a much larger share
+	// of the (now much smaller) visible angle - feels like sensitivity spiked.
+	// This scales the player's normal sensitivity down to this percentage while
+	// zoomed (see ZoomHandler), then restores it on release.
+	public int zoomSensitivityPercent = 40;
 
 	// 5i redesigned: custom crosshair color (defaults to white so turning this
 	// on doesn't visibly change anything until a color is picked), a shape

@@ -13,7 +13,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.CreativeModeTab;
+
+import java.util.Collection;
 
 /**
  * Phase 5c: wires the "sort inventory" action into the player's own inventory
@@ -30,6 +33,15 @@ import net.minecraft.world.item.CreativeModeTab;
  * {@code CreativeModeInventoryScreen#selectTab}), so operating on
  * {@code player.inventoryMenu} works identically in both screens and avoids
  * depending on that wiring detail directly.</p>
+ *
+ * <p><b>Effect icon overlap (follow-up feedback):</b> vanilla's own active
+ * potion-effect icons ({@code EffectsInInventory}) render in that exact same
+ * spot - starting at {@code leftPos + imageWidth + 2}, top-aligned with the
+ * panel - so the sort button used to sit right on top of them whenever the
+ * player had an effect active. {@link #effectsRowHeight} mirrors that class's
+ * own row-height math (33px per row, or {@code 132 / (count - 1)} once there
+ * are more than 5 stacked close together) to push the button below however
+ * many effect rows are currently showing, instead of guessing a fixed offset.</p>
  */
 public final class QuickSortUi {
 	private static final int SURVIVAL_PANEL_WIDTH = 176;
@@ -39,6 +51,9 @@ public final class QuickSortUi {
 	private static final int BUTTON_WIDTH = 50;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int OUTSIDE_MARGIN = 4;
+	// Matches EffectsInInventory's own "is there enough room to draw effect
+	// icons at all" check, so the two agree on whether effects show up here.
+	private static final int MIN_EFFECTS_ROOM = 32;
 
 	private QuickSortUi() {
 	}
@@ -63,12 +78,18 @@ public final class QuickSortUi {
 
 			int left = (scaledWidth - panelWidth) / 2;
 			int top = (scaledHeight - panelHeight) / 2;
+			int buttonY = top;
+
+			Collection<MobEffectInstance> activeEffects = client.player.getActiveEffects();
+			if (!activeEffects.isEmpty() && scaledWidth - (left + panelWidth + 2) >= MIN_EFFECTS_ROOM) {
+				buttonY = top + effectsRowHeight(activeEffects.size()) * activeEffects.size() + OUTSIDE_MARGIN;
+			}
 
 			Screens.getButtons(screen).add(Button.builder(
 					Component.translatable("gui.tntsallin1client.sort_button"),
 					button -> trySort(client, screen)
 				)
-				.bounds(left + panelWidth + OUTSIDE_MARGIN, top, BUTTON_WIDTH, BUTTON_HEIGHT)
+				.bounds(left + panelWidth + OUTSIDE_MARGIN, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT)
 				.tooltip(Tooltip.create(Component.translatable("gui.tntsallin1client.sort_button.tooltip")))
 				.build());
 
@@ -78,6 +99,11 @@ public final class QuickSortUi {
 				}
 			});
 		});
+	}
+
+	/** Mirrors {@code EffectsInInventory}'s own per-row vertical spacing. */
+	private static int effectsRowHeight(int effectCount) {
+		return effectCount > 5 ? 132 / (effectCount - 1) : 33;
 	}
 
 	private static void trySort(Minecraft client, Screen screen) {
