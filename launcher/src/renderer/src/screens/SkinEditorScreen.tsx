@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SkinViewer } from 'skinview3d'
 import { CanvasTexture, NearestFilter, type Texture } from 'three'
 import type { SkinLibraryEntry, SkinVariant } from '../../../shared/types'
-import { BODY_PART_TOGGLES, PAINTABLE_PART_IDS } from '../skinEditor/bodyParts'
+import { BODY_PART_TOGGLES } from '../skinEditor/bodyParts'
 import { BodyPartDiagram } from '../skinEditor/BodyPartDiagram'
 import { ColorPicker } from '../skinEditor/ColorPicker'
 import { hitTest, uvToPixel } from '../skinEditor/raycastPaint'
@@ -123,7 +123,10 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
     })
 
     function paintableTargets() {
-      return BODY_PART_TOGGLES.filter((toggle) => PAINTABLE_PART_IDS.has(toggle.id) && visibilityRef.current[toggle.id]).map((toggle) =>
+      // Both base and overlay parts are valid raycast targets whenever visible - see the doc
+      // comment on BODY_PART_TOGGLES for why restricting this to base-only made painting a
+      // visible overlay part (e.g. a hat) paint through to the base part underneath instead.
+      return BODY_PART_TOGGLES.filter((toggle) => visibilityRef.current[toggle.id]).map((toggle) =>
         toggle.getObject(viewer.playerObject.skin)
       )
     }

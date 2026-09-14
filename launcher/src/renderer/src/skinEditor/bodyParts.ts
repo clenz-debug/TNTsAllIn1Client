@@ -18,10 +18,19 @@ export interface BodyPartToggle {
   getObject: (skin: SkinObject) => Object3D
 }
 
-/** The 12 visibility toggles (6 base body parts + their 6 overlay/"layer 2" counterparts, see
+/**
+ * The 12 visibility toggles (6 base body parts + their 6 overlay/"layer 2" counterparts, see
  * `SkinObject`/`BodyPart` in skinview3d's `libs/model.d.ts`) - data-driven instead of writing 12
- * near-identical checkbox blocks by hand. Only *visibility* is toggled here; the base layer is the
- * only one actually paintable in this version (see the plan's v1/v2 tool split). */
+ * near-identical checkbox blocks by hand. Both layers are paintable, not just the base one - own
+ * user feedback after live-testing an earlier version that only ever raycast against the base
+ * meshes: clicking on a visible overlay part (e.g. a hat) painted straight through it onto the
+ * head underneath, since the overlay mesh was never a valid raycast target at all. The fix
+ * (`SkinEditorScreen.tsx#paintableTargets`) is simply to include every *currently visible* toggle,
+ * base or overlay, as a raycast target - three.js's `Raycaster.intersectObjects` already returns
+ * hits sorted nearest-first, and the overlay geometry is a strictly larger box wrapping the base
+ * one, so whichever layer is actually visible in front at a given screen point is naturally the
+ * one that gets hit and painted, with no extra "which layer is topmost" logic needed.
+ */
 export const BODY_PART_TOGGLES: BodyPartToggle[] = [
   ...BASE_PARTS.map((part) => ({
     id: `base-${part.id}`,
@@ -34,8 +43,3 @@ export const BODY_PART_TOGGLES: BodyPartToggle[] = [
     getObject: (skin: SkinObject) => skin[part.key].outerLayer
   }))
 ]
-
-/** Only the base layers are paintable (overlay *painting* is a deferred v2 feature, see the plan) -
- * the raycast target list is built from these, filtered further by whichever are currently
- * visible (see `raycastPaint.ts`'s doc comment on why hidden parts must be excluded explicitly). */
-export const PAINTABLE_PART_IDS = new Set(BASE_PARTS.map((part) => `base-${part.id}`))
