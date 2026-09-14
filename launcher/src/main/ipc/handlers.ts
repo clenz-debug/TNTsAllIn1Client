@@ -1,5 +1,6 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import {
@@ -9,11 +10,13 @@ import {
   type LaunchStage,
   type LauncherSettings,
   type MinecraftProfile,
+  type SkinLibraryEntry,
+  type SkinVariant,
   type StorageInfo,
   type StorageMoveProgressEvent
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
-import { fetchTextureDataUri, uploadSkin, type SkinVariant } from '../auth/skinApi'
+import { fetchTextureDataUri, loadPngFileForEditor, uploadSkin, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
 import { syncBundledContent } from '../launch/bundleSync'
@@ -30,6 +33,12 @@ import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
+import { loadDefaultSkinTemplate } from '../skin/defaultTemplate'
+import { deleteSkinFromLibrary, getSkinLibraryEntry, listSkinLibrary, readSkinLibraryEntryForUpload, saveSkinToLibrary } from '../skin/skinLibrary'
+
+function pngBufferToDataUri(buffer: Buffer): string {
+  return `data:image/png;base64,${buffer.toString('base64')}`
+}
 
 /** Guards the two operations that can both touch the shared `versions/`/`libraries/`/`assets/`
  * tree at the same time: a `LaunchPlay` install and a `StorageChangeLocation` move. Without this,
@@ -131,8 +140,64 @@ export function registerIpcHandlers(): void {
       const { skins, capes } = await uploadSkin(profile.accessToken, result.filePaths[0], variant)
       const updatedProfile: MinecraftProfile = { ...profile, skins, capes }
       await updateCachedProfile(updatedProfile)
+      // So every skin the account has ever worn - regardless of whether it came from this direct
+      // upload or the pixel editor - ends up in the "Meine Skins" library, not just editor saves.
+      await saveSkinToLibrary(await readFile(result.filePaths[0]), variant, `Hochgeladen am ${new Date().toLocaleDateString('de-DE')}`)
       return updatedProfile
     }
+  )
+
+  ipcMain.handle(IpcChannel.SkinEditorLoadPng, async (event: IpcMainInvokeEvent) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    const result = await loadPngFileForEditor(window)
+    return result ? { dataUri: pngBufferToDataUri(result.buffer), width: result.width, height: result.height } : null
+  })
+
+  ipcMain.handle(IpcChannel.SkinEditorLoadTemplate, async (_event: IpcMainInvokeEvent, variant: SkinVariant) => {
+    const buffer = await loadDefaultSkinTemplate(variant)
+    return pngBufferToDataUri(buffer)
+  })
+
+  ipcMain.handle(
+    IpcChannel.SkinEditorExportPng,
+    async (event: IpcMainInvokeEvent, pngBytes: ArrayBuffer, suggestedFileName: string): Promise<{ path: string } | null> => {
+      const window = BrowserWindow.fromWebContents(event.sender)
+      const dialogOptions: Electron.SaveDialogOptions = {
+        title: 'Skin als PNG exportieren',
+        defaultPath: suggestedFileName,
+        filters: [{ name: 'PNG-Bild', extensions: ['png'] }]
+      }
+      const result = window ? await dialog.showSaveDialog(window, dialogOptions) : await dialog.showSaveDialog(dialogOptions)
+      if (result.canceled || !result.filePath) return null
+      await writeFile(result.filePath, Buffer.from(pngBytes))
+      return { path: result.filePath }
+    }
+  )
+
+  ipcMain.handle(IpcChannel.SkinLibraryList, async (): Promise<SkinLibraryEntry[]> => listSkinLibrary())
+
+  ipcMain.handle(
+    IpcChannel.SkinLibrarySave,
+    async (_event: IpcMainInvokeEvent, pngBytes: ArrayBuffer, variant: SkinVariant, name: string, existingId?: string) =>
+      saveSkinToLibrary(Buffer.from(pngBytes), variant, name, existingId)
+  )
+
+  ipcMain.handle(IpcChannel.SkinLibraryDelete, async (_event: IpcMainInvokeEvent, id: string) => deleteSkinFromLibrary(id))
+
+  ipcMain.handle(
+    IpcChannel.SkinLibraryUse,
+    async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, id: string): Promise<MinecraftProfile | null> => {
+      const entry = await readSkinLibraryEntryForUpload(id)
+      if (!entry) return null
+      const { skins, capes } = await uploadSkinBuffer(profile.accessToken, entry.buffer, entry.variant)
+      const updatedProfile: MinecraftProfile = { ...profile, skins, capes }
+      await updateCachedProfile(updatedProfile)
+      return updatedProfile
+    }
+  )
+
+  ipcMain.handle(IpcChannel.SkinLibraryLoadForEdit, async (_event: IpcMainInvokeEvent, id: string): Promise<SkinLibraryEntry | null> =>
+    getSkinLibraryEntry(id)
   )
 
   ipcMain.handle(

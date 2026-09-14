@@ -27,6 +27,26 @@ export interface MinecraftProfile {
   capes: MinecraftCape[]
 }
 
+/** Model/arm-width choice for a skin upload - "classic" (Steve, 4px arms) or "slim" (Alex, 3px
+ * arms). Was local to `main/auth/skinApi.ts` until the Phase 7 pixel editor + skin library needed
+ * it in main, preload, and renderer alike. */
+export type SkinVariant = 'classic' | 'slim'
+
+/** One entry in the local skin library (`main/skin/skinLibrary.ts`) - the pixel editor's "save"
+ * action writes/updates one of these; the Skins screen lists them for the user to pick which one
+ * to actually wear (`SkinLibraryUse` re-uploads it via the normal Mojang skin endpoint), edit
+ * again, or delete. Purely local bookkeeping - Mojang's account API itself has no concept of
+ * "my saved skins", only ever one active skin. */
+export interface SkinLibraryEntry {
+  id: string
+  name: string
+  variant: SkinVariant
+  createdAt: string
+  /** The skin PNG itself, already as a `data:image/png;base64,...` URI - small enough (a few KB)
+   * that shipping it inline with the list avoids a second IPC round-trip per thumbnail. */
+  dataUri: string
+}
+
 export interface AuthProgressEvent {
   step: 'ms-oauth' | 'xbox-live' | 'xsts' | 'minecraft-login' | 'profile' | 'done' | 'error'
   message: string

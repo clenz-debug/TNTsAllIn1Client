@@ -35,6 +35,14 @@ function sharedVersionDir(versionId: string): string {
   return join(dataRoot(), 'versions', versionId)
 }
 
+/** Where {@link installVersion} puts (and later launches use) the vanilla client jar for a given
+ * version - exported so other code that needs to read something out of an already-downloaded jar
+ * (e.g. `main/skin/defaultTemplate.ts` extracting the built-in Steve/Alex textures) resolves the
+ * exact same path instead of re-deriving the `versions/<id>/<id>.jar` convention by hand. */
+export function sharedClientJarPath(versionId: string): string {
+  return join(sharedVersionDir(versionId), `${versionId}.jar`)
+}
+
 /** Shared home for the Mojang asset store (`indexes/`+`objects/`, typically 1 GB+) - same
  * deduplication reasoning as {@link sharedVersionDir}, just not version-keyed since asset objects
  * are content-addressed by hash already and safely reused across versions too. */
@@ -71,7 +79,7 @@ export async function installVersion(
   onProgress('manifest', 1, 1, versionId)
 
   const dir = instanceDir(instanceId)
-  const clientJarPath = join(sharedVersionDir(detail.id), `${detail.id}.jar`)
+  const clientJarPath = sharedClientJarPath(detail.id)
 
   await downloadAll(
     [{ url: detail.downloads.client.url, destination: clientJarPath, sha1: detail.downloads.client.sha1 }],

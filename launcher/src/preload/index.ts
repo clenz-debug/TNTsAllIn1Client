@@ -7,6 +7,8 @@ import type {
   LaunchProgressEvent,
   LauncherSettings,
   MinecraftProfile,
+  SkinLibraryEntry,
+  SkinVariant,
   StorageInfo,
   StorageMoveProgressEvent,
   UpdateStatus
@@ -36,8 +38,21 @@ const api = {
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
-  uploadSkin: (profile: MinecraftProfile, variant: 'classic' | 'slim'): Promise<MinecraftProfile | null> =>
+  uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<MinecraftProfile | null> =>
     ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
+  loadSkinPngForEditor: (): Promise<{ dataUri: string; width: number; height: number } | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinEditorLoadPng),
+  loadSkinTemplate: (variant: SkinVariant): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinEditorLoadTemplate, variant),
+  exportSkinPng: (pngBytes: ArrayBuffer, suggestedFileName: string): Promise<{ path: string } | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinEditorExportPng, pngBytes, suggestedFileName),
+  listSkinLibrary: (): Promise<SkinLibraryEntry[]> => ipcRenderer.invoke(IpcChannel.SkinLibraryList),
+  saveSkinToLibrary: (pngBytes: ArrayBuffer, variant: SkinVariant, name: string, existingId?: string): Promise<SkinLibraryEntry> =>
+    ipcRenderer.invoke(IpcChannel.SkinLibrarySave, pngBytes, variant, name, existingId),
+  deleteSkinFromLibrary: (id: string): Promise<void> => ipcRenderer.invoke(IpcChannel.SkinLibraryDelete, id),
+  useSkinFromLibrary: (profile: MinecraftProfile, id: string): Promise<MinecraftProfile | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinLibraryUse, profile, id),
+  loadSkinFromLibraryForEdit: (id: string): Promise<SkinLibraryEntry | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinLibraryLoadForEdit, id),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
 

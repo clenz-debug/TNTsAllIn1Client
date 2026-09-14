@@ -5,13 +5,19 @@ import type {
   Instance,
   LaunchProgressEvent,
   MinecraftProfile,
+  SkinLibraryEntry,
   UpdateStatus
 } from '../../../shared/types'
 import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
+import { SkinEditorScreen } from './SkinEditorScreen'
 import { SkinScreen } from './SkinScreen'
+
+/** `'new'` opens the editor blank (template/own-PNG chooser); a `SkinLibraryEntry` opens it
+ * pre-loaded via that entry's "Bearbeiten" button; `null` means the editor isn't open. */
+type SkinEditorRequest = 'new' | SkinLibraryEntry | null
 
 interface Props {
   profile: MinecraftProfile
@@ -26,6 +32,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [showCredits, setShowCredits] = useState(false)
   const [showMods, setShowMods] = useState(false)
   const [showSkin, setShowSkin] = useState(false)
+  const [skinEditorRequest, setSkinEditorRequest] = useState<SkinEditorRequest>(null)
   const [showInstances, setShowInstances] = useState(false)
 
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
@@ -149,8 +156,24 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     )
   }
 
+  if (skinEditorRequest !== null) {
+    return (
+      <SkinEditorScreen
+        editingLibraryEntry={skinEditorRequest === 'new' ? undefined : skinEditorRequest}
+        onClose={() => setSkinEditorRequest(null)}
+      />
+    )
+  }
+
   if (showSkin) {
-    return <SkinScreen profile={profile} onProfileUpdate={onProfileUpdate} onClose={() => setShowSkin(false)} />
+    return (
+      <SkinScreen
+        profile={profile}
+        onProfileUpdate={onProfileUpdate}
+        onClose={() => setShowSkin(false)}
+        onOpenEditor={(entry) => setSkinEditorRequest(entry ?? 'new')}
+      />
+    )
   }
 
   return (
