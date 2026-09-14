@@ -11,6 +11,7 @@ import {
   type LauncherSettings,
   type MinecraftProfile,
   type SkinLibraryEntry,
+  type SkinUploadResult,
   type SkinVariant,
   type StorageInfo,
   type StorageMoveProgressEvent
@@ -34,7 +35,14 @@ import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
 import { loadDefaultSkinTemplate } from '../skin/defaultTemplate'
-import { deleteSkinFromLibrary, getSkinLibraryEntry, listSkinLibrary, readSkinLibraryEntryForUpload, saveSkinToLibrary } from '../skin/skinLibrary'
+import {
+  deleteSkinFromLibrary,
+  getSkinLibraryEntry,
+  listSkinLibrary,
+  readSkinLibraryEntryForUpload,
+  renameSkinInLibrary,
+  saveSkinToLibrary
+} from '../skin/skinLibrary'
 
 function pngBufferToDataUri(buffer: Buffer): string {
   return `data:image/png;base64,${buffer.toString('base64')}`
@@ -127,7 +135,7 @@ export function registerIpcHandlers(): void {
   // the profile and hand it back here to keep auth.json's cached profile in sync too.
   ipcMain.handle(
     IpcChannel.SkinUpload,
-    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, variant: SkinVariant): Promise<MinecraftProfile | null> => {
+    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> => {
       const dialogOptions: Electron.OpenDialogOptions = {
         title: 'Skin-PNG auswählen',
         properties: ['openFile'],
@@ -142,9 +150,20 @@ export function registerIpcHandlers(): void {
       await updateCachedProfile(updatedProfile)
       // So every skin the account has ever worn - regardless of whether it came from this direct
       // upload or the pixel editor - ends up in the "Meine Skins" library, not just editor saves.
-      await saveSkinToLibrary(await readFile(result.filePaths[0]), variant, `Hochgeladen am ${new Date().toLocaleDateString('de-DE')}`)
-      return updatedProfile
+      // Starts with a placeholder name - own user request was to name it *after* picking/uploading
+      // the file, not before, so the renderer immediately follows up with a SkinLibraryRename call
+      // using the id returned here.
+      const libraryEntry = await saveSkinToLibrary(
+        await readFile(result.filePaths[0]),
+        variant,
+        `Hochgeladen am ${new Date().toLocaleDateString('de-DE')}`
+      )
+      return { profile: updatedProfile, libraryEntryId: libraryEntry.id }
     }
+  )
+
+  ipcMain.handle(IpcChannel.SkinLibraryRename, async (_event: IpcMainInvokeEvent, id: string, name: string) =>
+    renameSkinInLibrary(id, name)
   )
 
   ipcMain.handle(IpcChannel.SkinEditorLoadPng, async (event: IpcMainInvokeEvent) => {

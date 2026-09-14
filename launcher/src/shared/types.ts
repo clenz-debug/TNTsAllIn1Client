@@ -47,6 +47,14 @@ export interface SkinLibraryEntry {
   dataUri: string
 }
 
+/** Result of the direct-upload flow (`SkinUpload` IPC) - carries the new library entry's id
+ * alongside the updated profile so the renderer can immediately offer to rename it (own user
+ * request: name the skin *after* picking/uploading the file, not before). */
+export interface SkinUploadResult {
+  profile: MinecraftProfile
+  libraryEntryId: string
+}
+
 export interface AuthProgressEvent {
   step: 'ms-oauth' | 'xbox-live' | 'xsts' | 'minecraft-login' | 'profile' | 'done' | 'error'
   message: string

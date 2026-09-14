@@ -30,6 +30,7 @@ export const IpcChannel = {
   SkinLibraryDelete: 'skin-library:delete',
   SkinLibraryUse: 'skin-library:use',
   SkinLibraryLoadForEdit: 'skin-library:load-for-edit',
+  SkinLibraryRename: 'skin-library:rename',
   StorageInfo: 'storage:info',
   StorageChangeLocation: 'storage:change-location',
   StorageMoveProgress: 'storage:move-progress'

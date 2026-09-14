@@ -114,6 +114,19 @@ export async function getSkinLibraryEntry(id: string): Promise<SkinLibraryEntry 
   }
 }
 
+/** Renames a library entry in place, without touching its PNG - used right after a direct upload
+ * (own user request: name it *after* picking/uploading the file, not before) and available for
+ * any other future "just rename it" need. Returns `null` if the id doesn't exist. */
+export async function renameSkinInLibrary(id: string, name: string): Promise<SkinLibraryEntry | null> {
+  const index = await readIndex()
+  const existing = index.find((entry) => entry.id === id)
+  if (!existing) return null
+  const updated: StoredIndexEntry = { ...existing, name }
+  await writeIndex([...index.filter((entry) => entry.id !== id), updated])
+  const buffer = await readFile(pngPath(id))
+  return { ...updated, dataUri: toDataUri(buffer) }
+}
+
 /** Raw bytes + variant for the "Verwenden" action - reads the PNG directly rather than going
  * through a `data:` URI round-trip, since this feeds straight into `uploadSkinBuffer`. */
 export async function readSkinLibraryEntryForUpload(id: string): Promise<{ buffer: Buffer; variant: SkinVariant } | null> {

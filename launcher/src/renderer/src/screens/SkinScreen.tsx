@@ -36,6 +36,12 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   // one "with/without cape" choice that applies everywhere, not a per-skin setting.
   const [showCape, setShowCape] = useState(true)
   const [variant, setVariant] = useState<SkinVariant>(activeSkin?.variant === 'SLIM' ? 'slim' : 'classic')
+  // Set right after a direct upload succeeds - own user request: name the skin *after* picking/
+  // uploading the file, not before, on its own dedicated screen showing the uploaded skin as a
+  // live 3D model (not just a text prompt). The upload itself starts with a placeholder name;
+  // saving here calls SkinLibraryRename with the id already known from the upload result.
+  const [pendingRename, setPendingRename] = useState<SkinLibraryEntry | null>(null)
+  const [renamingBusy, setRenamingBusy] = useState(false)
   const [library, setLibrary] = useState<SkinLibraryEntry[]>([])
   const [libraryPage, setLibraryPage] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -70,15 +76,33 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     setBusy(true)
     setError(null)
     try {
-      const updated = await window.api.uploadSkin(profile, variant)
-      if (updated) {
-        onProfileUpdate(updated)
-        setLibrary(await window.api.listSkinLibrary())
+      const result = await window.api.uploadSkin(profile, variant)
+      if (result) {
+        onProfileUpdate(result.profile)
+        const updatedLibrary = await window.api.listSkinLibrary()
+        setLibrary(updatedLibrary)
+        const newEntry = updatedLibrary.find((entry) => entry.id === result.libraryEntryId)
+        if (newEntry) setPendingRename(newEntry)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function handleConfirmRename(): Promise<void> {
+    if (!pendingRename) return
+    setRenamingBusy(true)
+    setError(null)
+    try {
+      await window.api.renameSkinInLibrary(pendingRename.id, pendingRename.name)
+      setLibrary(await window.api.listSkinLibrary())
+      setPendingRename(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setRenamingBusy(false)
     }
   }
 
@@ -113,6 +137,43 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   const totalPages = Math.max(1, Math.ceil(library.length / LIBRARY_PAGE_SIZE))
   const safePage = Math.min(libraryPage, totalPages - 1)
   const pageEntries = library.slice(safePage * LIBRARY_PAGE_SIZE, safePage * LIBRARY_PAGE_SIZE + LIBRARY_PAGE_SIZE)
+
+  if (pendingRename) {
+    return (
+      <div className="mods-screen">
+        <header>
+          <strong>Skin benennen</strong>
+          <button className="link-button" onClick={() => setPendingRename(null)}>
+            Zurück
+          </button>
+        </header>
+
+        {error && <span className="error">{error}</span>}
+
+        <section className="mods-section skin-upload-confirm">
+          <SkinModelPreview
+            skinDataUri={pendingRename.dataUri}
+            variant={pendingRename.variant}
+            capeDataUri={null}
+            showCape={false}
+            width={220}
+            height={260}
+          />
+          <input
+            type="text"
+            className="skin-editor-name-input"
+            value={pendingRename.name}
+            onChange={(event) => setPendingRename({ ...pendingRename, name: event.target.value })}
+            placeholder="Name des Skins"
+            autoFocus
+          />
+          <button className="primary-button" disabled={renamingBusy} onClick={() => void handleConfirmRename()}>
+            {renamingBusy ? 'Speichert…' : 'Speichern'}
+          </button>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="mods-screen">

@@ -415,6 +415,18 @@ body {
   margin-top: 0.5rem;
 }
 
+.skin-upload-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.skin-upload-confirm .skin-editor-name-input {
+  max-width: 280px;
+}
+
 .skin-model-canvas {
   image-rendering: pixelated;
   border: 1px solid var(--green-1);

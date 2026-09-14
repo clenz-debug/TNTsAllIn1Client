@@ -8,6 +8,7 @@ import type {
   LauncherSettings,
   MinecraftProfile,
   SkinLibraryEntry,
+  SkinUploadResult,
   SkinVariant,
   StorageInfo,
   StorageMoveProgressEvent,
@@ -38,7 +39,7 @@ const api = {
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
-  uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<MinecraftProfile | null> =>
+  uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> =>
     ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
   loadSkinPngForEditor: (): Promise<{ dataUri: string; width: number; height: number } | null> =>
     ipcRenderer.invoke(IpcChannel.SkinEditorLoadPng),
@@ -53,6 +54,8 @@ const api = {
     ipcRenderer.invoke(IpcChannel.SkinLibraryUse, profile, id),
   loadSkinFromLibraryForEdit: (id: string): Promise<SkinLibraryEntry | null> =>
     ipcRenderer.invoke(IpcChannel.SkinLibraryLoadForEdit, id),
+  renameSkinInLibrary: (id: string, name: string): Promise<SkinLibraryEntry | null> =>
+    ipcRenderer.invoke(IpcChannel.SkinLibraryRename, id, name),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
 
