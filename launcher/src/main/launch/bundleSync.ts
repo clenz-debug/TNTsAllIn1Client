@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
@@ -84,6 +84,51 @@ async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void
   await copyFile(join(libsDir, newest.name), join(destModsDir, newest.name))
 }
 
+/** Reads `mod/gradle.properties`' `minecraft_version` value directly (not via Gradle - this only
+ * needs the one property, spinning up Gradle just to read it would be very slow) - lets dev mode
+ * tell whether `mod/build/libs/`'s current contents were actually built for the version being
+ * launched right now, or are just left over from whichever version the local `mod/` checkout last
+ * targeted. Returns `null` if the file is missing/unparseable (no local `mod/` checkout at all). */
+async function readModGradleMinecraftVersion(resourcesRoot: string): Promise<string | null> {
+  try {
+    const raw = await readFile(join(resourcesRoot, '..', 'mod', 'gradle.properties'), 'utf-8')
+    const match = raw.match(/^minecraft_version=(.+)$/m)
+    return match ? match[1].trim() : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Dev-mode own-mod-jar source for one Minecraft version, multi-version support follow-up: `mod/`
+ * only ever holds one live build at a time (`gradle.properties`' `minecraft_version` decides which),
+ * so testing more than one version locally needs *some* place to keep the others' jars around.
+ * Reuses the exact same `own-mod/<versionId>/` folder packaged builds already use (see `ownModDir`)
+ * as an opt-in snapshot spot - stash a built jar there by hand (same manual step the release runbook
+ * already has you do for a real release) for any version you're not actively iterating on right now.
+ *
+ * Falls back to the live `mod/build/libs/` pull only when no snapshot exists for `versionId` *and*
+ * `mod/gradle.properties`' `minecraft_version` currently matches `versionId` too - so the version
+ * you're actively developing against still auto-picks up every fresh `gradlew build` without a
+ * manual copy step (same anti-staleness reasoning `syncOwnModJar`'s own doc comment already gives
+ * for why dev mode reads live in the first place), but a *different*, not-yet-snapshotted version
+ * doesn't silently get whatever mismatched jar `mod/build/libs/` happens to hold right now - that
+ * would just get rejected by Fabric Loader anyway (confirmed live during this session's own
+ * multi-version testing), just with a much less obvious cause than "no snapshot for this version
+ * yet, own mod skipped" (same no-own-mod-mod behavior `syncOwnModJar` already has for a fresh
+ * checkout that was never built at all).
+ */
+async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string): Promise<string> {
+  const snapshotDir = ownModDir(versionId)
+  const hasSnapshot = await readdir(snapshotDir)
+    .then((entries) => entries.some((name) => name.endsWith('.jar')))
+    .catch(() => false)
+  if (hasSnapshot) return snapshotDir
+
+  const liveTargetVersion = await readModGradleMinecraftVersion(resourcesRoot)
+  return liveTargetVersion === versionId ? join(resourcesRoot, '..', 'mod', 'build', 'libs') : snapshotDir
+}
+
 /**
  * Copies the bundled third-party mod jars, the bundled resourcepack(s), and our own freshly
  * built mod jar into the instance's `game/mods` and `game/resourcepacks` folders on every launch.
@@ -147,10 +192,8 @@ export async function syncBundledContent(
 
   // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/<versionId>/ (see
   // electron-builder.yml) instead of a live sibling mod/build/libs/ - there is no mod/ project at
-  // all once the launcher is actually installed on someone else's machine. The dev-mode branch
-  // stays version-agnostic on purpose: a local `mod/` checkout only ever builds one Minecraft
-  // version at a time anyway (its own fabric.mod.json already enforces that match at launch).
-  const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : join(resourcesRoot, '..', 'mod', 'build', 'libs')
+  // all once the launcher is actually installed on someone else's machine.
+  const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(resourcesRoot, versionId)
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
   await syncBundleDir(bundledResourcepacksDir(versionId), join(gameDir, 'resourcepacks'))

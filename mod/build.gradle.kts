@@ -1,6 +1,7 @@
 val minecraft_version: String by project
 val loader_version: String by project
 val fabric_api_version: String by project
+val java_version: String by project
 
 plugins {
 	id("net.fabricmc.fabric-loom-remap")
@@ -48,6 +49,7 @@ dependencies {
 tasks.processResources {
 	inputs.property("version", project.version)
 	inputs.property("minecraft_version", minecraft_version)
+	inputs.property("java_version", java_version)
 
 	// filteringCharset wasn't previously set explicitly - JDK 21 already defaults to UTF-8, but
 	// fabric.mod.json now contains its first non-ASCII character (the "§" cape-URL token below),
@@ -55,7 +57,7 @@ tasks.processResources {
 	filteringCharset = "UTF-8"
 
 	filesMatching("fabric.mod.json") {
-		expand(mapOf("version" to project.version, "minecraft_version" to minecraft_version))
+		expand(mapOf("version" to project.version, "minecraft_version" to minecraft_version, "java_version" to java_version))
 	}
 
 	// NOTE on fabric.mod.json's "custom.cape.url": deliberately uses "§idNoHyphen" as the
@@ -70,7 +72,7 @@ tasks.processResources {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-	options.release.set(21)
+	options.release.set(java_version.toInt())
 }
 
 java {
@@ -78,8 +80,9 @@ java {
 	// if it is present.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	val javaVersionEnum = JavaVersion.toVersion(java_version)
+	sourceCompatibility = javaVersionEnum
+	targetCompatibility = javaVersionEnum
 }
 
 // configure the maven publication
