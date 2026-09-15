@@ -4,7 +4,9 @@ import type {
   GameVersionSummary,
   Instance,
   LaunchProgressEvent,
+  LauncherSettings,
   MinecraftProfile,
+  ModBundleUpdateInfo,
   SkinLibraryEntry,
   UpdateStatus
 } from '../../../shared/types'
@@ -45,6 +47,13 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   // so this screen's own save-effect below round-trips it unchanged instead of wiping it back to
   // `null` every time showSnapshots/instances/selectedInstanceId change.
   const [dataRootOverride, setDataRootOverride] = useState<string | null>(null)
+  // Same "mirror it, never edit it here" reasoning as `dataRootOverride` above - written directly
+  // by `main/launch/modBundleUpdater.ts#applyModBundleUpdate` (see `handleApplyModBundleUpdate`
+  // below, which re-syncs these two right after a successful apply) rather than through this
+  // screen's own state, so the save-effect needs its own up-to-date copy to round-trip instead of
+  // clobbering a just-applied update back to stale data on the next unrelated save.
+  const [appliedModBundleVersions, setAppliedModBundleVersions] = useState<LauncherSettings['appliedModBundleVersions']>({})
+  const [appliedOwnModVersion, setAppliedOwnModVersion] = useState<string | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -60,6 +69,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         setInstances(settings.instances)
         setSelectedInstanceId(settings.selectedInstanceId)
         setDataRootOverride(settings.dataRootOverride)
+        setAppliedModBundleVersions(settings.appliedModBundleVersions)
+        setAppliedOwnModVersion(settings.appliedOwnModVersion)
         setSettingsLoaded(true)
       })
       .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
@@ -67,8 +78,15 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
 
   useEffect(() => {
     if (!settingsLoaded) return
-    void window.api.saveSettings({ showSnapshots, instances, selectedInstanceId, dataRootOverride })
-  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId, dataRootOverride])
+    void window.api.saveSettings({
+      showSnapshots,
+      instances,
+      selectedInstanceId,
+      dataRootOverride,
+      appliedModBundleVersions,
+      appliedOwnModVersion
+    })
+  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId, dataRootOverride, appliedModBundleVersions, appliedOwnModVersion])
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
     setInstances(newInstances)
@@ -103,6 +121,38 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       setUpdateDismissed(false)
     })
   }, [])
+
+  const [modBundleUpdate, setModBundleUpdate] = useState<ModBundleUpdateInfo | null>(null)
+  const [modBundleUpdateError, setModBundleUpdateError] = useState<string | null>(null)
+  const [applyingModBundleUpdate, setApplyingModBundleUpdate] = useState(false)
+
+  useEffect(() => {
+    // Same "a failed check is never worth surfacing" philosophy as the launcher's own update check
+    // just above - silently no-ops if the manifest isn't reachable yet (e.g. no GitHub release/repo
+    // pushed yet), rather than showing an error banner on every single launch.
+    window.api
+      .checkModBundleUpdate()
+      .then((info) => setModBundleUpdate(info.outdatedMods.length > 0 || info.ownModUpdateAvailable ? info : null))
+      .catch(() => undefined)
+  }, [])
+
+  async function handleApplyModBundleUpdate(): Promise<void> {
+    setApplyingModBundleUpdate(true)
+    setModBundleUpdateError(null)
+    try {
+      const updated = await window.api.applyModBundleUpdate()
+      // Sync this screen's own mirrors immediately - see their declaration above for why: without
+      // this, the next unrelated save-effect run would round-trip the stale pre-apply copy and
+      // clobber what was just written back to disk.
+      setAppliedModBundleVersions(updated.appliedModBundleVersions)
+      setAppliedOwnModVersion(updated.appliedOwnModVersion)
+      setModBundleUpdate(null)
+    } catch (err) {
+      setModBundleUpdateError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setApplyingModBundleUpdate(false)
+    }
+  }
 
   async function handlePlay(): Promise<void> {
     if (!selectedInstance) return
@@ -187,9 +237,6 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
           <button className="link-button" onClick={() => setShowSkin(true)}>
             Skin
           </button>
-          <button className="link-button" onClick={() => setShowMods(true)} disabled={!selectedInstance}>
-            Mods
-          </button>
           <button className="link-button" onClick={() => setShowCredits(true)}>
             Credits
           </button>
@@ -225,6 +272,26 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         </div>
       )}
 
+      {modBundleUpdate && (
+        <div className="update-banner">
+          <span>
+            Neue Mod-Bundle-Version verfügbar (
+            {[...modBundleUpdate.outdatedMods.map((entry) => entry.name), ...(modBundleUpdate.ownModUpdateAvailable ? ['eigener Mod'] : [])].join(
+              ', '
+            )}
+            ).{modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
+          </span>
+          <div className="header-actions">
+            <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => void handleApplyModBundleUpdate()}>
+              {applyingModBundleUpdate ? 'Wird aktualisiert…' : 'Aktualisieren'}
+            </button>
+            <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => setModBundleUpdate(null)}>
+              Ausblenden
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="version-picker">
         <label htmlFor="instance-select">Instanz</label>
         <select
@@ -242,6 +309,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         </select>
         <button className="secondary-button" onClick={() => setShowInstances(true)} disabled={busy}>
           Instanzen verwalten…
+        </button>
+        <button className="secondary-button" onClick={() => setShowMods(true)} disabled={busy || !selectedInstance}>
+          Mods…
         </button>
         {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
         {instances.length === 0 && (

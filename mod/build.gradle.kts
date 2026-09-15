@@ -48,9 +48,24 @@ dependencies {
 tasks.processResources {
 	inputs.property("version", project.version)
 
+	// filteringCharset wasn't previously set explicitly - JDK 21 already defaults to UTF-8, but
+	// fabric.mod.json now contains its first non-ASCII character (the "§" cape-URL token below),
+	// so pin this rather than rely on the platform default.
+	filteringCharset = "UTF-8"
+
 	filesMatching("fabric.mod.json") {
 		expand(mapOf("version" to project.version))
 	}
+
+	// NOTE on fabric.mod.json's "custom.cape.url": deliberately uses "§idNoHyphen" as the
+	// placeholder token, not "$idNoHyphen" - the `expand()` call above runs the *entire* file
+	// through Groovy's SimpleTemplateEngine, which treats any literal "$identifier" as a template
+	// reference and would either fail the build (MissingPropertyException) or silently substitute
+	// something wrong. "§" isn't special to that engine, so it survives expand() untouched and
+	// Cape Provider reads it as its own per-player placeholder instead (see its README - "$" needs
+	// escaping there for exactly this reason, "§" is its documented alternative).
+	// Also, the bucket host/name in that URL is a placeholder (see launcher/.env.example) until the
+	// real Backblaze B2 bucket exists - update both together once it does.
 }
 
 tasks.withType<JavaCompile>().configureEach {

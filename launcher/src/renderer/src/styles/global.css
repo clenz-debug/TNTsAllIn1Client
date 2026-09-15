@@ -288,6 +288,80 @@ body {
   padding: 0.5rem 0;
 }
 
+.mods-search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mods-search-row .skin-editor-name-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.mods-sort-select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--green-2);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+.mods-search-results {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.mods-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.mods-pagination-page {
+  min-width: 2.2rem;
+  padding: 0.4rem 0.5rem;
+}
+
+.mods-pagination-active {
+  border-color: var(--green-3);
+  color: var(--green-3);
+}
+
+.mods-pagination-ellipsis {
+  color: var(--text-dim);
+  padding: 0 0.2rem;
+}
+
+.mods-search-row-item {
+  justify-content: flex-start;
+}
+
+.mods-search-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.mods-search-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.mods-search-description {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .instances-screen {
   height: 100%;
   display: flex;

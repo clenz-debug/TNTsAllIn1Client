@@ -17,7 +17,12 @@ export const IpcChannel = {
   ModsListCustom: 'mods:list-custom',
   ModsAddCustom: 'mods:add-custom',
   ModsRemoveCustom: 'mods:remove-custom',
+  ModsSearchModrinth: 'mods:search-modrinth',
+  ModsInstallModrinthMod: 'mods:install-modrinth-mod',
   InstancesDelete: 'instances:delete',
+  InstancesClone: 'instances:clone',
+  ClientImportPickFolder: 'client-import:pick-folder',
+  ClientImportApply: 'client-import:apply',
   UpdateStatus: 'update:status',
   UpdateInstallNow: 'update:install-now',
   SkinFetchTexture: 'skin:fetch-texture',
@@ -33,5 +38,11 @@ export const IpcChannel = {
   SkinLibraryRename: 'skin-library:rename',
   StorageInfo: 'storage:info',
   StorageChangeLocation: 'storage:change-location',
-  StorageMoveProgress: 'storage:move-progress'
+  StorageMoveProgress: 'storage:move-progress',
+  CapeSelectPng: 'cape:select-png',
+  CapeUpload: 'cape:upload',
+  CapeDelete: 'cape:delete',
+  CapeStatus: 'cape:status',
+  ModBundleCheckUpdate: 'mod-bundle:check-update',
+  ModBundleApplyUpdate: 'mod-bundle:apply-update'
 } as const

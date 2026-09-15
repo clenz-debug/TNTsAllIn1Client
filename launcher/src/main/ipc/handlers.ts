@@ -6,10 +6,16 @@ import { IpcChannel } from '../../shared/ipc'
 import {
   isBundleCompatibleVersion,
   MINECRAFT_VERSION,
+  type CapeUploadResult,
+  type ClientImportResult,
+  type CustomCapeStatus,
   type GameLogEvent,
   type LaunchStage,
   type LauncherSettings,
   type MinecraftProfile,
+  type ModBundleUpdateInfo,
+  type ModrinthSearchPage,
+  type ModrinthSortIndex,
   type SkinLibraryEntry,
   type SkinUploadResult,
   type SkinVariant,
@@ -20,15 +26,19 @@ import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, loadPngFileForEditor, uploadSkin, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
+import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
+import { importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
 import { installFabricLoader } from '../launch/fabricInstaller'
 import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
-import { deleteInstance } from '../launch/instanceManager'
+import { cloneInstance, deleteInstance } from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
+import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
+import { installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
@@ -104,8 +114,39 @@ export function registerIpcHandlers(): void {
     removeCustomMod(instanceId, fileName)
   )
 
+  ipcMain.handle(
+    IpcChannel.ModsSearchModrinth,
+    async (
+      _event: IpcMainInvokeEvent,
+      query: string,
+      gameVersion: string,
+      offset: number,
+      sortIndex: ModrinthSortIndex
+    ): Promise<ModrinthSearchPage> => searchModrinthMods(query, gameVersion, offset, sortIndex)
+  )
+
+  ipcMain.handle(
+    IpcChannel.ModsInstallModrinthMod,
+    async (_event: IpcMainInvokeEvent, instanceId: string, projectId: string, gameVersion: string) =>
+      installModrinthMod(instanceId, projectId, gameVersion)
+  )
+
   ipcMain.handle(IpcChannel.InstancesDelete, async (_event: IpcMainInvokeEvent, instanceId: string) =>
     deleteInstance(instanceId)
+  )
+
+  ipcMain.handle(IpcChannel.InstancesClone, async (_event: IpcMainInvokeEvent, instanceId: string, newName: string) =>
+    cloneInstance(instanceId, newName)
+  )
+
+  ipcMain.handle(IpcChannel.ClientImportPickFolder, async (event: IpcMainInvokeEvent) =>
+    pickExternalClientFolder(BrowserWindow.fromWebContents(event.sender))
+  )
+
+  ipcMain.handle(
+    IpcChannel.ClientImportApply,
+    async (_event: IpcMainInvokeEvent, sourceFolder: string, instanceId: string): Promise<ClientImportResult> =>
+      importFromExternalClient(sourceFolder, instanceId)
   )
 
   ipcMain.handle(IpcChannel.UpdateInstallNow, async () => installUpdateNow())
@@ -218,6 +259,32 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.SkinLibraryLoadForEdit, async (_event: IpcMainInvokeEvent, id: string): Promise<SkinLibraryEntry | null> =>
     getSkinLibraryEntry(id)
   )
+
+  ipcMain.handle(IpcChannel.CapeSelectPng, async (event: IpcMainInvokeEvent) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    const result = await loadCapePngForPreview(window)
+    return result ? { dataUri: pngBufferToDataUri(result.buffer), width: result.width, height: result.height } : null
+  })
+
+  ipcMain.handle(
+    IpcChannel.CapeUpload,
+    async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, pngDataUri: string): Promise<CapeUploadResult> => {
+      const base64 = pngDataUri.split(',')[1] ?? ''
+      return uploadCustomCape(profile.id, Buffer.from(base64, 'base64'))
+    }
+  )
+
+  ipcMain.handle(IpcChannel.CapeDelete, async (_event: IpcMainInvokeEvent, profile: MinecraftProfile): Promise<void> =>
+    deleteCustomCape(profile.id)
+  )
+
+  ipcMain.handle(IpcChannel.CapeStatus, async (_event: IpcMainInvokeEvent, profile: MinecraftProfile): Promise<CustomCapeStatus> =>
+    getCustomCapeStatus(profile.id)
+  )
+
+  ipcMain.handle(IpcChannel.ModBundleCheckUpdate, async (): Promise<ModBundleUpdateInfo> => checkForModBundleUpdate())
+
+  ipcMain.handle(IpcChannel.ModBundleApplyUpdate, async (): Promise<LauncherSettings> => applyModBundleUpdate())
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,

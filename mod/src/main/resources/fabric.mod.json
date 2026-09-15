@@ -27,5 +27,10 @@
 		"fabric-api": "*",
 		"continuity": ">=3.0.1-beta.1",
 		"skinlayers3d": ">=1.11.2"
+	},
+	"custom": {
+		"cape": {
+			"url": "https://f004.backblazeb2.com/file/tnts-client-capes/§idNoHyphen.png"
+		}
 	}
 }

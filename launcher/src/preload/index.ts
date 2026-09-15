@@ -2,11 +2,17 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel } from '../shared/ipc'
 import type {
   AuthProgressEvent,
+  CapeUploadResult,
+  ClientImportResult,
+  CustomCapeStatus,
   GameLogEvent,
   GameVersionSummary,
   LaunchProgressEvent,
   LauncherSettings,
   MinecraftProfile,
+  ModBundleUpdateInfo,
+  ModrinthSearchPage,
+  ModrinthSortIndex,
   SkinLibraryEntry,
   SkinUploadResult,
   SkinVariant,
@@ -36,7 +42,16 @@ const api = {
   addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
   removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, instanceId, fileName),
+  searchModrinthMods: (query: string, gameVersion: string, offset: number, sortIndex: ModrinthSortIndex): Promise<ModrinthSearchPage> =>
+    ipcRenderer.invoke(IpcChannel.ModsSearchModrinth, query, gameVersion, offset, sortIndex),
+  installModrinthMod: (instanceId: string, projectId: string, gameVersion: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsInstallModrinthMod, instanceId, projectId, gameVersion),
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
+  cloneInstance: (instanceId: string, newName: string): Promise<LauncherSettings> =>
+    ipcRenderer.invoke(IpcChannel.InstancesClone, instanceId, newName),
+  pickExternalClientFolder: (): Promise<string | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
+  importFromExternalClient: (sourceFolder: string, instanceId: string): Promise<ClientImportResult> =>
+    ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
   uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> =>
@@ -56,6 +71,14 @@ const api = {
     ipcRenderer.invoke(IpcChannel.SkinLibraryLoadForEdit, id),
   renameSkinInLibrary: (id: string, name: string): Promise<SkinLibraryEntry | null> =>
     ipcRenderer.invoke(IpcChannel.SkinLibraryRename, id, name),
+  selectCapePng: (): Promise<{ dataUri: string; width: number; height: number } | null> =>
+    ipcRenderer.invoke(IpcChannel.CapeSelectPng),
+  uploadCape: (profile: MinecraftProfile, pngDataUri: string): Promise<CapeUploadResult> =>
+    ipcRenderer.invoke(IpcChannel.CapeUpload, profile, pngDataUri),
+  deleteCape: (profile: MinecraftProfile): Promise<void> => ipcRenderer.invoke(IpcChannel.CapeDelete, profile),
+  getCapeStatus: (profile: MinecraftProfile): Promise<CustomCapeStatus> => ipcRenderer.invoke(IpcChannel.CapeStatus, profile),
+  checkModBundleUpdate: (): Promise<ModBundleUpdateInfo> => ipcRenderer.invoke(IpcChannel.ModBundleCheckUpdate),
+  applyModBundleUpdate: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.ModBundleApplyUpdate),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
+import type { CustomCapeStatus, MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
 
 interface Props {
@@ -17,6 +17,22 @@ interface Props {
  * skins accumulate over time - only the current page's entries ever get a `SkinModelPreview`
  * mounted, the rest are plain data until paged into view. */
 const LIBRARY_PAGE_SIZE = 6
+
+/** Mojang's texture CDN can take a moment to actually start serving a just-uploaded skin's brand
+ * new URL - fetching it the instant the upload call returns occasionally 404s/errors even though
+ * the account API itself already reports the new skin as ACTIVE. Retrying a few times with a
+ * short pause gives that a chance to catch up instead of the preview silently staying stuck. */
+async function fetchSkinTextureWithRetry(url: string, attempts = 5, delayMs = 1000): Promise<string> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await window.api.fetchSkinTexture(url)
+    } catch (err) {
+      if (attempt === attempts) throw err
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+  }
+  throw new Error('unreachable')
+}
 
 /** Phase 7, step 1 of the roadmap's three-part order: view the current skin/cape and upload a
  * replacement PNG. Step 3 (the pixel editor, `SkinEditorScreen`) added a "Meine Skins" library
@@ -36,6 +52,12 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   // one "with/without cape" choice that applies everywhere, not a per-skin setting.
   const [showCape, setShowCape] = useState(true)
   const [variant, setVariant] = useState<SkinVariant>(activeSkin?.variant === 'SLIM' ? 'slim' : 'classic')
+  // Bumped by every action that changes which skin is active (upload, "Verwenden") - forces the
+  // preview effect below to refetch even if `activeSkin.url` happens to come back unchanged (own
+  // user request after "Verwenden" didn't visibly update the 3D model): Mojang's skin URLs are
+  // content-hashed, so switching to a skin whose bytes match one already seen would otherwise
+  // never re-trigger a fetch by URL alone.
+  const [skinRevision, setSkinRevision] = useState(0)
   // Set right after a direct upload succeeds - own user request: name the skin *after* picking/
   // uploading the file, not before, on its own dedicated screen showing the uploaded skin as a
   // live 3D model (not just a text prompt). The upload itself starts with a placeholder name;
@@ -48,14 +70,22 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   const [busyLibraryId, setBusyLibraryId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Own, unrelated cosmetic system (Backblaze B2 + the bundled "Cape Provider" mod) - completely
+  // separate from Mojang's own cape above, which is why this lives in its own state/section rather
+  // than reusing `activeCape`/`capePreview`. `pendingCape` holds a picked-but-not-yet-uploaded PNG
+  // for the confirm/preview step, same two-step flow the skin library's `pendingRename` uses.
+  const [customCape, setCustomCape] = useState<CustomCapeStatus>({ exists: false, dataUri: null })
+  const [pendingCape, setPendingCape] = useState<{ dataUri: string; width: number; height: number } | null>(null)
+  const [capeBusy, setCapeBusy] = useState(false)
+  const [capeError, setCapeError] = useState<string | null>(null)
+
   useEffect(() => {
     setSkinPreview(null)
     if (!activeSkin) return
-    window.api
-      .fetchSkinTexture(activeSkin.url)
+    fetchSkinTextureWithRetry(activeSkin.url)
       .then(setSkinPreview)
       .catch((err) => setError(err instanceof Error ? err.message : String(err)))
-  }, [activeSkin?.url])
+  }, [activeSkin?.url, skinRevision])
 
   useEffect(() => {
     setCapePreview(null)
@@ -72,6 +102,16 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       .catch((err) => setError(err instanceof Error ? err.message : String(err)))
   }, [])
 
+  useEffect(() => {
+    // A missing/not-yet-configured custom cape isn't worth alarming the user with on every screen
+    // open - same "silently swallow, secondary information" reasoning as the Mojang capePreview
+    // effect above.
+    window.api
+      .getCapeStatus(profile)
+      .then(setCustomCape)
+      .catch(() => undefined)
+  }, [profile.id])
+
   async function handleUpload(): Promise<void> {
     setBusy(true)
     setError(null)
@@ -79,6 +119,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       const result = await window.api.uploadSkin(profile, variant)
       if (result) {
         onProfileUpdate(result.profile)
+        setSkinRevision((r) => r + 1)
         const updatedLibrary = await window.api.listSkinLibrary()
         setLibrary(updatedLibrary)
         const newEntry = updatedLibrary.find((entry) => entry.id === result.libraryEntryId)
@@ -111,7 +152,10 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     setError(null)
     try {
       const updated = await window.api.useSkinFromLibrary(profile, id)
-      if (updated) onProfileUpdate(updated)
+      if (updated) {
+        onProfileUpdate(updated)
+        setSkinRevision((r) => r + 1)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -131,6 +175,46 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusyLibraryId(null)
+    }
+  }
+
+  async function handleSelectCapePng(): Promise<void> {
+    setCapeError(null)
+    try {
+      const picked = await window.api.selectCapePng()
+      if (picked) setPendingCape(picked)
+    } catch (err) {
+      setCapeError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  async function handleConfirmCapeUpload(): Promise<void> {
+    if (!pendingCape) return
+    setCapeBusy(true)
+    setCapeError(null)
+    try {
+      const result = await window.api.uploadCape(profile, pendingCape.dataUri)
+      setCustomCape({ exists: true, dataUri: result.dataUri })
+      setPendingCape(null)
+    } catch (err) {
+      setCapeError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setCapeBusy(false)
+    }
+  }
+
+  async function handleRemoveCape(): Promise<void> {
+    const confirmed = window.confirm('Eigenes Cape wirklich entfernen?')
+    if (!confirmed) return
+    setCapeBusy(true)
+    setCapeError(null)
+    try {
+      await window.api.deleteCape(profile)
+      setCustomCape({ exists: false, dataUri: null })
+    } catch (err) {
+      setCapeError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setCapeBusy(false)
     }
   }
 
@@ -298,6 +382,50 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
             {busy ? 'Lädt hoch…' : 'PNG auswählen & hochladen'}
           </button>
         </div>
+      </section>
+
+      <section className="mods-section">
+        <h3>Eigenes Cape (Cape Provider)</h3>
+        <p className="version-warning">
+          Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter
+          "Gebündelte Mods" zuschaltbar. Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben.
+        </p>
+        {capeError && <span className="error">{capeError}</span>}
+
+        {skinPreview ? (
+          <SkinModelPreview
+            skinDataUri={skinPreview}
+            variant={activeSkinVariant}
+            capeDataUri={pendingCape?.dataUri ?? customCape.dataUri}
+            showCape={true}
+            width={200}
+            height={240}
+          />
+        ) : (
+          <p>Lädt…</p>
+        )}
+
+        {pendingCape ? (
+          <div>
+            <button className="primary-button" disabled={capeBusy} onClick={() => void handleConfirmCapeUpload()}>
+              {capeBusy ? 'Lädt hoch…' : 'Hochladen'}
+            </button>
+            <button className="link-button" disabled={capeBusy} onClick={() => setPendingCape(null)}>
+              Abbrechen
+            </button>
+          </div>
+        ) : (
+          <div>
+            <button className="secondary-button" onClick={() => void handleSelectCapePng()}>
+              Cape-PNG auswählen
+            </button>
+            {customCape.exists && (
+              <button className="link-button" disabled={capeBusy} onClick={() => void handleRemoveCape()}>
+                Entfernen
+              </button>
+            )}
+          </div>
+        )}
       </section>
     </div>
   )

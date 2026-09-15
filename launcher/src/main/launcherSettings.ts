@@ -79,7 +79,9 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
         showSnapshots: parsed.showSnapshots ?? DEFAULT_LAUNCHER_SETTINGS.showSnapshots,
         instances: migrated,
         selectedInstanceId: migrated[0]?.id ?? null,
-        dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride
+        dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride,
+        appliedModBundleVersions: parsed.appliedModBundleVersions ?? DEFAULT_LAUNCHER_SETTINGS.appliedModBundleVersions,
+        appliedOwnModVersion: parsed.appliedOwnModVersion ?? DEFAULT_LAUNCHER_SETTINGS.appliedOwnModVersion
       }
       await saveLauncherSettings(settings)
       return settings

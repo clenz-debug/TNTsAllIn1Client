@@ -1,5 +1,39 @@
 import { useEffect, useState } from 'react'
-import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
+import {
+  isBundleCompatibleVersion,
+  MINECRAFT_VERSION,
+  MODRINTH_SEARCH_PAGE_SIZE,
+  type ModrinthSearchResult,
+  type ModrinthSortIndex
+} from '../../../shared/types'
+
+const SORT_OPTIONS: { value: ModrinthSortIndex; label: string }[] = [
+  { value: 'relevance', label: 'Relevanz' },
+  { value: 'downloads', label: 'Downloads' },
+  { value: 'follows', label: 'Follower' },
+  { value: 'newest', label: 'Neueste' },
+  { value: 'updated', label: 'Kürzlich aktualisiert' }
+]
+
+// Debounce for search-as-you-type (mirrors Modrinth's own browse view, which updates the list as
+// you type instead of requiring Enter/a button click) - short enough to feel live, long enough to
+// not fire a request per keystroke.
+const SEARCH_DEBOUNCE_MS = 350
+
+/** Page numbers to render around `current`, always including page 1 and `total`, with 'ellipsis'
+ * markers for the gaps - same "1 2 … 262" shape as Modrinth's own pagination. */
+function buildPageNumbers(current: number, total: number): (number | 'ellipsis')[] {
+  const keep = new Set<number>([1, total, current - 1, current, current + 1])
+  const sorted = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b)
+  const result: (number | 'ellipsis')[] = []
+  let previous = 0
+  for (const page of sorted) {
+    if (previous && page - previous > 1) result.push('ellipsis')
+    result.push(page)
+    previous = page
+  }
+  return result
+}
 
 interface Props {
   instanceId: string
@@ -15,12 +49,27 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortIndex, setSortIndex] = useState<ModrinthSortIndex>('relevance')
+  const [searchResults, setSearchResults] = useState<ModrinthSearchResult[]>([])
+  const [totalHits, setTotalHits] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searching, setSearching] = useState(false)
+  const [installingId, setInstallingId] = useState<string | null>(null)
+  // Projects installed from this browsing session - own user request: the "Installieren" button
+  // otherwise reverted to its normal state right after a successful install, looking as if nothing
+  // had happened. Not persisted (resets on reopening the Mods screen) - there's no stored mapping
+  // from a Modrinth project id back to which installed jar filename came from it, so this can only
+  // track "installed just now, this session", not "already installed" for results seen fresh.
+  const [installedProjectIds, setInstalledProjectIds] = useState<Set<string>>(new Set())
+
   useEffect(() => {
     window.api.listBundledMods().then(setBundledMods).catch((err) => setError(String(err)))
   }, [])
 
   useEffect(() => {
     window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(String(err)))
+    setInstalledProjectIds(new Set())
   }, [instanceId])
 
   async function handleAdd(): Promise<void> {
@@ -42,6 +91,47 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function runSearch(pageNumber: number): Promise<void> {
+    if (!isBundleCompatibleVersion(versionId)) return
+    setSearching(true)
+    setError(null)
+    try {
+      const offset = (pageNumber - 1) * MODRINTH_SEARCH_PAGE_SIZE
+      const page = await window.api.searchModrinthMods(searchQuery.trim(), versionId, offset, sortIndex)
+      setSearchResults(page.results)
+      setTotalHits(page.totalHits)
+      setCurrentPage(pageNumber)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  // Browse by default (empty query = Modrinth's full listing for this game version, same as
+  // opening modrinth.com/app's own "Discover content" view) and re-run live as the user types or
+  // changes the sort, instead of requiring a manual search - own user request. A query/sort change
+  // always jumps back to page 1, since the previous page's offset no longer means anything for a
+  // different result set.
+  useEffect(() => {
+    const handle = setTimeout(() => void runSearch(1), SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(handle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, sortIndex, versionId])
+
+  async function handleInstall(projectId: string): Promise<void> {
+    setInstallingId(projectId)
+    setError(null)
+    try {
+      setCustomMods(await window.api.installModrinthMod(instanceId, projectId, versionId))
+      setInstalledProjectIds((prev) => new Set(prev).add(projectId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setInstallingId(null)
     }
   }
 
@@ -88,6 +178,106 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
             </li>
           )}
         </ul>
+      </section>
+
+      <section className="mods-section">
+        <h3>Mods durchsuchen &amp; entdecken</h3>
+        {!isBundleCompatibleVersion(versionId) ? (
+          <p className="version-warning">
+            Modrinth-Suche ist nur für {MINECRAFT_VERSION} verfügbar, {versionId} nutzt kein Fabric.
+          </p>
+        ) : (
+          <>
+            <div className="mods-search-row">
+              <input
+                type="text"
+                className="skin-editor-name-input"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') void runSearch(1)
+                }}
+                placeholder="Mods durchsuchen (leer lassen zum Durchstöbern)…"
+              />
+              <select
+                className="mods-sort-select"
+                value={sortIndex}
+                onChange={(event) => setSortIndex(event.target.value as ModrinthSortIndex)}
+                aria-label="Sortierung"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <button className="secondary-button" onClick={() => void runSearch(1)} disabled={searching}>
+                {searching ? 'Sucht…' : 'Suchen'}
+              </button>
+            </div>
+            <ul className="mods-list mods-search-results">
+              {searchResults.map((result) => (
+                <li key={result.projectId} className="mods-row mods-search-row-item">
+                  {result.iconDataUri && <img className="mods-search-icon" src={result.iconDataUri} alt="" />}
+                  <div className="mods-search-info">
+                    <strong>{result.title}</strong>
+                    <span className="mods-search-description">{result.description}</span>
+                  </div>
+                  <button
+                    className="secondary-button"
+                    disabled={installingId === result.projectId || installedProjectIds.has(result.projectId)}
+                    onClick={() => void handleInstall(result.projectId)}
+                  >
+                    {installedProjectIds.has(result.projectId)
+                      ? 'Installiert'
+                      : installingId === result.projectId
+                        ? 'Wird installiert…'
+                        : 'Installieren'}
+                  </button>
+                </li>
+              ))}
+              {searchResults.length === 0 && !searching && <li className="mods-empty">Keine Mods gefunden.</li>}
+            </ul>
+            {totalHits > MODRINTH_SEARCH_PAGE_SIZE &&
+              (() => {
+                const totalPages = Math.ceil(totalHits / MODRINTH_SEARCH_PAGE_SIZE)
+                return (
+                  <nav className="mods-pagination" aria-label="Seiten">
+                    <button
+                      className="secondary-button"
+                      disabled={searching || currentPage <= 1}
+                      onClick={() => void runSearch(currentPage - 1)}
+                    >
+                      ‹
+                    </button>
+                    {buildPageNumbers(currentPage, totalPages).map((page, index) =>
+                      page === 'ellipsis' ? (
+                        <span key={`ellipsis-${index}`} className="mods-pagination-ellipsis">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          className={`secondary-button mods-pagination-page${page === currentPage ? ' mods-pagination-active' : ''}`}
+                          disabled={searching || page === currentPage}
+                          onClick={() => void runSearch(page)}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                    <button
+                      className="secondary-button"
+                      disabled={searching || currentPage >= totalPages}
+                      onClick={() => void runSearch(currentPage + 1)}
+                    >
+                      ›
+                    </button>
+                  </nav>
+                )
+              })()}
+          </>
+        )}
       </section>
 
       <section className="mods-section">

@@ -2,7 +2,11 @@ import { app } from 'electron'
 import { copyFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-function sharedOptionsPath(): string {
+/** Exported (not just used internally) so `clientImport.ts` can copy an external client's
+ * `options.txt` straight into the same shared cache every instance already reads from/writes to -
+ * see that module's own doc comment for why importing into just the new instance's own folder
+ * would be silently overwritten on its first launch. */
+export function sharedOptionsPath(): string {
   return join(app.getPath('userData'), 'shared-settings', 'options.txt')
 }
 

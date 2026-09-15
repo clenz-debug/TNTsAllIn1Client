@@ -32,6 +32,12 @@ export function SkinModelPreview({ skinDataUri, variant, capeDataUri, showCape, 
       model: variant === 'slim' ? 'slim' : 'default'
     })
     viewerRef.current = viewer
+    // A fresh viewer starts cape-less - without this, switching skins (which recreates the viewer)
+    // made the cape silently disappear until `showCape`/`capeDataUri` themselves happened to
+    // change, since that's a separate effect keyed on different deps that wouldn't rerun here.
+    if (capeDataUri && showCape) {
+      void viewer.loadCape(capeDataUri, { backEquipment: 'cape' })
+    }
     return () => {
       viewer.dispose()
       viewerRef.current = null

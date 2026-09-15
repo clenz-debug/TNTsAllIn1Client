@@ -107,6 +107,57 @@ export interface GameVersionSummary {
   releaseTime: string
 }
 
+/** One Modrinth search hit, trimmed to what the "Mods durchsuchen" section actually shows (own
+ * user request, modeled on how Dawn Client lets you search/install mods without leaving the
+ * launcher). `iconDataUri` is already fetched and re-encoded by the main process - the renderer's
+ * CSP only allows `img-src 'self' data:'`, same reasoning as `fetchSkinTexture`. */
+export interface ModrinthSearchResult {
+  projectId: string
+  title: string
+  description: string
+  downloads: number
+  iconDataUri: string | null
+}
+
+/** Sort orders Modrinth's `/search` endpoint accepts via `index=` - same options as the sort
+ * dropdown on modrinth.com/app's own browse view. */
+export type ModrinthSortIndex = 'relevance' | 'downloads' | 'follows' | 'newest' | 'updated'
+
+/** Results per page for the Modrinth browse/search view - shared so the renderer's page-number
+ * math (`totalHits / MODRINTH_SEARCH_PAGE_SIZE`) always matches what the main process actually
+ * requests from Modrinth's `limit=` param. */
+export const MODRINTH_SEARCH_PAGE_SIZE = 20
+
+/** One page of a Modrinth browse/search request - `totalHits` lets the renderer know whether a
+ * "load more" button still has anything to fetch. */
+export interface ModrinthSearchPage {
+  results: ModrinthSearchResult[]
+  totalHits: number
+}
+
+/** Result of a successful custom-cape upload (`main/cape/capeStorage.ts`) - `url` is the public
+ * Backblaze B2 URL baked into the bundled "Cape Provider" mod's lookup template, `dataUri` is the
+ * same PNG re-encoded for an immediate `SkinModelPreview` refresh without a second network round
+ * trip. */
+export interface CapeUploadResult {
+  url: string
+  dataUri: string
+}
+
+/** Whether the current account has a custom cape stored in our B2 bucket - `dataUri` is set
+ * whenever `exists` is true, so the renderer never needs a separate fetch just to preview it. */
+export interface CustomCapeStatus {
+  exists: boolean
+  dataUri: string | null
+}
+
+/** Result of importing settings/mods from another client's folder (`main/launch/clientImport.ts`)
+ * - reported back to the renderer so it can show a short summary ("3 Mods übernommen", ...). */
+export interface ClientImportResult {
+  importedOptions: boolean
+  copiedMods: string[]
+}
+
 /** A single named instance (own user request: "statt einem Wechsel der Version ein System... das
  * man einzelne Instanzen erstellen kann", so e.g. the same Minecraft version can exist twice - once
  * with a mod, once without - without constantly toggling mods back and forth on one shared folder).
@@ -141,13 +192,64 @@ export interface LauncherSettings {
    * Never covers `launcher-settings.json`/`auth.json`/`shared-settings/` themselves, which always
    * stay at the fixed OS profile folder. */
   dataRootOverride: string | null
+  /** What `main/launch/modBundleUpdater.ts` last successfully wrote into `mods-bundle/`, keyed by
+   * the manifest's `name` - lets a later check tell "already applied" apart from "manifest pins a
+   * different version now" without re-inspecting the filesystem. */
+  appliedModBundleVersions: Record<string, AppliedModBundleEntry>
+  /** Mirrors `appliedModBundleVersions` for the one non-Modrinth entry (`ModBundleManifest.ownMod`,
+   * our own mod jar) - just the version string, since there's no separate project/version id pair
+   * to track for it. */
+  appliedOwnModVersion: string | null
 }
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   showSnapshots: false,
   instances: [],
   selectedInstanceId: null,
-  dataRootOverride: null
+  dataRootOverride: null,
+  appliedModBundleVersions: {},
+  appliedOwnModVersion: null
+}
+
+/** One pinned third-party mod entry in `mod-bundle-manifest.json` (repo root) - only references a
+ * Modrinth project+version id, never a URL/hash directly; those are always resolved fresh against
+ * Modrinth's own `/v2/version/<id>` at check/apply time (`main/launch/modBundleUpdater.ts`), so the
+ * manifest itself can never go stale if Modrinth ever changes its CDN URLs. */
+export interface BundledModPin {
+  name: string
+  modrinthProjectId: string
+  modrinthVersionId: string
+}
+
+/** The mod-bundle auto-update manifest (`mod-bundle-manifest.json`, fetched via
+ * raw.githubusercontent.com) - hand-maintained by the developer, pins exactly which build of each
+ * bundled mod is currently approved, not just "whatever's newest on Modrinth" (Phase 9's roadmap
+ * text calls this a "self-controlled manifest" on purpose). `ownMod` is `null` until a real GitHub
+ * release with the own mod jar attached actually exists. */
+export interface ModBundleManifest {
+  minecraftVersion: string
+  ownMod: { version: string; url: string; sha1: string } | null
+  bundledMods: BundledModPin[]
+}
+
+/** What `modBundleUpdater.ts` actually wrote for one bundled mod - the filename too, not just the
+ * version id, so a version bump (which changes the Modrinth filename) can delete the old file
+ * instead of leaving it sitting alongside the new one. */
+export interface AppliedModBundleEntry {
+  versionId: string
+  fileName: string
+}
+
+/** One manifest entry whose pinned version doesn't match what's currently applied. */
+export interface ModBundleUpdateEntry {
+  name: string
+  currentVersionId: string | null
+  pinnedVersionId: string
+}
+
+export interface ModBundleUpdateInfo {
+  outdatedMods: ModBundleUpdateEntry[]
+  ownModUpdateAvailable: boolean
 }
 
 /** Current storage location + free space, shown in the Instances screen's "Speicherort" section

@@ -66,6 +66,10 @@ export function InstancesScreen({
   // confirm() worked fine while "Umbenennen"'s prompt() silently did nothing at all).
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameDraft, setRenameDraft] = useState('')
+  const [cloningId, setCloningId] = useState<string | null>(null)
+
+  const [importBusy, setImportBusy] = useState(false)
+  const [importResult, setImportResult] = useState<string | null>(null)
 
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
   const [moveProgress, setMoveProgress] = useState<StorageMoveProgressEvent | null>(null)
@@ -117,6 +121,42 @@ export function InstancesScreen({
     setNewName('')
   }
 
+  /**
+   * "Einstellungen/Mods von einem anderen, bereits installierten Client übernehmen" (own user
+   * request). Creates a new instance exactly like `handleCreate` (same client-side
+   * `crypto.randomUUID()` pattern), then immediately asks the main process to pick a folder and
+   * copy from it - unlike a normal new instance, this one needs its `game/` folder to exist right
+   * away instead of waiting for the first "Play" click, since the import has to put files
+   * somewhere now (see `clientImport.ts`'s own doc comment for the full reasoning, including why
+   * imported `options.txt` intentionally lands in the *shared* settings cache, affecting every
+   * instance, not just this new one - confirmed with the user, see the warning text below the
+   * button in the UI).
+   */
+  async function handleImportFromClient(): Promise<void> {
+    if (!newVersion) return
+    setImportBusy(true)
+    setError(null)
+    setImportResult(null)
+    try {
+      const folder = await window.api.pickExternalClientFolder()
+      if (!folder) return
+      const name = newName.trim() || `Instanz ${instances.length + 1}`
+      const instance: Instance = { id: crypto.randomUUID(), name, versionId: newVersion, enabledBundledMods: [] }
+      onInstancesChange([...instances, instance], instance.id)
+      setNewName('')
+
+      const result = await window.api.importFromExternalClient(folder, instance.id)
+      const parts: string[] = []
+      if (result.copiedMods.length > 0) parts.push(`${result.copiedMods.length} Mod(s) übernommen`)
+      if (result.importedOptions) parts.push('Einstellungen importiert')
+      setImportResult(parts.length > 0 ? parts.join(', ') : 'Keine options.txt/Mods im gewählten Ordner gefunden.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setImportBusy(false)
+    }
+  }
+
   function startRename(instance: Instance): void {
     setRenamingId(instance.id)
     setRenameDraft(instance.name)
@@ -131,6 +171,26 @@ export function InstancesScreen({
       )
     }
     setRenamingId(null)
+  }
+
+  /**
+   * Duplicates an instance including its whole on-disk content (saves/mods/options/resourcepacks)
+   * - own user request, so trying something risky (a new mod, a config tweak) never has to touch
+   * the original. Names the copy "<name> (Kopie)" right away rather than prompting first - same
+   * "just create it, rename afterwards if needed" flow `handleCreate` already uses, and this
+   * screen's existing "Umbenennen" already covers the rename step.
+   */
+  async function handleClone(instance: Instance): Promise<void> {
+    setCloningId(instance.id)
+    setError(null)
+    try {
+      const updated = await window.api.cloneInstance(instance.id, `${instance.name} (Kopie)`)
+      onInstancesChange(updated.instances, updated.selectedInstanceId)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setCloningId(null)
+    }
   }
 
   async function handleDelete(instance: Instance): Promise<void> {
@@ -219,7 +279,19 @@ export function InstancesScreen({
           <button className="secondary-button" onClick={handleCreate} disabled={movingStorage}>
             Erstellen
           </button>
+          <button
+            className="secondary-button"
+            onClick={() => void handleImportFromClient()}
+            disabled={movingStorage || importBusy}
+          >
+            {importBusy ? 'Übernimmt…' : 'Von anderem Client übernehmen…'}
+          </button>
         </div>
+        <p className="version-warning">
+          Übernommene Einstellungen (options.txt) gelten für alle deine Instanzen, nicht nur die neue - diese
+          Einstellungen sind in diesem Launcher bewusst über alle Instanzen hinweg geteilt.
+        </p>
+        {importResult && <span className="status">{importResult}</span>}
         {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
       </section>
 
@@ -264,6 +336,13 @@ export function InstancesScreen({
                   )}
                   <button className="link-button" onClick={() => startRename(instance)} disabled={busy || movingStorage}>
                     Umbenennen
+                  </button>
+                  <button
+                    className="link-button"
+                    onClick={() => void handleClone(instance)}
+                    disabled={busy || movingStorage || cloningId !== null}
+                  >
+                    {cloningId === instance.id ? 'Dupliziert…' : 'Duplizieren'}
                   </button>
                   <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy || movingStorage}>
                     Löschen
