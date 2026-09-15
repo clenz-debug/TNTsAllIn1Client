@@ -1,0 +1,31 @@
+{
+  "minecraftVersion": "1.21.11",
+  "ownMod": null,
+  "bundledMods": [
+    {
+      "name": "sodium",
+      "modrinthProjectId": "AANobbMI",
+      "modrinthVersionId": "Ny3XyYle"
+    },
+    {
+      "name": "lithium",
+      "modrinthProjectId": "gvQqBUqZ",
+      "modrinthVersionId": "Ow7wA0kG"
+    },
+    {
+      "name": "continuity",
+      "modrinthProjectId": "1IjD5062",
+      "modrinthVersionId": "mX1iknM1"
+    },
+    {
+      "name": "3dskinlayers",
+      "modrinthProjectId": "zV5r3pPn",
+      "modrinthVersionId": "3kCdl1bI"
+    },
+    {
+      "name": "cape-provider",
+      "modrinthProjectId": "orXAsira",
+      "modrinthVersionId": "6bSwsL3J"
+    }
+  ]
+}
