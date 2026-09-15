@@ -61,15 +61,15 @@
 
 ### Ingame Features:
 - Gutes Ingame Menü um die featurs / mods auzuwählen (auch über taste(-nkombie) zu öffnen welche mann selbst einstellen kann) [check] (5e)
-    - Fullbright und lightlevel oveerlay [check] (5j — gebaut, noch nicht live getestet; nur die Zahl an der eigenen Position, kein voller In-World-Tile-Overlay)
-    - Custom Crosshair (auch mit Farbauswahl) [check] (5i — gebaut, noch nicht live getestet)
-    - Anpassung der Hitbox Farbe [check] (5l — gebaut, noch nicht live getestet)
-    - Itemphysics [check] (5o — gebaut, noch nicht live getestet; bewusst kein gebündelter Fremd-Mod, siehe Aktuelle_Phase.md: das übliche "ItemPhysic"-Mod braucht auch Server-Seite, hätte auf normalen Servern nichts bewirkt — stattdessen eigener rein kosmetischer Neige-Effekt)
-    - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [check] (5n — gebaut, noch nicht live getestet; "open" gab es bei Vanilla schon als Chat-Link, "copy" ins Bild-Clipboard war der fehlende Teil)
-    - Keystrokes (vll auch mehr als das klassische wasd lmb rmb shift, space) [check] (5m — gebaut, noch nicht live getestet; plus Sprint- und Q-Box)
+    - Fullbright und lightlevel oveerlay [check] (5j — live bestätigt; nur die Zahl an der eigenen Position, kein voller In-World-Tile-Overlay)
+    - Custom Crosshair (auch mit Farbauswahl) [check] (5i — live bestätigt)
+    - Anpassung der Hitbox Farbe [check] (5l — live bestätigt)
+    - Itemphysics [check] (5o — live getestet, ein Bug gefunden und behoben: geworfene/fallende Items drehten sich beim Live-Test noch sichtbar weiter um die Achse, genau wie Vanillas Dauer-Spin bei liegenden Items — der bestehende "kein Spin mehr"-Effekt griff bisher nur einmal am Boden, nicht schon während des Fluges; jetzt auch beim Fallen/Fliegen eingefroren, nur ohne das flache Hinlegen. Bewusst kein gebündelter Fremd-Mod, siehe Aktuelle_Phase.md: das übliche "ItemPhysic"-Mod braucht auch Server-Seite, hätte auf normalen Servern nichts bewirkt — stattdessen eigener rein kosmetischer Neige-Effekt)
+    - Beim erstellen eines Screenshots soll eine Nachricht aufploppen mit: open und copy was dann die jeweilige Funktion ausfürt [check] (5n — live bestätigt; "open" gab es bei Vanilla schon als Chat-Link, "copy" ins Bild-Clipboard war der fehlende Teil; Speicherort ist unverändert Vanillas eigener `screenshots`-Ordner, der Mod beobachtet ihn nur und schreibt selbst nichts)
+    - Keystrokes (vll auch mehr als das klassische wasd lmb rmb shift, space) [check] (5m — live bestätigt; plus Sprint- und Q-Box)
     - proximity voice mod oder was ähnliches wäre cool nicht jeder nutzt Discord zum labern das macht es einfacher [später — zu groß für Phase 5, eigene Phase/Bündelung wie 5f prüfen]
-    - zoom [check] (5h — gebaut, noch nicht live getestet)
-    - fps anzeige [check] (5g — gebaut, noch nicht live getestet)
+    - zoom [check] (5h — live bestätigt)
+    - fps anzeige [check] (5g — live bestätigt)
     - Shulkerbox inhalts anzeige (wenn bestimmter key gedrükt wird) [check] (5k — gebaut, noch nicht live getestet; Vanilla zeigt seit 1.21.11 selbst schon die ersten 5 Items im Tooltip, unser Zusatz zeigt den Rest beim Tastehalten)
     - suchfunktion für mods [check] (5v — live bestätigt, "klappt gut")
     - Abschnitte in dem Mod options wo man quasie bereiche hat in denen die mods separiert werden, explizit keine Extra menüs nur einzelne Abschnitte [check] (5w — live bestätigt, "das passt")
@@ -82,16 +82,19 @@
     - im recipie book rezepte anpinnen, anzahl der benötigten materialien runterzählen wenn man ein item was benötigt wird ins inventar packt [check] (5ah — Anpinnen per Taste beim Hovern, angepinntes Rezept als verschiebbares HUD-Element, zählt Restmenge live gegen das Inventar runter)
     - material counter in item counter umbennen [check] (5ag — Klassen/Config-Felder/Lang-Keys durchgehend umbenannt)
     - hitbox color und blockoutline color das custom entfernen [check] (5ae — reine Lang-Key-Änderung)
-    - Waypoint System die graphisch angezeigt werden und ein eigenes menü haben das man über einen key öffnen kann [check] (5ai — gebaut, noch nicht live getestet; In-World-Leuchtsäule + Namensschild inkl. Entfernung, eigenes Wegpunkt-Menü über eigene Taste ODER Mod-Menü erreichbar, Anlegen/Bearbeiten/Löschen/Sichtbarkeit pro Wegpunkt, farbwählbar; Nachtrag: Lösch-Bestätigung für einzelne Wegpunkte optional ein/ausschaltbar, "Alle löschen"-Button fragt immer nach)
+    - Waypoint System die graphisch angezeigt werden und ein eigenes menü haben das man über einen key öffnen kann [check] (5ai — In-World-Leuchtsäule + Namensschild inkl. Entfernung, eigenes Wegpunkt-Menü über eigene Taste ODER Mod-Menü erreichbar, Anlegen/Bearbeiten/Löschen/Sichtbarkeit pro Wegpunkt, farbwählbar; Nachtrag: Lösch-Bestätigung für einzelne Wegpunkte optional ein/ausschaltbar, "Alle löschen"-Button fragt immer nach)
+    - Eigene Taste zum Anlegen eines Wegpunkts, belegbar im Mod-Menü [check] (Nachtrag zu 5ai — öffnet direkt den "Wegpunkt erstellen"-Screen mit Namensfeld, denselben wie über das Wegpunkt-Menü, nur ohne den Umweg über die Liste; erster Versuch war eine sofortige Erstellung ohne Namensabfrage, auf Nutzerwunsch korrigiert; live bestätigt, siehe Aktuelle_Phase.md)
+    - Farbe des Wegpunkts schon direkt beim Erstellen einstellbar, nicht erst nachträglich im Bearbeiten-Screen [check] (Nachtrag zu 5ai — derselbe Farbwähler wie beim Bearbeiten, gebaut, noch nicht live getestet, siehe Aktuelle_Phase.md)
     - Waypoints sollen pro Welt und pro Server getrennt sein (sofern technisch möglich), nicht eine gemeinsame Liste für alle [check] (Nachtrag zu 5ai — ging technisch: Singleplayer wird über den Speicherordner-Namen der Welt identifiziert, Multiplayer über die Server-Adresse; Achtung, siehe Aktuelle_Phase.md: dadurch werden eventuell schon angelegte Test-Wegpunkte aus der alten, noch nicht welten-getrennten Speicherung nicht automatisch übernommen)
     - dazu prüfen, ob (zusätzlich) auch eine Trennung nach Dimension möglich ist [check] (war schon seit 5ai selbst so - jeder Wegpunkt merkt sich seine Dimension und wird nur dort angezeigt/gezählt, keine neue Änderung nötig)
-    - Armor & Tool Status Anzeige: zeigt Durability von angelegter Rüstung (Helm, Brustpanzer, Hose, Schuhe), Mainhand und Offhand [check] (Nachtrag zu Phase 5 — gebaut, noch nicht live getestet, siehe Aktuelle_Phase.md)
+    - Armor & Tool Status Anzeige: zeigt Durability von angelegter Rüstung (Helm, Brustpanzer, Hose, Schuhe), Mainhand und Offhand [check] (Nachtrag zu Phase 5, siehe Aktuelle_Phase.md)
         - bei stackbaren Items (Blöcke etc.) statt Durability die Anzahl im jeweiligen Stack anzeigen (nur dieser Stack, nicht das gesamte Inventar)
         - jede Anzeige (Helm/Brustpanzer/Hose/Schuhe/Mainhand/Offhand) einzeln ein-/ausschaltbar
         - Item-Name Anzeige ein-/ausschaltbar
         - Zahlenfarbe: frei wählbare Standardfarbe ODER Farbverlauf je nach Restdurability; stackbare Items immer mit fester Standardfarbe, nie mit Verlauf
         - Item-Icon Anzeige ein-/ausschaltbar (passendes Icon zum jeweiligen Item)
         - Layout wählbar: entweder alle 6 Slots einzeln als eigene, frei verschiebbare HUD-Elemente, oder gebündelt als eine Anzeige (gebündelt: horizontal oder vertikal wählbar)
+        - Move/Resize-Bereich im HUD-Editor soll die Maximalgröße zeigen (als wären Rüstung + Offhand in Benutzung), nicht die aktuelle/evtl. leere Anzeige, damit Position/Größe nicht nach dem Anlegen längerer Haltbarkeitszahlen erneut nachjustiert werden muss [check] (Nachtrag — gebaut, noch nicht live getestet, siehe Aktuelle_Phase.md)
 - dawn hat einen ingame button für die externen mods wo man die mods settings öffnen kann [check] (ein Button "Externe Mods" im Mod-Menü öffnet einen separaten, rein informativen Bilder-Screen wie bei Dawn/Texturepacks - Icon + Name pro gebündeltem Mod, kein Aktivieren/Deaktivieren dort; nur Sodium und 3D Skin Layers haben dort einen "Optionen"-Button, da nur sie einen eigenen Einstellungs-Screen haben; Continuitys Toggles [inkl. neu Leuchttexturen] und 3D Skin Layers' Ein/Aus bleiben normale Schalter im Hauptmenü; live bestätigt, "befinde ich als gut")
 
 - skin editor: zurück taste um den letzten strich / pixel rückgängig zu machen. Grid einblenden sonst fällt das malen schwer. Skins und Capes vll voneinander trennen oder sdie anordnung im bereich skins ändern sodass alle skinn sachen zusammen sind und alle cape sachen zusammen, dann aber den bereich in skin und capes umbennen [check] (Rückgängig + Pixel-Raster im Editor umgesetzt, Bereich heißt jetzt "Skin & Capes"; zusätzlich auf Rückfrage: alle Skins inkl. Bibliothek als drehbare 3D-Modelle statt flacher Bilder, ein gemeinsamer Cape-Anzeigen-Schalter für alle, Bibliothek paginiert wegen WebGL-Kontext-Limit; gebaut, noch nicht live getestet)

@@ -325,13 +325,14 @@ public class HudEditorScreen extends Screen {
 	}
 
 	private Rect armorStatusBundledBounds() {
-		LocalPlayer player = this.minecraft.player;
-		if (player == null) {
+		if (this.minecraft.player == null) {
 			return null;
 		}
 
 		ClientConfig config = ClientConfig.get();
-		List<ArmorStatusHud.Entry> entries = ArmorStatusHud.buildEntries(config, player);
+		// Editor-only: sized as if every enabled slot were worn/held (max durability), not
+		// whatever happens to actually be equipped right now - see ArmorStatusHud#buildMaxEntries.
+		List<ArmorStatusHud.Entry> entries = ArmorStatusHud.buildMaxEntries(config);
 		if (entries.isEmpty()) {
 			return null;
 		}
@@ -347,18 +348,14 @@ public class HudEditorScreen extends Screen {
 	}
 
 	private Rect armorStatusSlotBounds(ArmorStatusSlot slot) {
-		LocalPlayer player = this.minecraft.player;
-		if (player == null) {
+		if (this.minecraft.player == null) {
 			return null;
 		}
 
 		ClientConfig config = ClientConfig.get();
-		ArmorStatusHud.Entry entry = ArmorStatusHud.buildEntry(config, player, slot);
-		// Same reasoning as itemCounterBounds's placeholder: the slot may currently be empty (no item
-		// worn/held), but the editor still needs a box to drag/resize, otherwise positioning this
-		// element is only possible while something is actually equipped in it.
-		String text = entry != null ? entry.text()
-				: Component.translatable("gui.tntsallin1client.armor_status_slot." + slot.name().toLowerCase(Locale.ROOT)).getString();
+		// Editor-only max-size text (see ArmorStatusHud#buildMaxEntry) instead of the slot's actual
+		// current content, so positioning/sizing doesn't have to be redone once different gear is worn.
+		String text = ArmorStatusHud.buildMaxEntry(config, slot).text();
 
 		boolean showIcon = config.armorStatusShowIcon;
 		HudLayout layout = config.armorStatusLayoutFor(slot);

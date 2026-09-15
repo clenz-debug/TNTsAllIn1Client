@@ -34,15 +34,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * - i.e. almost every server, including this project's own explicit "works
  * on any vanilla-compatible server, like Lunar/Badlion" premise.
  *
- * <p>What IS honestly achievable client-only, and what this does: once an
- * item is resting on solid ground (not falling, not in water/lava), stop the
- * vanilla spin and lay it flat instead of upright, at a fixed per-item angle
+ * <p>What IS honestly achievable client-only, and what this does: stop the
+ * vanilla spin everywhere except in a fluid, using a fixed per-item angle
  * derived from {@code bobOffset} (stable - it never changes over time, so
- * "not rotating" actually means that, not just "rotating slower"). While
- * airborne or in a fluid it falls back to plain vanilla rendering (bob +
- * spin) instead - vanilla's own fluid buoyancy already makes it float/bob at
- * the surface correctly, and forcing the flat "resting" pose while it's
- * still moving would look wrong.
+ * "not rotating" actually means that, not just "rotating slower"). Once the
+ * item is resting on solid ground it additionally lays flat instead of
+ * upright, at that same fixed angle - while still falling/thrown it keeps
+ * the frozen angle but stays upright, per explicit user feedback that even
+ * mid-air spin (matching vanilla's own resting-item spin) looked wrong. Only
+ * in a fluid does this fall back to plain vanilla rendering (bob + spin) -
+ * vanilla's own fluid buoyancy already makes it float/bob at the surface
+ * correctly, and freezing the angle there would fight that.
  *
  * <p>{@code onGround()}/{@code isInWater()} live on the entity, not on
  * {@code ItemEntityRenderState} - and {@code submit(...)} only ever receives
@@ -89,24 +91,31 @@ public abstract class ItemEntityRendererMixin extends EntityRenderer<ItemEntity,
 		}
 
 		ItemPhysicsStateAccess access = (ItemPhysicsStateAccess) itemEntityRenderState;
-		if (!access.tntsallin1client$isOnGround() || access.tntsallin1client$isInWater()) {
-			// Falling or floating - leave vanilla's own bob/spin (and its correct fluid
-			// buoyancy) alone instead of forcing the flat resting pose onto a moving item.
+		if (access.tntsallin1client$isInWater()) {
+			// Floating - leave vanilla's own bob/spin (and its correct fluid buoyancy) alone.
 			return;
 		}
 
 		poseStack.pushPose();
 		AABB aabb = itemEntityRenderState.item.getModelBoundingBox();
-		float f = -((float) aabb.minY) + 0.0625F;
-		poseStack.translate(0.0F, f, 0.0F);
 
 		// Fixed per-item yaw so a pile of items doesn't all lie at the exact same angle -
 		// derived from bobOffset alone (not ageInTicks), so unlike vanilla's spin it never
-		// changes frame to frame.
+		// changes frame to frame. Applied whether the item is still falling/thrown or
+		// already resting, so it never visibly spins at any point.
 		float restYaw = itemEntityRenderState.bobOffset * ((float) Math.PI * 2.0F);
-		poseStack.mulPose(Axis.YP.rotation(restYaw));
-		// Lay the normally-upright item flat, face up, instead of standing on its edge.
-		poseStack.mulPose(Axis.XP.rotation((float) (Math.PI / 2.0)));
+		if (access.tntsallin1client$isOnGround()) {
+			float f = -((float) aabb.minY) + 0.0625F;
+			poseStack.translate(0.0F, f, 0.0F);
+			poseStack.mulPose(Axis.YP.rotation(restYaw));
+			// Lay the normally-upright item flat, face up, instead of standing on its edge.
+			poseStack.mulPose(Axis.XP.rotation((float) (Math.PI / 2.0)));
+		} else {
+			// Still moving - keep it upright (no ground-relative translate, no flat lay,
+			// which would look wrong on something that isn't actually resting on anything),
+			// just without the continuous vanilla spin.
+			poseStack.mulPose(Axis.YP.rotation(restYaw));
+		}
 
 		ItemEntityRenderer.submitMultipleFromCount(poseStack, submitNodeCollector, itemEntityRenderState.lightCoords, itemEntityRenderState, this.random, aabb);
 		poseStack.popPose();

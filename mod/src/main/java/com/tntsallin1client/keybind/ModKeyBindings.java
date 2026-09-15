@@ -90,6 +90,16 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// Waypoint system follow-up: opens WaypointCreateScreen directly from gameplay - same screen
+	// (with its name field) as OPEN_WAYPOINTS -> "New Waypoint", just skipping the list screen in
+	// between. Unbound by default like most binds here.
+	public static final KeyMapping CREATE_WAYPOINT = new KeyMapping(
+			"key.tntsallin1client.create_waypoint",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	private ModKeyBindings() {
 	}
 
@@ -102,5 +112,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(SPAWN_OVERLAY);
 		KeyBindingHelper.registerKeyBinding(PIN_RECIPE);
 		KeyBindingHelper.registerKeyBinding(OPEN_WAYPOINTS);
+		KeyBindingHelper.registerKeyBinding(CREATE_WAYPOINT);
 	}
 }

@@ -4,12 +4,14 @@ import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Shared logic for the Armor & Tool Status display: durability of the four
@@ -26,6 +28,9 @@ public final class ArmorStatusHud {
 	private static final int ICON_SIZE = 16;
 	private static final int ICON_GAP = 2;
 	public static final int GAP = 4;
+
+	/** Wider than any real item's durability text ever gets (highest is netherite tools at 2031/2031) - used only for {@link #buildMaxEntry}'s editor-sizing placeholder, never shown live. */
+	private static final String MAX_DURABILITY_PLACEHOLDER = "9999/9999";
 
 	private ArmorStatusHud() {
 	}
@@ -65,6 +70,31 @@ public final class ArmorStatusHud {
 				: String.valueOf(stack.getCount());
 		String text = config.armorStatusShowName ? stack.getHoverName().getString() + ": " + numeric : numeric;
 		return new Entry(slot, stack, text, resolveColor(config, stack));
+	}
+
+	/**
+	 * Editor-only synthetic entries, one per enabled slot regardless of what's actually
+	 * worn/held right now - sized for the worst realistic case ("armor worn, offhand used" per
+	 * user request) instead of the player's current gear, so the HUD editor's drag/resize box
+	 * never has to be redone later just because different, longer-durability gear got equipped.
+	 * The live HUD itself keeps using {@link #buildEntries} untouched; this is for
+	 * {@code HudEditorScreen}'s bounds calculation only.
+	 */
+	public static List<Entry> buildMaxEntries(ClientConfig config) {
+		List<Entry> entries = new ArrayList<>(ArmorStatusSlot.values().length);
+		for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
+			if (isSlotEnabled(config, slot)) {
+				entries.add(buildMaxEntry(config, slot));
+			}
+		}
+		return entries;
+	}
+
+	/** The one-slot version of {@link #buildMaxEntries}, for the per-slot layout mode's own editor bounds. */
+	public static Entry buildMaxEntry(ClientConfig config, ArmorStatusSlot slot) {
+		String label = Component.translatable("gui.tntsallin1client.armor_status_slot." + slot.name().toLowerCase(Locale.ROOT)).getString();
+		String text = config.armorStatusShowName ? label + ": " + MAX_DURABILITY_PLACEHOLDER : MAX_DURABILITY_PLACEHOLDER;
+		return new Entry(slot, ItemStack.EMPTY, text, config.armorStatusColor);
 	}
 
 	/**
