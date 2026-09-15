@@ -1,5 +1,3 @@
-import { MINECRAFT_VERSION } from '../../shared/types'
-
 const VERSION_MANIFEST_URL = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 
 interface VersionManifestEntry {
@@ -69,7 +67,7 @@ export interface VersionDetail {
   javaVersion?: { component: string; majorVersion: number }
 }
 
-export async function fetchVersionDetail(versionId: string = MINECRAFT_VERSION): Promise<VersionDetail> {
+export async function fetchVersionDetail(versionId: string): Promise<VersionDetail> {
   const manifest = await fetchManifest()
   const entry = manifest.versions.find((v) => v.id === versionId)
   if (!entry) {

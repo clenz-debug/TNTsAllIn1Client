@@ -37,7 +37,7 @@ const api = {
   listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
   loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
   saveSettings: (settings: LauncherSettings): Promise<void> => ipcRenderer.invoke(IpcChannel.SettingsSave, settings),
-  listBundledMods: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled),
+  listBundledMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled, versionId),
   listCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
   addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
   removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
@@ -50,8 +50,8 @@ const api = {
   cloneInstance: (instanceId: string, newName: string): Promise<LauncherSettings> =>
     ipcRenderer.invoke(IpcChannel.InstancesClone, instanceId, newName),
   pickExternalClientFolder: (): Promise<string | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
-  importFromExternalClient: (sourceFolder: string, instanceId: string): Promise<ClientImportResult> =>
-    ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId),
+  importFromExternalClient: (sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> =>
+    ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId, versionId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
   uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> =>
@@ -77,8 +77,11 @@ const api = {
     ipcRenderer.invoke(IpcChannel.CapeUpload, profile, pngDataUri),
   deleteCape: (profile: MinecraftProfile): Promise<void> => ipcRenderer.invoke(IpcChannel.CapeDelete, profile),
   getCapeStatus: (profile: MinecraftProfile): Promise<CustomCapeStatus> => ipcRenderer.invoke(IpcChannel.CapeStatus, profile),
-  checkModBundleUpdate: (): Promise<ModBundleUpdateInfo> => ipcRenderer.invoke(IpcChannel.ModBundleCheckUpdate),
-  applyModBundleUpdate: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.ModBundleApplyUpdate),
+  checkModBundleUpdate: (versionId: string): Promise<ModBundleUpdateInfo> =>
+    ipcRenderer.invoke(IpcChannel.ModBundleCheckUpdate, versionId),
+  applyModBundleUpdate: (versionId: string): Promise<LauncherSettings> =>
+    ipcRenderer.invoke(IpcChannel.ModBundleApplyUpdate, versionId),
+  listBundleCompatibleVersions: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModBundleListCompatibleVersions),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
 

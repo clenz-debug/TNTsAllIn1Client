@@ -87,16 +87,17 @@ export interface GameLogEvent {
   message: string
 }
 
-/** Default pre-selection for the version picker (Phase 6a) — also the exact version the bundled
- * mods/resourcepacks in `mods-bundle`/`resourcepacks-bundle` (and our own mod jar) are built
- * against. Picking a different version in the UI still installs vanilla+Fabric fine, but
- * `bundleSync.syncBundledContent` skips the bundle entirely for any other id (see
- * `isBundleCompatibleVersion`) rather than handing Fabric Loader mods declaring a
- * `1.21.11`-only dependency range for a different game version, which Loader hard-rejects. */
-export const MINECRAFT_VERSION = '1.21.11'
+/** The one Minecraft version this specific launcher build bakes directly into `extraResources`
+ * (see `electron-builder.yml`) - default pre-selection for the version picker (Phase 6a) when
+ * nothing else is bundle-compatible yet. This is no longer "the only bundle-compatible version":
+ * any other version can become bundle-compatible purely via a `mod-bundle-manifest.json` entry
+ * (see `main/launch/bundleCompat.ts#getBundleCompatibleVersions`), downloaded on demand on first
+ * "Play" - no new launcher build/release needed for that. Only bumping *this* constant (and the
+ * matching `extraResources` paths) changes what a fresh install bakes in up front. */
+export const SEED_BUNDLE_MINECRAFT_VERSION = '1.21.11'
 
-export function isBundleCompatibleVersion(versionId: string): boolean {
-  return versionId === MINECRAFT_VERSION
+export function isBundleCompatibleVersion(versionId: string, bundleCompatibleVersions: readonly string[]): boolean {
+  return bundleCompatibleVersions.includes(versionId)
 }
 
 export type GameVersionType = 'release' | 'snapshot'
@@ -192,14 +193,20 @@ export interface LauncherSettings {
    * Never covers `launcher-settings.json`/`auth.json`/`shared-settings/` themselves, which always
    * stay at the fixed OS profile folder. */
   dataRootOverride: string | null
-  /** What `main/launch/modBundleUpdater.ts` last successfully wrote into `mods-bundle/`, keyed by
-   * the manifest's `name` - lets a later check tell "already applied" apart from "manifest pins a
-   * different version now" without re-inspecting the filesystem. */
-  appliedModBundleVersions: Record<string, AppliedModBundleEntry>
-  /** Mirrors `appliedModBundleVersions` for the one non-Modrinth entry (`ModBundleManifest.ownMod`,
-   * our own mod jar) - just the version string, since there's no separate project/version id pair
-   * to track for it. */
-  appliedOwnModVersion: string | null
+  /** What `main/launch/modBundleUpdater.ts` last successfully wrote into `mods-bundle/<mcVersion>/`,
+   * keyed first by Minecraft version then by the manifest's mod `name` - two different versions'
+   * bundles can be applied/tracked at once now (see `resourcePaths.ts`'s per-version layout), so
+   * "already applied" needs the version dimension too, not just the mod name. */
+  appliedModBundleVersions: Record<string, Record<string, AppliedModBundleEntry>>
+  /** Mirrors `appliedModBundleVersions`'s version-keying for the one non-Modrinth entry
+   * (`ModBundleVersionEntry.ownMod`, our own mod jar) - one applied-version string per Minecraft
+   * version that has ever had the own mod jar downloaded for it. */
+  appliedOwnModVersions: Record<string, string>
+  /** Mirrors `appliedModBundleVersions`'s shape for `ModBundleVersionEntry.bundledResourcepacks` -
+   * just a version label per pack per Minecraft version (no separate filename to track: unlike
+   * Modrinth-sourced mods, we control the resourcepack filenames ourselves and always write
+   * `<name>.zip`, so there's never a stale differently-named file to clean up). */
+  appliedResourcepackVersions: Record<string, Record<string, string>>
 }
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -208,7 +215,8 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   selectedInstanceId: null,
   dataRootOverride: null,
   appliedModBundleVersions: {},
-  appliedOwnModVersion: null
+  appliedOwnModVersions: {},
+  appliedResourcepackVersions: {}
 }
 
 /** One pinned third-party mod entry in `mod-bundle-manifest.json` (repo root) - only references a
@@ -221,15 +229,36 @@ export interface BundledModPin {
   modrinthVersionId: string
 }
 
-/** The mod-bundle auto-update manifest (`mod-bundle-manifest.json`, fetched via
- * raw.githubusercontent.com) - hand-maintained by the developer, pins exactly which build of each
- * bundled mod is currently approved, not just "whatever's newest on Modrinth" (Phase 9's roadmap
- * text calls this a "self-controlled manifest" on purpose). `ownMod` is `null` until a real GitHub
- * release with the own mod jar attached actually exists. */
-export interface ModBundleManifest {
-  minecraftVersion: string
+/** One pinned bundled resourcepack entry in `mod-bundle-manifest.json` - unlike `BundledModPin`,
+ * resourcepacks aren't all sourced from Modrinth (some are GitHub repos, some hand-curated Vanilla
+ * Tweaks selections - see `Projekt_Roadmap.md`'s license section), so there's no single API to
+ * live-resolve a version id against. Instead this pins a direct download URL + SHA-1 straight to a
+ * GitHub Release asset the maintainer uploaded themselves - same pattern `ownMod` already uses. */
+export interface BundledResourcepackPin {
+  name: string
+  version: string
+  url: string
+  sha1: string
+}
+
+/** One Minecraft version's full bundle content - own mod jar, third-party mods, resourcepacks.
+ * The maintainer only ever pushes a new/updated entry once everything in it has been built and
+ * tested together (see `mod-bundle-release-runbook.md`) - there's no code-level guarantee that a
+ * given entry is "complete", that's a process rule, not a type constraint. */
+export interface ModBundleVersionEntry {
   ownMod: { version: string; url: string; sha1: string } | null
   bundledMods: BundledModPin[]
+  bundledResourcepacks: BundledResourcepackPin[]
+}
+
+/** The mod-bundle auto-update manifest (`mod-bundle-manifest.json`, fetched via
+ * raw.githubusercontent.com) - hand-maintained by the developer, pins exactly which build of each
+ * bundled mod/resourcepack/own-mod-jar is currently approved per Minecraft version, not just
+ * "whatever's newest" (Phase 9's roadmap text calls this a "self-controlled manifest" on purpose).
+ * A Minecraft version becomes bundle-compatible for every already-installed launcher purely by
+ * gaining a key here - see `main/launch/bundleCompat.ts`. */
+export interface ModBundleManifest {
+  versions: Record<string, ModBundleVersionEntry>
 }
 
 /** What `modBundleUpdater.ts` actually wrote for one bundled mod - the filename too, not just the
@@ -247,8 +276,17 @@ export interface ModBundleUpdateEntry {
   pinnedVersionId: string
 }
 
+/** Same shape as {@link ModBundleUpdateEntry} but for a resourcepack, whose "pinned version" is
+ * just the manifest's own free-form `version` label rather than a Modrinth version id. */
+export interface ModBundleResourcepackUpdateEntry {
+  name: string
+  currentVersion: string | null
+  pinnedVersion: string
+}
+
 export interface ModBundleUpdateInfo {
   outdatedMods: ModBundleUpdateEntry[]
+  outdatedResourcepacks: ModBundleResourcepackUpdateEntry[]
   ownModUpdateAvailable: boolean
 }
 

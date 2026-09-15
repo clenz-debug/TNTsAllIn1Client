@@ -47,6 +47,7 @@ dependencies {
 
 tasks.processResources {
 	inputs.property("version", project.version)
+	inputs.property("minecraft_version", minecraft_version)
 
 	// filteringCharset wasn't previously set explicitly - JDK 21 already defaults to UTF-8, but
 	// fabric.mod.json now contains its first non-ASCII character (the "§" cape-URL token below),
@@ -54,7 +55,7 @@ tasks.processResources {
 	filteringCharset = "UTF-8"
 
 	filesMatching("fabric.mod.json") {
-		expand(mapOf("version" to project.version))
+		expand(mapOf("version" to project.version, "minecraft_version" to minecraft_version))
 	}
 
 	// NOTE on fabric.mod.json's "custom.cape.url": deliberately uses "§idNoHyphen" as the

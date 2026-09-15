@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { join } from 'node:path'
 
 /**
  * Where `mods-bundle/`, `resourcepacks-bundle/`, and the packaged snapshot of our own mod jar
@@ -15,4 +16,23 @@ import { app } from 'electron'
  */
 export function bundledResourcesRoot(): string {
   return app.isPackaged ? process.resourcesPath : app.getAppPath()
+}
+
+/**
+ * Per-Minecraft-version bundle subfolders (multi-version support follow-up) - two different
+ * versions' Sodium/etc. builds need to coexist on disk without overwriting each other, since a
+ * user can have instances on several bundle-compatible versions at once. `versionId` is trusted
+ * unsanitized here, same convention `installer.ts#sharedVersionDir` already uses for the parallel
+ * `versions/<versionId>/` layout - it only ever comes from Mojang's own version manifest ids.
+ */
+export function bundledModsDir(versionId: string): string {
+  return join(bundledResourcesRoot(), 'mods-bundle', versionId)
+}
+
+export function bundledResourcepacksDir(versionId: string): string {
+  return join(bundledResourcesRoot(), 'resourcepacks-bundle', versionId)
+}
+
+export function ownModDir(versionId: string): string {
+  return join(bundledResourcesRoot(), 'own-mod', versionId)
 }

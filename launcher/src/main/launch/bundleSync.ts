@@ -3,7 +3,7 @@ import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
-import { bundledResourcesRoot } from './resourcePaths'
+import { bundledModsDir, bundledResourcepacksDir, bundledResourcesRoot, ownModDir } from './resourcePaths'
 
 export type InstallProgressCallback = (
   stage: LaunchStage,
@@ -102,14 +102,16 @@ async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void
  * packaged mode `electron-builder`'s `extraResources` directory (Phase 9, see `resourcePaths.ts`'s
  * own doc comment for the full story - this used to only work in the unpackaged dev setup).
  *
- * `bundleCompatible` (Phase 6a) gates the whole sync (see `isBundleCompatibleVersion` in
- * shared/types.ts): every jar here (including our own mod) and every resourcepack is built
- * against `MINECRAFT_VERSION` specifically. Fabric Loader hard-rejects a mod whose
- * `fabric.mod.json` declares a Minecraft-version range that doesn't include the game version
- * actually being launched, so syncing them into a differently-versioned instance wouldn't
- * silently degrade the experience — it would break the launch outright. Skipping here instead
- * means a non-pinned version launches as plain vanilla-through-Fabric, no mods, which the caller
- * surfaces to the user via the returned flag.
+ * `bundleCompatible` (Phase 6a, now backed by the dynamic per-version manifest check rather than a
+ * single hardcoded version - see `isVersionBundleCompatible` in `bundleCompat.ts`) gates the whole
+ * sync: every jar/resourcepack synced here for a given `versionId` is built specifically against
+ * that Minecraft version, read from that version's own `mods-bundle/<versionId>/` etc. subfolder
+ * (see `resourcePaths.ts`). Fabric Loader hard-rejects a mod whose `fabric.mod.json` declares a
+ * Minecraft-version range that doesn't include the game version actually being launched, so syncing
+ * the wrong version's jars into an instance wouldn't silently degrade the experience — it would
+ * break the launch outright. Skipping here instead means a non-bundle-compatible version launches
+ * as plain vanilla-through-Fabric, no mods, which the caller surfaces to the user via the returned
+ * flag.
  *
  * `enabledBundledMods` (Phase 6c, opt-in per later user request) lists which third-party mods the
  * user has actively turned on - defaults to none, so a fresh install starts with every *optional*
@@ -123,6 +125,7 @@ export async function syncBundledContent(
   instanceDir: string,
   onProgress: InstallProgressCallback,
   bundleCompatible: boolean,
+  versionId: string,
   enabledBundledMods: string[] = []
 ): Promise<{ skipped: boolean }> {
   onProgress('bundles', 0, 1)
@@ -135,20 +138,22 @@ export async function syncBundledContent(
   const gameDir = join(instanceDir, 'game')
   const destModsDir = join(gameDir, 'mods')
 
-  const modsBundleDir = join(resourcesRoot, 'mods-bundle')
+  const modsBundleDir = bundledModsDir(versionId)
   const allBundledMods = await listBundleFiles(modsBundleDir)
   const enabledSet = new Set(enabledBundledMods)
   const disabledMods = new Set(
     allBundledMods.filter((file) => !enabledSet.has(file) && !isAlwaysEnabledBundledMod(file))
   )
 
-  // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/ (see
+  // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/<versionId>/ (see
   // electron-builder.yml) instead of a live sibling mod/build/libs/ - there is no mod/ project at
-  // all once the launcher is actually installed on someone else's machine.
-  const ownModLibsDir = app.isPackaged ? join(resourcesRoot, 'own-mod') : join(resourcesRoot, '..', 'mod', 'build', 'libs')
+  // all once the launcher is actually installed on someone else's machine. The dev-mode branch
+  // stays version-agnostic on purpose: a local `mod/` checkout only ever builds one Minecraft
+  // version at a time anyway (its own fabric.mod.json already enforces that match at launch).
+  const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : join(resourcesRoot, '..', 'mod', 'build', 'libs')
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
-  await syncBundleDir(join(resourcesRoot, 'resourcepacks-bundle'), join(gameDir, 'resourcepacks'))
+  await syncBundleDir(bundledResourcepacksDir(versionId), join(gameDir, 'resourcepacks'))
   await syncOwnModJar(ownModLibsDir, destModsDir)
   onProgress('bundles', 1, 1)
   return { skipped: false }

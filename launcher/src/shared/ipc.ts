@@ -44,5 +44,6 @@ export const IpcChannel = {
   CapeDelete: 'cape:delete',
   CapeStatus: 'cape:status',
   ModBundleCheckUpdate: 'mod-bundle:check-update',
-  ModBundleApplyUpdate: 'mod-bundle:apply-update'
+  ModBundleApplyUpdate: 'mod-bundle:apply-update',
+  ModBundleListCompatibleVersions: 'mod-bundle:list-compatible-versions'
 } as const

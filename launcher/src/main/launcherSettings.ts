@@ -1,7 +1,13 @@
 import { app } from 'electron'
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { DEFAULT_LAUNCHER_SETTINGS, type Instance, type LauncherSettings } from '../shared/types'
+import {
+  DEFAULT_LAUNCHER_SETTINGS,
+  SEED_BUNDLE_MINECRAFT_VERSION,
+  type AppliedModBundleEntry,
+  type Instance,
+  type LauncherSettings
+} from '../shared/types'
 
 /** Same hand-rolled JSON-in-userData pattern as `auth/tokenCache.ts` rather than pulling in
  * electron-store for two small fields (selected version, snapshot-visibility toggle). */
@@ -65,29 +71,53 @@ async function migrateLegacyInstances(legacyEnabledBundledMods: string[]): Promi
 export async function loadLauncherSettings(): Promise<LauncherSettings> {
   try {
     const raw = await readFile(settingsPath(), 'utf-8')
-    const parsed = JSON.parse(raw) as Partial<LauncherSettings> & {
+    // `appliedModBundleVersions` is typed `unknown` here rather than inheriting LauncherSettings's
+    // current (nested, per-Minecraft-version) shape - a pre-multi-version file has it in the old
+    // flat (per-mod-name only) shape under the very same key, so it can't be trusted until
+    // `needsBundleVersionMigration` below says which shape is actually on disk.
+    const parsed = JSON.parse(raw) as Omit<Partial<LauncherSettings>, 'appliedModBundleVersions'> & {
       selectedVersion?: string
       enabledBundledMods?: string[]
+      appliedModBundleVersions?: unknown
+      appliedOwnModVersion?: string | null
     }
 
-    if (parsed.instances === undefined) {
-      // Old-shape file (or one written by a build that predates the instance system) - migrate
-      // once instead of silently losing the old enabledBundledMods setting and orphaning any
-      // already-downloaded per-version folder (would otherwise mean re-downloading everything).
-      const migrated = await migrateLegacyInstances(parsed.enabledBundledMods ?? [])
-      const settings: LauncherSettings = {
-        showSnapshots: parsed.showSnapshots ?? DEFAULT_LAUNCHER_SETTINGS.showSnapshots,
-        instances: migrated,
-        selectedInstanceId: migrated[0]?.id ?? null,
-        dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride,
-        appliedModBundleVersions: parsed.appliedModBundleVersions ?? DEFAULT_LAUNCHER_SETTINGS.appliedModBundleVersions,
-        appliedOwnModVersion: parsed.appliedOwnModVersion ?? DEFAULT_LAUNCHER_SETTINGS.appliedOwnModVersion
-      }
-      await saveLauncherSettings(settings)
-      return settings
+    const needsInstanceMigration = parsed.instances === undefined
+    // appliedOwnModVersion -> appliedOwnModVersions (singular -> plural rename) is the sentinel for
+    // "old flat bundle-tracking shape", since appliedModBundleVersions itself kept its name across
+    // the multi-version rework and so can't be used to detect the shape change on its own.
+    const needsBundleVersionMigration = parsed.appliedOwnModVersions === undefined
+
+    if (!needsInstanceMigration && !needsBundleVersionMigration) {
+      return { ...DEFAULT_LAUNCHER_SETTINGS, ...parsed, appliedModBundleVersions: parsed.appliedModBundleVersions as LauncherSettings['appliedModBundleVersions'] }
     }
 
-    return { ...DEFAULT_LAUNCHER_SETTINGS, ...parsed }
+    // At least one legacy shape detected - migrate whichever parts are actually old in one pass,
+    // instead of silently losing old settings/orphaning already-downloaded folders (would otherwise
+    // mean re-downloading everything), ending in exactly one save either way.
+    const instances = needsInstanceMigration ? await migrateLegacyInstances(parsed.enabledBundledMods ?? []) : (parsed.instances ?? [])
+
+    // Pre-multi-version files only ever tracked bundle content for one implicit version (whatever
+    // this launcher build targeted at the time) - nest their flat data under today's seed version,
+    // the only one that could ever have been applied before this migration existed.
+    const appliedModBundleVersions = needsBundleVersionMigration
+      ? { [SEED_BUNDLE_MINECRAFT_VERSION]: (parsed.appliedModBundleVersions as Record<string, AppliedModBundleEntry> | undefined) ?? {} }
+      : ((parsed.appliedModBundleVersions as LauncherSettings['appliedModBundleVersions'] | undefined) ?? {})
+    const appliedOwnModVersions = needsBundleVersionMigration
+      ? (parsed.appliedOwnModVersion ? { [SEED_BUNDLE_MINECRAFT_VERSION]: parsed.appliedOwnModVersion } : {})
+      : (parsed.appliedOwnModVersions ?? {})
+
+    const settings: LauncherSettings = {
+      showSnapshots: parsed.showSnapshots ?? DEFAULT_LAUNCHER_SETTINGS.showSnapshots,
+      instances,
+      selectedInstanceId: needsInstanceMigration ? (instances[0]?.id ?? null) : (parsed.selectedInstanceId ?? null),
+      dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride,
+      appliedModBundleVersions,
+      appliedOwnModVersions,
+      appliedResourcepackVersions: parsed.appliedResourcepackVersions ?? DEFAULT_LAUNCHER_SETTINGS.appliedResourcepackVersions
+    }
+    await saveLauncherSettings(settings)
+    return settings
   } catch {
     return DEFAULT_LAUNCHER_SETTINGS
   }

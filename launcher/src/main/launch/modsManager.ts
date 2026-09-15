@@ -2,8 +2,9 @@ import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { basename, join } from 'node:path'
 import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
+import { loadLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
-import { bundledResourcesRoot } from './resourcePaths'
+import { bundledModsDir } from './resourcePaths'
 
 /** Matches `rootProject.name` in `mod/settings.gradle.kts` - every jar `bundleSync.syncOwnModJar`
  * produces starts with this, regardless of version (`tntsallin1client-0.1.0.jar` etc.). Used to
@@ -51,29 +52,34 @@ async function listJarsIn(dir: string): Promise<string[]> {
   }
 }
 
-/** Every third-party jar in `launcher/mods-bundle/`, Fabric API included - the full-fidelity list
- * used to recognize "this filename is a bundled mod" (see `listCustomMods` below and
- * `bundleSync.ts`), read fresh every time rather than cached, since it only changes when someone
- * edits the (dev-populated, git-ignored) folder itself. Not what the Mods screen shows as
- * toggleable - see {@link listToggleableBundledMods} for that. */
-export async function listBundledMods(): Promise<string[]> {
-  return listJarsIn(join(bundledResourcesRoot(), 'mods-bundle'))
+/** Every third-party jar in `launcher/mods-bundle/<versionId>/`, Fabric API included - the
+ * full-fidelity list used to recognize "this filename is a bundled mod" (see `listCustomMods` below
+ * and `bundleSync.ts`), read fresh every time rather than cached, since it only changes when someone
+ * edits the (dev-populated, git-ignored) folder itself or an update gets applied. Not what the Mods
+ * screen shows as toggleable - see {@link listToggleableBundledMods} for that. */
+export async function listBundledMods(versionId: string): Promise<string[]> {
+  return listJarsIn(bundledModsDir(versionId))
 }
 
 /** The subset of {@link listBundledMods} the Mods screen actually offers a checkbox for - the
  * always-enabled ones are deliberately left out, see {@link isAlwaysEnabledBundledMod}. */
-export async function listToggleableBundledMods(): Promise<string[]> {
-  const all = await listBundledMods()
+export async function listToggleableBundledMods(versionId: string): Promise<string[]> {
+  const all = await listBundledMods(versionId)
   return all.filter((name) => !isAlwaysEnabledBundledMod(name))
 }
 
 /** Whatever's sitting in an instance's `game/mods` folder that isn't a bundled mod and isn't our
  * own jar - i.e. mods the user added themselves via `addCustomMods`. Tied to a specific instance
  * (not just a version) since the whole point of instances is that two of them can target the same
- * Minecraft version with a different mod set. */
+ * Minecraft version with a different mod set. Resolves the instance's own `versionId` internally
+ * (same lookup pattern `ipc/handlers.ts`'s `LaunchPlay` handler already uses) so callers/IPC/preload
+ * don't need to pass one through just for this exclusion check - an instance that's gone missing
+ * from settings falls back to an empty bundled-mods exclusion set rather than throwing. */
 export async function listCustomMods(instanceId: string): Promise<string[]> {
   const modsDir = join(instanceDir(instanceId), 'game', 'mods')
-  const bundled = new Set(await listBundledMods())
+  const settings = await loadLauncherSettings()
+  const instance = settings.instances.find((candidate) => candidate.id === instanceId)
+  const bundled = new Set(instance ? await listBundledMods(instance.versionId) : [])
   return (await listJarsIn(modsDir)).filter((name) => !bundled.has(name) && !name.startsWith(OWN_MOD_PREFIX))
 }
 

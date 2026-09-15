@@ -34,6 +34,11 @@ launcher/resourcepacks-bundle/
 # --- Resource packs held for a future Minecraft version, NOT synced into any instance ---
 launcher/resourcepacks-bundle-26x-archive/
 
+# --- Own-mod-jar snapshot, downloaded per Minecraft version on first use (multi-version support
+# follow-up) - previously only ever written at package time by electron-builder, but the
+# first-use bootstrap in ipc/handlers.ts can now write real jars here in dev mode too ---
+launcher/own-mod/
+
 # --- Env / Secrets ---
 .env
 .env.*

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   isBundleCompatibleVersion,
-  MINECRAFT_VERSION,
   MODRINTH_SEARCH_PAGE_SIZE,
   type ModrinthSearchResult,
   type ModrinthSortIndex
@@ -39,11 +38,14 @@ interface Props {
   instanceId: string
   versionId: string
   enabledBundledMods: string[]
+  /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
+   * see `bundleCompat.ts`), replacing the old single hardcoded `MINECRAFT_VERSION` check. */
+  bundleCompatibleVersions: string[]
   onToggleBundledMod: (fileName: string, enabled: boolean) => void
   onClose: () => void
 }
 
-export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggleBundledMod, onClose }: Props) {
+export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCompatibleVersions, onToggleBundledMod, onClose }: Props) {
   const [bundledMods, setBundledMods] = useState<string[]>([])
   const [customMods, setCustomMods] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
@@ -64,8 +66,8 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
   const [installedProjectIds, setInstalledProjectIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    window.api.listBundledMods().then(setBundledMods).catch((err) => setError(String(err)))
-  }, [])
+    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(String(err)))
+  }, [versionId])
 
   useEffect(() => {
     window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(String(err)))
@@ -95,7 +97,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
   }
 
   async function runSearch(pageNumber: number): Promise<void> {
-    if (!isBundleCompatibleVersion(versionId)) return
+    if (!isBundleCompatibleVersion(versionId, bundleCompatibleVersions)) return
     setSearching(true)
     setError(null)
     try {
@@ -153,10 +155,9 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
           auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame)
           laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
         </p>
-        {!isBundleCompatibleVersion(versionId) && (
+        {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) && (
           <p className="version-warning">
-            Wirkt sich aktuell nicht aus - gebündelte Mods laufen nur bei {MINECRAFT_VERSION}, {versionId} startet
-            ohnehin ohne sie.
+            Wirkt sich aktuell nicht aus - {versionId} hat kein Mod-Bundle, startet ohnehin ohne gebündelte Mods.
           </p>
         )}
         <ul className="mods-list">
@@ -182,10 +183,8 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, onToggle
 
       <section className="mods-section">
         <h3>Mods durchsuchen &amp; entdecken</h3>
-        {!isBundleCompatibleVersion(versionId) ? (
-          <p className="version-warning">
-            Modrinth-Suche ist nur für {MINECRAFT_VERSION} verfügbar, {versionId} nutzt kein Fabric.
-          </p>
+        {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) ? (
+          <p className="version-warning">Modrinth-Suche ist nur für Mod-Bundle-kompatible Versionen verfügbar.</p>
         ) : (
           <>
             <div className="mods-search-row">

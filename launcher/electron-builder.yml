@@ -25,17 +25,24 @@ files:
 # on the machine running this build, nothing here downloads them. own-mod grabs whatever
 # `gradlew build` in ../mod most recently produced, excluding Loom's sources/dev jar variants -
 # run that build fresh right before packaging so the newest mod code ships, not a stale one.
+#
+# Multi-version support follow-up: only the one "seed" version this launcher build bakes in
+# directly is listed here (must match `SEED_BUNDLE_MINECRAFT_VERSION` in shared/types.ts - a plain
+# literal, since this YAML can't import a TS constant; kept in sync by hand, see
+# mod-bundle-release-runbook.md). Any other bundle-compatible version is downloaded on demand on
+# first "Play" instead of being baked into every installer - keeps installer size from growing with
+# every historical Minecraft version ever supported.
 extraResources:
-  - from: mods-bundle
-    to: mods-bundle
+  - from: mods-bundle/1.21.11
+    to: mods-bundle/1.21.11
     filter:
       - '**/*'
-  - from: resourcepacks-bundle
-    to: resourcepacks-bundle
+  - from: resourcepacks-bundle/1.21.11
+    to: resourcepacks-bundle/1.21.11
     filter:
       - '**/*'
   - from: ../mod/build/libs
-    to: own-mod
+    to: own-mod/1.21.11
     filter:
       - '*.jar'
       - '!*-sources.jar'

@@ -10,7 +10,7 @@ import type {
   SkinLibraryEntry,
   UpdateStatus
 } from '../../../shared/types'
-import { isBundleCompatibleVersion, MINECRAFT_VERSION } from '../../../shared/types'
+import { isBundleCompatibleVersion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
@@ -53,24 +53,32 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   // screen's own state, so the save-effect needs its own up-to-date copy to round-trip instead of
   // clobbering a just-applied update back to stale data on the next unrelated save.
   const [appliedModBundleVersions, setAppliedModBundleVersions] = useState<LauncherSettings['appliedModBundleVersions']>({})
-  const [appliedOwnModVersion, setAppliedOwnModVersion] = useState<string | null>(null)
+  const [appliedOwnModVersions, setAppliedOwnModVersions] = useState<LauncherSettings['appliedOwnModVersions']>({})
+  const [appliedResourcepackVersions, setAppliedResourcepackVersions] = useState<LauncherSettings['appliedResourcepackVersions']>({})
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+  // Which Minecraft versions currently have bundle content available - dynamic, manifest-driven
+  // (multi-version support follow-up) instead of a single compiled-in version id. Loaded once
+  // alongside settings/versions below; a version added to the manifest while the launcher is
+  // already running only shows up after the next restart (see `bundleCompat.ts`'s own doc comment).
+  const [bundleCompatibleVersions, setBundleCompatibleVersions] = useState<string[]>([])
 
   const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
 
   useEffect(() => {
-    Promise.all([window.api.loadSettings(), window.api.listVersions()])
-      .then(([settings, list]) => {
+    Promise.all([window.api.loadSettings(), window.api.listVersions(), window.api.listBundleCompatibleVersions()])
+      .then(([settings, list, bundleVersions]) => {
         setVersions(list)
         setShowSnapshots(settings.showSnapshots)
         setInstances(settings.instances)
         setSelectedInstanceId(settings.selectedInstanceId)
         setDataRootOverride(settings.dataRootOverride)
         setAppliedModBundleVersions(settings.appliedModBundleVersions)
-        setAppliedOwnModVersion(settings.appliedOwnModVersion)
+        setAppliedOwnModVersions(settings.appliedOwnModVersions)
+        setAppliedResourcepackVersions(settings.appliedResourcepackVersions)
+        setBundleCompatibleVersions(bundleVersions)
         setSettingsLoaded(true)
       })
       .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
@@ -84,9 +92,19 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       selectedInstanceId,
       dataRootOverride,
       appliedModBundleVersions,
-      appliedOwnModVersion
+      appliedOwnModVersions,
+      appliedResourcepackVersions
     })
-  }, [settingsLoaded, showSnapshots, instances, selectedInstanceId, dataRootOverride, appliedModBundleVersions, appliedOwnModVersion])
+  }, [
+    settingsLoaded,
+    showSnapshots,
+    instances,
+    selectedInstanceId,
+    dataRootOverride,
+    appliedModBundleVersions,
+    appliedOwnModVersions,
+    appliedResourcepackVersions
+  ])
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
     setInstances(newInstances)
@@ -127,25 +145,37 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [applyingModBundleUpdate, setApplyingModBundleUpdate] = useState(false)
 
   useEffect(() => {
+    if (!selectedInstance) {
+      setModBundleUpdate(null)
+      return
+    }
     // Same "a failed check is never worth surfacing" philosophy as the launcher's own update check
     // just above - silently no-ops if the manifest isn't reachable yet (e.g. no GitHub release/repo
-    // pushed yet), rather than showing an error banner on every single launch.
+    // pushed yet), rather than showing an error banner on every single launch. Re-runs whenever the
+    // selected instance's version changes, not just once on mount - each version has its own
+    // independent bundle to check now.
     window.api
-      .checkModBundleUpdate()
-      .then((info) => setModBundleUpdate(info.outdatedMods.length > 0 || info.ownModUpdateAvailable ? info : null))
+      .checkModBundleUpdate(selectedInstance.versionId)
+      .then((info) =>
+        setModBundleUpdate(
+          info.outdatedMods.length > 0 || info.outdatedResourcepacks.length > 0 || info.ownModUpdateAvailable ? info : null
+        )
+      )
       .catch(() => undefined)
-  }, [])
+  }, [selectedInstance?.versionId])
 
   async function handleApplyModBundleUpdate(): Promise<void> {
+    if (!selectedInstance) return
     setApplyingModBundleUpdate(true)
     setModBundleUpdateError(null)
     try {
-      const updated = await window.api.applyModBundleUpdate()
+      const updated = await window.api.applyModBundleUpdate(selectedInstance.versionId)
       // Sync this screen's own mirrors immediately - see their declaration above for why: without
       // this, the next unrelated save-effect run would round-trip the stale pre-apply copy and
       // clobber what was just written back to disk.
       setAppliedModBundleVersions(updated.appliedModBundleVersions)
-      setAppliedOwnModVersion(updated.appliedOwnModVersion)
+      setAppliedOwnModVersions(updated.appliedOwnModVersions)
+      setAppliedResourcepackVersions(updated.appliedResourcepackVersions)
       setModBundleUpdate(null)
     } catch (err) {
       setModBundleUpdateError(err instanceof Error ? err.message : String(err))
@@ -185,6 +215,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         versions={versions}
         versionsError={versionsError}
         showSnapshots={showSnapshots}
+        bundleCompatibleVersions={bundleCompatibleVersions}
         onShowSnapshotsChange={setShowSnapshots}
         onInstancesChange={handleInstancesChange}
         onDataRootOverrideChange={setDataRootOverride}
@@ -200,6 +231,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         instanceId={selectedInstance.id}
         versionId={selectedInstance.versionId}
         enabledBundledMods={selectedInstance.enabledBundledMods}
+        bundleCompatibleVersions={bundleCompatibleVersions}
         onToggleBundledMod={handleToggleBundledMod}
         onClose={() => setShowMods(false)}
       />
@@ -276,9 +308,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         <div className="update-banner">
           <span>
             Neue Mod-Bundle-Version verfügbar (
-            {[...modBundleUpdate.outdatedMods.map((entry) => entry.name), ...(modBundleUpdate.ownModUpdateAvailable ? ['eigener Mod'] : [])].join(
-              ', '
-            )}
+            {[
+              ...modBundleUpdate.outdatedMods.map((entry) => entry.name),
+              ...modBundleUpdate.outdatedResourcepacks.map((entry) => entry.name),
+              ...(modBundleUpdate.ownModUpdateAvailable ? ['eigener Mod'] : [])
+            ].join(', ')}
             ).{modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
           </span>
           <div className="header-actions">
@@ -317,10 +351,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         {instances.length === 0 && (
           <span className="version-warning">Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.</span>
         )}
-        {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId) && (
+        {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
           <span className="version-warning">
-            Nur {MINECRAFT_VERSION} enthält die gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod,
-            …) — {selectedInstance.versionId} startet als reines Fabric+Vanilla ohne Mods.
+            {selectedInstance.versionId} hat keine gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener
+            Client-Mod, …) — startet als reines Fabric+Vanilla ohne Mods.
           </span>
         )}
       </div>

@@ -4,8 +4,6 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { IpcChannel } from '../../shared/ipc'
 import {
-  isBundleCompatibleVersion,
-  MINECRAFT_VERSION,
   type CapeUploadResult,
   type ClientImportResult,
   type CustomCapeStatus,
@@ -27,6 +25,7 @@ import { fetchTextureDataUri, loadPngFileForEditor, uploadSkin, uploadSkinBuffer
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
+import { getBundleCompatibleVersions, hasLocalBundleContent, isVersionBundleCompatible } from '../launch/bundleCompat'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
@@ -100,7 +99,9 @@ export function registerIpcHandlers(): void {
     saveLauncherSettings(settings)
   )
 
-  ipcMain.handle(IpcChannel.ModsListBundled, async () => listToggleableBundledMods())
+  ipcMain.handle(IpcChannel.ModsListBundled, async (_event: IpcMainInvokeEvent, versionId: string) =>
+    listToggleableBundledMods(versionId)
+  )
 
   ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, instanceId: string) =>
     listCustomMods(instanceId)
@@ -145,8 +146,8 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IpcChannel.ClientImportApply,
-    async (_event: IpcMainInvokeEvent, sourceFolder: string, instanceId: string): Promise<ClientImportResult> =>
-      importFromExternalClient(sourceFolder, instanceId)
+    async (_event: IpcMainInvokeEvent, sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> =>
+      importFromExternalClient(sourceFolder, instanceId, versionId)
   )
 
   ipcMain.handle(IpcChannel.UpdateInstallNow, async () => installUpdateNow())
@@ -282,9 +283,19 @@ export function registerIpcHandlers(): void {
     getCustomCapeStatus(profile.id)
   )
 
-  ipcMain.handle(IpcChannel.ModBundleCheckUpdate, async (): Promise<ModBundleUpdateInfo> => checkForModBundleUpdate())
+  ipcMain.handle(
+    IpcChannel.ModBundleCheckUpdate,
+    async (_event: IpcMainInvokeEvent, versionId: string): Promise<ModBundleUpdateInfo> => checkForModBundleUpdate(versionId)
+  )
 
-  ipcMain.handle(IpcChannel.ModBundleApplyUpdate, async (): Promise<LauncherSettings> => applyModBundleUpdate())
+  ipcMain.handle(
+    IpcChannel.ModBundleApplyUpdate,
+    async (_event: IpcMainInvokeEvent, versionId: string): Promise<LauncherSettings> => applyModBundleUpdate(versionId)
+  )
+
+  ipcMain.handle(IpcChannel.ModBundleListCompatibleVersions, async (): Promise<string[]> => [
+    ...(await getBundleCompatibleVersions())
+  ])
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
@@ -320,18 +331,33 @@ export function registerIpcHandlers(): void {
         message: `Java-Runtime bereit (${javaComponent}).`
       })
 
-      const bundleCompatible = isBundleCompatibleVersion(versionId)
+      const bundleCompatible = await isVersionBundleCompatible(versionId)
       if (!bundleCompatible) {
         sendLog({
           source: 'launcher',
           level: 'info',
-          message: `${versionId} weicht von ${MINECRAFT_VERSION} ab - gebündelte Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, ...) werden übersprungen, es startet reines Fabric+Vanilla.`
+          message: `${versionId} ist aktuell nicht Mod-Bundle-kompatibel - gebündelte Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, ...) werden übersprungen, es startet reines Fabric+Vanilla.`
         })
+      } else if (!(await hasLocalBundleContent(versionId))) {
+        // First time this version's bundle is actually needed - it was only ever added via the
+        // manifest, never baked into this installer. Same download this version's "Aktualisieren"
+        // banner would trigger later, just run automatically once up front instead of leaving a
+        // freshly-added version's very first launch with nothing to show for it.
+        sendLog({ source: 'launcher', level: 'info', message: `Lade Mod-Bundle für ${versionId} herunter…` })
+        try {
+          await applyModBundleUpdate(versionId)
+        } catch (err) {
+          sendLog({
+            source: 'launcher',
+            level: 'error',
+            message: `Mod-Bundle-Download für ${versionId} fehlgeschlagen (${err instanceof Error ? err.message : String(err)}) - startet ohne gebündelte Mods.`
+          })
+        }
       }
 
       const vanilla = await installVersion(sendProgress, versionId, instance.id)
       const installed = await installFabricLoader(vanilla, sendProgress)
-      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, instance.enabledBundledMods)
+      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, versionId, instance.enabledBundledMods)
       const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
       const args = buildLaunchArgs({
         detail: installed.detail,

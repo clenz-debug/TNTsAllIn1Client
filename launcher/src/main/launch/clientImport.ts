@@ -49,8 +49,14 @@ async function fileExists(path: string): Promise<boolean> {
  *
  * Cosmetics/capes are never touched (explicit requirement) - they live only in the Mojang
  * account, not in any local folder this function ever looks at.
+ *
+ * `versionId` is passed in by the caller (`InstancesScreen.tsx` already has it - it's the version
+ * just picked for the brand-new instance) rather than resolved here via `loadLauncherSettings()`
+ * like `listCustomMods` does: the new instance's own save-effect in `PlayScreen.tsx` runs
+ * asynchronously after `onInstancesChange`, so `launcher-settings.json` on disk could still be
+ * stale (missing this instance entirely) at the exact moment this function runs.
  */
-export async function importFromExternalClient(sourceFolder: string, instanceId: string): Promise<ClientImportResult> {
+export async function importFromExternalClient(sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> {
   const gameDir = join(instanceDir(instanceId), 'game')
   await mkdir(gameDir, { recursive: true })
 
@@ -65,7 +71,7 @@ export async function importFromExternalClient(sourceFolder: string, instanceId:
   const copiedMods: string[] = []
   const sourceModsDir = join(sourceFolder, 'mods')
   if (await fileExists(sourceModsDir)) {
-    const bundled = new Set(await listBundledMods())
+    const bundled = new Set(await listBundledMods(versionId))
     const entries = (await readdir(sourceModsDir)).filter((name) => name.endsWith('.jar') && !bundled.has(name))
     const targetModsDir = join(gameDir, 'mods')
     await mkdir(targetModsDir, { recursive: true })

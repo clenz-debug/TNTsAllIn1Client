@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { GameVersionSummary, Instance, StorageInfo, StorageMoveProgressEvent } from '../../../shared/types'
-import { MINECRAFT_VERSION } from '../../../shared/types'
 
 function formatBytes(bytes: number): string {
   const gb = bytes / 1024 ** 3
@@ -13,6 +12,10 @@ interface Props {
   versions: GameVersionSummary[]
   versionsError: string | null
   showSnapshots: boolean
+  /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
+   * see `bundleCompat.ts`) - used only to steer {@link pickDefaultVersion}'s pre-selection, the
+   * dropdown itself still lists every release/snapshot Fabric-supported version regardless. */
+  bundleCompatibleVersions: string[]
   onShowSnapshotsChange: (value: boolean) => void
   /** Both instance-list mutations (create/rename) and a delete result (fetched fresh from the
    * main process, see `handleDelete`) funnel through here - the caller (PlayScreen) just mirrors
@@ -27,11 +30,11 @@ interface Props {
   onClose: () => void
 }
 
-/** Prefers the bundle-pinned version if it's in the list (should always be, it's a stable
- * release), otherwise falls back to the newest entry so the dropdown never starts empty. */
-function pickDefaultVersion(list: GameVersionSummary[]): string {
-  if (list.some((v) => v.id === MINECRAFT_VERSION)) return MINECRAFT_VERSION
-  return list[0]?.id ?? MINECRAFT_VERSION
+/** Prefers the newest bundle-compatible version in the list (multi-version support follow-up -
+ * `list` is already newest-first, same order `versionList.ts#fetchAvailableVersions` returns it
+ * in), otherwise falls back to the newest entry overall so the dropdown never starts empty. */
+function pickDefaultVersion(list: GameVersionSummary[], bundleCompatibleVersions: readonly string[]): string {
+  return list.find((v) => bundleCompatibleVersions.includes(v.id))?.id ?? list[0]?.id ?? ''
 }
 
 /**
@@ -48,6 +51,7 @@ export function InstancesScreen({
   versions,
   versionsError,
   showSnapshots,
+  bundleCompatibleVersions,
   onShowSnapshotsChange,
   onInstancesChange,
   onDataRootOverrideChange,
@@ -57,7 +61,7 @@ export function InstancesScreen({
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
 
   const [newName, setNewName] = useState('')
-  const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions))
+  const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Which instance's name is currently being edited inline (id), plus the in-progress text for it -
@@ -105,7 +109,7 @@ export function InstancesScreen({
   useEffect(() => {
     if (visibleVersions.length === 0) return
     if (!visibleVersions.some((v) => v.id === newVersion)) {
-      setNewVersion(pickDefaultVersion(visibleVersions))
+      setNewVersion(pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
     }
     // Same "only react to the visible set itself changing" reasoning as PlayScreen's equivalent
     // effect - see there for why this isn't keyed on visibleVersions/newVersion directly.
@@ -145,7 +149,7 @@ export function InstancesScreen({
       onInstancesChange([...instances, instance], instance.id)
       setNewName('')
 
-      const result = await window.api.importFromExternalClient(folder, instance.id)
+      const result = await window.api.importFromExternalClient(folder, instance.id, instance.versionId)
       const parts: string[] = []
       if (result.copiedMods.length > 0) parts.push(`${result.copiedMods.length} Mod(s) übernommen`)
       if (result.importedOptions) parts.push('Einstellungen importiert')
