@@ -38,6 +38,8 @@ const api = {
   loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
   saveSettings: (settings: LauncherSettings): Promise<void> => ipcRenderer.invoke(IpcChannel.SettingsSave, settings),
   listBundledMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled, versionId),
+  listBundledModProjectIds: (versionId: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsListBundledProjectIds, versionId),
   listCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
   addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
   removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>

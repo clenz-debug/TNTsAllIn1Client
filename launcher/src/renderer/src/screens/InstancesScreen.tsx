@@ -261,12 +261,17 @@ export function InstancesScreen({
       <section className="instances-section">
         <h3>Neue Instanz</h3>
         <div className="instance-create-form">
+          {/* Explicit label + autoFocus so this reads as "type here", not decoration - the
+              placeholder alone looked identical in shape to an already-chosen name, so it was easy
+              to miss that this field does anything (reported: had to rename after creating instead). */}
+          <span className="instance-name-label">Name:</span>
           <input
             type="text"
             className="instance-name-input"
             placeholder={`Instanz ${instances.length + 1}`}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            autoFocus
           />
           <select value={newVersion} onChange={(e) => setNewVersion(e.target.value)} disabled={visibleVersions.length === 0}>
             {visibleVersions.length === 0 && <option value={newVersion}>{newVersion}</option>}

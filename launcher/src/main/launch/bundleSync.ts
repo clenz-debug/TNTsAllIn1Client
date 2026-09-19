@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { copyFile, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
@@ -44,19 +44,20 @@ async function syncBundleDir(bundleDir: string, destinationDir: string, excluded
 
 /**
  * Copies whichever jar in `libsDir` is newest into `destModsDir`, overwriting whatever's already
- * there under that name. In dev mode `libsDir` is `mod/build/libs/` directly - our own mod jar
- * changes constantly during development, unlike the third-party jars in `mods-bundle/`, so keeping
- * a manually-updated copy of it there reliably goes stale (that's exactly what happened once: a
- * 4 KB Phase-1 stub sat in `mods-bundle/` for days while `mod/build/libs/` moved on through all of
- * Phase 5, so every launcher-based test ran an almost-empty mod with none of the actual features).
- * Pulling straight from the build output every launch makes that impossible - whatever
- * `gradlew build` last produced is what runs, no separate copy step to forget.
+ * there under that name. In dev mode `libsDir` is `mod/<versionId>/build/libs/` directly - our own
+ * mod jar changes constantly during development, unlike the third-party jars in `mods-bundle/`, so
+ * keeping a manually-updated copy of it there reliably goes stale (that's exactly what happened
+ * once: a 4 KB Phase-1 stub sat in `mods-bundle/` for days while the live build output moved on
+ * through all of Phase 5, so every launcher-based test ran an almost-empty mod with none of the
+ * actual features). Pulling straight from the build output every launch makes that impossible -
+ * whatever `gradlew build` last produced is what runs, no separate copy step to forget.
  *
  * Packaged builds have no `mod/` sibling project at all - `libsDir` there is instead
  * `resources/own-mod/`, a one-time snapshot electron-builder copies in at package time (see
- * `electron-builder.yml`'s `extraResources`) from whatever `mod/build/libs/` held at that moment.
- * Same "newest wins" logic still applies even though there's normally only one candidate there -
- * keeps this one function correct for both cases without an `isPackaged` branch inside it.
+ * `electron-builder.yml`'s `extraResources`) from whatever the seed version's `build/libs/` held at
+ * that moment. Same "newest wins" logic still applies even though there's normally only one
+ * candidate there - keeps this one function correct for both cases without an `isPackaged` branch
+ * inside it.
  *
  * Either way, excludes `-sources.jar`/`-dev.jar` (Loom's unremapped intermediary-names jar, not
  * safe to run standalone) so only the real, remapped runtime jar is ever picked.
@@ -84,39 +85,18 @@ async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void
   await copyFile(join(libsDir, newest.name), join(destModsDir, newest.name))
 }
 
-/** Reads `mod/gradle.properties`' `minecraft_version` value directly (not via Gradle - this only
- * needs the one property, spinning up Gradle just to read it would be very slow) - lets dev mode
- * tell whether `mod/build/libs/`'s current contents were actually built for the version being
- * launched right now, or are just left over from whichever version the local `mod/` checkout last
- * targeted. Returns `null` if the file is missing/unparseable (no local `mod/` checkout at all). */
-async function readModGradleMinecraftVersion(resourcesRoot: string): Promise<string | null> {
-  try {
-    const raw = await readFile(join(resourcesRoot, '..', 'mod', 'gradle.properties'), 'utf-8')
-    const match = raw.match(/^minecraft_version=(.+)$/m)
-    return match ? match[1].trim() : null
-  } catch {
-    return null
-  }
-}
-
 /**
- * Dev-mode own-mod-jar source for one Minecraft version, multi-version support follow-up: `mod/`
- * only ever holds one live build at a time (`gradle.properties`' `minecraft_version` decides which),
- * so testing more than one version locally needs *some* place to keep the others' jars around.
- * Reuses the exact same `own-mod/<versionId>/` folder packaged builds already use (see `ownModDir`)
- * as an opt-in snapshot spot - stash a built jar there by hand (same manual step the release runbook
- * already has you do for a real release) for any version you're not actively iterating on right now.
+ * Dev-mode own-mod-jar source for one Minecraft version. `mod/` holds one independent Gradle/Loom
+ * project per supported version (`mod/<versionId>/`, see `mod-bundle-release-runbook.md`) rather
+ * than a single checkout that only ever targets whichever version is currently pinned - so every
+ * version's `build/libs/` is live at all times, no "is this the currently active one" check needed.
  *
- * Falls back to the live `mod/build/libs/` pull only when no snapshot exists for `versionId` *and*
- * `mod/gradle.properties`' `minecraft_version` currently matches `versionId` too - so the version
- * you're actively developing against still auto-picks up every fresh `gradlew build` without a
- * manual copy step (same anti-staleness reasoning `syncOwnModJar`'s own doc comment already gives
- * for why dev mode reads live in the first place), but a *different*, not-yet-snapshotted version
- * doesn't silently get whatever mismatched jar `mod/build/libs/` happens to hold right now - that
- * would just get rejected by Fabric Loader anyway (confirmed live during this session's own
- * multi-version testing), just with a much less obvious cause than "no snapshot for this version
- * yet, own mod skipped" (same no-own-mod-mod behavior `syncOwnModJar` already has for a fresh
- * checkout that was never built at all).
+ * Still prefers a manually stashed snapshot in `own-mod/<versionId>/` (same folder packaged builds
+ * use, see `ownModDir`) over the live build output, if one happens to exist - lets you pin a
+ * specific jar for a version you don't want to keep rebuilding locally right now. Falls back to the
+ * live `mod/<versionId>/build/libs/` pull otherwise, so the version you're actively iterating on
+ * still auto-picks up every fresh `gradlew build` without a manual copy step (same anti-staleness
+ * reasoning `syncOwnModJar`'s own doc comment gives for why dev mode reads live in the first place).
  */
 async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string): Promise<string> {
   const snapshotDir = ownModDir(versionId)
@@ -125,8 +105,7 @@ async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string)
     .catch(() => false)
   if (hasSnapshot) return snapshotDir
 
-  const liveTargetVersion = await readModGradleMinecraftVersion(resourcesRoot)
-  return liveTargetVersion === versionId ? join(resourcesRoot, '..', 'mod', 'build', 'libs') : snapshotDir
+  return join(resourcesRoot, '..', 'mod', versionId, 'build', 'libs')
 }
 
 /**
@@ -191,8 +170,8 @@ export async function syncBundledContent(
   )
 
   // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/<versionId>/ (see
-  // electron-builder.yml) instead of a live sibling mod/build/libs/ - there is no mod/ project at
-  // all once the launcher is actually installed on someone else's machine.
+  // electron-builder.yml) instead of a live sibling mod/<versionId>/build/libs/ - there is no mod/
+  // project at all once the launcher is actually installed on someone else's machine.
   const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(resourcesRoot, versionId)
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)

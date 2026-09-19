@@ -37,7 +37,7 @@ import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
-import { installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
+import { getBundledModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
@@ -101,6 +101,10 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.ModsListBundled, async (_event: IpcMainInvokeEvent, versionId: string) =>
     listToggleableBundledMods(versionId)
+  )
+
+  ipcMain.handle(IpcChannel.ModsListBundledProjectIds, async (_event: IpcMainInvokeEvent, versionId: string) =>
+    getBundledModProjectIds(versionId)
   )
 
   ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, instanceId: string) =>

@@ -14,6 +14,7 @@ export const IpcChannel = {
   SettingsLoad: 'settings:load',
   SettingsSave: 'settings:save',
   ModsListBundled: 'mods:list-bundled',
+  ModsListBundledProjectIds: 'mods:list-bundled-project-ids',
   ModsListCustom: 'mods:list-custom',
   ModsAddCustom: 'mods:add-custom',
   ModsRemoveCustom: 'mods:remove-custom',

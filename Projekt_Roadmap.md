@@ -18,9 +18,11 @@ Ein Monorepo für den Anfang — ein Ort, eine Historie, einfache Cross-Referenz
 
 ```
 TNTs_Client_Projekt/
-├── mod/            Fabric-Client-Mod: Java + Gradle + Fabric Loom
-│   ├── build.gradle.kts / gradle.properties   (Pins: MC-Version, Yarn-Mappings, Loader, Fabric API)
-│   └── src/main/java/<pkg>/          <ClientName>Mod.java, mixin/, hud/, inventory/, menu/
+├── mod/            Fabric-Client-Mod: Java + Gradle + Fabric Loom — ein eigener Ordner pro
+│   │                 unterstützter Minecraft-Version (siehe mod-bundle-release-runbook.md)
+│   ├── 1.21.11/    build.gradle.kts / gradle.properties (Pins: MC-Version, Mappings, Loader, Fabric API)
+│   │   └── src/main/java/<pkg>/      <ClientName>Mod.java, mixin/, hud/, inventory/, menu/
+│   └── 26.1.2/     eigenständiges Gradle-Projekt, gleicher Aufbau wie oben
 ├── launcher/       Electron + TypeScript (Renderer: React)
 │   └── src/main/{auth,launch,mods,ipc}/, preload/, renderer/
 ├── backend/        (erst Phase 8, optional) Freunde-/Presence-Service, Node/TS
@@ -145,3 +147,20 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` gegen z.B.
 2. JDK 21, Node.js LTS, Git, IntelliJ IDEA Community installieren.
 3. Azure-AD-App registrieren + Freischaltungsantrag (`aka.ms/mce-reviewappid`) abschicken.
 4. Parallel: Fabric Template Mod Generator nutzen, `runClient` zum Laufen bringen (Phase 1).
+
+
+
+persöhnliche liste was fehlt:
+- client setup beim ersten start (inkl. sprachauswahl im launcher, farben, etc...)
+- einstellungsbereich im Launcher (sprache farben, etc...)
+- ingame mods auf andere versionen porten (wichtig sind vor allem die vollversionen)
+- ingame und launcher design anpassen
+    - dazu gehört die auswahl mc standard design oder cleaneres design in den eingestellten farben (gilt für ingame, da launcher immer in unseren design sein sollte)
+    - Logo anpassen auch an die farben
+- im Launcher das abmelden und die anzeige des angemeldeten spieler anpassen, vll das man nicht den abmelden button hat sondern man den namen zu nem button macht und man dann eine auswahl kommt abmelden oder so, der button mit dem namen sollte zusätzlich die vorderseite vom kopf des aktuellen mc skinns (mit den 3d effekten) zeigen
+- discord anzeigen das der client verwendet wird
+- kümmern as bei inkompatiblen mod ist
+- mc welten zwischen instanzen schieben (mit warnung)
+- in der launcher option eine option erstellen um die konsole in ein externes (2.) fenster zu haben
+- mod deaktivierne können (nicht nur löschen)
+- abruch button im launcher 

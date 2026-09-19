@@ -64,9 +64,19 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
   // from a Modrinth project id back to which installed jar filename came from it, so this can only
   // track "installed just now, this session", not "already installed" for results seen fresh.
   const [installedProjectIds, setInstalledProjectIds] = useState<Set<string>>(new Set())
+  // Which search results are mods we already bundle for this version (toggleable or always-on
+  // alike - Sodium/Fabric API/etc. never show up in `bundledMods` above since that's toggleable-only,
+  // but they're still already running) - own user request: without this, searching for e.g. "Sodium"
+  // showed a plain "Installieren" button with no indication it's already there, which would just
+  // download a redundant second copy as a custom mod if clicked.
+  const [bundledProjectIds, setBundledProjectIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(String(err)))
+    window.api
+      .listBundledModProjectIds(versionId)
+      .then((ids) => setBundledProjectIds(new Set(ids)))
+      .catch((err) => setError(String(err)))
   }, [versionId])
 
   useEffect(() => {
@@ -224,14 +234,20 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
                   </div>
                   <button
                     className="secondary-button"
-                    disabled={installingId === result.projectId || installedProjectIds.has(result.projectId)}
+                    disabled={
+                      installingId === result.projectId ||
+                      installedProjectIds.has(result.projectId) ||
+                      bundledProjectIds.has(result.projectId)
+                    }
                     onClick={() => void handleInstall(result.projectId)}
                   >
-                    {installedProjectIds.has(result.projectId)
-                      ? 'Installiert'
-                      : installingId === result.projectId
-                        ? 'Wird installiert…'
-                        : 'Installieren'}
+                    {bundledProjectIds.has(result.projectId)
+                      ? 'Bereits gebündelt'
+                      : installedProjectIds.has(result.projectId)
+                        ? 'Installiert'
+                        : installingId === result.projectId
+                          ? 'Wird installiert…'
+                          : 'Installieren'}
                   </button>
                 </li>
               ))}

@@ -1,10 +1,12 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { MODRINTH_SEARCH_PAGE_SIZE, type ModrinthSearchPage, type ModrinthSortIndex } from '../../shared/types'
 import { fetchTextureDataUri } from '../auth/skinApi'
 import { downloadAndVerifySha1 } from '../downloadVerify'
 import { instanceDir } from './installer'
 import { listCustomMods } from './modsManager'
+import { bundledModsDir } from './resourcePaths'
 
 const MODRINTH_API_BASE = 'https://api.modrinth.com/v2'
 
@@ -28,9 +30,15 @@ interface ModrinthVersionFile {
   primary: boolean
 }
 
+interface ModrinthDependency {
+  project_id: string | null
+  dependency_type: 'required' | 'optional' | 'incompatible' | 'embedded'
+}
+
 interface ModrinthVersion {
   version_type: 'release' | 'beta' | 'alpha'
   files: ModrinthVersionFile[]
+  dependencies: ModrinthDependency[]
 }
 
 /**
@@ -75,19 +83,11 @@ export async function searchModrinthMods(
   return { results, totalHits }
 }
 
-/**
- * Installs a mod's newest compatible release into an instance's `game/mods` folder - reuses
- * {@link listCustomMods} to report the refreshed list, since a freshly-downloaded jar sitting
- * there is indistinguishable from one added by hand (same filename-set-difference detection).
- *
- * Deliberately does **not** resolve `dependencies` - most Fabric mods only depend on Fabric API,
- * which this launcher already bundles unconditionally; a mod needing something else can be
- * searched for and installed the same way, by hand, same as the roadmap's own "keep v1 small"
- * pattern elsewhere in this project. Also deliberately no version picker - always the newest
- * `release` (falling back to the newest of any type if no release exists), same "prefer stable"
- * convention already used for Fabric Loader version selection in `fabricMeta.ts`.
- */
-export async function installModrinthMod(instanceId: string, projectId: string, gameVersion: string): Promise<string[]> {
+/** Newest compatible version of one project for `gameVersion` + Fabric - shared by both the
+ * top-level install and dependency resolution below, so a required dependency is picked the exact
+ * same "prefer stable" way (newest `release`, else newest of any type) as the mod the user actually
+ * asked for, same convention already used for Fabric Loader version selection in `fabricMeta.ts`. */
+async function resolveNewestCompatibleVersion(projectId: string, gameVersion: string): Promise<ModrinthVersion | null> {
   const versionsUrl = `${MODRINTH_API_BASE}/project/${projectId}/version?loaders=${encodeURIComponent(
     JSON.stringify(['fabric'])
   )}&game_versions=${encodeURIComponent(JSON.stringify([gameVersion]))}`
@@ -96,20 +96,121 @@ export async function installModrinthMod(instanceId: string, projectId: string, 
     throw new Error(`Konnte Modrinth-Versionen nicht laden (${versionsResponse.status})`)
   }
   const versions = (await versionsResponse.json()) as ModrinthVersion[]
-  const chosen = versions.find((v) => v.version_type === 'release') ?? versions[0]
-  if (!chosen) {
-    throw new Error('Kein passender Fabric-Build für diese Minecraft-Version gefunden.')
-  }
-  const file = chosen.files.find((f) => f.primary) ?? chosen.files[0]
-  if (!file) {
-    throw new Error('Diese Modrinth-Version hat keine herunterladbare Datei.')
-  }
+  return versions.find((v) => v.version_type === 'release') ?? versions[0] ?? null
+}
 
-  const buffer = await downloadAndVerifySha1(file.url, file.hashes.sha1, file.filename)
+/** Project title for an error message naming a specific unresolvable dependency - best-effort only,
+ * falls back to the raw id if the lookup itself fails (never lets a cosmetic detail hide the actual
+ * error). */
+async function projectTitle(projectId: string): Promise<string> {
+  try {
+    const response = await fetch(`${MODRINTH_API_BASE}/project/${projectId}`)
+    if (!response.ok) return projectId
+    const project = (await response.json()) as { title?: string }
+    return project.title ?? projectId
+  } catch {
+    return projectId
+  }
+}
 
+/** Modrinth project ids of every `.jar` actually sitting in `dir` right now, resolved from the real
+ * files' SHA-1 hashes via Modrinth's batch `/version_files` lookup rather than trusted metadata -
+ * works equally for a mods-bundle folder or an instance's `game/mods`, and for a Minecraft version
+ * with no `mod-bundle-manifest.json` entry yet (tried keying off the manifest first - broke exactly
+ * for the version most worth testing this on: a version only staged locally during development has
+ * no manifest entry at all yet, per `mod-bundle-release-runbook.md`'s "only push once everything is
+ * finished" rule). A jar Modrinth doesn't recognize (hand-built, removed from Modrinth, ...) is
+ * silently left out rather than failing the whole lookup. */
+async function resolveProjectIdsInDir(dir: string): Promise<Set<string>> {
+  let fileNames: string[]
+  try {
+    fileNames = (await readdir(dir)).filter((name) => name.endsWith('.jar'))
+  } catch {
+    return new Set()
+  }
+  if (fileNames.length === 0) return new Set()
+
+  const hashes = await Promise.all(
+    fileNames.map(async (fileName) => {
+      const buffer = await readFile(join(dir, fileName))
+      return createHash('sha1').update(buffer).digest('hex')
+    })
+  )
+
+  const response = await fetch(`${MODRINTH_API_BASE}/version_files`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hashes, algorithm: 'sha1' })
+  })
+  if (!response.ok) {
+    throw new Error(`Modrinth-Hash-Lookup fehlgeschlagen (${response.status})`)
+  }
+  const versionsByHash = (await response.json()) as Record<string, ModrinthVersion & { project_id: string }>
+  return new Set(Object.values(versionsByHash).map((v) => v.project_id))
+}
+
+/**
+ * Modrinth project ids of every mod jar actually sitting in `mods-bundle/<versionId>/` right now
+ * (toggleable or always-on alike - see `modsManager.ts#isAlwaysEnabledBundledMod`), so the Mods
+ * screen's search results can show "already bundled" instead of a misleading plain "Installieren"
+ * button for e.g. Sodium, which would just download a redundant second copy as a custom mod.
+ */
+export async function getBundledModProjectIds(versionId: string): Promise<string[]> {
+  return [...(await resolveProjectIdsInDir(bundledModsDir(versionId)))]
+}
+
+/**
+ * Installs a mod's newest compatible release into an instance's `game/mods` folder, pulling in
+ * every `required` Modrinth dependency (transitively) that isn't already satisfied by a bundled mod
+ * or something already sitting in `game/mods` - own user request, after "Over The Limits for Female
+ * Gender Mod" (needs fabric-language-kotlin, YACL, ModMenu and its own base mod) failed to launch
+ * with Fabric Loader's "Incompatible mods found!" screen for exactly this reason. `optional`/
+ * `incompatible` dependencies are never auto-installed (the user didn't ask for extras, and
+ * resolving a real incompatibility is out of scope here); `embedded` ones are skipped too - their
+ * code already ships inside the parent jar, installing them separately would just duplicate classes.
+ *
+ * Two phases on purpose: every project in the dependency tree is resolved to a concrete version
+ * *before* anything is downloaded or written, so a dependency with no build for this Minecraft
+ * version fails the whole install cleanly instead of leaving a mod half-installed without something
+ * it needs - the exact broken state this feature exists to prevent in the first place.
+ */
+export async function installModrinthMod(instanceId: string, projectId: string, gameVersion: string): Promise<string[]> {
   const modsDir = join(instanceDir(instanceId), 'game', 'mods')
   await mkdir(modsDir, { recursive: true })
-  await writeFile(join(modsDir, file.filename), buffer)
+
+  const alreadySatisfied = new Set([
+    ...(await resolveProjectIdsInDir(bundledModsDir(gameVersion))),
+    ...(await resolveProjectIdsInDir(modsDir))
+  ])
+
+  const toResolve = [projectId]
+  const resolved = new Map<string, ModrinthVersion>()
+  while (toResolve.length > 0) {
+    const currentProjectId = toResolve.shift()!
+    if (resolved.has(currentProjectId) || alreadySatisfied.has(currentProjectId)) continue
+
+    const chosen = await resolveNewestCompatibleVersion(currentProjectId, gameVersion)
+    if (!chosen) {
+      const label = currentProjectId === projectId ? '' : `Abhängigkeit "${await projectTitle(currentProjectId)}": `
+      throw new Error(`${label}Kein passender Fabric-Build für Minecraft ${gameVersion} gefunden.`)
+    }
+    resolved.set(currentProjectId, chosen)
+
+    for (const dep of chosen.dependencies) {
+      if (dep.dependency_type === 'required' && dep.project_id && !resolved.has(dep.project_id) && !alreadySatisfied.has(dep.project_id)) {
+        toResolve.push(dep.project_id)
+      }
+    }
+  }
+
+  for (const version of resolved.values()) {
+    const file = version.files.find((f) => f.primary) ?? version.files[0]
+    if (!file) {
+      throw new Error('Eine benötigte Modrinth-Version hat keine herunterladbare Datei.')
+    }
+    const buffer = await downloadAndVerifySha1(file.url, file.hashes.sha1, file.filename)
+    await writeFile(join(modsDir, file.filename), buffer)
+  }
 
   return listCustomMods(instanceId)
 }

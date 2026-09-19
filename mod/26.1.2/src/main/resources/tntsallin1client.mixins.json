@@ -1,0 +1,31 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.tntsallin1client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"AbstractContainerScreenAccessor",
+		"AbstractContainerScreenMixin",
+		"AbstractRecipeBookScreenAccessor",
+		"BlockOutlineMixin",
+		"ChatScreenMixin",
+		"EntityHitboxDebugRendererMixin",
+		"EntityTurnMixin",
+		"GuiMixin",
+		"ItemEntityRenderStateMixin",
+		"ItemEntityRendererMixin",
+		"ItemInHandRendererMixin",
+		"LevelRendererMixin",
+		"LocalPlayerMixin",
+		"MouseHandlerMixin",
+		"MultiPlayerGameModeMixin",
+		"OptionInstanceAccessor",
+		"OptionsSaveMixin",
+		"RecipeBookComponentAccessor",
+		"RecipeBookPageAccessor",
+		"ScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
