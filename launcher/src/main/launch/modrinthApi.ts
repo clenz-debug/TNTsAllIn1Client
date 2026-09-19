@@ -113,22 +113,25 @@ async function projectTitle(projectId: string): Promise<string> {
   }
 }
 
-/** Modrinth project ids of every `.jar` actually sitting in `dir` right now, resolved from the real
- * files' SHA-1 hashes via Modrinth's batch `/version_files` lookup rather than trusted metadata -
- * works equally for a mods-bundle folder or an instance's `game/mods`, and for a Minecraft version
- * with no `mod-bundle-manifest.json` entry yet (tried keying off the manifest first - broke exactly
- * for the version most worth testing this on: a version only staged locally during development has
- * no manifest entry at all yet, per `mod-bundle-release-runbook.md`'s "only push once everything is
+/** Modrinth versions (full metadata, dependencies included) of every `.jar` actually sitting in
+ * `dir` right now, keyed by project id and resolved from the real files' SHA-1 hashes via
+ * Modrinth's batch `/version_files` lookup rather than trusted metadata - works equally for a
+ * mods-bundle folder or an instance's `game/mods`, and for a Minecraft version with no
+ * `mod-bundle-manifest.json` entry yet (tried keying off the manifest first - broke exactly for
+ * the version most worth testing this on: a version only staged locally during development has no
+ * manifest entry at all yet, per `mod-bundle-release-runbook.md`'s "only push once everything is
  * finished" rule). A jar Modrinth doesn't recognize (hand-built, removed from Modrinth, ...) is
- * silently left out rather than failing the whole lookup. */
-async function resolveProjectIdsInDir(dir: string): Promise<Set<string>> {
+ * silently left out rather than failing the whole lookup. Keeping the full version (not just the
+ * id) is what lets {@link installModrinthMod} check `incompatible` declarations against what's
+ * already installed, not only against ids. */
+async function resolveProjectVersionsInDir(dir: string): Promise<Map<string, ModrinthVersion & { project_id: string }>> {
   let fileNames: string[]
   try {
     fileNames = (await readdir(dir)).filter((name) => name.endsWith('.jar'))
   } catch {
-    return new Set()
+    return new Map()
   }
-  if (fileNames.length === 0) return new Set()
+  if (fileNames.length === 0) return new Map()
 
   const hashes = await Promise.all(
     fileNames.map(async (fileName) => {
@@ -146,7 +149,17 @@ async function resolveProjectIdsInDir(dir: string): Promise<Set<string>> {
     throw new Error(`Modrinth-Hash-Lookup fehlgeschlagen (${response.status})`)
   }
   const versionsByHash = (await response.json()) as Record<string, ModrinthVersion & { project_id: string }>
-  return new Set(Object.values(versionsByHash).map((v) => v.project_id))
+  const byProjectId = new Map<string, ModrinthVersion & { project_id: string }>()
+  for (const version of Object.values(versionsByHash)) {
+    byProjectId.set(version.project_id, version)
+  }
+  return byProjectId
+}
+
+/** Just the ids from {@link resolveProjectVersionsInDir}, for the two read-only "is this already
+ * here" checks below that don't need the full version metadata. */
+async function resolveProjectIdsInDir(dir: string): Promise<Set<string>> {
+  return new Set((await resolveProjectVersionsInDir(dir)).keys())
 }
 
 /**
@@ -160,28 +173,52 @@ export async function getBundledModProjectIds(versionId: string): Promise<string
 }
 
 /**
+ * Modrinth project ids of every mod jar actually sitting in an instance's `game/mods` right now -
+ * the real-state counterpart to the Mods screen's old "just remember which ids I installed this
+ * session" approach, which went stale the moment a mod installed via search was removed again
+ * through the "Eigene Mods" list right below: the set was never told, so the search result kept
+ * showing "Installiert" for a mod that, on disk, no longer was. Read fresh (not cached) so it
+ * reflects removals the same way {@link getBundledModProjectIds} already reflects bundle changes.
+ */
+export async function getCustomModProjectIds(instanceId: string): Promise<string[]> {
+  const modsDir = join(instanceDir(instanceId), 'game', 'mods')
+  return [...(await resolveProjectIdsInDir(modsDir))]
+}
+
+/**
  * Installs a mod's newest compatible release into an instance's `game/mods` folder, pulling in
  * every `required` Modrinth dependency (transitively) that isn't already satisfied by a bundled mod
  * or something already sitting in `game/mods` - own user request, after "Over The Limits for Female
  * Gender Mod" (needs fabric-language-kotlin, YACL, ModMenu and its own base mod) failed to launch
- * with Fabric Loader's "Incompatible mods found!" screen for exactly this reason. `optional`/
- * `incompatible` dependencies are never auto-installed (the user didn't ask for extras, and
- * resolving a real incompatibility is out of scope here); `embedded` ones are skipped too - their
- * code already ships inside the parent jar, installing them separately would just duplicate classes.
+ * with Fabric Loader's "Incompatible mods found!" screen for exactly this reason. `optional`
+ * dependencies are never auto-installed (the user didn't ask for extras); `embedded` ones are
+ * skipped too - their code already ships inside the parent jar, installing them separately would
+ * just duplicate classes.
  *
- * Two phases on purpose: every project in the dependency tree is resolved to a concrete version
- * *before* anything is downloaded or written, so a dependency with no build for this Minecraft
- * version fails the whole install cleanly instead of leaving a mod half-installed without something
- * it needs - the exact broken state this feature exists to prevent in the first place.
+ * `incompatible` declarations *are* checked (own user request, follow-up to the above) - both
+ * directions, since Modrinth lets either side of a conflict declare it: does anything newly
+ * resolved here declare an already-installed mod (or another newly resolved one) incompatible, and
+ * does anything already installed declare one of the newly resolved mods incompatible. Checked
+ * against Modrinth's own declared metadata only, not the mod code itself - a real conflict Modrinth
+ * doesn't know about (or one only Fabric Loader's actual resolution logic would catch, e.g. via
+ * shared access-widened classes) still isn't caught here; that residual case is what the
+ * launch-time check in `gameProcess.ts` exists to surface instead.
+ *
+ * Three phases on purpose: every project in the dependency tree is resolved to a concrete version,
+ * then checked for incompatibilities, *before* anything is downloaded or written - so a dependency
+ * with no build for this Minecraft version, or a genuine conflict, fails the whole install cleanly
+ * instead of leaving a mod half-installed without something it needs or alongside something it
+ * can't run next to - the exact broken state this feature exists to prevent in the first place.
  */
 export async function installModrinthMod(instanceId: string, projectId: string, gameVersion: string): Promise<string[]> {
   const modsDir = join(instanceDir(instanceId), 'game', 'mods')
   await mkdir(modsDir, { recursive: true })
 
-  const alreadySatisfied = new Set([
-    ...(await resolveProjectIdsInDir(bundledModsDir(gameVersion))),
-    ...(await resolveProjectIdsInDir(modsDir))
+  const installedVersions = new Map([
+    ...(await resolveProjectVersionsInDir(bundledModsDir(gameVersion))),
+    ...(await resolveProjectVersionsInDir(modsDir))
   ])
+  const alreadySatisfied = new Set(installedVersions.keys())
 
   const toResolve = [projectId]
   const resolved = new Map<string, ModrinthVersion>()
@@ -199,6 +236,31 @@ export async function installModrinthMod(instanceId: string, projectId: string, 
     for (const dep of chosen.dependencies) {
       if (dep.dependency_type === 'required' && dep.project_id && !resolved.has(dep.project_id) && !alreadySatisfied.has(dep.project_id)) {
         toResolve.push(dep.project_id)
+      }
+    }
+  }
+
+  for (const [newId, version] of resolved) {
+    for (const dep of version.dependencies) {
+      if (dep.dependency_type !== 'incompatible' || !dep.project_id) continue
+      if (installedVersions.has(dep.project_id)) {
+        throw new Error(
+          `"${await projectTitle(newId)}" ist mit der bereits installierten Mod "${await projectTitle(dep.project_id)}" nicht kompatibel und kann deshalb nicht installiert werden.`
+        )
+      }
+      if (resolved.has(dep.project_id) && dep.project_id !== newId) {
+        throw new Error(
+          `"${await projectTitle(newId)}" ist mit "${await projectTitle(dep.project_id)}" nicht kompatibel - beide wären Teil dieser Installation, das geht nicht.`
+        )
+      }
+    }
+  }
+  for (const [installedId, version] of installedVersions) {
+    for (const dep of version.dependencies) {
+      if (dep.dependency_type === 'incompatible' && dep.project_id && resolved.has(dep.project_id)) {
+        throw new Error(
+          `"${await projectTitle(dep.project_id)}" ist mit der bereits installierten Mod "${await projectTitle(installedId)}" nicht kompatibel und kann deshalb nicht installiert werden.`
+        )
       }
     }
   }

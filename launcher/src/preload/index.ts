@@ -41,6 +41,8 @@ const api = {
   listBundledModProjectIds: (versionId: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsListBundledProjectIds, versionId),
   listCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
+  listCustomModProjectIds: (instanceId: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsListCustomProjectIds, instanceId),
   addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
   removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, instanceId, fileName),
@@ -51,6 +53,14 @@ const api = {
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
   cloneInstance: (instanceId: string, newName: string): Promise<LauncherSettings> =>
     ipcRenderer.invoke(IpcChannel.InstancesClone, instanceId, newName),
+  listInstanceWorlds: (instanceId: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.InstancesListWorlds, instanceId),
+  getWorldIcon: (instanceId: string, worldName: string): Promise<string | null> =>
+    ipcRenderer.invoke(IpcChannel.InstancesWorldIcon, instanceId, worldName),
+  moveWorldBetweenInstances: (sourceInstanceId: string, worldName: string, targetInstanceId: string): Promise<{ movedTo: string }> =>
+    ipcRenderer.invoke(IpcChannel.InstancesMoveWorld, sourceInstanceId, worldName, targetInstanceId),
+  copyWorldBetweenInstances: (sourceInstanceId: string, worldName: string, targetInstanceId: string): Promise<{ copiedTo: string }> =>
+    ipcRenderer.invoke(IpcChannel.InstancesCopyWorld, sourceInstanceId, worldName, targetInstanceId),
   pickExternalClientFolder: (): Promise<string | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
   importFromExternalClient: (sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> =>
     ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId, versionId),

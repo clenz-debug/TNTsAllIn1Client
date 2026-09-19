@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatError } from '../formatError'
 import type { CustomCapeStatus, MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
 
@@ -84,7 +85,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     if (!activeSkin) return
     fetchSkinTextureWithRetry(activeSkin.url)
       .then(setSkinPreview)
-      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .catch((err) => setError(formatError(err)))
   }, [activeSkin?.url, skinRevision])
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     window.api
       .listSkinLibrary()
       .then(setLibrary)
-      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
+      .catch((err) => setError(formatError(err)))
   }, [])
 
   useEffect(() => {
@@ -126,7 +127,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         if (newEntry) setPendingRename(newEntry)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -141,7 +142,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setLibrary(await window.api.listSkinLibrary())
       setPendingRename(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setRenamingBusy(false)
     }
@@ -157,7 +158,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         setSkinRevision((r) => r + 1)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusyLibraryId(null)
     }
@@ -172,7 +173,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       await window.api.deleteSkinFromLibrary(entry.id)
       setLibrary((current) => current.filter((e) => e.id !== entry.id))
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusyLibraryId(null)
     }
@@ -184,7 +185,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       const picked = await window.api.selectCapePng()
       if (picked) setPendingCape(picked)
     } catch (err) {
-      setCapeError(err instanceof Error ? err.message : String(err))
+      setCapeError(formatError(err))
     }
   }
 
@@ -197,7 +198,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setCustomCape({ exists: true, dataUri: result.dataUri })
       setPendingCape(null)
     } catch (err) {
-      setCapeError(err instanceof Error ? err.message : String(err))
+      setCapeError(formatError(err))
     } finally {
       setCapeBusy(false)
     }
@@ -212,7 +213,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       await window.api.deleteCape(profile)
       setCustomCape({ exists: false, dataUri: null })
     } catch (err) {
-      setCapeError(err instanceof Error ? err.message : String(err))
+      setCapeError(formatError(err))
     } finally {
       setCapeBusy(false)
     }

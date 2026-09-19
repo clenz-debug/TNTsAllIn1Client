@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatError } from '../formatError'
 import type { AuthProgressEvent, MinecraftProfile } from '../../../shared/types'
 
 interface Props {
@@ -18,7 +19,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       const profile = await window.api.login()
       onLoggedIn(profile)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       unsubscribe()
       setBusy(false)
@@ -32,7 +33,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       const profile = await window.api.loginMock()
       onLoggedIn(profile)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }

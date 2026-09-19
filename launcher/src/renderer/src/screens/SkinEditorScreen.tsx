@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { SkinViewer } from 'skinview3d'
 import { CanvasTexture, NearestFilter, type Texture } from 'three'
+import { formatError } from '../formatError'
 import type { SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { BODY_PART_TOGGLES } from '../skinEditor/bodyParts'
 import { BodyPartDiagram } from '../skinEditor/BodyPartDiagram'
@@ -300,7 +301,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const dataUri = await window.api.loadSkinTemplate(variant)
       setSkinSource({ dataUri, variant })
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -313,7 +314,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const result = await window.api.loadSkinPngForEditor()
       if (result) setSkinSource({ dataUri: result.dataUri, variant: chooserVariant })
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -328,7 +329,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const saved = await window.api.saveSkinToLibrary(bytes, skinSource!.variant, name, existingId)
       setExistingId(saved.id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -342,7 +343,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const bytes = await canvasToPngBytes(viewerRef.current.skinCanvas)
       await window.api.exportSkinPng(bytes, `${name || 'skin'}.png`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }

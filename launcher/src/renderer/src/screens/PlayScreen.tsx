@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatError } from '../formatError'
 import type {
   GameLogEvent,
   GameVersionSummary,
@@ -16,6 +17,7 @@ import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
 import { SkinEditorScreen } from './SkinEditorScreen'
 import { SkinScreen } from './SkinScreen'
+import { WorldsScreen } from './WorldsScreen'
 
 /** `'new'` opens the editor blank (template/own-PNG chooser); a `SkinLibraryEntry` opens it
  * pre-loaded via that entry's "Bearbeiten" button; `null` means the editor isn't open. */
@@ -33,6 +35,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [logs, setLogs] = useState<GameLogEvent[]>([])
   const [showCredits, setShowCredits] = useState(false)
   const [showMods, setShowMods] = useState(false)
+  const [showWorlds, setShowWorlds] = useState(false)
   const [showSkin, setShowSkin] = useState(false)
   const [skinEditorRequest, setSkinEditorRequest] = useState<SkinEditorRequest>(null)
   const [showInstances, setShowInstances] = useState(false)
@@ -81,7 +84,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         setBundleCompatibleVersions(bundleVersions)
         setSettingsLoaded(true)
       })
-      .catch((err) => setVersionsError(err instanceof Error ? err.message : String(err)))
+      .catch((err) => setVersionsError(formatError(err)))
   }, [])
 
   useEffect(() => {
@@ -178,7 +181,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       setAppliedResourcepackVersions(updated.appliedResourcepackVersions)
       setModBundleUpdate(null)
     } catch (err) {
-      setModBundleUpdateError(err instanceof Error ? err.message : String(err))
+      setModBundleUpdateError(formatError(err))
     } finally {
       setApplyingModBundleUpdate(false)
     }
@@ -194,7 +197,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     try {
       await window.api.play(profile, selectedInstance.id)
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
+      const message = formatError(err)
       setLogs((prev) => [...prev, { source: 'launcher', level: 'error', message }])
     } finally {
       unsubscribeProgress()
@@ -236,6 +239,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         onClose={() => setShowMods(false)}
       />
     )
+  }
+
+  if (showWorlds && selectedInstance) {
+    return <WorldsScreen instanceId={selectedInstance.id} instances={instances} onClose={() => setShowWorlds(false)} />
   }
 
   if (skinEditorRequest !== null) {
@@ -346,6 +353,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         </button>
         <button className="secondary-button" onClick={() => setShowMods(true)} disabled={busy || !selectedInstance}>
           Mods…
+        </button>
+        <button className="secondary-button" onClick={() => setShowWorlds(true)} disabled={busy || !selectedInstance}>
+          Welten…
         </button>
         {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
         {instances.length === 0 && (

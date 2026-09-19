@@ -32,12 +32,19 @@ import { importFromExternalClient, pickExternalClientFolder } from '../launch/cl
 import { installFabricLoader } from '../launch/fabricInstaller'
 import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
-import { cloneInstance, deleteInstance } from '../launch/instanceManager'
+import {
+  cloneInstance,
+  copyWorldBetweenInstances,
+  deleteInstance,
+  getWorldIcon,
+  listInstanceWorlds,
+  moveWorldBetweenInstances
+} from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
-import { getBundledModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
+import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
@@ -111,6 +118,10 @@ export function registerIpcHandlers(): void {
     listCustomMods(instanceId)
   )
 
+  ipcMain.handle(IpcChannel.ModsListCustomProjectIds, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    getCustomModProjectIds(instanceId)
+  )
+
   ipcMain.handle(IpcChannel.ModsAddCustom, async (event: IpcMainInvokeEvent, instanceId: string) =>
     addCustomMods(instanceId, BrowserWindow.fromWebContents(event.sender))
   )
@@ -142,6 +153,26 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.InstancesClone, async (_event: IpcMainInvokeEvent, instanceId: string, newName: string) =>
     cloneInstance(instanceId, newName)
+  )
+
+  ipcMain.handle(IpcChannel.InstancesListWorlds, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    listInstanceWorlds(instanceId)
+  )
+
+  ipcMain.handle(IpcChannel.InstancesWorldIcon, async (_event: IpcMainInvokeEvent, instanceId: string, worldName: string) =>
+    getWorldIcon(instanceId, worldName)
+  )
+
+  ipcMain.handle(
+    IpcChannel.InstancesMoveWorld,
+    async (_event: IpcMainInvokeEvent, sourceInstanceId: string, worldName: string, targetInstanceId: string) =>
+      moveWorldBetweenInstances(sourceInstanceId, worldName, targetInstanceId)
+  )
+
+  ipcMain.handle(
+    IpcChannel.InstancesCopyWorld,
+    async (_event: IpcMainInvokeEvent, sourceInstanceId: string, worldName: string, targetInstanceId: string) =>
+      copyWorldBetweenInstances(sourceInstanceId, worldName, targetInstanceId)
   )
 
   ipcMain.handle(IpcChannel.ClientImportPickFolder, async (event: IpcMainInvokeEvent) =>

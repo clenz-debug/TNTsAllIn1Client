@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatError } from '../formatError'
 import {
   isBundleCompatibleVersion,
   MODRINTH_SEARCH_PAGE_SIZE,
@@ -58,12 +59,22 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
   const [currentPage, setCurrentPage] = useState(1)
   const [searching, setSearching] = useState(false)
   const [installingId, setInstallingId] = useState<string | null>(null)
-  // Projects installed from this browsing session - own user request: the "Installieren" button
-  // otherwise reverted to its normal state right after a successful install, looking as if nothing
-  // had happened. Not persisted (resets on reopening the Mods screen) - there's no stored mapping
-  // from a Modrinth project id back to which installed jar filename came from it, so this can only
-  // track "installed just now, this session", not "already installed" for results seen fresh.
+  // Modrinth project ids currently sitting in this instance's `game/mods` (resolved from the real
+  // files via `listCustomModProjectIds`, same "hash the jars, ask Modrinth" approach already used
+  // for `bundledProjectIds` below) - own user request: the "Installieren" button otherwise reverted
+  // to its normal state right after a successful install, looking as if nothing had happened.
+  // Re-read after every install/remove rather than tracked as "added this session" so a mod
+  // installed via search and then removed again through "Eigene Mods" correctly goes back to
+  // showing "Installieren" instead of staying stuck on "Installiert".
   const [installedProjectIds, setInstalledProjectIds] = useState<Set<string>>(new Set())
+
+  async function refreshInstalledProjectIds(): Promise<void> {
+    try {
+      setInstalledProjectIds(new Set(await window.api.listCustomModProjectIds(instanceId)))
+    } catch (err) {
+      setError(formatError(err))
+    }
+  }
   // Which search results are mods we already bundle for this version (toggleable or always-on
   // alike - Sodium/Fabric API/etc. never show up in `bundledMods` above since that's toggleable-only,
   // but they're still already running) - own user request: without this, searching for e.g. "Sodium"
@@ -72,16 +83,17 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
   const [bundledProjectIds, setBundledProjectIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(String(err)))
+    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(formatError(err)))
     window.api
       .listBundledModProjectIds(versionId)
       .then((ids) => setBundledProjectIds(new Set(ids)))
-      .catch((err) => setError(String(err)))
+      .catch((err) => setError(formatError(err)))
   }, [versionId])
 
   useEffect(() => {
-    window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(String(err)))
-    setInstalledProjectIds(new Set())
+    window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(formatError(err)))
+    void refreshInstalledProjectIds()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceId])
 
   async function handleAdd(): Promise<void> {
@@ -89,7 +101,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     try {
       setCustomMods(await window.api.addCustomMods(instanceId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -99,8 +111,9 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     setBusy(true)
     try {
       setCustomMods(await window.api.removeCustomMod(instanceId, fileName))
+      await refreshInstalledProjectIds()
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
@@ -117,7 +130,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
       setTotalHits(page.totalHits)
       setCurrentPage(pageNumber)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setSearching(false)
     }
@@ -139,9 +152,9 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     setError(null)
     try {
       setCustomMods(await window.api.installModrinthMod(instanceId, projectId, versionId))
-      setInstalledProjectIds((prev) => new Set(prev).add(projectId))
+      await refreshInstalledProjectIds()
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setInstallingId(null)
     }

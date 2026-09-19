@@ -158,9 +158,7 @@ persöhnliche liste was fehlt:
     - dazu gehört die auswahl mc standard design oder cleaneres design in den eingestellten farben (gilt für ingame, da launcher immer in unseren design sein sollte)
     - Logo anpassen auch an die farben
 - im Launcher das abmelden und die anzeige des angemeldeten spieler anpassen, vll das man nicht den abmelden button hat sondern man den namen zu nem button macht und man dann eine auswahl kommt abmelden oder so, der button mit dem namen sollte zusätzlich die vorderseite vom kopf des aktuellen mc skinns (mit den 3d effekten) zeigen
-- discord anzeigen das der client verwendet wird
-- kümmern as bei inkompatiblen mod ist
-- mc welten zwischen instanzen schieben (mit warnung)
+- discord anzeigen das der client verwendet wird (wenn Logo final erst und Clientname)
 - in der launcher option eine option erstellen um die konsole in ein externes (2.) fenster zu haben
 - mod deaktivierne können (nicht nur löschen)
 - abruch button im launcher 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatError } from '../formatError'
 import type { GameVersionSummary, Instance, StorageInfo, StorageMoveProgressEvent } from '../../../shared/types'
 
 function formatBytes(bytes: number): string {
@@ -98,7 +99,7 @@ export function InstancesScreen({
         onDataRootOverrideChange(result.path)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       unsubscribe()
       setMovingStorage(false)
@@ -155,7 +156,7 @@ export function InstancesScreen({
       if (result.importedOptions) parts.push('Einstellungen importiert')
       setImportResult(parts.length > 0 ? parts.join(', ') : 'Keine options.txt/Mods im gewählten Ordner gefunden.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setImportBusy(false)
     }
@@ -191,7 +192,7 @@ export function InstancesScreen({
       const updated = await window.api.cloneInstance(instance.id, `${instance.name} (Kopie)`)
       onInstancesChange(updated.instances, updated.selectedInstanceId)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setCloningId(null)
     }
@@ -208,7 +209,7 @@ export function InstancesScreen({
       const updated = await window.api.deleteInstance(instance.id)
       onInstancesChange(updated.instances, updated.selectedInstanceId)
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(formatError(err))
     } finally {
       setBusy(false)
     }
