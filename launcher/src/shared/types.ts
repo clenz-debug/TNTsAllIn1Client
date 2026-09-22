@@ -152,6 +152,17 @@ export interface CustomCapeStatus {
   dataUri: string | null
 }
 
+/** One mod the user added themselves to an instance's `game/mods` (as opposed to a bundled one) -
+ * `enabled` reflects whether it's actually loaded right now. `main/launch/modsManager.ts#setCustomModEnabled`
+ * turns one off by renaming it out of Fabric Loader's `*.jar` discovery (`<fileName>.disabled`)
+ * rather than deleting it - own user request: "das man installierte externe mods deaktivieren kann
+ * und nicht nur entfernen kann". `fileName` is always the plain `.jar` name, regardless of whether
+ * it's currently enabled or disabled on disk - the stable identity the Mods screen keys its list on. */
+export interface CustomModEntry {
+  fileName: string
+  enabled: boolean
+}
+
 /** Result of importing settings/mods from another client's folder (`main/launch/clientImport.ts`)
  * - reported back to the renderer so it can show a short summary ("3 Mods übernommen", ...). */
 export interface ClientImportResult {
@@ -207,6 +218,69 @@ export interface LauncherSettings {
    * Modrinth-sourced mods, we control the resourcepack filenames ourselves and always write
    * `<name>.zip`, so there's never a stale differently-named file to clean up). */
   appliedResourcepackVersions: Record<string, Record<string, string>>
+  /** JVM `-Xmx<n>M` for the game process (`launchArgs.ts#buildLaunchArgs`) - `null` means "don't
+   * pass one at all", i.e. today's behavior (whatever the JVM's own default heap is). Deliberately
+   * no separate min/`-Xms` setting: the launcher's own Settings screen only exposes a single "Max
+   * RAM" control, same as the vanilla Minecraft launcher - letting the JVM pick its own starting
+   * heap and grow up to this ceiling needs no extra setting. */
+  maxMemoryMb: number | null
+  /** Settings screen's "Konsole in separatem Fenster anzeigen" toggle (own wishlist item) - when
+   * true, `PlayScreen#handlePlay` opens a second `BrowserWindow` (`main/consoleWindow.ts`) instead
+   * of showing the log panel inline. */
+  consoleInSeparateWindow: boolean
+  /** Settings screen's "Erscheinungsbild" section (own wishlist item, expanded from a single
+   * accent color to the full seven-color palette on user request) - `null` means the built-in
+   * defaults ({@link DEFAULT_THEME_COLORS}, matching `styles/global.css`'s own hardcoded `:root`
+   * values exactly). Always a complete object when set, never partial - the
+   * Settings screen's preview/confirm flow (`SettingsScreen.tsx`) edits one field of a local draft
+   * at a time but only ever writes back the full merged result, so a stored theme is always
+   * internally consistent for the contrast checks in `theme.ts#worstTextContrast`. */
+  themeColors: ThemeColors | null
+  /** Settings screen's "Sprache" picker (own wishlist item - "englisch und deutsch, aber
+   * erweiterbar in der Zukunft") - a plain string union rather than an enum so adding a third
+   * language later is just one more literal here plus one more `renderer/src/i18n/<code>.ts` file,
+   * no migration needed for existing settings files. Rollout is incremental: only
+   * `SettingsScreen.tsx` reads `useTranslations()` so far (see `renderer/src/i18n/`) - every other
+   * screen is still hardcoded German regardless of this setting until it's migrated too. */
+  language: Language
+}
+
+export type Language = 'de' | 'en'
+
+/** The full themeable palette (Settings screen's "Erscheinungsbild" section) - `background1`/
+ * `background2` map to `--bg`/`--bg-panel`, `accent1`-`accent4` to `--green-1..4`, `text` to
+ * `--text` (see `renderer/src/theme.ts#applyThemeColors`). `--text-dim` is deliberately not part
+ * of this - it's derived automatically from `text` (own scope decision: the user asked for one
+ * font color to configure, not two), and `--error` stays fixed - a distinct semantic (failure
+ * state), not part of the palette a user would want to reskin. */
+export interface ThemeColors {
+  background1: string
+  background2: string
+  accent1: string
+  accent2: string
+  accent3: string
+  accent4: string
+  text: string
+}
+
+/** Matches `renderer/src/styles/global.css`'s own hardcoded `:root` values exactly, so picking
+ * these back in the Settings screen is indistinguishable from "reset to default". Own wishlist
+ * item: black/dark-gray backgrounds, a progressive gray accent ramp (each step +0x10 lighter, kept
+ * clear of white text - the lightest, `accent4`, still contrasts white at roughly 5:1), white text.
+ *
+ * Lives here (shared), not in `renderer/src/theme.ts`, so `main/index.ts`/`main/consoleWindow.ts`
+ * can use `background1` as each `BrowserWindow`'s own `backgroundColor` option without importing
+ * renderer-bundle code into main - Electron paints that color immediately on window creation,
+ * before the page has even loaded, so it has to match whatever theme is actually configured (or
+ * this default) to avoid a flash of the *previous* default color on startup. */
+export const DEFAULT_THEME_COLORS: ThemeColors = {
+  background1: '#000000',
+  background2: '#1a1a1a',
+  accent1: '#3d3d3d',
+  accent2: '#4d4d4d',
+  accent3: '#5d5d5d',
+  accent4: '#6d6d6d',
+  text: '#ffffff'
 }
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -216,7 +290,18 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   dataRootOverride: null,
   appliedModBundleVersions: {},
   appliedOwnModVersions: {},
-  appliedResourcepackVersions: {}
+  appliedResourcepackVersions: {},
+  maxMemoryMb: null,
+  consoleInSeparateWindow: false,
+  themeColors: null,
+  language: 'de'
+}
+
+/** `main/index.ts#createWindow`'s/`main/consoleWindow.ts`'s own `os.totalmem()` reading, shown in
+ * the Settings screen's RAM section so the max-memory input has a sane upper bound to validate
+ * against instead of letting the user type an arbitrary number larger than physically installed. */
+export interface SystemMemoryInfo {
+  totalMb: number
 }
 
 /** One pinned third-party mod entry in `mod-bundle-manifest.json` (repo root) - only references a

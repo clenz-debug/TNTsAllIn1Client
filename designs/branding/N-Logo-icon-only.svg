@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <!-- Text-free variant of N-Logo.svg (own request, for Discord Rich Presence's "large image" art
+       asset - Discord renders that at small sizes where the "A I 1 / CLIENT" text would be
+       illegible, and a square icon-only mark is what Discord's own asset upload expects anyway).
+       Same octagon + four-beam N shape, same default-theme colors, viewBox simply tightened from
+       0 0 600 660 to 0 0 600 600 so the now text-less content sits centered with even margins on
+       all four sides (the octagon itself already spans y=40..560, i.e. 40px top/bottom margin at
+       height 600) - keep in sync with N-Logo.svg/Logo.tsx if the shape ever changes. -->
+  <polygon points="200,40 400,40 560,200 560,400 400,560 200,560 40,400 40,200"
+           fill="none" stroke="#1a1a1a" stroke-width="4"/>
+
+  <g stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round">
+    <rect x="150" y="150" width="300" height="50" fill="#3d3d3d"/>
+    <rect x="185" y="200" width="45" height="240" fill="#4d4d4d"/>
+    <rect x="370" y="200" width="45" height="240" fill="#5d5d5d"/>
+    <polygon points="185,200 230,200 415,415 415,440 370,440 185,225"
+             fill="#6d6d6d"/>
+  </g>
+</svg>

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
+import { localizedError } from '../../shared/errorMessages'
 import { readPngDimensions } from '../pngUtils'
 import { getB2Config } from './b2Config'
 import { deleteCapeObject, putCapeObject } from './b2Client'
@@ -27,10 +28,15 @@ function publicUrlFor(uuid: string): string {
 export function validateCapePng(buffer: Buffer): { width: number; height: number } {
   const dimensions = readPngDimensions(buffer)
   if (!dimensions) {
-    throw new Error('Datei ist kein gültiges PNG.')
+    throw localizedError('image.invalidPng')
   }
   if (dimensions.width !== CAPE_WIDTH || dimensions.height !== CAPE_HEIGHT) {
-    throw new Error(`Capes müssen exakt ${CAPE_WIDTH}x${CAPE_HEIGHT} sein, diese Datei ist ${dimensions.width}x${dimensions.height}.`)
+    throw localizedError('cape.wrongDimensions', {
+      width: CAPE_WIDTH,
+      height: CAPE_HEIGHT,
+      actualWidth: dimensions.width,
+      actualHeight: dimensions.height
+    })
   }
   return dimensions
 }
@@ -80,7 +86,7 @@ export async function getCustomCapeStatus(uuid: string): Promise<{ exists: boole
     return { exists: false, dataUri: null }
   }
   if (!response.ok) {
-    throw new Error(`Cape-Status konnte nicht geladen werden (${response.status}).`)
+    throw localizedError('cape.statusLoadFailed', { status: response.status })
   }
   const buffer = Buffer.from(await response.arrayBuffer())
   return { exists: true, dataUri: toDataUri(buffer) }

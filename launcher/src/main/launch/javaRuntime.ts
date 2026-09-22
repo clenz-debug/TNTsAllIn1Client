@@ -1,5 +1,6 @@
 import { chmod, mkdir, readFile, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import type { LaunchStage } from '../../shared/types'
 import { dataRoot } from '../dataRoot'
 import { downloadAll, type DownloadTask } from './downloader'
@@ -50,7 +51,7 @@ function runtimeOsKey(): string {
   if (platform === 'linux') {
     return arch === 'ia32' ? 'linux-i386' : 'linux'
   }
-  throw new Error(`No Mojang Java runtime available for ${platform}/${arch}.`)
+  throw localizedError('launch.noJavaRuntimeForPlatform', { platform, arch })
 }
 
 /** Relative path to the `java` executable inside an unpacked runtime - verified against the
@@ -84,21 +85,21 @@ function runtimeDir(component: string): string {
  * thing their own launcher does - removes that whole class of failure instead of only detecting
  * it.
  */
-export async function ensureJavaRuntime(component: string, onProgress: InstallProgressCallback): Promise<string> {
+export async function ensureJavaRuntime(component: string, onProgress: InstallProgressCallback, signal?: AbortSignal): Promise<string> {
   onProgress('java-runtime', 0, 1, component)
   const osKey = runtimeOsKey()
   const dir = runtimeDir(component)
   const javaBinaryPath = join(dir, ...javaBinaryRelativePath(osKey).split('/'))
   const versionMarkerPath = join(dir, '.version')
 
-  const manifestResponse = await fetch(RUNTIME_MANIFEST_URL)
+  const manifestResponse = await fetch(RUNTIME_MANIFEST_URL, { signal })
   if (!manifestResponse.ok) {
-    throw new Error(`Failed to fetch Java runtime manifest: ${manifestResponse.status}`)
+    throw localizedError('launch.javaManifestFetchFailed', { status: manifestResponse.status })
   }
   const manifest = (await manifestResponse.json()) as RuntimeManifest
   const ref = manifest[osKey]?.[component]?.[0]
   if (!ref) {
-    throw new Error(`No Java runtime "${component}" available for ${osKey}.`)
+    throw localizedError('launch.noJavaRuntimeForComponent', { component, osKey })
   }
 
   const installedVersion = await readFile(versionMarkerPath, 'utf8').catch(() => null)
@@ -107,9 +108,9 @@ export async function ensureJavaRuntime(component: string, onProgress: InstallPr
     return javaBinaryPath
   }
 
-  const filesResponse = await fetch(ref.manifest.url)
+  const filesResponse = await fetch(ref.manifest.url, { signal })
   if (!filesResponse.ok) {
-    throw new Error(`Failed to fetch Java runtime file list: ${filesResponse.status}`)
+    throw localizedError('launch.javaFileListFetchFailed', { status: filesResponse.status })
   }
   const filesManifest = (await filesResponse.json()) as RuntimeFilesManifest
   const entries = Object.entries(filesManifest.files)
@@ -128,7 +129,7 @@ export async function ensureJavaRuntime(component: string, onProgress: InstallPr
     destination: join(dir, relPath),
     sha1: entry.downloads!.raw.sha1
   }))
-  await downloadAll(tasks, 8, (completed, total, label) => onProgress('java-runtime', completed, total, label))
+  await downloadAll(tasks, 8, (completed, total, label) => onProgress('java-runtime', completed, total, label), signal)
 
   // Windows has no POSIX executable bit to set - the `.exe` extension alone makes it runnable.
   if (process.platform !== 'win32') {

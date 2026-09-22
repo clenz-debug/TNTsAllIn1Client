@@ -1,10 +1,34 @@
 import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { basename, join } from 'node:path'
-import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises'
+import type { CustomModEntry } from '../../shared/types'
 import { loadLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
 import { bundledModsDir } from './resourcePaths'
+
+/** Suffix a custom mod's filename gets while disabled - keeps the file (and Modrinth-project
+ * identity, since hashing doesn't care about the extension) around without Fabric Loader's `*.jar`
+ * discovery picking it up, instead of only offering delete-and-redownload-later. Bundled mods don't
+ * need this: they're toggled via `Instance.enabledBundledMods` since their master copy lives outside
+ * the instance entirely (`mods-bundle/`) - a custom mod's jar in `game/mods` *is* the only copy. */
+const DISABLED_SUFFIX = '.disabled'
+
+function disabledFileName(fileName: string): string {
+  return `${fileName}${DISABLED_SUFFIX}`
+}
+
+/** Turns a raw `game/mods` directory entry into a `CustomModEntry`, or `null` for anything that's
+ * neither an active nor a disabled jar (e.g. a stray non-mod file someone dropped in there). */
+function toCustomModEntry(rawName: string): CustomModEntry | null {
+  if (rawName.endsWith(DISABLED_SUFFIX) && rawName.slice(0, -DISABLED_SUFFIX.length).endsWith('.jar')) {
+    return { fileName: rawName.slice(0, -DISABLED_SUFFIX.length), enabled: false }
+  }
+  if (rawName.endsWith('.jar')) {
+    return { fileName: rawName, enabled: true }
+  }
+  return null
+}
 
 /** Matches `rootProject.name` in `mod/settings.gradle.kts` - every jar `bundleSync.syncOwnModJar`
  * produces starts with this, regardless of version (`tntsallin1client-0.1.0.jar` etc.). Used to
@@ -69,18 +93,23 @@ export async function listToggleableBundledMods(versionId: string): Promise<stri
 }
 
 /** Whatever's sitting in an instance's `game/mods` folder that isn't a bundled mod and isn't our
- * own jar - i.e. mods the user added themselves via `addCustomMods`. Tied to a specific instance
- * (not just a version) since the whole point of instances is that two of them can target the same
- * Minecraft version with a different mod set. Resolves the instance's own `versionId` internally
- * (same lookup pattern `ipc/handlers.ts`'s `LaunchPlay` handler already uses) so callers/IPC/preload
- * don't need to pass one through just for this exclusion check - an instance that's gone missing
- * from settings falls back to an empty bundled-mods exclusion set rather than throwing. */
-export async function listCustomMods(instanceId: string): Promise<string[]> {
+ * own jar - i.e. mods the user added themselves via `addCustomMods`, active or disabled alike (see
+ * `DISABLED_SUFFIX`). Tied to a specific instance (not just a version) since the whole point of
+ * instances is that two of them can target the same Minecraft version with a different mod set.
+ * Resolves the instance's own `versionId` internally (same lookup pattern `ipc/handlers.ts`'s
+ * `LaunchPlay` handler already uses) so callers/IPC/preload don't need to pass one through just for
+ * this exclusion check - an instance that's gone missing from settings falls back to an empty
+ * bundled-mods exclusion set rather than throwing. */
+export async function listCustomMods(instanceId: string): Promise<CustomModEntry[]> {
   const modsDir = join(instanceDir(instanceId), 'game', 'mods')
   const settings = await loadLauncherSettings()
   const instance = settings.instances.find((candidate) => candidate.id === instanceId)
   const bundled = new Set(instance ? await listBundledMods(instance.versionId) : [])
-  return (await listJarsIn(modsDir)).filter((name) => !bundled.has(name) && !name.startsWith(OWN_MOD_PREFIX))
+  const rawEntries = await readdir(modsDir).catch(() => [])
+  return rawEntries
+    .map(toCustomModEntry)
+    .filter((entry): entry is CustomModEntry => entry !== null)
+    .filter((entry) => !bundled.has(entry.fileName) && !entry.fileName.startsWith(OWN_MOD_PREFIX))
 }
 
 /**
@@ -89,7 +118,7 @@ export async function listCustomMods(instanceId: string): Promise<string[]> {
  * returns the refreshed custom-mods list. A cancelled dialog is not an error, just returns the
  * unchanged list.
  */
-export async function addCustomMods(instanceId: string, parentWindow: BrowserWindow | null): Promise<string[]> {
+export async function addCustomMods(instanceId: string, parentWindow: BrowserWindow | null): Promise<CustomModEntry[]> {
   const dialogOptions: Electron.OpenDialogOptions = {
     title: 'Fabric-Mod-Jar(s) auswählen',
     properties: ['openFile', 'multiSelections'],
@@ -106,7 +135,30 @@ export async function addCustomMods(instanceId: string, parentWindow: BrowserWin
   return listCustomMods(instanceId)
 }
 
-export async function removeCustomMod(instanceId: string, fileName: string): Promise<string[]> {
-  await rm(join(instanceDir(instanceId), 'game', 'mods', fileName), { force: true })
+/** Removes a custom mod's jar regardless of whether it's currently enabled or disabled - `fileName`
+ * is always the plain `.jar` name (see `CustomModEntry`), so both possible on-disk names are cleared;
+ * exactly one of them ever actually exists, `force: true` just makes the other a no-op. */
+export async function removeCustomMod(instanceId: string, fileName: string): Promise<CustomModEntry[]> {
+  const modsDir = join(instanceDir(instanceId), 'game', 'mods')
+  await Promise.all([
+    rm(join(modsDir, fileName), { force: true }),
+    rm(join(modsDir, disabledFileName(fileName)), { force: true })
+  ])
+  return listCustomMods(instanceId)
+}
+
+/** Toggles a custom mod on/off by renaming it in place (see `DISABLED_SUFFIX`) - own user request,
+ * a middle ground between "always loaded" and "gone for good" that `removeCustomMod` alone offered.
+ * A disabled mod stops showing up in `resolveProjectVersionsInDir` (`modrinthApi.ts`) too, since that
+ * only ever scans `*.jar` - exactly right, since an inert mod can't actually conflict with anything. */
+export async function setCustomModEnabled(instanceId: string, fileName: string, enabled: boolean): Promise<CustomModEntry[]> {
+  const modsDir = join(instanceDir(instanceId), 'game', 'mods')
+  const activePath = join(modsDir, fileName)
+  const disabledPath = join(modsDir, disabledFileName(fileName))
+  try {
+    await rename(enabled ? disabledPath : activePath, enabled ? activePath : disabledPath)
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+  }
   return listCustomMods(instanceId)
 }

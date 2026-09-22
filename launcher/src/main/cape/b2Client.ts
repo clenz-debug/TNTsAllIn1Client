@@ -1,4 +1,5 @@
 import { AwsClient } from 'aws4fetch'
+import { localizedError } from '../../shared/errorMessages'
 import type { B2Config } from './b2Config'
 
 /** Path-style addressing (`<endpoint>/<bucket>/<key>`) rather than virtual-hosted-style
@@ -22,7 +23,7 @@ export async function putCapeObject(config: B2Config, objectKey: string, pngBuff
     headers: { 'Content-Type': 'image/png' }
   })
   if (!response.ok) {
-    throw new Error(`Cape-Upload zu B2 fehlgeschlagen (${response.status}): ${await response.text()}`)
+    throw localizedError('cape.uploadFailed', { status: response.status, detail: await response.text() })
   }
 }
 
@@ -31,6 +32,6 @@ export async function putCapeObject(config: B2Config, objectKey: string, pngBuff
 export async function deleteCapeObject(config: B2Config, objectKey: string): Promise<void> {
   const response = await signer(config).fetch(objectUrl(config, objectKey), { method: 'DELETE' })
   if (!response.ok && response.status !== 404) {
-    throw new Error(`Cape-Löschen bei B2 fehlgeschlagen (${response.status}): ${await response.text()}`)
+    throw localizedError('cape.deleteFailed', { status: response.status, detail: await response.text() })
   }
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { formatError } from '../formatError'
+import { useTranslations } from '../i18n/LanguageContext'
+import { Logo } from '../Logo'
 import type { AuthProgressEvent, MinecraftProfile } from '../../../shared/types'
 
 interface Props {
@@ -7,6 +9,7 @@ interface Props {
 }
 
 export function LoginScreen({ onLoggedIn }: Props) {
+  const t = useTranslations()
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -19,7 +22,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       const profile = await window.api.login()
       onLoggedIn(profile)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       unsubscribe()
       setBusy(false)
@@ -33,7 +36,7 @@ export function LoginScreen({ onLoggedIn }: Props) {
       const profile = await window.api.loginMock()
       onLoggedIn(profile)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -41,16 +44,17 @@ export function LoginScreen({ onLoggedIn }: Props) {
 
   return (
     <div className="login-screen">
-      <h1>TNT&apos;s All-In-1 Client</h1>
-      <p className="subtitle">Mit deinem Microsoft-Account anmelden, um zu spielen.</p>
+      <Logo className="login-logo" />
+      <h1>{t.login.title}</h1>
+      <p className="subtitle">{t.login.subtitle}</p>
 
       <button className="primary-button" onClick={() => void handleLogin()} disabled={busy}>
-        Mit Microsoft anmelden
+        {t.login.loginButton}
       </button>
 
       {import.meta.env.DEV && (
         <button className="secondary-button" onClick={() => void handleMockLogin()} disabled={busy}>
-          Skip Login (Dev-Mock — Mojang-API noch nicht freigeschaltet)
+          {t.login.mockLoginButton}
         </button>
       )}
 

@@ -1,5 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import {
   type AppliedModBundleEntry,
   type BundledModPin,
@@ -23,15 +24,15 @@ interface ModrinthVersionResponse {
   files: ModrinthVersionFile[]
 }
 
-async function resolveModrinthFile(versionId: string): Promise<ModrinthVersionFile> {
-  const response = await fetch(`https://api.modrinth.com/v2/version/${versionId}`)
+async function resolveModrinthFile(versionId: string, signal?: AbortSignal): Promise<ModrinthVersionFile> {
+  const response = await fetch(`https://api.modrinth.com/v2/version/${versionId}`, { signal })
   if (!response.ok) {
-    throw new Error(`Modrinth-Version ${versionId} konnte nicht geladen werden (${response.status}).`)
+    throw localizedError('mods.modrinthVersionLoadFailed', { versionId, status: response.status })
   }
   const data = (await response.json()) as ModrinthVersionResponse
   const file = data.files.find((f) => f.primary) ?? data.files[0]
   if (!file) {
-    throw new Error(`Modrinth-Version ${versionId} hat keine herunterladbare Datei.`)
+    throw localizedError('mods.modrinthVersionNoFile', { versionId })
   }
   return file
 }
@@ -87,10 +88,11 @@ export async function checkForModBundleUpdate(versionId: string): Promise<ModBun
 async function applyBundledMod(
   versionId: string,
   pin: BundledModPin,
-  previous: AppliedModBundleEntry | undefined
+  previous: AppliedModBundleEntry | undefined,
+  signal?: AbortSignal
 ): Promise<AppliedModBundleEntry> {
-  const file = await resolveModrinthFile(pin.modrinthVersionId)
-  const buffer = await downloadAndVerifySha1(file.url, file.hashes.sha1, file.filename)
+  const file = await resolveModrinthFile(pin.modrinthVersionId, signal)
+  const buffer = await downloadAndVerifySha1(file.url, file.hashes.sha1, file.filename, signal)
 
   const modsBundleDir = bundledModsDir(versionId)
   await mkdir(modsBundleDir, { recursive: true })
@@ -105,8 +107,8 @@ async function applyBundledMod(
  * `applyBundledMod`: no Modrinth resolve step (direct URL+SHA-1 pin), and since we control the
  * filename ourselves (unlike Modrinth's version-numbered filenames) it's always the same name, so
  * a version bump just overwrites in place - no stale differently-named file to clean up. */
-async function applyBundledResourcepack(versionId: string, pin: BundledResourcepackPin): Promise<void> {
-  const buffer = await downloadAndVerifySha1(pin.url, pin.sha1, `${pin.name}.zip`)
+async function applyBundledResourcepack(versionId: string, pin: BundledResourcepackPin, signal?: AbortSignal): Promise<void> {
+  const buffer = await downloadAndVerifySha1(pin.url, pin.sha1, `${pin.name}.zip`, signal)
   const resourcepacksDir = bundledResourcepacksDir(versionId)
   await mkdir(resourcepacksDir, { recursive: true })
   await writeFile(join(resourcepacksDir, `${pin.name}.zip`), buffer)
@@ -122,7 +124,7 @@ async function applyBundledResourcepack(versionId: string, pin: BundledResourcep
  * (see `ipc/handlers.ts`'s `LaunchPlay` handler) - "nothing applied yet" and "everything outdated"
  * are the same code path here, nothing extra needed for that case.
  */
-export async function applyModBundleUpdate(versionId: string): Promise<LauncherSettings> {
+export async function applyModBundleUpdate(versionId: string, signal?: AbortSignal): Promise<LauncherSettings> {
   const manifest = await fetchManifest()
   let settings = await loadLauncherSettings()
   const entry = manifest.versions[versionId]
@@ -134,7 +136,7 @@ export async function applyModBundleUpdate(versionId: string): Promise<LauncherS
     const versionMods = settings.appliedModBundleVersions[versionId] ?? {}
     const previous = versionMods[pin.name]
     if (previous?.versionId === pin.modrinthVersionId) continue
-    const applied = await applyBundledMod(versionId, pin, previous)
+    const applied = await applyBundledMod(versionId, pin, previous, signal)
     settings = {
       ...settings,
       appliedModBundleVersions: {
@@ -148,7 +150,7 @@ export async function applyModBundleUpdate(versionId: string): Promise<LauncherS
   for (const pin of entry.bundledResourcepacks) {
     const versionPacks = settings.appliedResourcepackVersions[versionId] ?? {}
     if (versionPacks[pin.name] === pin.version) continue
-    await applyBundledResourcepack(versionId, pin)
+    await applyBundledResourcepack(versionId, pin, signal)
     settings = {
       ...settings,
       appliedResourcepackVersions: {
@@ -161,7 +163,7 @@ export async function applyModBundleUpdate(versionId: string): Promise<LauncherS
 
   if (entry.ownMod && entry.ownMod.version !== (settings.appliedOwnModVersions[versionId] ?? null)) {
     const jarName = `tntsallin1client-${entry.ownMod.version}.jar`
-    const buffer = await downloadAndVerifySha1(entry.ownMod.url, entry.ownMod.sha1, jarName)
+    const buffer = await downloadAndVerifySha1(entry.ownMod.url, entry.ownMod.sha1, jarName, signal)
     const modDir = ownModDir(versionId)
     // Cleared first rather than just overwriting by name - own-mod/<versionId>/ should only ever
     // hold the one current jar for that version (same invariant `bundleSync.ts#syncOwnModJar`'s

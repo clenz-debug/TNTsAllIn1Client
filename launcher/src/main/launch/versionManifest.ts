@@ -1,3 +1,5 @@
+import { localizedError } from '../../shared/errorMessages'
+
 const VERSION_MANIFEST_URL = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 
 interface VersionManifestEntry {
@@ -11,10 +13,10 @@ interface VersionManifest {
   versions: VersionManifestEntry[]
 }
 
-async function fetchManifest(): Promise<VersionManifest> {
-  const manifestResponse = await fetch(VERSION_MANIFEST_URL)
+async function fetchManifest(signal?: AbortSignal): Promise<VersionManifest> {
+  const manifestResponse = await fetch(VERSION_MANIFEST_URL, { signal })
   if (!manifestResponse.ok) {
-    throw new Error(`Failed to fetch version manifest: ${manifestResponse.status}`)
+    throw localizedError('launch.versionManifestFetchFailed', { status: manifestResponse.status })
   }
   return (await manifestResponse.json()) as VersionManifest
 }
@@ -67,16 +69,16 @@ export interface VersionDetail {
   javaVersion?: { component: string; majorVersion: number }
 }
 
-export async function fetchVersionDetail(versionId: string): Promise<VersionDetail> {
-  const manifest = await fetchManifest()
+export async function fetchVersionDetail(versionId: string, signal?: AbortSignal): Promise<VersionDetail> {
+  const manifest = await fetchManifest(signal)
   const entry = manifest.versions.find((v) => v.id === versionId)
   if (!entry) {
-    throw new Error(`Minecraft version ${versionId} not found in version manifest.`)
+    throw localizedError('launch.versionNotFound', { versionId })
   }
 
-  const detailResponse = await fetch(entry.url)
+  const detailResponse = await fetch(entry.url, { signal })
   if (!detailResponse.ok) {
-    throw new Error(`Failed to fetch version detail for ${versionId}: ${detailResponse.status}`)
+    throw localizedError('launch.versionDetailFetchFailed', { versionId, status: detailResponse.status })
   }
   return (await detailResponse.json()) as VersionDetail
 }

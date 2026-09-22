@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import type { LaunchStage } from '../../shared/types'
 import { dataRoot } from '../dataRoot'
 import { librariesForCurrentOs, libraryDestinationPath } from './classpath'
@@ -54,10 +55,10 @@ interface AssetIndex {
   objects: Record<string, { hash: string }>
 }
 
-async function fetchAssetIndex(url: string): Promise<AssetIndex> {
-  const response = await fetch(url)
+async function fetchAssetIndex(url: string, signal?: AbortSignal): Promise<AssetIndex> {
+  const response = await fetch(url, { signal })
   if (!response.ok) {
-    throw new Error(`Failed to fetch asset index: ${response.status}`)
+    throw localizedError('launch.assetIndexFetchFailed', { status: response.status })
   }
   return (await response.json()) as AssetIndex
 }
@@ -72,10 +73,11 @@ export type InstallProgressCallback = (
 export async function installVersion(
   onProgress: InstallProgressCallback,
   versionId: string,
-  instanceId: string
+  instanceId: string,
+  signal?: AbortSignal
 ): Promise<InstalledVersion> {
   onProgress('manifest', 0, 1, versionId)
-  const detail = await fetchVersionDetail(versionId)
+  const detail = await fetchVersionDetail(versionId, signal)
   onProgress('manifest', 1, 1, versionId)
 
   const dir = instanceDir(instanceId)
@@ -84,7 +86,8 @@ export async function installVersion(
   await downloadAll(
     [{ url: detail.downloads.client.url, destination: clientJarPath, sha1: detail.downloads.client.sha1 }],
     1,
-    (completed, total) => onProgress('client-jar', completed, total, detail.id)
+    (completed, total) => onProgress('client-jar', completed, total, detail.id),
+    signal
   )
 
   const libraries = librariesForCurrentOs(detail.libraries)
@@ -97,15 +100,16 @@ export async function installVersion(
     libraryTasks.push({ url: artifact.url, destination, sha1: artifact.sha1 })
     libraryPaths.push(destination)
   }
-  await downloadAll(libraryTasks, 8, (completed, total, label) => onProgress('libraries', completed, total, label))
+  await downloadAll(libraryTasks, 8, (completed, total, label) => onProgress('libraries', completed, total, label), signal)
 
   const assetsDir = sharedAssetsDir()
-  const assetIndex = await fetchAssetIndex(detail.assetIndex.url)
+  const assetIndex = await fetchAssetIndex(detail.assetIndex.url, signal)
   const assetIndexDestination = join(assetsDir, 'indexes', `${detail.assetIndex.id}.json`)
   await downloadAll(
     [{ url: detail.assetIndex.url, destination: assetIndexDestination, sha1: detail.assetIndex.sha1 }],
     1,
-    () => undefined
+    () => undefined,
+    signal
   )
 
   const objectsDir = join(assetsDir, 'objects')
@@ -114,7 +118,7 @@ export async function installVersion(
     destination: join(objectsDir, object.hash.slice(0, 2), object.hash),
     sha1: object.hash
   }))
-  await downloadAll(assetTasks, 16, (completed, total, label) => onProgress('assets', completed, total, label))
+  await downloadAll(assetTasks, 16, (completed, total, label) => onProgress('assets', completed, total, label), signal)
 
   return { detail, instanceDir: dir, assetsDir, clientJarPath, libraryPaths }
 }

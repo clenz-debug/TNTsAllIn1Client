@@ -24,12 +24,16 @@ export async function launchGame(
   javaBinaryPath: string,
   args: string[],
   gameDirectory: string,
-  onLog: (event: GameLogEvent) => void
+  onLog: (event: GameLogEvent) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   await mkdir(gameDirectory, { recursive: true })
 
   await new Promise<void>((resolve, reject) => {
-    const proc = spawn(javaBinaryPath, args, { cwd: gameDirectory })
+    // `signal` lets `main/ipc/handlers.ts`'s Cancel button kill an already-running game the same
+    // way it aborts an in-flight download - Node's own `spawn` support for this (since v15.14) means
+    // no separate "keep the ChildProcess handle around to kill it later" bookkeeping is needed here.
+    const proc = spawn(javaBinaryPath, args, { cwd: gameDirectory, signal })
     // Every raw line Fabric Loader itself flagged as incompatibility-related, collected as the
     // process runs (not re-scanned from a full buffer at the end) so a very chatty run doesn't
     // need its whole output held twice in memory just for this check.

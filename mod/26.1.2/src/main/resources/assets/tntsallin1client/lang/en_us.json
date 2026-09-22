@@ -219,5 +219,18 @@
   "gui.tntsallin1client.armor_status_slot.legs": "Leggings",
   "gui.tntsallin1client.armor_status_slot.feet": "Boots",
   "gui.tntsallin1client.armor_status_slot.mainhand": "Main Hand",
-  "gui.tntsallin1client.armor_status_slot.offhand": "Off Hand"
+  "gui.tntsallin1client.armor_status_slot.offhand": "Off Hand",
+  "gui.tntsallin1client.menu.discord_presence": "Discord Activity",
+  "gui.tntsallin1client.discord_presence_options.title": "Discord Activity Options",
+  "gui.tntsallin1client.discord_presence_options.enabled": "Enabled",
+  "gui.tntsallin1client.discord_presence_options.show_game_mode": "Show Singleplayer/Multiplayer",
+  "gui.tntsallin1client.discord_presence_options.show_version": "Show Minecraft Version",
+  "gui.tntsallin1client.discord_presence_options.show_world_name": "Show World Name (Singleplayer)",
+  "gui.tntsallin1client.discord_presence_options.show_server_name": "Show Server Name (Multiplayer)",
+  "gui.tntsallin1client.discord_presence_options.show_elapsed_time": "Show Elapsed Time",
+  "gui.tntsallin1client.discord_presence.main_menu": "In the Main Menu",
+  "gui.tntsallin1client.discord_presence.playing_generic": "Playing Minecraft",
+  "gui.tntsallin1client.discord_presence.singleplayer": "Singleplayer",
+  "gui.tntsallin1client.discord_presence.multiplayer": "Multiplayer",
+  "gui.tntsallin1client.discord_presence.version": "Minecraft %s"
 }

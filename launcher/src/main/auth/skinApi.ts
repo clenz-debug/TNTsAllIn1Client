@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
+import { localizedError, localizedErrorMessage } from '../../shared/errorMessages'
 import type { MinecraftCape, MinecraftSkin, SkinVariant } from '../../shared/types'
 import { readPngDimensions } from '../pngUtils'
 
@@ -11,7 +12,7 @@ interface SkinUploadResponse {
 
 class MinecraftApiError extends Error {
   constructor(status: number, body: string) {
-    super(`Minecraft API call failed (${status}): ${body}`)
+    super(localizedErrorMessage('auth.minecraftApiFailed', { status, detail: body }))
     this.name = 'MinecraftApiError'
   }
 }
@@ -43,12 +44,10 @@ export async function fetchTextureDataUri(url: string): Promise<string> {
 export async function uploadSkinBuffer(accessToken: string, fileBuffer: Buffer, variant: SkinVariant): Promise<SkinUploadResponse> {
   const dimensions = readPngDimensions(fileBuffer)
   if (!dimensions) {
-    throw new Error('Datei ist kein gültiges PNG.')
+    throw localizedError('image.invalidPng')
   }
   if (dimensions.width !== 64 || (dimensions.height !== 64 && dimensions.height !== 32)) {
-    throw new Error(
-      `Minecraft-Skins müssen 64x64 (oder das alte 64x32-Format) sein, diese Datei ist ${dimensions.width}x${dimensions.height}.`
-    )
+    throw localizedError('skin.wrongDimensions', { width: dimensions.width, height: dimensions.height })
   }
 
   const form = new FormData()
@@ -96,12 +95,10 @@ export async function loadPngFileForEditor(window: BrowserWindow | null): Promis
   const buffer = await readFile(result.filePaths[0])
   const dimensions = readPngDimensions(buffer)
   if (!dimensions) {
-    throw new Error('Datei ist kein gültiges PNG.')
+    throw localizedError('image.invalidPng')
   }
   if (dimensions.width !== 64 || (dimensions.height !== 64 && dimensions.height !== 32)) {
-    throw new Error(
-      `Minecraft-Skins müssen 64x64 (oder das alte 64x32-Format) sein, diese Datei ist ${dimensions.width}x${dimensions.height}.`
-    )
+    throw localizedError('skin.wrongDimensions', { width: dimensions.width, height: dimensions.height })
   }
   return { buffer, width: dimensions.width, height: dimensions.height }
 }

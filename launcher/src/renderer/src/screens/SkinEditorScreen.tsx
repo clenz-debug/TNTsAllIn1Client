@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SkinViewer } from 'skinview3d'
 import { CanvasTexture, NearestFilter, type Texture } from 'three'
 import { formatError } from '../formatError'
+import { useLanguage, useTranslations } from '../i18n/LanguageContext'
 import type { SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { BODY_PART_TOGGLES } from '../skinEditor/bodyParts'
 import { BodyPartDiagram } from '../skinEditor/BodyPartDiagram'
@@ -38,11 +39,10 @@ const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 480
 const SKIN_TEXTURE_SIZE = 64
 
-function defaultName(): string {
-  return `Skin vom ${new Date().toLocaleDateString('de-DE')}`
-}
-
 export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
+  const t = useTranslations()
+  const language = useLanguage()
+
   const [skinSource, setSkinSource] = useState<SkinSource | null>(
     editingLibraryEntry ? { dataUri: editingLibraryEntry.dataUri, variant: editingLibraryEntry.variant } : null
   )
@@ -52,7 +52,9 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
   const [visibility, setVisibility] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(BODY_PART_TOGGLES.map((toggle) => [toggle.id, true]))
   )
-  const [name, setName] = useState(editingLibraryEntry?.name ?? defaultName())
+  const [name, setName] = useState(
+    editingLibraryEntry?.name ?? t.skinEditor.defaultName(new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'))
+  )
   const [existingId, setExistingId] = useState(editingLibraryEntry?.id)
   const [gridEnabled, setGridEnabled] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
@@ -301,7 +303,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const dataUri = await window.api.loadSkinTemplate(variant)
       setSkinSource({ dataUri, variant })
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -314,7 +316,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const result = await window.api.loadSkinPngForEditor()
       if (result) setSkinSource({ dataUri: result.dataUri, variant: chooserVariant })
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -329,7 +331,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const saved = await window.api.saveSkinToLibrary(bytes, skinSource!.variant, name, existingId)
       setExistingId(saved.id)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -343,7 +345,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
       const bytes = await canvasToPngBytes(viewerRef.current.skinCanvas)
       await window.api.exportSkinPng(bytes, `${name || 'skin'}.png`)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -353,30 +355,30 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
     return (
       <div className="mods-screen skin-editor-screen">
         <header>
-          <strong>Neuen Skin erstellen</strong>
+          <strong>{t.skinEditor.chooserTitle}</strong>
           <button className="link-button" onClick={onClose}>
-            Zurück
+            {t.common.back}
           </button>
         </header>
 
         {error && <span className="error">{error}</span>}
 
         <section className="mods-section">
-          <h3>Wovon soll gestartet werden?</h3>
+          <h3>{t.skinEditor.chooseSourceHeading}</h3>
           <label className="checkbox-label">
             <input type="radio" name="chooser-variant" checked={chooserVariant === 'classic'} onChange={() => setChooserVariant('classic')} />
-            Classic (Steve-Arme)
+            {t.skin.variantClassic}
           </label>
           <label className="checkbox-label">
             <input type="radio" name="chooser-variant" checked={chooserVariant === 'slim'} onChange={() => setChooserVariant('slim')} />
-            Slim (Alex-Arme)
+            {t.skin.variantSlim}
           </label>
           <div>
             <button className="primary-button" disabled={busy} onClick={() => void loadTemplate(chooserVariant)}>
-              {chooserVariant === 'classic' ? 'Steve-Vorlage laden' : 'Alex-Vorlage laden'}
+              {chooserVariant === 'classic' ? t.skinEditor.loadSteveTemplate : t.skinEditor.loadAlexTemplate}
             </button>
             <button className="secondary-button" disabled={busy} onClick={() => void loadOwnPng()}>
-              Eigene PNG laden…
+              {t.skinEditor.loadOwnPng}
             </button>
           </div>
         </section>
@@ -387,9 +389,9 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
   return (
     <div className="mods-screen skin-editor-screen">
       <header>
-        <strong>Skin-Editor</strong>
+        <strong>{t.skinEditor.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
 
@@ -400,58 +402,58 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
 
         <div className="skin-editor-tools">
           <section className="mods-section">
-            <h3>Werkzeug</h3>
+            <h3>{t.skinEditor.toolHeading}</h3>
             <div className="skin-editor-tool-row">
               <button className={`tool-button${tool === 'pencil' ? ' active' : ''}`} onClick={() => setTool('pencil')}>
-                Stift
+                {t.skinEditor.toolPencil}
               </button>
               <button className={`tool-button${tool === 'eraser' ? ' active' : ''}`} onClick={() => setTool('eraser')}>
-                Radierer
+                {t.skinEditor.toolEraser}
               </button>
               <button className={`tool-button${tool === 'eyedropper' ? ' active' : ''}`} onClick={() => setTool('eyedropper')}>
-                Pipette
+                {t.skinEditor.toolEyedropper}
               </button>
               <button className={`tool-button${tool === 'view' ? ' active' : ''}`} onClick={() => setTool('view')}>
-                Ansicht
+                {t.skinEditor.toolView}
               </button>
-              <button className="tool-button" disabled={!canUndo} onClick={handleUndo} title="Rückgängig" aria-label="Rückgängig">
+              <button className="tool-button" disabled={!canUndo} onClick={handleUndo} title={t.skinEditor.undo} aria-label={t.skinEditor.undo}>
                 ↶
               </button>
-              <button className="tool-button" disabled={!canRedo} onClick={handleRedo} title="Wiederholen" aria-label="Wiederholen">
+              <button className="tool-button" disabled={!canRedo} onClick={handleRedo} title={t.skinEditor.redo} aria-label={t.skinEditor.redo}>
                 ↷
               </button>
             </div>
             <ColorPicker color={color} onChange={setColor} />
             <label className="checkbox-label">
               <input type="checkbox" checked={gridEnabled} onChange={(event) => toggleGrid(event.target.checked)} />
-              Pixel-Raster anzeigen
+              {t.skinEditor.showGrid}
             </label>
           </section>
 
           <section className="mods-section">
-            <h3>Sichtbarkeit</h3>
-            <p className="body-part-diagram-hint">Auf ein Körperteil klicken, um es ein-/auszublenden.</p>
+            <h3>{t.skinEditor.visibilityHeading}</h3>
+            <p className="body-part-diagram-hint">{t.skinEditor.visibilityHint}</p>
             <div className="body-part-diagram-row">
-              <BodyPartDiagram layerLabel="Basis" layerPrefix="base" visibility={visibility} onToggle={toggleVisibility} />
-              <BodyPartDiagram layerLabel="Overlay" layerPrefix="overlay" visibility={visibility} onToggle={toggleVisibility} />
+              <BodyPartDiagram layerLabel={t.skinEditor.layerBase} layerPrefix="base" visibility={visibility} onToggle={toggleVisibility} />
+              <BodyPartDiagram layerLabel={t.skinEditor.layerOverlay} layerPrefix="overlay" visibility={visibility} onToggle={toggleVisibility} />
             </div>
           </section>
 
           <section className="mods-section">
-            <h3>Speichern</h3>
+            <h3>{t.skinEditor.saveHeading}</h3>
             <input
               type="text"
               className="skin-editor-name-input"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Name des Skins"
+              placeholder={t.skin.namePlaceholder}
             />
             <div>
               <button className="primary-button" disabled={busy} onClick={() => void handleSaveToLibrary()}>
-                {busy ? 'Speichert…' : existingId ? 'In Bibliothek aktualisieren' : 'In Bibliothek speichern'}
+                {busy ? t.skin.saving : existingId ? t.skinEditor.updateInLibrary : t.skinEditor.saveToLibrary}
               </button>
               <button className="secondary-button" disabled={busy} onClick={() => void handleExport()}>
-                Als PNG exportieren…
+                {t.skinEditor.exportPng}
               </button>
             </div>
           </section>

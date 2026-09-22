@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { Readable } from 'node:stream'
 import { openPromise } from 'yauzl'
+import { localizedError } from '../../shared/errorMessages'
 import type { SkinVariant } from '../../shared/types'
 import { sharedClientJarPath } from '../launch/installer'
 import { loadLauncherSettings } from '../launcherSettings'
@@ -49,7 +50,7 @@ async function findInstalledVersionId(): Promise<string | null> {
 export async function loadDefaultSkinTemplate(variant: SkinVariant): Promise<Buffer> {
   const versionId = await findInstalledVersionId()
   if (!versionId) {
-    throw new Error('Erst eine Instanz starten (Play-Klick), um die Steve/Alex-Vorlage laden zu können.')
+    throw localizedError('skin.needInstanceFirst')
   }
 
   const jarPath = sharedClientJarPath(versionId)
@@ -65,7 +66,5 @@ export async function loadDefaultSkinTemplate(variant: SkinVariant): Promise<Buf
   } finally {
     zipfile.close()
   }
-  throw new Error(
-    `Konnte "${entryPath}" nicht in ${jarPath} finden - der Pfad hat sich vermutlich mit einer neueren Minecraft-Version geändert.`
-  )
+  throw localizedError('skin.templateEntryNotFound', { entryPath, jarPath })
 }

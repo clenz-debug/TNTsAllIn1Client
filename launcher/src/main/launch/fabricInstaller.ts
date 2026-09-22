@@ -27,11 +27,12 @@ export type InstallProgressCallback = (
  * replace the jar. */
 export async function installFabricLoader(
   vanilla: InstalledVersion,
-  onProgress: InstallProgressCallback
+  onProgress: InstallProgressCallback,
+  signal?: AbortSignal
 ): Promise<InstalledVersion> {
   onProgress('fabric-meta', 0, 1, vanilla.detail.id)
-  const loaderVersion = await fetchLatestStableLoaderVersion(vanilla.detail.id)
-  const profile = await fetchFabricProfile(vanilla.detail.id, loaderVersion)
+  const loaderVersion = await fetchLatestStableLoaderVersion(vanilla.detail.id, signal)
+  const profile = await fetchFabricProfile(vanilla.detail.id, loaderVersion, signal)
   onProgress('fabric-meta', 1, 1, profile.id)
 
   const tasks: DownloadTask[] = []
@@ -42,7 +43,7 @@ export async function installFabricLoader(
     tasks.push({ url: `${lib.url}${relativePath}`, destination, sha1: lib.sha1 })
     libraryPaths.push(destination)
   }
-  await downloadAll(tasks, 8, (completed, total, label) => onProgress('fabric-libraries', completed, total, label))
+  await downloadAll(tasks, 8, (completed, total, label) => onProgress('fabric-libraries', completed, total, label), signal)
 
   // Fabric Loader reads mods from <gameDir>/mods at startup. Created unconditionally here so the
   // directory exists even on a checkout without launcher/mods-bundle populated yet; the actual

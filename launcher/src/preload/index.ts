@@ -5,6 +5,7 @@ import type {
   CapeUploadResult,
   ClientImportResult,
   CustomCapeStatus,
+  CustomModEntry,
   GameLogEvent,
   GameVersionSummary,
   LaunchProgressEvent,
@@ -18,6 +19,7 @@ import type {
   SkinVariant,
   StorageInfo,
   StorageMoveProgressEvent,
+  SystemMemoryInfo,
   UpdateStatus
 } from '../shared/types'
 
@@ -33,6 +35,8 @@ const api = {
   loginMock: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLoginMock),
   play: (profile: MinecraftProfile, instanceId: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId),
+  cancelLaunch: (): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchCancel),
+  isLaunchBusy: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.LaunchIsBusy),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
   listVersions: (): Promise<GameVersionSummary[]> => ipcRenderer.invoke(IpcChannel.VersionsList),
   loadSettings: (): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.SettingsLoad),
@@ -40,15 +44,17 @@ const api = {
   listBundledMods: (versionId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListBundled, versionId),
   listBundledModProjectIds: (versionId: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsListBundledProjectIds, versionId),
-  listCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
+  listCustomMods: (instanceId: string): Promise<CustomModEntry[]> => ipcRenderer.invoke(IpcChannel.ModsListCustom, instanceId),
   listCustomModProjectIds: (instanceId: string): Promise<string[]> =>
     ipcRenderer.invoke(IpcChannel.ModsListCustomProjectIds, instanceId),
-  addCustomMods: (instanceId: string): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
-  removeCustomMod: (instanceId: string, fileName: string): Promise<string[]> =>
+  addCustomMods: (instanceId: string): Promise<CustomModEntry[]> => ipcRenderer.invoke(IpcChannel.ModsAddCustom, instanceId),
+  removeCustomMod: (instanceId: string, fileName: string): Promise<CustomModEntry[]> =>
     ipcRenderer.invoke(IpcChannel.ModsRemoveCustom, instanceId, fileName),
+  setCustomModEnabled: (instanceId: string, fileName: string, enabled: boolean): Promise<CustomModEntry[]> =>
+    ipcRenderer.invoke(IpcChannel.ModsSetCustomEnabled, instanceId, fileName, enabled),
   searchModrinthMods: (query: string, gameVersion: string, offset: number, sortIndex: ModrinthSortIndex): Promise<ModrinthSearchPage> =>
     ipcRenderer.invoke(IpcChannel.ModsSearchModrinth, query, gameVersion, offset, sortIndex),
-  installModrinthMod: (instanceId: string, projectId: string, gameVersion: string): Promise<string[]> =>
+  installModrinthMod: (instanceId: string, projectId: string, gameVersion: string): Promise<CustomModEntry[]> =>
     ipcRenderer.invoke(IpcChannel.ModsInstallModrinthMod, instanceId, projectId, gameVersion),
   deleteInstance: (instanceId: string): Promise<LauncherSettings> => ipcRenderer.invoke(IpcChannel.InstancesDelete, instanceId),
   cloneInstance: (instanceId: string, newName: string): Promise<LauncherSettings> =>
@@ -96,11 +102,15 @@ const api = {
   listBundleCompatibleVersions: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModBundleListCompatibleVersions),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
+  getSystemMemoryInfo: (): Promise<SystemMemoryInfo> => ipcRenderer.invoke(IpcChannel.SystemMemoryInfo),
+  openConsoleWindow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.ConsoleWindowOpen),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),
   onLaunchProgress: (callback: (event: LaunchProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.LaunchProgress, callback),
+  onLaunchBusyChanged: (callback: (busy: boolean) => void): (() => void) =>
+    subscribe(IpcChannel.LaunchBusyChanged, callback),
   onGameLog: (callback: (event: GameLogEvent) => void): (() => void) => subscribe(IpcChannel.GameLog, callback),
   onUpdateStatus: (callback: (event: UpdateStatus) => void): (() => void) => subscribe(IpcChannel.UpdateStatus, callback),
   onStorageMoveProgress: (callback: (event: StorageMoveProgressEvent) => void): (() => void) =>

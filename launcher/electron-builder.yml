@@ -1,6 +1,4 @@
-# Phase 9: packaging config for electron-builder. No custom icon yet (falls back to Electron's
-# own default) - not something to invent branding for without the user's input, easy to add later
-# by pointing `win.icon`/`mac.icon`/`linux.icon` at a real asset.
+# Phase 9: packaging config for electron-builder.
 appId: com.tntsallin1client.launcher
 productName: TNT's All-In-1 Client
 copyright: Copyright © 2026 clenz-debug
@@ -8,12 +6,14 @@ copyright: Copyright © 2026 clenz-debug
 directories:
   output: dist
 
-# Only out/ (electron-vite's build output) and package.json are needed at runtime - everything
-# else (src/, the bundle folders, dev configs) is either irrelevant to a packaged app or handled
-# separately below via extraResources. node_modules (production deps only, e.g. electron-updater)
-# is included automatically by electron-builder's own default file set.
+# out/ (electron-vite's build output), resources/ (own branding - main/index.ts's BrowserWindow
+# icon, generated from designs/branding/N-Logo.svg) and package.json are needed at runtime -
+# everything else (src/, the bundle folders, dev configs) is either irrelevant to a packaged app or
+# handled separately below via extraResources. node_modules (production deps only, e.g.
+# electron-updater) is included automatically by electron-builder's own default file set.
 files:
   - out/**/*
+  - resources/**/*
   - package.json
   - '!mods-bundle/**'
   - '!resourcepacks-bundle/**'
@@ -51,6 +51,9 @@ extraResources:
 
 win:
   target: nsis
+  # Not build/icon.ico - the repo's .gitignore blanket-ignores every build/ folder (Gradle output
+  # in mod/*/), so this lives alongside the runtime icon in resources/ instead, which isn't ignored.
+  icon: resources/icon.ico
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

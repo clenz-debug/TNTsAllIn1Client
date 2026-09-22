@@ -1,0 +1,173 @@
+package com.tntsallin1client.discord;
+
+import com.tntsallin1client.TNTsAllIn1ClientMod;
+import com.tntsallin1client.config.ClientConfig;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Drives Discord Rich Presence off the client's own tick loop - own user request ("in Discord soll
+ * angezeigt werden das man MC über meinen Client spielt", extended on request to be fully
+ * configurable: master on/off plus independent toggles for game mode, world name, version, server
+ * name). Ticked from {@link com.tntsallin1client.TNTsAllIn1ClientMod#onInitializeClient}, throttled
+ * to roughly once a second - state here changes at human timescales (menu/world transitions, a
+ * toggle flipped in the options screen), never worth recomputing 20x/second.
+ *
+ * <p>Singleplayer/multiplayer detection and the singleplayer world's identity both reuse the exact
+ * API {@link com.tntsallin1client.waypoint.WaypointScope} already uses and comments extensively on
+ * (why {@code getWorldPath(LevelResource.ROOT)} needs {@code normalize()} before
+ * {@code getFileName()}, why multiplayer is keyed by {@code ServerData#ip} not the editable
+ * {@code #name}) - same underlying "which world/server am I in" question, so the same proven answer.
+ */
+public final class DiscordPresenceManager {
+	private static final long RECONNECT_INTERVAL_MILLIS = 15_000;
+	private static final int TICKS_BETWEEN_UPDATES = 20;
+
+	private static @Nullable DiscordIpcClient client;
+	private static long lastConnectAttemptMillis = 0;
+	private static @Nullable RichPresenceData lastSent;
+	private static @Nullable String lastScopeKey;
+	private static long scopeStartMillis;
+	private static int tickCounter;
+
+	private DiscordPresenceManager() {
+	}
+
+	public static void tick(Minecraft mc) {
+		ClientConfig config = ClientConfig.get();
+		if (!config.discordPresenceEnabled) {
+			if (client != null) disconnect();
+			return;
+		}
+
+		if (++tickCounter < TICKS_BETWEEN_UPDATES) return;
+		tickCounter = 0;
+
+		if (client == null) {
+			maybeReconnect(config);
+			return;
+		}
+
+		RichPresenceData desired = computePresence(mc, config);
+		if (!desired.equals(lastSent)) {
+			try {
+				client.setActivity(desired);
+				lastSent = desired;
+			} catch (IOException e) {
+				TNTsAllIn1ClientMod.LOGGER.info("[{}] Discord IPC connection lost, will retry.", TNTsAllIn1ClientMod.MOD_ID);
+				disconnect();
+			}
+		}
+	}
+
+	private static void maybeReconnect(ClientConfig config) {
+		long now = System.currentTimeMillis();
+		if (now - lastConnectAttemptMillis < RECONNECT_INTERVAL_MILLIS) return;
+		lastConnectAttemptMillis = now;
+		try {
+			client = DiscordIpcClient.connect(Long.parseLong(config.discordApplicationClientId));
+		} catch (IOException | NumberFormatException e) {
+			// Discord not running (IOException - every candidate pipe/socket connect failed), or the
+			// placeholder client id in ClientConfig was never replaced with a real one
+			// (NumberFormatException) - neither is worth logging every 15s, both are simply "not
+			// ready yet" until they're not.
+			client = null;
+		}
+	}
+
+	private static void disconnect() {
+		if (client != null) {
+			client.close();
+			client = null;
+		}
+		lastSent = null;
+		lastScopeKey = null;
+	}
+
+	private static RichPresenceData computePresence(Minecraft mc, ClientConfig config) {
+		String scopeKey = scopeKey(mc);
+		if (!scopeKey.equals(lastScopeKey)) {
+			lastScopeKey = scopeKey;
+			scopeStartMillis = System.currentTimeMillis();
+		}
+		Long start = config.discordPresenceShowElapsedTime ? scopeStartMillis : null;
+
+		if (mc.level == null) {
+			return new RichPresenceData(translated("gui.tntsallin1client.discord_presence.main_menu"), null, start);
+		}
+
+		boolean singleplayer = mc.isLocalServer() && mc.getSingleplayerServer() != null;
+
+		// Priority order for the two available text lines: version, then game mode, then
+		// world/server name - whichever of these are actually toggled on (and applicable to the
+		// current SP/MP state) fill `details` first, then `state`; a subset of one line is fine,
+		// Discord just shows what's there.
+		List<String> parts = new ArrayList<>();
+		if (config.discordPresenceShowVersion) {
+			parts.add(translated("gui.tntsallin1client.discord_presence.version", currentMinecraftVersion()));
+		}
+		if (config.discordPresenceShowGameMode) {
+			parts.add(translated(singleplayer
+					? "gui.tntsallin1client.discord_presence.singleplayer"
+					: "gui.tntsallin1client.discord_presence.multiplayer"));
+		}
+		if (singleplayer && config.discordPresenceShowWorldName) {
+			parts.add(singleplayerWorldName(mc));
+		} else if (!singleplayer && config.discordPresenceShowServerName) {
+			String name = serverName(mc);
+			if (name != null) parts.add(name);
+		}
+
+		String details = parts.isEmpty() ? translated("gui.tntsallin1client.discord_presence.playing_generic") : parts.get(0);
+		String state = parts.size() > 1 ? String.join(" – ", parts.subList(1, parts.size())) : null;
+		return new RichPresenceData(details, state, start);
+	}
+
+	/** Same scope identity as {@link com.tntsallin1client.waypoint.WaypointScope#currentKey} - not
+	 * reused directly (that one returns {@code null} outside a world, this needs a distinct "menu"
+	 * key instead so the elapsed timer still resets on entering/leaving the menu). */
+	private static String scopeKey(Minecraft mc) {
+		if (mc.level == null) return "menu";
+		if (mc.isLocalServer() && mc.getSingleplayerServer() != null) {
+			return "sp:" + mc.getSingleplayerServer().getWorldPath(LevelResource.ROOT).normalize().getFileName();
+		}
+		ServerData server = mc.getCurrentServer();
+		return "mp:" + (server != null && server.ip != null ? server.ip : "unknown");
+	}
+
+	private static String singleplayerWorldName(Minecraft mc) {
+		return mc.getSingleplayerServer().getWorldPath(LevelResource.ROOT).normalize().getFileName().toString();
+	}
+
+	private static @Nullable String serverName(Minecraft mc) {
+		ServerData server = mc.getCurrentServer();
+		if (server == null) return null;
+		return server.name != null && !server.name.isBlank() ? server.name : server.ip;
+	}
+
+	/** Loader-level, not Minecraft's own (obfuscated/mapped) version API - stable across MC versions
+	 * on purpose, same reasoning `build.gradle.kts`'s own `minecraft_version` project property exists
+	 * for, just read live at runtime instead of baked in at build time. */
+	private static String currentMinecraftVersion() {
+		return FabricLoader.getInstance().getModContainer("minecraft")
+				.map(container -> container.getMetadata().getVersion().getFriendlyString())
+				.orElse("?");
+	}
+
+	/** Discord's activity fields are plain strings sent over IPC, not something a {@code Component}
+	 * can render - so unlike every other user-facing string in this mod, these can't go through
+	 * {@code Component.translatable(key)} rendered straight into a widget. Resolving them to a plain
+	 * string via {@code .getString()} still routes through the same {@code lang/*.json} files and the
+	 * player's actual active language, same translation pipeline, just consumed differently. */
+	private static String translated(String key, Object... args) {
+		return Component.translatable(key, args).getString();
+	}
+}

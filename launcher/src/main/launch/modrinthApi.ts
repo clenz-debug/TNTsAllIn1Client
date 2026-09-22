@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { MODRINTH_SEARCH_PAGE_SIZE, type ModrinthSearchPage, type ModrinthSortIndex } from '../../shared/types'
+import { localizedError } from '../../shared/errorMessages'
+import { MODRINTH_SEARCH_PAGE_SIZE, type CustomModEntry, type ModrinthSearchPage, type ModrinthSortIndex } from '../../shared/types'
 import { fetchTextureDataUri } from '../auth/skinApi'
 import { downloadAndVerifySha1 } from '../downloadVerify'
 import { instanceDir } from './installer'
@@ -63,7 +64,7 @@ export async function searchModrinthMods(
     `&index=${encodeURIComponent(sortIndex)}&offset=${offset}&limit=${MODRINTH_SEARCH_PAGE_SIZE}`
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Modrinth-Suche fehlgeschlagen (${response.status})`)
+    throw localizedError('mods.searchFailed', { status: response.status })
   }
   const { hits, total_hits: totalHits } = (await response.json()) as ModrinthSearchResponse
 
@@ -93,7 +94,7 @@ async function resolveNewestCompatibleVersion(projectId: string, gameVersion: st
   )}&game_versions=${encodeURIComponent(JSON.stringify([gameVersion]))}`
   const versionsResponse = await fetch(versionsUrl)
   if (!versionsResponse.ok) {
-    throw new Error(`Konnte Modrinth-Versionen nicht laden (${versionsResponse.status})`)
+    throw localizedError('mods.versionsLoadFailed', { status: versionsResponse.status })
   }
   const versions = (await versionsResponse.json()) as ModrinthVersion[]
   return versions.find((v) => v.version_type === 'release') ?? versions[0] ?? null
@@ -146,7 +147,7 @@ async function resolveProjectVersionsInDir(dir: string): Promise<Map<string, Mod
     body: JSON.stringify({ hashes, algorithm: 'sha1' })
   })
   if (!response.ok) {
-    throw new Error(`Modrinth-Hash-Lookup fehlgeschlagen (${response.status})`)
+    throw localizedError('mods.hashLookupFailed', { status: response.status })
   }
   const versionsByHash = (await response.json()) as Record<string, ModrinthVersion & { project_id: string }>
   const byProjectId = new Map<string, ModrinthVersion & { project_id: string }>()
@@ -210,7 +211,7 @@ export async function getCustomModProjectIds(instanceId: string): Promise<string
  * instead of leaving a mod half-installed without something it needs or alongside something it
  * can't run next to - the exact broken state this feature exists to prevent in the first place.
  */
-export async function installModrinthMod(instanceId: string, projectId: string, gameVersion: string): Promise<string[]> {
+export async function installModrinthMod(instanceId: string, projectId: string, gameVersion: string): Promise<CustomModEntry[]> {
   const modsDir = join(instanceDir(instanceId), 'game', 'mods')
   await mkdir(modsDir, { recursive: true })
 
@@ -228,8 +229,8 @@ export async function installModrinthMod(instanceId: string, projectId: string, 
 
     const chosen = await resolveNewestCompatibleVersion(currentProjectId, gameVersion)
     if (!chosen) {
-      const label = currentProjectId === projectId ? '' : `Abhängigkeit "${await projectTitle(currentProjectId)}": `
-      throw new Error(`${label}Kein passender Fabric-Build für Minecraft ${gameVersion} gefunden.`)
+      const dependencyTitle = currentProjectId === projectId ? undefined : await projectTitle(currentProjectId)
+      throw localizedError('mods.noFabricBuild', { gameVersion, ...(dependencyTitle ? { dependencyTitle } : {}) })
     }
     resolved.set(currentProjectId, chosen)
 
@@ -244,23 +245,26 @@ export async function installModrinthMod(instanceId: string, projectId: string, 
     for (const dep of version.dependencies) {
       if (dep.dependency_type !== 'incompatible' || !dep.project_id) continue
       if (installedVersions.has(dep.project_id)) {
-        throw new Error(
-          `"${await projectTitle(newId)}" ist mit der bereits installierten Mod "${await projectTitle(dep.project_id)}" nicht kompatibel und kann deshalb nicht installiert werden.`
-        )
+        throw localizedError('mods.incompatibleWithInstalled', {
+          mod: await projectTitle(newId),
+          installedMod: await projectTitle(dep.project_id)
+        })
       }
       if (resolved.has(dep.project_id) && dep.project_id !== newId) {
-        throw new Error(
-          `"${await projectTitle(newId)}" ist mit "${await projectTitle(dep.project_id)}" nicht kompatibel - beide wären Teil dieser Installation, das geht nicht.`
-        )
+        throw localizedError('mods.incompatibleWithEachOther', {
+          modA: await projectTitle(newId),
+          modB: await projectTitle(dep.project_id)
+        })
       }
     }
   }
   for (const [installedId, version] of installedVersions) {
     for (const dep of version.dependencies) {
       if (dep.dependency_type === 'incompatible' && dep.project_id && resolved.has(dep.project_id)) {
-        throw new Error(
-          `"${await projectTitle(dep.project_id)}" ist mit der bereits installierten Mod "${await projectTitle(installedId)}" nicht kompatibel und kann deshalb nicht installiert werden.`
-        )
+        throw localizedError('mods.incompatibleWithInstalled', {
+          mod: await projectTitle(dep.project_id),
+          installedMod: await projectTitle(installedId)
+        })
       }
     }
   }
@@ -268,7 +272,7 @@ export async function installModrinthMod(instanceId: string, projectId: string, 
   for (const version of resolved.values()) {
     const file = version.files.find((f) => f.primary) ?? version.files[0]
     if (!file) {
-      throw new Error('Eine benötigte Modrinth-Version hat keine herunterladbare Datei.')
+      throw localizedError('mods.noDownloadableFile')
     }
     const buffer = await downloadAndVerifySha1(file.url, file.hashes.sha1, file.filename)
     await writeFile(join(modsDir, file.filename), buffer)

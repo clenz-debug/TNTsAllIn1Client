@@ -1,32 +1,26 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
-import type { GameVersionSummary, Instance, StorageInfo, StorageMoveProgressEvent } from '../../../shared/types'
-
-function formatBytes(bytes: number): string {
-  const gb = bytes / 1024 ** 3
-  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / 1024 ** 2).toFixed(0)} MB`
-}
+import { useTranslations } from '../i18n/LanguageContext'
+import type { GameVersionSummary, Instance } from '../../../shared/types'
 
 interface Props {
   instances: Instance[]
   selectedInstanceId: string | null
   versions: GameVersionSummary[]
   versionsError: string | null
+  /** Read-only here - the toggle itself now lives in the Settings screen (not per-instance, so it
+   * doesn't belong on this screen's own state), this is only used to steer
+   * {@link pickDefaultVersion}'s pre-selection and filter the version dropdown below. */
   showSnapshots: boolean
   /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
    * see `bundleCompat.ts`) - used only to steer {@link pickDefaultVersion}'s pre-selection, the
    * dropdown itself still lists every release/snapshot Fabric-supported version regardless. */
   bundleCompatibleVersions: string[]
-  onShowSnapshotsChange: (value: boolean) => void
   /** Both instance-list mutations (create/rename) and a delete result (fetched fresh from the
    * main process, see `handleDelete`) funnel through here - the caller (PlayScreen) just mirrors
    * whatever it's given into its own state and lets its existing save effect persist it. */
   onInstancesChange: (instances: Instance[], selectedInstanceId: string | null) => void
-  /** Called right after a successful `changeStorageLocation()` so PlayScreen's own mirrored
-   * `dataRootOverride` state stays in sync - without this, PlayScreen's next unrelated save-effect
-   * run (e.g. toggling `showSnapshots`) would round-trip its now-stale cached value and silently
-   * clobber the just-changed location back in `launcher-settings.json`. */
-  onDataRootOverrideChange: (path: string) => void
   onSelect: (id: string) => void
   onClose: () => void
 }
@@ -53,12 +47,11 @@ export function InstancesScreen({
   versionsError,
   showSnapshots,
   bundleCompatibleVersions,
-  onShowSnapshotsChange,
   onInstancesChange,
-  onDataRootOverrideChange,
   onSelect,
   onClose
 }: Props) {
+  const t = useTranslations()
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
 
   const [newName, setNewName] = useState('')
@@ -76,37 +69,6 @@ export function InstancesScreen({
   const [importBusy, setImportBusy] = useState(false)
   const [importResult, setImportResult] = useState<string | null>(null)
 
-  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
-  const [moveProgress, setMoveProgress] = useState<StorageMoveProgressEvent | null>(null)
-  const [movingStorage, setMovingStorage] = useState(false)
-
-  useEffect(() => {
-    window.api
-      .getStorageInfo()
-      .then(setStorageInfo)
-      .catch(() => undefined)
-  }, [])
-
-  async function handleChangeStorageLocation(): Promise<void> {
-    setMovingStorage(true)
-    setMoveProgress(null)
-    const unsubscribe = window.api.onStorageMoveProgress(setMoveProgress)
-    try {
-      const result = await window.api.changeStorageLocation()
-      if (result) {
-        const info = await window.api.getStorageInfo()
-        setStorageInfo(info)
-        onDataRootOverrideChange(result.path)
-      }
-    } catch (err) {
-      setError(formatError(err))
-    } finally {
-      unsubscribe()
-      setMovingStorage(false)
-      setMoveProgress(null)
-    }
-  }
-
   useEffect(() => {
     if (visibleVersions.length === 0) return
     if (!visibleVersions.some((v) => v.id === newVersion)) {
@@ -118,7 +80,7 @@ export function InstancesScreen({
 
   function handleCreate(): void {
     if (!newVersion) return
-    const name = newName.trim() || `Instanz ${instances.length + 1}`
+    const name = newName.trim() || t.instances.defaultName(instances.length + 1)
     // crypto.randomUUID() is a plain Web Crypto API call, available in the renderer without any
     // Node integration - no main-process round trip needed just to mint an id.
     const instance: Instance = { id: crypto.randomUUID(), name, versionId: newVersion, enabledBundledMods: [] }
@@ -145,18 +107,18 @@ export function InstancesScreen({
     try {
       const folder = await window.api.pickExternalClientFolder()
       if (!folder) return
-      const name = newName.trim() || `Instanz ${instances.length + 1}`
+      const name = newName.trim() || t.instances.defaultName(instances.length + 1)
       const instance: Instance = { id: crypto.randomUUID(), name, versionId: newVersion, enabledBundledMods: [] }
       onInstancesChange([...instances, instance], instance.id)
       setNewName('')
 
       const result = await window.api.importFromExternalClient(folder, instance.id, instance.versionId)
       const parts: string[] = []
-      if (result.copiedMods.length > 0) parts.push(`${result.copiedMods.length} Mod(s) übernommen`)
-      if (result.importedOptions) parts.push('Einstellungen importiert')
-      setImportResult(parts.length > 0 ? parts.join(', ') : 'Keine options.txt/Mods im gewählten Ordner gefunden.')
+      if (result.copiedMods.length > 0) parts.push(t.instances.importResultMods(result.copiedMods.length))
+      if (result.importedOptions) parts.push(t.instances.importResultOptions)
+      setImportResult(parts.length > 0 ? parts.join(', ') : t.instances.importResultNone)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setImportBusy(false)
     }
@@ -189,19 +151,17 @@ export function InstancesScreen({
     setCloningId(instance.id)
     setError(null)
     try {
-      const updated = await window.api.cloneInstance(instance.id, `${instance.name} (Kopie)`)
+      const updated = await window.api.cloneInstance(instance.id, t.instances.copySuffix(instance.name))
       onInstancesChange(updated.instances, updated.selectedInstanceId)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setCloningId(null)
     }
   }
 
   async function handleDelete(instance: Instance): Promise<void> {
-    const confirmed = window.confirm(
-      `"${instance.name}" wirklich löschen? Speicherstände, Einstellungen und Mods dieser Instanz gehen dabei unwiderruflich verloren.`
-    )
+    const confirmed = window.confirm(t.instances.deleteConfirm(instance.name))
     if (!confirmed) return
 
     setBusy(true)
@@ -209,7 +169,7 @@ export function InstancesScreen({
       const updated = await window.api.deleteInstance(instance.id)
       onInstancesChange(updated.instances, updated.selectedInstanceId)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -225,88 +185,57 @@ export function InstancesScreen({
   return (
     <div className="instances-screen">
       <header>
-        <strong>Instanzen</strong>
+        <strong>{t.instances.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
 
       {error && <span className="error">{error}</span>}
 
       <section className="instances-section">
-        <h3>Speicherort</h3>
-        <div className="instance-info">
-          <span>{storageInfo?.path ?? 'Lädt…'}</span>
-          {storageInfo?.freeBytes != null && (
-            <span className="instance-version">{formatBytes(storageInfo.freeBytes)} frei</span>
-          )}
-        </div>
-        <button
-          className="secondary-button"
-          onClick={() => void handleChangeStorageLocation()}
-          disabled={busy || movingStorage}
-        >
-          Ändern…
-        </button>
-        {movingStorage && moveProgress && (
-          <div className="progress">
-            <span>
-              {moveProgress.subfolder}
-              {moveProgress.label ? ` — ${moveProgress.label}` : ''} ({moveProgress.completed}/{moveProgress.total})
-            </span>
-            <progress value={moveProgress.completed} max={Math.max(moveProgress.total, 1)} />
-          </div>
-        )}
-      </section>
-
-      <section className="instances-section">
-        <h3>Neue Instanz</h3>
+        <h3>{t.instances.newInstanceHeading}</h3>
         <div className="instance-create-form">
           {/* Explicit label + autoFocus so this reads as "type here", not decoration - the
               placeholder alone looked identical in shape to an already-chosen name, so it was easy
               to miss that this field does anything (reported: had to rename after creating instead). */}
-          <span className="instance-name-label">Name:</span>
+          <span className="instance-name-label">{t.instances.nameLabel}</span>
           <input
             type="text"
             className="instance-name-input"
-            placeholder={`Instanz ${instances.length + 1}`}
+            placeholder={t.instances.defaultName(instances.length + 1)}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             autoFocus
           />
-          <select value={newVersion} onChange={(e) => setNewVersion(e.target.value)} disabled={visibleVersions.length === 0}>
-            {visibleVersions.length === 0 && <option value={newVersion}>{newVersion}</option>}
-            {visibleVersions.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.id}
-              </option>
-            ))}
-          </select>
-          <label className="checkbox-label">
-            <input type="checkbox" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
-            Snapshots anzeigen
-          </label>
-          <button className="secondary-button" onClick={handleCreate} disabled={movingStorage}>
-            Erstellen
+          <Dropdown
+            value={newVersion}
+            onChange={setNewVersion}
+            disabled={visibleVersions.length === 0}
+            options={
+              visibleVersions.length === 0
+                ? [{ value: newVersion, label: newVersion }]
+                : visibleVersions.map((v) => ({ value: v.id, label: v.id }))
+            }
+          />
+          <button className="secondary-button" onClick={handleCreate}>
+            {t.instances.create}
           </button>
           <button
             className="secondary-button"
             onClick={() => void handleImportFromClient()}
-            disabled={movingStorage || importBusy}
+            disabled={importBusy}
           >
-            {importBusy ? 'Übernimmt…' : 'Von anderem Client übernehmen…'}
+            {importBusy ? t.instances.importing : t.instances.importFromClient}
           </button>
         </div>
-        <p className="version-warning">
-          Übernommene Einstellungen (options.txt) gelten für alle deine Instanzen, nicht nur die neue - diese
-          Einstellungen sind in diesem Launcher bewusst über alle Instanzen hinweg geteilt.
-        </p>
+        <p className="version-warning">{t.instances.importedSettingsWarning}</p>
         {importResult && <span className="status">{importResult}</span>}
-        {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
+        {versionsError && <span className="error">{t.instances.versionListError(versionsError)}</span>}
       </section>
 
       <section className="instances-section">
-        <h3>Vorhandene Instanzen</h3>
+        <h3>{t.instances.existingHeading}</h3>
         <ul className="instances-list">
           {instances.map((instance) =>
             renamingId === instance.id ? (
@@ -324,10 +253,10 @@ export function InstancesScreen({
                 />
                 <div className="header-actions">
                   <button className="link-button" onClick={commitRename}>
-                    Speichern
+                    {t.common.save}
                   </button>
                   <button className="link-button" onClick={() => setRenamingId(null)}>
-                    Abbrechen
+                    {t.common.cancel}
                   </button>
                 </div>
               </li>
@@ -336,32 +265,32 @@ export function InstancesScreen({
                 <div className="instance-info">
                   <strong>{instance.name}</strong>
                   <span className="instance-version">{instance.versionId}</span>
-                  {instance.id === selectedInstanceId && <span className="mock-badge">Aktiv</span>}
+                  {instance.id === selectedInstanceId && <span className="mock-badge">{t.instances.active}</span>}
                 </div>
                 <div className="header-actions">
                   {instance.id !== selectedInstanceId && (
-                    <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy || movingStorage}>
-                      Auswählen
+                    <button className="link-button" onClick={() => handleSelect(instance)} disabled={busy}>
+                      {t.instances.select}
                     </button>
                   )}
-                  <button className="link-button" onClick={() => startRename(instance)} disabled={busy || movingStorage}>
-                    Umbenennen
+                  <button className="link-button" onClick={() => startRename(instance)} disabled={busy}>
+                    {t.instances.rename}
                   </button>
                   <button
                     className="link-button"
                     onClick={() => void handleClone(instance)}
-                    disabled={busy || movingStorage || cloningId !== null}
+                    disabled={busy || cloningId !== null}
                   >
-                    {cloningId === instance.id ? 'Dupliziert…' : 'Duplizieren'}
+                    {cloningId === instance.id ? t.instances.cloning : t.instances.clone}
                   </button>
-                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy || movingStorage}>
-                    Löschen
+                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy}>
+                    {t.common.delete}
                   </button>
                 </div>
               </li>
             )
           )}
-          {instances.length === 0 && <li className="mods-empty">Noch keine Instanz angelegt.</li>}
+          {instances.length === 0 && <li className="mods-empty">{t.instances.empty}</li>}
         </ul>
       </section>
     </div>

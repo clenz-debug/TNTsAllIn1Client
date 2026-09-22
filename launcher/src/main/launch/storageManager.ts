@@ -2,6 +2,7 @@ import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { statfs } from 'node:fs/promises'
 import { join, sep } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import type { StorageInfo } from '../../shared/types'
 import { dataRoot, RELOCATABLE_SUBDIRS, setDataRoot } from '../dataRoot'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
@@ -49,7 +50,7 @@ export async function changeStorageLocation(
   const oldRoot = dataRoot()
   if (newRoot === oldRoot) return { path: oldRoot }
   if (newRoot.startsWith(oldRoot + sep)) {
-    throw new Error('Der neue Speicherort darf nicht innerhalb des aktuellen Speicherorts liegen.')
+    throw localizedError('storage.targetInsideSource')
   }
 
   for (const subfolder of RELOCATABLE_SUBDIRS) {

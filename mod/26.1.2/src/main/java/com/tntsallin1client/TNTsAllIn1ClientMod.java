@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
+import com.tntsallin1client.discord.DiscordPresenceManager;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.ArmorStatusBundledHud;
@@ -152,5 +153,10 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 			Identifier slotId = Identifier.fromNamespaceAndPath(MOD_ID, "armor_status_" + slot.name().toLowerCase(Locale.ROOT) + "_hud");
 			HudElementRegistry.addLast(slotId, new ArmorStatusSlotHud(slot));
 		}
+
+		// Discord Rich Presence - reconnect/state-update loop, entirely inert (one cheap enabled-flag
+		// check) whenever the feature's own toggle is off. See DiscordPresenceManager's own doc
+		// comment for why this needs to be tick-driven rather than hung off specific events.
+		ClientTickEvents.END_CLIENT_TICK.register(DiscordPresenceManager::tick);
 	}
 }

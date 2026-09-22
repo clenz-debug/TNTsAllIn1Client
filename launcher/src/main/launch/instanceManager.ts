@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { cp, mkdir, readdir, readFile, rename, rm } from 'node:fs/promises'
 import { join } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import type { Instance, LauncherSettings } from '../../shared/types'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
@@ -50,7 +51,7 @@ export async function cloneInstance(instanceId: string, newName: string): Promis
   const settings = await loadLauncherSettings()
   const source = settings.instances.find((instance) => instance.id === instanceId)
   if (!source) {
-    throw new Error(`Instanz ${instanceId} nicht gefunden.`)
+    throw localizedError('instance.notFound', { instanceId })
   }
 
   const clone: Instance = { ...source, id: randomUUID(), name: newName }

@@ -1,7 +1,9 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { readFile, writeFile } from 'node:fs/promises'
+import { totalmem } from 'node:os'
 import { join } from 'node:path'
+import { describeError, localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
 import {
   type CapeUploadResult,
@@ -18,13 +20,15 @@ import {
   type SkinUploadResult,
   type SkinVariant,
   type StorageInfo,
-  type StorageMoveProgressEvent
+  type StorageMoveProgressEvent,
+  type SystemMemoryInfo
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, loadPngFileForEditor, uploadSkin, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
+import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
 import { getBundleCompatibleVersions, hasLocalBundleContent, isVersionBundleCompatible } from '../launch/bundleCompat'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
@@ -43,7 +47,7 @@ import {
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
-import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod } from '../launch/modsManager'
+import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
@@ -74,8 +78,23 @@ let storageBusy = false
 
 function assertStorageNotBusy(): void {
   if (storageBusy) {
-    throw new Error('Spieldaten werden gerade verschoben oder installiert — bitte kurz warten.')
+    throw localizedError('launcher.busy')
   }
+}
+
+/** Backs the Cancel button (own user request: "einen Button der den Launch-Prozess abbricht", shown
+ * in the launcher or the separate console window depending on the Settings screen's toggle) - same
+ * module-level-singleton reasoning as `storageBusy` above, since only one `LaunchPlay` ever runs at
+ * a time. `signal` is threaded into every `fetch()`/`spawn()` down the install chain (downloader.ts,
+ * downloadVerify.ts, javaRuntime.ts, installer.ts, fabricInstaller.ts, fabricMeta.ts,
+ * versionManifest.ts, modBundleUpdater.ts, gameProcess.ts), so `LaunchCancel` aborts whichever of
+ * those is in flight - including killing an already-spawned Minecraft process, which Node's `spawn`
+ * does on its own once its `signal` aborts. */
+let currentLaunchController: AbortController | null = null
+
+function broadcastLaunchBusy(event: IpcMainInvokeEvent, busy: boolean): void {
+  event.sender.send(IpcChannel.LaunchBusyChanged, busy)
+  sendToConsoleWindow(IpcChannel.LaunchBusyChanged, busy)
 }
 
 /** Registered exactly once for the app's lifetime (not per-window) — ipcMain.handle throws if a
@@ -128,6 +147,12 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.ModsRemoveCustom, async (_event: IpcMainInvokeEvent, instanceId: string, fileName: string) =>
     removeCustomMod(instanceId, fileName)
+  )
+
+  ipcMain.handle(
+    IpcChannel.ModsSetCustomEnabled,
+    async (_event: IpcMainInvokeEvent, instanceId: string, fileName: string, enabled: boolean) =>
+      setCustomModEnabled(instanceId, fileName, enabled)
   )
 
   ipcMain.handle(
@@ -332,95 +357,146 @@ export function registerIpcHandlers(): void {
     ...(await getBundleCompatibleVersions())
   ])
 
+  ipcMain.handle(IpcChannel.SystemMemoryInfo, (): SystemMemoryInfo => ({
+    totalMb: Math.round(totalmem() / (1024 * 1024))
+  }))
+
+  ipcMain.handle(IpcChannel.ConsoleWindowOpen, () => openConsoleWindow())
+
   ipcMain.handle(
     IpcChannel.LaunchPlay,
     async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string) => {
       assertStorageNotBusy()
+      const controller = new AbortController()
+      currentLaunchController = controller
+      const { signal } = controller
+      broadcastLaunchBusy(event, true)
+
       const sendProgress = (stage: LaunchStage, completed: number, total: number, label?: string): void => {
-        event.sender.send(IpcChannel.LaunchProgress, { stage, completed, total, label })
+        const payload = { stage, completed, total, label }
+        event.sender.send(IpcChannel.LaunchProgress, payload)
+        sendToConsoleWindow(IpcChannel.LaunchProgress, payload)
       }
       const sendLog = (log: GameLogEvent): void => {
         event.sender.send(IpcChannel.GameLog, log)
+        sendToConsoleWindow(IpcChannel.GameLog, log)
       }
 
-      const settings = await loadLauncherSettings()
-      const instance = settings.instances.find((candidate) => candidate.id === instanceId)
-      if (!instance) {
-        throw new Error(`Unbekannte Instanz: ${instanceId}`)
-      }
-      const versionId = instance.versionId
+      try {
+        const settings = await loadLauncherSettings()
+        const instance = settings.instances.find((candidate) => candidate.id === instanceId)
+        if (!instance) {
+          throw localizedError('instance.unknown', { instanceId })
+        }
+        const versionId = instance.versionId
 
-      // Cheap detail-only fetch (no downloads) purely to read `javaVersion` before committing to
-      // the full (potentially large) installVersion download below - installVersion re-fetches
-      // the same detail itself, a small duplicate JSON request is an easy trade for not
-      // downloading gigabytes of assets for a runtime that then fails to provision.
-      const targetDetail = await fetchVersionDetail(versionId)
-      // Versions old enough to predate Mojang's own javaVersion field (pre-1.17-ish) ran on
-      // whatever JRE 8 provided - jre-legacy is Mojang's own component name for exactly that,
-      // and still shows up in the runtime manifest today.
-      const javaComponent = targetDetail.javaVersion?.component ?? 'jre-legacy'
-      const javaBinaryPath = await ensureJavaRuntime(javaComponent, sendProgress)
-      sendLog({
-        source: 'launcher',
-        level: 'info',
-        message: `Java-Runtime bereit (${javaComponent}).`
-      })
-
-      const bundleCompatible = await isVersionBundleCompatible(versionId)
-      if (!bundleCompatible) {
+        // Cheap detail-only fetch (no downloads) purely to read `javaVersion` before committing to
+        // the full (potentially large) installVersion download below - installVersion re-fetches
+        // the same detail itself, a small duplicate JSON request is an easy trade for not
+        // downloading gigabytes of assets for a runtime that then fails to provision.
+        const targetDetail = await fetchVersionDetail(versionId, signal)
+        // Versions old enough to predate Mojang's own javaVersion field (pre-1.17-ish) ran on
+        // whatever JRE 8 provided - jre-legacy is Mojang's own component name for exactly that,
+        // and still shows up in the runtime manifest today.
+        const javaComponent = targetDetail.javaVersion?.component ?? 'jre-legacy'
+        const javaBinaryPath = await ensureJavaRuntime(javaComponent, sendProgress, signal)
         sendLog({
           source: 'launcher',
           level: 'info',
-          message: `${versionId} ist aktuell nicht Mod-Bundle-kompatibel - gebündelte Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, ...) werden übersprungen, es startet reines Fabric+Vanilla.`
+          message: `Java-Runtime bereit (${javaComponent}).`
         })
-      } else if (!(await hasLocalBundleContent(versionId))) {
-        // First time this version's bundle is actually needed - it was only ever added via the
-        // manifest, never baked into this installer. Same download this version's "Aktualisieren"
-        // banner would trigger later, just run automatically once up front instead of leaving a
-        // freshly-added version's very first launch with nothing to show for it.
-        sendLog({ source: 'launcher', level: 'info', message: `Lade Mod-Bundle für ${versionId} herunter…` })
-        try {
-          await applyModBundleUpdate(versionId)
-        } catch (err) {
+
+        const bundleCompatible = await isVersionBundleCompatible(versionId)
+        if (!bundleCompatible) {
           sendLog({
             source: 'launcher',
-            level: 'error',
-            message: `Mod-Bundle-Download für ${versionId} fehlgeschlagen (${err instanceof Error ? err.message : String(err)}) - startet ohne gebündelte Mods.`
+            level: 'info',
+            message: `${versionId} ist aktuell nicht Mod-Bundle-kompatibel - gebündelte Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, ...) werden übersprungen, es startet reines Fabric+Vanilla.`
           })
+        } else if (!(await hasLocalBundleContent(versionId))) {
+          // First time this version's bundle is actually needed - it was only ever added via the
+          // manifest, never baked into this installer. Same download this version's "Aktualisieren"
+          // banner would trigger later, just run automatically once up front instead of leaving a
+          // freshly-added version's very first launch with nothing to show for it.
+          sendLog({ source: 'launcher', level: 'info', message: `Lade Mod-Bundle für ${versionId} herunter…` })
+          try {
+            await applyModBundleUpdate(versionId, signal)
+          } catch (err) {
+            // A deliberate cancel must stop the whole launch, not just this one sub-step - rethrow
+            // so the outer catch below turns it into `launch.cancelled` instead of this catch
+            // quietly swallowing it and the launch continuing on as if nothing happened.
+            if (signal.aborted) throw err
+            sendLog({
+              source: 'launcher',
+              level: 'error',
+              message: `Mod-Bundle-Download für ${versionId} fehlgeschlagen (${describeError(err)}) - startet ohne gebündelte Mods.`
+            })
+          }
         }
+
+        const vanilla = await installVersion(sendProgress, versionId, instance.id, signal)
+        const installed = await installFabricLoader(vanilla, sendProgress, signal)
+        await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, versionId, instance.enabledBundledMods)
+        const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
+        const args = buildLaunchArgs({
+          detail: installed.detail,
+          instanceDir: installed.instanceDir,
+          assetsDir: installed.assetsDir,
+          classpath,
+          profile,
+          maxMemoryMb: settings.maxMemoryMb
+        })
+
+        const gameDir = join(installed.instanceDir, 'game')
+        // Carries options.txt (graphics/controls/sound/...) and the multiplayer server list across
+        // instances, same reasoning as before the instance system existed when this carried settings
+        // across version switches - these are personal preferences the player wants everywhere, not
+        // something meaningfully different per instance. See sharedSettings.ts.
+        await applySharedOptions(gameDir)
+        await applySharedServers(gameDir)
+
+        sendProgress('launching', 0, 1, installed.detail.id)
+        sendLog({
+          source: 'launcher',
+          level: 'info',
+          message: `Starte Minecraft ${installed.detail.id}${profile.isMock ? ' (Dev-Mock-Profil)' : ''}…`
+        })
+
+        await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)
+        await saveSharedOptions(gameDir)
+        await saveSharedServers(gameDir)
+        sendProgress('done', 1, 1)
+      } catch (err) {
+        if (signal.aborted) {
+          // Language picked fresh here (not the `settings` local above, out of scope in a catch,
+          // and possibly stale anyway) rather than routed through the renderer's `formatError`/`t`
+          // machinery - this one line needs to reach both windows uniformly via the same `sendLog`
+          // broadcast every other progress line already uses, not just whichever window happens to
+          // be awaiting the `LaunchPlay` promise itself (only the console window otherwise has no
+          // way to learn a launch it's displaying was cancelled at all).
+          const language = await loadLauncherSettings()
+            .then((s) => s.language)
+            .catch(() => 'de')
+          sendLog({ source: 'launcher', level: 'info', message: language === 'en' ? 'Launch cancelled.' : 'Start abgebrochen.' })
+          throw localizedError('launch.cancelled')
+        }
+        throw err
+      } finally {
+        currentLaunchController = null
+        broadcastLaunchBusy(event, false)
       }
-
-      const vanilla = await installVersion(sendProgress, versionId, instance.id)
-      const installed = await installFabricLoader(vanilla, sendProgress)
-      await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, versionId, instance.enabledBundledMods)
-      const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
-      const args = buildLaunchArgs({
-        detail: installed.detail,
-        instanceDir: installed.instanceDir,
-        assetsDir: installed.assetsDir,
-        classpath,
-        profile
-      })
-
-      const gameDir = join(installed.instanceDir, 'game')
-      // Carries options.txt (graphics/controls/sound/...) and the multiplayer server list across
-      // instances, same reasoning as before the instance system existed when this carried settings
-      // across version switches - these are personal preferences the player wants everywhere, not
-      // something meaningfully different per instance. See sharedSettings.ts.
-      await applySharedOptions(gameDir)
-      await applySharedServers(gameDir)
-
-      sendProgress('launching', 0, 1, installed.detail.id)
-      sendLog({
-        source: 'launcher',
-        level: 'info',
-        message: `Starte Minecraft ${installed.detail.id}${profile.isMock ? ' (Dev-Mock-Profil)' : ''}…`
-      })
-
-      await launchGame(javaBinaryPath, args, gameDir, sendLog)
-      await saveSharedOptions(gameDir)
-      await saveSharedServers(gameDir)
-      sendProgress('done', 1, 1)
     }
   )
+
+  ipcMain.handle(IpcChannel.LaunchCancel, () => {
+    currentLaunchController?.abort()
+  })
+
+  // Own follow-up to the `LaunchBusyChanged` broadcast above: `openConsoleWindow()` in
+  // `PlayScreen#handlePlay` is fire-and-forget, so the console window's own renderer can still be
+  // mid-load (React not mounted, no `onLaunchBusyChanged` listener attached yet) at the exact moment
+  // `LaunchPlay` sends that first `true` - a message sent to a not-yet-listening `webContents` is
+  // simply lost, not queued. This lets that window ask once on mount instead of only ever reacting
+  // to a broadcast it may have missed.
+  ipcMain.handle(IpcChannel.LaunchIsBusy, () => currentLaunchController !== null)
 }

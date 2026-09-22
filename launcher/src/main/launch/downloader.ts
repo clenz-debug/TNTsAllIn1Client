@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 
 export interface DownloadTask {
   url: string
@@ -30,20 +31,20 @@ async function alreadyValid(task: DownloadTask): Promise<boolean> {
   return (await sha1Of(task.destination)) === task.sha1
 }
 
-export async function downloadFile(task: DownloadTask): Promise<void> {
+export async function downloadFile(task: DownloadTask, signal?: AbortSignal): Promise<void> {
   if (await alreadyValid(task)) return
 
   await mkdir(dirname(task.destination), { recursive: true })
-  const response = await fetch(task.url)
+  const response = await fetch(task.url, { signal })
   if (!response.ok) {
-    throw new Error(`Download failed (${response.status}): ${task.url}`)
+    throw localizedError('download.failed', { status: response.status, url: task.url })
   }
   const buffer = Buffer.from(await response.arrayBuffer())
 
   if (task.sha1) {
     const actual = createHash('sha1').update(buffer).digest('hex')
     if (actual !== task.sha1) {
-      throw new Error(`SHA-1 mismatch for ${task.url}: expected ${task.sha1}, got ${actual}`)
+      throw localizedError('download.sha1Mismatch', { label: task.url, expected: task.sha1, actual })
     }
   }
 
@@ -56,7 +57,8 @@ export async function downloadFile(task: DownloadTask): Promise<void> {
 export async function downloadAll(
   tasks: DownloadTask[],
   concurrency: number,
-  onProgress: (completed: number, total: number, label: string) => void
+  onProgress: (completed: number, total: number, label: string) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   if (tasks.length === 0) return
 
@@ -66,7 +68,7 @@ export async function downloadAll(
   async function worker(): Promise<void> {
     while (nextIndex < tasks.length) {
       const current = tasks[nextIndex++]
-      await downloadFile(current)
+      await downloadFile(current, signal)
       completed++
       onProgress(completed, tasks.length, current.destination)
     }

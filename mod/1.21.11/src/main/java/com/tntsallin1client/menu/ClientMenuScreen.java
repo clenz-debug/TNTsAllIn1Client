@@ -315,6 +315,13 @@ public class ClientMenuScreen extends Screen {
 
 		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_misc"));
 
+		list.addToggleRow(config.discordPresenceEnabled, Component.translatable("gui.tntsallin1client.menu.discord_presence"),
+				value -> {
+					config.discordPresenceEnabled = value;
+					config.save();
+				},
+				() -> new DiscordPresenceOptionsScreen(this));
+
 		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
 

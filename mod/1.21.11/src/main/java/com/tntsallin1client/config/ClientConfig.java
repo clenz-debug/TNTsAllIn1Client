@@ -269,6 +269,28 @@ public class ClientConfig {
 		return this.armorStatusSlotHudLayout.computeIfAbsent(slot.name(), key -> new HudLayout());
 	}
 
+	// Discord Rich Presence (own user request, see Ideen_für_den_client.md) - shows what this
+	// launcher's mod is doing in the player's Discord status, entirely opt-in. Master toggle off by
+	// default (never suddenly visible to others after an update); every sub-toggle below defaults on
+	// once the master is, same "off by default overall, everything included once turned on"
+	// convention as e.g. coordinatesHudShow* above - except discordPresenceShowServerName, which
+	// stays off even then (own explicit request: a multiplayer server's name/address is public-facing
+	// info about someone else's server, not just about the player, so it needs its own opt-in on top
+	// of the master toggle rather than being swept in with everything else).
+	public boolean discordPresenceEnabled = false;
+	public boolean discordPresenceShowGameMode = true;
+	public boolean discordPresenceShowVersion = true;
+	public boolean discordPresenceShowWorldName = true;
+	public boolean discordPresenceShowServerName = false;
+	public boolean discordPresenceShowElapsedTime = true;
+	// No UI control (same "hand-edit this file" precedent as containerClickPacketsPerTick above) -
+	// a Discord Application's client ID is a one-time, technical piece of setup (create the
+	// Application at discord.com/developers/applications, paste its id here), not something to
+	// expose a whole settings-screen text field for. "0" is a deliberately invalid placeholder:
+	// DiscordPresenceManager's connect attempt fails fast on it (Discord rejects any unknown
+	// client_id) and just quietly retries, same as when Discord itself isn't running at all.
+	public String discordApplicationClientId = "0";
+
 	public static ClientConfig get() {
 		if (instance == null) {
 			instance = load();

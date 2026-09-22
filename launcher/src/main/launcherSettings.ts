@@ -114,7 +114,14 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
       dataRootOverride: parsed.dataRootOverride ?? DEFAULT_LAUNCHER_SETTINGS.dataRootOverride,
       appliedModBundleVersions,
       appliedOwnModVersions,
-      appliedResourcepackVersions: parsed.appliedResourcepackVersions ?? DEFAULT_LAUNCHER_SETTINGS.appliedResourcepackVersions
+      appliedResourcepackVersions: parsed.appliedResourcepackVersions ?? DEFAULT_LAUNCHER_SETTINGS.appliedResourcepackVersions,
+      maxMemoryMb: parsed.maxMemoryMb ?? DEFAULT_LAUNCHER_SETTINGS.maxMemoryMb,
+      consoleInSeparateWindow: parsed.consoleInSeparateWindow ?? DEFAULT_LAUNCHER_SETTINGS.consoleInSeparateWindow,
+      // A pre-multi-color-palette file's old single `accentColor` (string | null) key is simply
+      // ignored here rather than migrated - it was only ever a derived-shades accent tone, not a
+      // full ThemeColors object, so there's nothing sensible to map it onto.
+      themeColors: parsed.themeColors ?? DEFAULT_LAUNCHER_SETTINGS.themeColors,
+      language: parsed.language ?? DEFAULT_LAUNCHER_SETTINGS.language
     }
     await saveLauncherSettings(settings)
     return settings

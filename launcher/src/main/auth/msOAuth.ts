@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { createServer } from 'node:http'
 import { shell } from 'electron'
+import { localizedError } from '../../shared/errorMessages'
 import { MS_CLIENT_ID, MS_TENANT } from '../config'
 
 const AUTHORIZE_ENDPOINT = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/authorize`
@@ -77,7 +78,7 @@ async function getAuthorizationCode(): Promise<AuthorizationResult> {
 
     const timeout = setTimeout(() => {
       server.close()
-      reject(new Error('Microsoft login timed out after 5 minutes.'))
+      reject(localizedError('auth.loginTimeout'))
     }, 5 * 60 * 1000)
 
     server.on('error', (err) => {
@@ -88,7 +89,7 @@ async function getAuthorizationCode(): Promise<AuthorizationResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       if (address === null || typeof address === 'string') {
-        reject(new Error('Failed to start loopback server.'))
+        reject(localizedError('auth.loopbackServerFailed'))
         return
       }
       redirectUri = `http://localhost:${address.port}`
@@ -116,7 +117,7 @@ async function requestToken(params: Record<string, string>): Promise<MsTokenResu
     body: new URLSearchParams(params)
   })
   if (!response.ok) {
-    throw new Error(`Microsoft token exchange failed: ${response.status} ${await response.text()}`)
+    throw localizedError('auth.msTokenExchangeFailed', { status: response.status, detail: await response.text() })
   }
   const data = (await response.json()) as {
     access_token: string

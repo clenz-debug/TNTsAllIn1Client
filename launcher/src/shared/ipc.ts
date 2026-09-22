@@ -7,7 +7,10 @@ export const IpcChannel = {
   AuthProgress: 'auth:progress',
   AuthProfile: 'auth:profile',
   LaunchPlay: 'launch:play',
+  LaunchCancel: 'launch:cancel',
+  LaunchIsBusy: 'launch:is-busy',
   LaunchProgress: 'launch:progress',
+  LaunchBusyChanged: 'launch:busy-changed',
   VersionsList: 'versions:list',
   GameLog: 'game:log',
   ShellOpenExternal: 'shell:open-external',
@@ -19,6 +22,7 @@ export const IpcChannel = {
   ModsListCustomProjectIds: 'mods:list-custom-project-ids',
   ModsAddCustom: 'mods:add-custom',
   ModsRemoveCustom: 'mods:remove-custom',
+  ModsSetCustomEnabled: 'mods:set-custom-enabled',
   ModsSearchModrinth: 'mods:search-modrinth',
   ModsInstallModrinthMod: 'mods:install-modrinth-mod',
   InstancesDelete: 'instances:delete',
@@ -51,5 +55,7 @@ export const IpcChannel = {
   CapeStatus: 'cape:status',
   ModBundleCheckUpdate: 'mod-bundle:check-update',
   ModBundleApplyUpdate: 'mod-bundle:apply-update',
-  ModBundleListCompatibleVersions: 'mod-bundle:list-compatible-versions'
+  ModBundleListCompatibleVersions: 'mod-bundle:list-compatible-versions',
+  SystemMemoryInfo: 'system:memory-info',
+  ConsoleWindowOpen: 'console-window:open'
 } as const

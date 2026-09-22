@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
+import { useTranslations } from '../i18n/LanguageContext'
 import type { Instance } from '../../../shared/types'
 
 interface PendingAction {
@@ -21,6 +23,7 @@ interface Props {
  * rather than extending it.
  */
 export function WorldsScreen({ instanceId, instances, onClose }: Props) {
+  const t = useTranslations()
   const [worlds, setWorlds] = useState<string[]>([])
   const [icons, setIcons] = useState<Record<string, string | null>>({})
   const [loading, setLoading] = useState(true)
@@ -46,7 +49,7 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
         const entries = await Promise.all(list.map(async (world) => [world, await window.api.getWorldIcon(instanceId, world)] as const))
         setIcons(Object.fromEntries(entries))
       })
-      .catch((err) => setError(formatError(err)))
+      .catch((err) => setError(formatError(err, t)))
       .finally(() => setLoading(false))
   }, [instanceId])
 
@@ -67,14 +70,14 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
       if (pendingAction.kind === 'move') {
         await window.api.moveWorldBetweenInstances(instanceId, pendingAction.world, targetInstanceId)
         setWorlds(await window.api.listInstanceWorlds(instanceId))
-        setStatus(`Welt "${pendingAction.world}" nach "${target.name}" verschoben.`)
+        setStatus(t.worlds.movedStatus(pendingAction.world, target.name))
       } else {
         const { copiedTo } = await window.api.copyWorldBetweenInstances(instanceId, pendingAction.world, targetInstanceId)
-        setStatus(`Welt "${pendingAction.world}" nach "${target.name}" kopiert (dort als "${copiedTo}").`)
+        setStatus(t.worlds.copiedStatus(pendingAction.world, target.name, copiedTo))
       }
       setPendingAction(null)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -83,9 +86,9 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
   return (
     <div className="worlds-screen">
       <header>
-        <strong>Welten</strong>
+        <strong>{t.worlds.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
 
@@ -93,10 +96,10 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
       {status && <span className="status">{status}</span>}
 
       <section className="mods-section">
-        <h3>Welten dieser Instanz</h3>
+        <h3>{t.worlds.heading}</h3>
         <ul className="mods-list">
-          {loading && <li className="mods-empty">Lädt…</li>}
-          {!loading && worlds.length === 0 && <li className="mods-empty">Keine Welten in dieser Instanz.</li>}
+          {loading && <li className="mods-empty">{t.common.loading}</li>}
+          {!loading && worlds.length === 0 && <li className="mods-empty">{t.worlds.empty}</li>}
           {!loading &&
             worlds.map((world) => (
               <li key={world} className="world-row">
@@ -114,56 +117,46 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
                     onClick={() => openAction(world, 'copy')}
                     disabled={otherInstances.length === 0}
                   >
-                    Kopieren
+                    {t.worlds.copy}
                   </button>
                   <button
                     className="link-button"
                     onClick={() => openAction(world, 'move')}
                     disabled={otherInstances.length === 0}
                   >
-                    Verschieben
+                    {t.worlds.move}
                   </button>
                 </div>
               </li>
             ))}
         </ul>
-        {otherInstances.length === 0 && (
-          <p className="version-warning">
-            Kopieren/Verschieben braucht mindestens eine weitere Instanz - lege dafür erst eine zweite an.
-          </p>
-        )}
+        {otherInstances.length === 0 && <p className="version-warning">{t.worlds.needsAnotherInstance}</p>}
       </section>
 
       {pendingAction && (
         <div className="modal-overlay">
           <div className="modal-box">
             <strong>
-              Welt "{pendingAction.world}" {pendingAction.kind === 'move' ? 'verschieben' : 'kopieren'}
+              {pendingAction.kind === 'move' ? t.worlds.actionTitleMove(pendingAction.world) : t.worlds.actionTitleCopy(pendingAction.world)}
             </strong>
             <label className="checkbox-label">
-              Ziel-Instanz:
-              <select value={targetInstanceId} onChange={(e) => setTargetInstanceId(e.target.value)}>
-                {otherInstances.map((instance) => (
-                  <option key={instance.id} value={instance.id}>
-                    {instance.name} ({instance.versionId})
-                  </option>
-                ))}
-              </select>
+              {t.worlds.targetInstanceLabel}
+              <Dropdown
+                value={targetInstanceId}
+                onChange={setTargetInstanceId}
+                options={otherInstances.map((instance) => ({
+                  value: instance.id,
+                  label: `${instance.name} (${instance.versionId})`
+                }))}
+              />
             </label>
-            {pendingAction.kind === 'move' && (
-              <p className="version-warning">
-                Achtung: Unterschiedliche Minecraft-Versionen oder Mods zwischen den Instanzen können diese Welt
-                beschädigen oder zum Absturz führen (z.B. fehlende Blöcke/Items aus Mods, die in der Zielinstanz
-                nicht installiert sind, oder ein Chunk-Format, das eine ältere Version nicht laden kann). Das
-                geschieht auf eigene Gefahr und kann danach nicht rückgängig gemacht werden.
-              </p>
-            )}
+            {pendingAction.kind === 'move' && <p className="version-warning">{t.worlds.moveWarning}</p>}
             <div className="modal-actions">
               <button className="secondary-button" onClick={() => setPendingAction(null)} disabled={busy}>
-                Abbrechen
+                {t.common.cancel}
               </button>
               <button className="primary-button" onClick={() => void confirmAction()} disabled={busy || !targetInstanceId}>
-                {busy ? 'Wird ausgeführt…' : 'Bestätigen'}
+                {busy ? t.worlds.working : t.worlds.confirm}
               </button>
             </div>
           </div>

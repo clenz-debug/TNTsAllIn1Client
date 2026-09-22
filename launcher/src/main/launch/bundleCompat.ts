@@ -1,5 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import { localizedError } from '../../shared/errorMessages'
 import { SEED_BUNDLE_MINECRAFT_VERSION, type ModBundleManifest } from '../../shared/types'
 import { bundledModsDir, bundledResourcesRoot } from './resourcePaths'
 
@@ -12,7 +13,7 @@ const MANIFEST_URL = 'https://raw.githubusercontent.com/clenz-debug/TNTsAllIn1Cl
 export async function fetchManifest(): Promise<ModBundleManifest> {
   const response = await fetch(MANIFEST_URL)
   if (!response.ok) {
-    throw new Error(`Mod-Bundle-Manifest konnte nicht geladen werden (${response.status}).`)
+    throw localizedError('modBundle.manifestLoadFailed', { status: response.status })
   }
   return (await response.json()) as ModBundleManifest
 }

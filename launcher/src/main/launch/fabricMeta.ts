@@ -1,3 +1,5 @@
+import { localizedError } from '../../shared/errorMessages'
+
 const FABRIC_META_BASE = 'https://meta.fabricmc.net/v2'
 
 interface FabricLoaderVersionEntry {
@@ -15,7 +17,7 @@ interface FabricGameVersionEntry {
 export async function fetchFabricGameVersions(): Promise<Set<string>> {
   const response = await fetch(`${FABRIC_META_BASE}/versions/game`)
   if (!response.ok) {
-    throw new Error(`Failed to fetch Fabric game versions: ${response.status}`)
+    throw localizedError('launch.fabricGameVersionsFetchFailed', { status: response.status })
   }
   const versions = (await response.json()) as FabricGameVersionEntry[]
   return new Set(versions.map((v) => v.version))
@@ -35,23 +37,23 @@ export interface FabricProfile {
   libraries: FabricLibrary[]
 }
 
-export async function fetchLatestStableLoaderVersion(gameVersion: string): Promise<string> {
-  const response = await fetch(`${FABRIC_META_BASE}/versions/loader/${gameVersion}`)
+export async function fetchLatestStableLoaderVersion(gameVersion: string, signal?: AbortSignal): Promise<string> {
+  const response = await fetch(`${FABRIC_META_BASE}/versions/loader/${gameVersion}`, { signal })
   if (!response.ok) {
-    throw new Error(`Failed to fetch Fabric loader versions for ${gameVersion}: ${response.status}`)
+    throw localizedError('launch.fabricLoaderVersionsFetchFailed', { gameVersion, status: response.status })
   }
   const versions = (await response.json()) as FabricLoaderVersionEntry[]
   const stable = versions.find((v) => v.loader.stable) ?? versions[0]
   if (!stable) {
-    throw new Error(`No Fabric loader version available for Minecraft ${gameVersion}`)
+    throw localizedError('launch.noFabricLoaderVersion', { gameVersion })
   }
   return stable.loader.version
 }
 
-export async function fetchFabricProfile(gameVersion: string, loaderVersion: string): Promise<FabricProfile> {
-  const response = await fetch(`${FABRIC_META_BASE}/versions/loader/${gameVersion}/${loaderVersion}/profile/json`)
+export async function fetchFabricProfile(gameVersion: string, loaderVersion: string, signal?: AbortSignal): Promise<FabricProfile> {
+  const response = await fetch(`${FABRIC_META_BASE}/versions/loader/${gameVersion}/${loaderVersion}/profile/json`, { signal })
   if (!response.ok) {
-    throw new Error(`Failed to fetch Fabric profile for ${gameVersion}/${loaderVersion}: ${response.status}`)
+    throw localizedError('launch.fabricProfileFetchFailed', { gameVersion, loaderVersion, status: response.status })
   }
   return (await response.json()) as FabricProfile
 }

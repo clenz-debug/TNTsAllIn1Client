@@ -1,3 +1,5 @@
+import { useTranslations } from '../i18n/LanguageContext'
+
 interface Props {
   onClose: () => void
 }
@@ -49,6 +51,7 @@ const ENTRIES: CreditEntry[] = [
 ]
 
 export function CreditsScreen({ onClose }: Props) {
+  const t = useTranslations()
   function openLink(url: string): void {
     void window.api.openExternal(url)
   }
@@ -56,9 +59,9 @@ export function CreditsScreen({ onClose }: Props) {
   return (
     <div className="credits-screen">
       <header>
-        <strong>Drittanbieter-Credits</strong>
+        <strong>{t.credits.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
       <ul className="credits-list">

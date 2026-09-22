@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatError } from '../formatError'
+import { useTranslations } from '../i18n/LanguageContext'
 import type { CustomCapeStatus, MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
 
@@ -43,6 +44,7 @@ async function fetchSkinTextureWithRetry(url: string, attempts = 5, delayMs = 10
  * Cape" to "Skin & Capes" and reworked so every skin (current + library) renders as a real,
  * drag-to-rotate 3D model instead of a flat thumbnail - own user request. */
 export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: Props) {
+  const t = useTranslations()
   const activeSkin = profile.skins.find((s) => s.state === 'ACTIVE') ?? profile.skins[0] ?? null
   const activeCape = profile.capes.find((c) => c.state === 'ACTIVE') ?? null
   const activeSkinVariant: SkinVariant = activeSkin?.variant === 'SLIM' ? 'slim' : 'classic'
@@ -85,7 +87,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     if (!activeSkin) return
     fetchSkinTextureWithRetry(activeSkin.url)
       .then(setSkinPreview)
-      .catch((err) => setError(formatError(err)))
+      .catch((err) => setError(formatError(err, t)))
   }, [activeSkin?.url, skinRevision])
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     window.api
       .listSkinLibrary()
       .then(setLibrary)
-      .catch((err) => setError(formatError(err)))
+      .catch((err) => setError(formatError(err, t)))
   }, [])
 
   useEffect(() => {
@@ -127,7 +129,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         if (newEntry) setPendingRename(newEntry)
       }
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -142,7 +144,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setLibrary(await window.api.listSkinLibrary())
       setPendingRename(null)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setRenamingBusy(false)
     }
@@ -158,14 +160,14 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         setSkinRevision((r) => r + 1)
       }
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusyLibraryId(null)
     }
   }
 
   async function handleDeleteLibrarySkin(entry: SkinLibraryEntry): Promise<void> {
-    const confirmed = window.confirm(`"${entry.name}" wirklich aus der Bibliothek löschen?`)
+    const confirmed = window.confirm(t.skin.deleteLibraryConfirm(entry.name))
     if (!confirmed) return
     setBusyLibraryId(entry.id)
     setError(null)
@@ -173,7 +175,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       await window.api.deleteSkinFromLibrary(entry.id)
       setLibrary((current) => current.filter((e) => e.id !== entry.id))
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusyLibraryId(null)
     }
@@ -185,7 +187,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       const picked = await window.api.selectCapePng()
       if (picked) setPendingCape(picked)
     } catch (err) {
-      setCapeError(formatError(err))
+      setCapeError(formatError(err, t))
     }
   }
 
@@ -198,14 +200,14 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setCustomCape({ exists: true, dataUri: result.dataUri })
       setPendingCape(null)
     } catch (err) {
-      setCapeError(formatError(err))
+      setCapeError(formatError(err, t))
     } finally {
       setCapeBusy(false)
     }
   }
 
   async function handleRemoveCape(): Promise<void> {
-    const confirmed = window.confirm('Eigenes Cape wirklich entfernen?')
+    const confirmed = window.confirm(t.skin.removeCapeConfirm)
     if (!confirmed) return
     setCapeBusy(true)
     setCapeError(null)
@@ -213,7 +215,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       await window.api.deleteCape(profile)
       setCustomCape({ exists: false, dataUri: null })
     } catch (err) {
-      setCapeError(formatError(err))
+      setCapeError(formatError(err, t))
     } finally {
       setCapeBusy(false)
     }
@@ -227,9 +229,9 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     return (
       <div className="mods-screen">
         <header>
-          <strong>Skin benennen</strong>
+          <strong>{t.skin.renameTitle}</strong>
           <button className="link-button" onClick={() => setPendingRename(null)}>
-            Zurück
+            {t.common.back}
           </button>
         </header>
 
@@ -249,11 +251,11 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
             className="skin-editor-name-input"
             value={pendingRename.name}
             onChange={(event) => setPendingRename({ ...pendingRename, name: event.target.value })}
-            placeholder="Name des Skins"
+            placeholder={t.skin.namePlaceholder}
             autoFocus
           />
           <button className="primary-button" disabled={renamingBusy} onClick={() => void handleConfirmRename()}>
-            {renamingBusy ? 'Speichert…' : 'Speichern'}
+            {renamingBusy ? t.skin.saving : t.common.save}
           </button>
         </section>
       </div>
@@ -263,23 +265,18 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   return (
     <div className="mods-screen">
       <header>
-        <strong>Skin &amp; Capes</strong>
+        <strong>{t.skin.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
 
-      {profile.isMock && (
-        <p className="version-warning">
-          Skin-Verwaltung braucht die echte Mojang-API-Freischaltung (aktuell im Dev-Mock-Modus) - die Vorschau
-          funktioniert schon, ein echter Upload noch nicht.
-        </p>
-      )}
+      {profile.isMock && <p className="version-warning">{t.skin.mockWarning}</p>}
 
       {error && <span className="error">{error}</span>}
 
       <section className="mods-section">
-        <h3>Aktueller Skin</h3>
+        <h3>{t.skin.currentHeading}</h3>
         {activeSkin && skinPreview ? (
           <SkinModelPreview
             skinDataUri={skinPreview}
@@ -290,27 +287,27 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
             height={240}
           />
         ) : activeSkin ? (
-          <p>Lädt…</p>
+          <p>{t.common.loading}</p>
         ) : (
-          <p className="mods-empty">Kein Skin gesetzt.</p>
+          <p className="mods-empty">{t.skin.noSkin}</p>
         )}
         {activeCape && (
           <label className="checkbox-label">
             <input type="checkbox" checked={showCape} onChange={(event) => setShowCape(event.target.checked)} />
-            Cape anzeigen (gilt für alle Skins hier)
+            {t.skin.showCape}
           </label>
         )}
       </section>
 
       <section className="mods-section">
-        <h3>Meine Skins</h3>
+        <h3>{t.skin.libraryHeading}</h3>
         <div>
           <button className="primary-button" onClick={() => onOpenEditor()}>
-            Neuen Skin erstellen
+            {t.skin.createNew}
           </button>
         </div>
         {library.length === 0 ? (
-          <p className="mods-empty">Noch keine Skins erstellt.</p>
+          <p className="mods-empty">{t.skin.libraryEmpty}</p>
         ) : (
           <>
             <ul className="skin-library-grid">
@@ -331,17 +328,17 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
                       disabled={busyLibraryId === entry.id || profile.isMock}
                       onClick={() => void handleUseLibrarySkin(entry.id)}
                     >
-                      Verwenden
+                      {t.skin.use}
                     </button>
                     <button className="secondary-button" disabled={busyLibraryId === entry.id} onClick={() => onOpenEditor(entry)}>
-                      Bearbeiten
+                      {t.skin.edit}
                     </button>
                     <button
                       className="link-button"
                       disabled={busyLibraryId === entry.id}
                       onClick={() => void handleDeleteLibrarySkin(entry)}
                     >
-                      Löschen
+                      {t.common.delete}
                     </button>
                   </div>
                 </li>
@@ -350,17 +347,15 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
             {totalPages > 1 && (
               <div className="skin-library-pagination">
                 <button className="secondary-button" disabled={safePage === 0} onClick={() => setLibraryPage(safePage - 1)}>
-                  Zurück
+                  {t.common.back}
                 </button>
-                <span>
-                  Seite {safePage + 1} / {totalPages}
-                </span>
+                <span>{t.skin.pageOf(safePage + 1, totalPages)}</span>
                 <button
                   className="secondary-button"
                   disabled={safePage >= totalPages - 1}
                   onClick={() => setLibraryPage(safePage + 1)}
                 >
-                  Weiter
+                  {t.skin.next}
                 </button>
               </div>
             )}
@@ -369,28 +364,25 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       </section>
 
       <section className="mods-section">
-        <h3>Direkt hochladen</h3>
+        <h3>{t.skin.uploadHeading}</h3>
         <label className="checkbox-label">
           <input type="radio" name="variant" checked={variant === 'classic'} onChange={() => setVariant('classic')} />
-          Classic (Steve-Arme)
+          {t.skin.variantClassic}
         </label>
         <label className="checkbox-label">
           <input type="radio" name="variant" checked={variant === 'slim'} onChange={() => setVariant('slim')} />
-          Slim (Alex-Arme)
+          {t.skin.variantSlim}
         </label>
         <div>
           <button className="secondary-button" onClick={() => void handleUpload()} disabled={busy || profile.isMock}>
-            {busy ? 'Lädt hoch…' : 'PNG auswählen & hochladen'}
+            {busy ? t.skin.uploading : t.skin.selectAndUpload}
           </button>
         </div>
       </section>
 
       <section className="mods-section">
-        <h3>Eigenes Cape (Cape Provider)</h3>
-        <p className="version-warning">
-          Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter
-          "Gebündelte Mods" zuschaltbar. Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben.
-        </p>
+        <h3>{t.skin.capeHeading}</h3>
+        <p className="version-warning">{t.skin.capeDescription}</p>
         {capeError && <span className="error">{capeError}</span>}
 
         {skinPreview ? (
@@ -403,26 +395,26 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
             height={240}
           />
         ) : (
-          <p>Lädt…</p>
+          <p>{t.common.loading}</p>
         )}
 
         {pendingCape ? (
           <div>
             <button className="primary-button" disabled={capeBusy} onClick={() => void handleConfirmCapeUpload()}>
-              {capeBusy ? 'Lädt hoch…' : 'Hochladen'}
+              {capeBusy ? t.skin.uploading : t.skin.upload}
             </button>
             <button className="link-button" disabled={capeBusy} onClick={() => setPendingCape(null)}>
-              Abbrechen
+              {t.common.cancel}
             </button>
           </div>
         ) : (
           <div>
             <button className="secondary-button" onClick={() => void handleSelectCapePng()}>
-              Cape-PNG auswählen
+              {t.skin.selectCapePng}
             </button>
             {customCape.exists && (
               <button className="link-button" disabled={capeBusy} onClick={() => void handleRemoveCape()}>
-                Entfernen
+                {t.common.remove}
               </button>
             )}
           </div>

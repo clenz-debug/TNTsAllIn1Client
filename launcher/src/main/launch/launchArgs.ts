@@ -11,6 +11,9 @@ export interface LaunchContext {
   assetsDir: string
   classpath: string
   profile: MinecraftProfile
+  /** `LauncherSettings.maxMemoryMb` - `null` passes no `-Xmx` at all (today's behavior, whatever
+   * the JVM's own default heap is). */
+  maxMemoryMb: number | null
 }
 
 function resolvePlaceholders(value: string, vars: Record<string, string>): string {
@@ -36,7 +39,7 @@ function flattenArguments(
 }
 
 export function buildLaunchArgs(context: LaunchContext): string[] {
-  const { detail, instanceDir, assetsDir, classpath, profile } = context
+  const { detail, instanceDir, assetsDir, classpath, profile, maxMemoryMb } = context
   const vars: Record<string, string> = {
     auth_player_name: profile.name,
     version_name: detail.id,
@@ -64,5 +67,7 @@ export function buildLaunchArgs(context: LaunchContext): string[] {
     jvmArgs.push('-cp', classpath)
   }
 
-  return [...jvmArgs, detail.mainClass, ...gameArgs]
+  const memoryArgs = maxMemoryMb != null ? [`-Xmx${maxMemoryMb}M`] : []
+
+  return [...memoryArgs, ...jvmArgs, detail.mainClass, ...gameArgs]
 }

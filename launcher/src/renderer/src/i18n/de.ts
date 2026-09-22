@@ -1,0 +1,365 @@
+/**
+ * German strings - the launcher's original, still-default language. Every screen is migrated now
+ * (own wishlist item: "dann würde ich gerne direkt den Rest machen") - going forward, any new
+ * user-facing string needs an entry here *and* in `en.ts` in the same change, not just here.
+ *
+ * `en.ts` is typed against this file's own shape (`typeof de`) - adding a key here without adding
+ * it there is a compile error, not a silent missing-translation bug.
+ */
+export const de = {
+  common: {
+    back: 'Zurück',
+    cancel: 'Abbrechen',
+    save: 'Speichern',
+    delete: 'Löschen',
+    remove: 'Entfernen',
+    loading: 'Lädt…',
+    hide: 'Ausblenden'
+  },
+  app: {
+    checkingSession: 'Sitzung wird geprüft…'
+  },
+  login: {
+    title: "TNT's All-In-1 Client",
+    subtitle: 'Mit deinem Microsoft-Account anmelden, um zu spielen.',
+    loginButton: 'Mit Microsoft anmelden',
+    mockLoginButton: 'Skip Login (Dev-Mock — Mojang-API noch nicht freigeschaltet)'
+  },
+  play: {
+    headerSkin: 'Skin',
+    headerCredits: 'Credits',
+    headerSettings: 'Einstellungen',
+    headerLogout: 'Abmelden',
+    mockBadge: 'Dev-Mock-Profil',
+    update: {
+      available: (version: string) => `Update gefunden (Version ${version}) - wird heruntergeladen…`,
+      downloading: (percent: number) => `Update wird heruntergeladen… (${percent}%)`,
+      downloaded: (version: string) => `Update heruntergeladen (Version ${version}) - bereit zum Installieren.`,
+      restartNow: 'Jetzt neu starten'
+    },
+    modBundleUpdate: {
+      available: (names: string) => `Neue Mod-Bundle-Version verfügbar (${names}).`,
+      ownMod: 'eigener Mod',
+      applying: 'Wird aktualisiert…',
+      apply: 'Aktualisieren'
+    },
+    instanceLabel: 'Instanz',
+    noInstance: 'Keine Instanz',
+    manageInstances: 'Instanzen verwalten…',
+    mods: 'Mods…',
+    worlds: 'Welten…',
+    versionListError: (error: string) => `Versionsliste konnte nicht geladen werden: ${error}`,
+    noInstanceWarning: 'Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.',
+    bundleIncompatibleWarning: (versionId: string) =>
+      `${versionId} hat keine gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, …) — startet als reines Fabric+Vanilla ohne Mods.`,
+    play: 'Play',
+    playing: 'Läuft…',
+    cancel: 'Start abbrechen'
+  },
+  instances: {
+    title: 'Instanzen',
+    newInstanceHeading: 'Neue Instanz',
+    nameLabel: 'Name:',
+    defaultName: (n: number) => `Instanz ${n}`,
+    create: 'Erstellen',
+    importing: 'Übernimmt…',
+    importFromClient: 'Von anderem Client übernehmen…',
+    importedSettingsWarning:
+      'Übernommene Einstellungen (options.txt) gelten für alle deine Instanzen, nicht nur die neue - diese Einstellungen sind in diesem Launcher bewusst über alle Instanzen hinweg geteilt.',
+    importResultMods: (count: number) => `${count} Mod(s) übernommen`,
+    importResultOptions: 'Einstellungen importiert',
+    importResultNone: 'Keine options.txt/Mods im gewählten Ordner gefunden.',
+    versionListError: (error: string) => `Versionsliste konnte nicht geladen werden: ${error}`,
+    existingHeading: 'Vorhandene Instanzen',
+    active: 'Aktiv',
+    select: 'Auswählen',
+    rename: 'Umbenennen',
+    cloning: 'Dupliziert…',
+    clone: 'Duplizieren',
+    copySuffix: (name: string) => `${name} (Kopie)`,
+    deleteConfirm: (name: string) =>
+      `"${name}" wirklich löschen? Speicherstände, Einstellungen und Mods dieser Instanz gehen dabei unwiderruflich verloren.`,
+    empty: 'Noch keine Instanz angelegt.'
+  },
+  mods: {
+    title: 'Mods',
+    bundledHeading: 'Gebündelte Mods',
+    bundledInfo:
+      'Standardmäßig aus - hier gezielt aktivieren. Fabric API und Sodium/Lithium (Performance, für gute Leistung auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame) laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.',
+    bundleIncompatible: (versionId: string) =>
+      `Wirkt sich aktuell nicht aus - ${versionId} hat kein Mod-Bundle, startet ohnehin ohne gebündelte Mods.`,
+    noToggleable: 'Aktuell nichts zum Umschalten - alle derzeit gebündelten Mods laufen immer mit (siehe Hinweis oben).',
+    searchHeading: 'Mods durchsuchen & entdecken',
+    searchUnavailable: 'Modrinth-Suche ist nur für Mod-Bundle-kompatible Versionen verfügbar.',
+    searchPlaceholder: 'Mods durchsuchen (leer lassen zum Durchstöbern)…',
+    searching: 'Sucht…',
+    search: 'Suchen',
+    alreadyBundled: 'Bereits gebündelt',
+    installed: 'Installiert',
+    installing: 'Wird installiert…',
+    install: 'Installieren',
+    noResults: 'Keine Mods gefunden.',
+    ownHeading: 'Eigene Mods',
+    addMod: 'Mod hinzufügen…',
+    noneAdded: 'Keine eigenen Mods hinzugefügt.',
+    sortOptions: {
+      relevance: 'Relevanz',
+      downloads: 'Downloads',
+      follows: 'Follower',
+      newest: 'Neueste',
+      updated: 'Kürzlich aktualisiert'
+    },
+    sortAriaLabel: 'Sortierung',
+    pagesAriaLabel: 'Seiten'
+  },
+  worlds: {
+    title: 'Welten',
+    heading: 'Welten dieser Instanz',
+    empty: 'Keine Welten in dieser Instanz.',
+    copy: 'Kopieren',
+    move: 'Verschieben',
+    needsAnotherInstance: 'Kopieren/Verschieben braucht mindestens eine weitere Instanz - lege dafür erst eine zweite an.',
+    movedStatus: (world: string, target: string) => `Welt "${world}" nach "${target}" verschoben.`,
+    copiedStatus: (world: string, target: string, copiedTo: string) =>
+      `Welt "${world}" nach "${target}" kopiert (dort als "${copiedTo}").`,
+    actionTitleMove: (world: string) => `Welt "${world}" verschieben`,
+    actionTitleCopy: (world: string) => `Welt "${world}" kopieren`,
+    targetInstanceLabel: 'Ziel-Instanz:',
+    moveWarning:
+      'Achtung: Unterschiedliche Minecraft-Versionen oder Mods zwischen den Instanzen können diese Welt beschädigen oder zum Absturz führen (z.B. fehlende Blöcke/Items aus Mods, die in der Zielinstanz nicht installiert sind, oder ein Chunk-Format, das eine ältere Version nicht laden kann). Das geschieht auf eigene Gefahr und kann danach nicht rückgängig gemacht werden.',
+    confirm: 'Bestätigen',
+    working: 'Wird ausgeführt…'
+  },
+  skin: {
+    renameTitle: 'Skin benennen',
+    title: 'Skin & Capes',
+    mockWarning:
+      'Skin-Verwaltung braucht die echte Mojang-API-Freischaltung (aktuell im Dev-Mock-Modus) - die Vorschau funktioniert schon, ein echter Upload noch nicht.',
+    currentHeading: 'Aktueller Skin',
+    noSkin: 'Kein Skin gesetzt.',
+    showCape: 'Cape anzeigen (gilt für alle Skins hier)',
+    libraryHeading: 'Meine Skins',
+    createNew: 'Neuen Skin erstellen',
+    libraryEmpty: 'Noch keine Skins erstellt.',
+    use: 'Verwenden',
+    edit: 'Bearbeiten',
+    pageOf: (current: number, total: number) => `Seite ${current} / ${total}`,
+    next: 'Weiter',
+    uploadHeading: 'Direkt hochladen',
+    variantClassic: 'Classic (Steve-Arme)',
+    variantSlim: 'Slim (Alex-Arme)',
+    uploading: 'Lädt hoch…',
+    selectAndUpload: 'PNG auswählen & hochladen',
+    capeHeading: 'Eigenes Cape (Cape Provider)',
+    capeDescription:
+      'Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter "Gebündelte Mods" zuschaltbar. Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben.',
+    upload: 'Hochladen',
+    selectCapePng: 'Cape-PNG auswählen',
+    deleteLibraryConfirm: (name: string) => `"${name}" wirklich aus der Bibliothek löschen?`,
+    removeCapeConfirm: 'Eigenes Cape wirklich entfernen?',
+    namePlaceholder: 'Name des Skins',
+    saving: 'Speichert…'
+  },
+  skinEditor: {
+    defaultName: (date: string) => `Skin vom ${date}`,
+    chooserTitle: 'Neuen Skin erstellen',
+    chooseSourceHeading: 'Wovon soll gestartet werden?',
+    loadSteveTemplate: 'Steve-Vorlage laden',
+    loadAlexTemplate: 'Alex-Vorlage laden',
+    loadOwnPng: 'Eigene PNG laden…',
+    title: 'Skin-Editor',
+    toolHeading: 'Werkzeug',
+    toolPencil: 'Stift',
+    toolEraser: 'Radierer',
+    toolEyedropper: 'Pipette',
+    toolView: 'Ansicht',
+    undo: 'Rückgängig',
+    redo: 'Wiederholen',
+    showGrid: 'Pixel-Raster anzeigen',
+    visibilityHeading: 'Sichtbarkeit',
+    visibilityHint: 'Auf ein Körperteil klicken, um es ein-/auszublenden.',
+    layerBase: 'Basis',
+    layerOverlay: 'Overlay',
+    bodyParts: {
+      head: 'Kopf',
+      body: 'Körper',
+      rightArm: 'Rechter Arm',
+      leftArm: 'Linker Arm',
+      rightLeg: 'Rechtes Bein',
+      leftLeg: 'Linkes Bein'
+    },
+    saveHeading: 'Speichern',
+    updateInLibrary: 'In Bibliothek aktualisieren',
+    saveToLibrary: 'In Bibliothek speichern',
+    exportPng: 'Als PNG exportieren…'
+  },
+  credits: {
+    title: 'Drittanbieter-Credits'
+  },
+  console: {
+    title: 'Konsole'
+  },
+  themePreview: {
+    playerName: 'Spielername',
+    exampleInstance: 'Beispiel-Instanz (1.21.11)',
+    sampleLogInfo: '[Launcher] Beispieltext zur Lesbarkeitsprüfung.',
+    sampleLogError: '[Launcher] Beispiel-Fehlertext.'
+  },
+  settings: {
+    title: 'Einstellungen',
+    back: 'Zurück',
+    memory: {
+      heading: 'Arbeitsspeicher (RAM)',
+      auto: 'Automatisch (Java-Standard)',
+      maxLabel: 'Max:',
+      unit: 'MB',
+      systemDetected: (size: string) => `${size} System-RAM erkannt`
+    },
+    storage: {
+      heading: 'Speicherort',
+      loading: 'Lädt…',
+      free: (size: string) => `${size} frei`,
+      change: 'Ändern…'
+    },
+    instances: {
+      heading: 'Instanzen',
+      showSnapshots: 'Snapshots bei der Versionsauswahl anzeigen'
+    },
+    console: {
+      heading: 'Konsole',
+      separateWindow: 'Konsole beim Start in einem separaten Fenster anzeigen'
+    },
+    appearance: {
+      heading: 'Erscheinungsbild',
+      description:
+        'Zwei Hintergrundfarben, vier Akzentfarbtöne und eine Schriftfarbe für die bestehende Launcher-Oberfläche - eine vollständige Auswahl zwischen Minecraft-Standard-Design und eigenem Design (ingame wie im Launcher) ist ein größeres, noch offenes Vorhaben.',
+      fields: {
+        background1: 'Hintergrund 1',
+        background2: 'Hintergrund 2',
+        accent1: 'Akzent 1',
+        accent2: 'Akzent 2',
+        accent3: 'Akzent 3',
+        accent4: 'Akzent 4',
+        text: 'Schrift'
+      },
+      change: 'Ändern…',
+      resetToDefault: 'Zum Standard zurücksetzen',
+      resetConfirm:
+        'Alle Farben (Hintergründe, Akzenttöne, Schrift) auf den Standard zurücksetzen? Eigene Anpassungen gehen dabei verloren.',
+      editField: (label: string) => `${label} bearbeiten`,
+      contrastHint: (ratio: string, label: string) => `Kontrast Schrift/Hintergrund (ungünstigster betroffener Fall): ${ratio}:1 - ${label}`,
+      contrastBad: 'schwer lesbar!',
+      contrastBorderline: 'könnte knapp sein',
+      contrastGood: 'gut lesbar',
+      apply: 'Übernehmen',
+      cancel: 'Abbrechen'
+    },
+    language: {
+      heading: 'Sprache',
+      german: 'Deutsch',
+      english: 'Englisch'
+    }
+  },
+  /**
+   * Localized counterparts of the error codes `shared/errorMessages.ts#localizedError` encodes in
+   * main-process throw sites - `formatError.ts` looks a code up here (dot-path, e.g.
+   * `cape.notConfigured`) instead of showing whatever raw string the main process happened to throw,
+   * so an error is in the user's chosen language regardless of which process detected it. Keys must
+   * match the `code` string passed to `localizedError` at every call site 1:1 - a typo on either end
+   * just falls back to the raw (German) message, same as any not-yet-migrated error.
+   */
+  errors: {
+    auth: {
+      xboxLiveFailed: (p: { status: number | string; detail: string }) =>
+        `Xbox-Live-Authentifizierung fehlgeschlagen: ${p.status} ${p.detail}`,
+      noXboxProfile: 'Dieses Microsoft-Konto hat kein Xbox-Live-Profil. Auf xbox.com eines anlegen und erneut versuchen.',
+      childAccountNoConsent: 'Dieser Account ist ein Kinderkonto ohne Zustimmung eines Erziehungsberechtigten für Xbox Live.',
+      xstsFailed: (p: { status: number | string; detail: string }) => `XSTS-Autorisierung fehlgeschlagen: ${p.status} ${p.detail}`,
+      msTokenExchangeFailed: (p: { status: number | string; detail: string }) =>
+        `Microsoft-Token-Austausch fehlgeschlagen: ${p.status} ${p.detail}`,
+      loginTimeout: 'Microsoft-Anmeldung nach 5 Minuten abgelaufen.',
+      loopbackServerFailed: 'Lokaler Server konnte nicht gestartet werden.',
+      minecraftApiFailed: (p: { status: number | string; detail: string }) =>
+        `Minecraft-API-Aufruf fehlgeschlagen (${p.status}): ${p.detail}`
+    },
+    image: {
+      invalidPng: 'Datei ist kein gültiges PNG.'
+    },
+    cape: {
+      notConfigured: (p: { missing: string }) =>
+        `Cape-Upload nicht konfiguriert - fehlende Variable(n) in launcher/.env: ${p.missing} (siehe .env.example).`,
+      wrongDimensions: (p: { width: number; height: number; actualWidth: number; actualHeight: number }) =>
+        `Capes müssen exakt ${p.width}x${p.height} sein, diese Datei ist ${p.actualWidth}x${p.actualHeight}.`,
+      statusLoadFailed: (p: { status: number | string }) => `Cape-Status konnte nicht geladen werden (${p.status}).`,
+      uploadFailed: (p: { status: number | string; detail: string }) => `Cape-Upload zu B2 fehlgeschlagen (${p.status}): ${p.detail}`,
+      deleteFailed: (p: { status: number | string; detail: string }) => `Cape-Löschen bei B2 fehlgeschlagen (${p.status}): ${p.detail}`
+    },
+    skin: {
+      wrongDimensions: (p: { width: number; height: number }) =>
+        `Minecraft-Skins müssen 64x64 (oder das alte 64x32-Format) sein, diese Datei ist ${p.width}x${p.height}.`,
+      needInstanceFirst: 'Erst eine Instanz starten (Play-Klick), um die Steve/Alex-Vorlage laden zu können.',
+      templateEntryNotFound: (p: { entryPath: string; jarPath: string }) =>
+        `Konnte "${p.entryPath}" nicht in ${p.jarPath} finden - der Pfad hat sich vermutlich mit einer neueren Minecraft-Version geändert.`
+    },
+    download: {
+      failed: (p: { status: number | string; url: string }) => `Download fehlgeschlagen (${p.status}): ${p.url}`,
+      sha1Mismatch: (p: { label: string; expected: string; actual: string }) =>
+        `SHA-1 stimmt nicht überein für ${p.label}: erwartet ${p.expected}, erhalten ${p.actual}`
+    },
+    launcher: {
+      busy: 'Spieldaten werden gerade verschoben oder installiert — bitte kurz warten.'
+    },
+    instance: {
+      unknown: (p: { instanceId: string }) => `Unbekannte Instanz: ${p.instanceId}`,
+      notFound: (p: { instanceId: string }) => `Instanz ${p.instanceId} nicht gefunden.`
+    },
+    modBundle: {
+      manifestLoadFailed: (p: { status: number | string }) => `Mod-Bundle-Manifest konnte nicht geladen werden (${p.status}).`
+    },
+    launch: {
+      assetIndexFetchFailed: (p: { status: number | string }) => `Asset-Index konnte nicht geladen werden: ${p.status}`,
+      noJavaRuntimeForPlatform: (p: { platform: string; arch: string }) =>
+        `Kein Mojang-Java-Runtime für ${p.platform}/${p.arch} verfügbar.`,
+      javaManifestFetchFailed: (p: { status: number | string }) => `Java-Runtime-Manifest konnte nicht geladen werden: ${p.status}`,
+      noJavaRuntimeForComponent: (p: { component: string; osKey: string }) =>
+        `Kein Java-Runtime "${p.component}" für ${p.osKey} verfügbar.`,
+      javaFileListFetchFailed: (p: { status: number | string }) => `Java-Runtime-Dateiliste konnte nicht geladen werden: ${p.status}`,
+      fabricGameVersionsFetchFailed: (p: { status: number | string }) =>
+        `Fabric-Spielversionen konnten nicht geladen werden: ${p.status}`,
+      fabricLoaderVersionsFetchFailed: (p: { gameVersion: string; status: number | string }) =>
+        `Fabric-Loader-Versionen für ${p.gameVersion} konnten nicht geladen werden: ${p.status}`,
+      noFabricLoaderVersion: (p: { gameVersion: string }) => `Keine Fabric-Loader-Version für Minecraft ${p.gameVersion} verfügbar.`,
+      fabricProfileFetchFailed: (p: { gameVersion: string; loaderVersion: string; status: number | string }) =>
+        `Fabric-Profil für ${p.gameVersion}/${p.loaderVersion} konnte nicht geladen werden: ${p.status}`,
+      versionManifestFetchFailed: (p: { status: number | string }) => `Versions-Manifest konnte nicht geladen werden: ${p.status}`,
+      versionNotFound: (p: { versionId: string }) => `Minecraft-Version ${p.versionId} nicht im Versions-Manifest gefunden.`,
+      versionDetailFetchFailed: (p: { versionId: string; status: number | string }) =>
+        `Versionsdetails für ${p.versionId} konnten nicht geladen werden: ${p.status}`,
+      /** Fallback text only - `PlayScreen`'s Cancel button intercepts this code before it ever
+       * reaches `formatError` (see `formatError.ts#errorCode`) and shows `play.launchCancelled`
+       * instead, so this entry is only ever seen if some other, not-yet-updated call site ends up
+       * showing a `launch.cancelled` error through the normal path. */
+      cancelled: 'Start abgebrochen.'
+    },
+    mods: {
+      searchFailed: (p: { status: number | string }) => `Modrinth-Suche fehlgeschlagen (${p.status})`,
+      versionsLoadFailed: (p: { status: number | string }) => `Konnte Modrinth-Versionen nicht laden (${p.status})`,
+      hashLookupFailed: (p: { status: number | string }) => `Modrinth-Hash-Lookup fehlgeschlagen (${p.status})`,
+      noFabricBuild: (p: { gameVersion: string; dependencyTitle?: string }) =>
+        p.dependencyTitle
+          ? `Abhängigkeit "${p.dependencyTitle}": Kein passender Fabric-Build für Minecraft ${p.gameVersion} gefunden.`
+          : `Kein passender Fabric-Build für Minecraft ${p.gameVersion} gefunden.`,
+      incompatibleWithInstalled: (p: { mod: string; installedMod: string }) =>
+        `"${p.mod}" ist mit der bereits installierten Mod "${p.installedMod}" nicht kompatibel und kann deshalb nicht installiert werden.`,
+      incompatibleWithEachOther: (p: { modA: string; modB: string }) =>
+        `"${p.modA}" ist mit "${p.modB}" nicht kompatibel - beide wären Teil dieser Installation, das geht nicht.`,
+      noDownloadableFile: 'Eine benötigte Modrinth-Version hat keine herunterladbare Datei.',
+      modrinthVersionLoadFailed: (p: { versionId: string; status: number | string }) =>
+        `Modrinth-Version ${p.versionId} konnte nicht geladen werden (${p.status}).`,
+      modrinthVersionNoFile: (p: { versionId: string }) => `Modrinth-Version ${p.versionId} hat keine herunterladbare Datei.`
+    },
+    storage: {
+      targetInsideSource: 'Der neue Speicherort darf nicht innerhalb des aktuellen Speicherorts liegen.'
+    }
+  }
+}

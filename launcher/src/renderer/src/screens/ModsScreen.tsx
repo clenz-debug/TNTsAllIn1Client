@@ -1,19 +1,14 @@
 import { useEffect, useState } from 'react'
+import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
+import { useTranslations } from '../i18n/LanguageContext'
 import {
   isBundleCompatibleVersion,
   MODRINTH_SEARCH_PAGE_SIZE,
+  type CustomModEntry,
   type ModrinthSearchResult,
   type ModrinthSortIndex
 } from '../../../shared/types'
-
-const SORT_OPTIONS: { value: ModrinthSortIndex; label: string }[] = [
-  { value: 'relevance', label: 'Relevanz' },
-  { value: 'downloads', label: 'Downloads' },
-  { value: 'follows', label: 'Follower' },
-  { value: 'newest', label: 'Neueste' },
-  { value: 'updated', label: 'Kürzlich aktualisiert' }
-]
 
 // Debounce for search-as-you-type (mirrors Modrinth's own browse view, which updates the list as
 // you type instead of requiring Enter/a button click) - short enough to feel live, long enough to
@@ -47,8 +42,19 @@ interface Props {
 }
 
 export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCompatibleVersions, onToggleBundledMod, onClose }: Props) {
+  const t = useTranslations()
+  // Built inside the component (not at module scope) so its labels can come from `t` - the sort
+  // order values themselves (`ModrinthSortIndex`) still match Modrinth's own `index=` API values.
+  const sortOptions: { value: ModrinthSortIndex; label: string }[] = [
+    { value: 'relevance', label: t.mods.sortOptions.relevance },
+    { value: 'downloads', label: t.mods.sortOptions.downloads },
+    { value: 'follows', label: t.mods.sortOptions.follows },
+    { value: 'newest', label: t.mods.sortOptions.newest },
+    { value: 'updated', label: t.mods.sortOptions.updated }
+  ]
+
   const [bundledMods, setBundledMods] = useState<string[]>([])
-  const [customMods, setCustomMods] = useState<string[]>([])
+  const [customMods, setCustomMods] = useState<CustomModEntry[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -72,7 +78,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     try {
       setInstalledProjectIds(new Set(await window.api.listCustomModProjectIds(instanceId)))
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     }
   }
   // Which search results are mods we already bundle for this version (toggleable or always-on
@@ -83,15 +89,15 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
   const [bundledProjectIds, setBundledProjectIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(formatError(err)))
+    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(formatError(err, t)))
     window.api
       .listBundledModProjectIds(versionId)
       .then((ids) => setBundledProjectIds(new Set(ids)))
-      .catch((err) => setError(formatError(err)))
+      .catch((err) => setError(formatError(err, t)))
   }, [versionId])
 
   useEffect(() => {
-    window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(formatError(err)))
+    window.api.listCustomMods(instanceId).then(setCustomMods).catch((err) => setError(formatError(err, t)))
     void refreshInstalledProjectIds()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceId])
@@ -101,7 +107,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     try {
       setCustomMods(await window.api.addCustomMods(instanceId))
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -113,7 +119,18 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
       setCustomMods(await window.api.removeCustomMod(instanceId, fileName))
       await refreshInstalledProjectIds()
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleToggle(fileName: string, enabled: boolean): Promise<void> {
+    setBusy(true)
+    try {
+      setCustomMods(await window.api.setCustomModEnabled(instanceId, fileName, enabled))
+    } catch (err) {
+      setError(formatError(err, t))
     } finally {
       setBusy(false)
     }
@@ -130,7 +147,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
       setTotalHits(page.totalHits)
       setCurrentPage(pageNumber)
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setSearching(false)
     }
@@ -154,7 +171,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
       setCustomMods(await window.api.installModrinthMod(instanceId, projectId, versionId))
       await refreshInstalledProjectIds()
     } catch (err) {
-      setError(formatError(err))
+      setError(formatError(err, t))
     } finally {
       setInstallingId(null)
     }
@@ -163,25 +180,19 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
   return (
     <div className="mods-screen">
       <header>
-        <strong>Mods</strong>
+        <strong>{t.mods.title}</strong>
         <button className="link-button" onClick={onClose}>
-          Zurück
+          {t.common.back}
         </button>
       </header>
 
       {error && <span className="error">{error}</span>}
 
       <section className="mods-section">
-        <h3>Gebündelte Mods</h3>
-        <p className="version-warning">
-          Standardmäßig aus - hier gezielt aktivieren. Fabric API und Sodium/Lithium (Performance, für gute Leistung
-          auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame)
-          laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.
-        </p>
+        <h3>{t.mods.bundledHeading}</h3>
+        <p className="version-warning">{t.mods.bundledInfo}</p>
         {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) && (
-          <p className="version-warning">
-            Wirkt sich aktuell nicht aus - {versionId} hat kein Mod-Bundle, startet ohnehin ohne gebündelte Mods.
-          </p>
+          <p className="version-warning">{t.mods.bundleIncompatible(versionId)}</p>
         )}
         <ul className="mods-list">
           {bundledMods.map((fileName) => (
@@ -189,6 +200,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
               <label className="checkbox-label">
                 <input
                   type="checkbox"
+                  className="toggle-switch"
                   checked={enabledBundledMods.includes(fileName)}
                   onChange={(e) => onToggleBundledMod(fileName, e.target.checked)}
                 />
@@ -196,18 +208,14 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
               </label>
             </li>
           ))}
-          {bundledMods.length === 0 && (
-            <li className="mods-empty">
-              Aktuell nichts zum Umschalten - alle derzeit gebündelten Mods laufen immer mit (siehe Hinweis oben).
-            </li>
-          )}
+          {bundledMods.length === 0 && <li className="mods-empty">{t.mods.noToggleable}</li>}
         </ul>
       </section>
 
       <section className="mods-section">
-        <h3>Mods durchsuchen &amp; entdecken</h3>
+        <h3>{t.mods.searchHeading}</h3>
         {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) ? (
-          <p className="version-warning">Modrinth-Suche ist nur für Mod-Bundle-kompatible Versionen verfügbar.</p>
+          <p className="version-warning">{t.mods.searchUnavailable}</p>
         ) : (
           <>
             <div className="mods-search-row">
@@ -219,22 +227,11 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') void runSearch(1)
                 }}
-                placeholder="Mods durchsuchen (leer lassen zum Durchstöbern)…"
+                placeholder={t.mods.searchPlaceholder}
               />
-              <select
-                className="mods-sort-select"
-                value={sortIndex}
-                onChange={(event) => setSortIndex(event.target.value as ModrinthSortIndex)}
-                aria-label="Sortierung"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <Dropdown value={sortIndex} onChange={(value) => setSortIndex(value as ModrinthSortIndex)} options={sortOptions} ariaLabel={t.mods.sortAriaLabel} />
               <button className="secondary-button" onClick={() => void runSearch(1)} disabled={searching}>
-                {searching ? 'Sucht…' : 'Suchen'}
+                {searching ? t.mods.searching : t.mods.search}
               </button>
             </div>
             <ul className="mods-list mods-search-results">
@@ -255,22 +252,22 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
                     onClick={() => void handleInstall(result.projectId)}
                   >
                     {bundledProjectIds.has(result.projectId)
-                      ? 'Bereits gebündelt'
+                      ? t.mods.alreadyBundled
                       : installedProjectIds.has(result.projectId)
-                        ? 'Installiert'
+                        ? t.mods.installed
                         : installingId === result.projectId
-                          ? 'Wird installiert…'
-                          : 'Installieren'}
+                          ? t.mods.installing
+                          : t.mods.install}
                   </button>
                 </li>
               ))}
-              {searchResults.length === 0 && !searching && <li className="mods-empty">Keine Mods gefunden.</li>}
+              {searchResults.length === 0 && !searching && <li className="mods-empty">{t.mods.noResults}</li>}
             </ul>
             {totalHits > MODRINTH_SEARCH_PAGE_SIZE &&
               (() => {
                 const totalPages = Math.ceil(totalHits / MODRINTH_SEARCH_PAGE_SIZE)
                 return (
-                  <nav className="mods-pagination" aria-label="Seiten">
+                  <nav className="mods-pagination" aria-label={t.mods.pagesAriaLabel}>
                     <button
                       className="secondary-button"
                       disabled={searching || currentPage <= 1}
@@ -309,20 +306,29 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
       </section>
 
       <section className="mods-section">
-        <h3>Eigene Mods</h3>
+        <h3>{t.mods.ownHeading}</h3>
         <button className="secondary-button" onClick={() => void handleAdd()} disabled={busy}>
-          Mod hinzufügen…
+          {t.mods.addMod}
         </button>
         <ul className="mods-list">
-          {customMods.map((fileName) => (
-            <li key={fileName} className="mods-row">
-              <span>{fileName}</span>
-              <button className="link-button" onClick={() => void handleRemove(fileName)} disabled={busy}>
-                Entfernen
+          {customMods.map((mod) => (
+            <li key={mod.fileName} className="mods-row">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  className="toggle-switch"
+                  checked={mod.enabled}
+                  disabled={busy}
+                  onChange={(e) => void handleToggle(mod.fileName, e.target.checked)}
+                />
+                {mod.fileName}
+              </label>
+              <button className="link-button" onClick={() => void handleRemove(mod.fileName)} disabled={busy}>
+                {t.common.remove}
               </button>
             </li>
           ))}
-          {customMods.length === 0 && <li className="mods-empty">Keine eigenen Mods hinzugefügt.</li>}
+          {customMods.length === 0 && <li className="mods-empty">{t.mods.noneAdded}</li>}
         </ul>
       </section>
     </div>

@@ -1,3 +1,5 @@
+import { localizedError } from '../../shared/errorMessages'
+
 export interface B2Config {
   keyId: string
   applicationKey: string
@@ -33,9 +35,7 @@ export function getB2Config(): B2Config {
   const env = import.meta.env
   const missing = REQUIRED_VARS.filter((name) => !env[name])
   if (missing.length > 0) {
-    throw new Error(
-      `Cape-Upload nicht konfiguriert - fehlende Variable(n) in launcher/.env: ${missing.join(', ')} (siehe .env.example).`
-    )
+    throw localizedError('cape.notConfigured', { missing: missing.join(', ') })
   }
   return {
     keyId: env.MAIN_VITE_B2_KEY_ID as string,

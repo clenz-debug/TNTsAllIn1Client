@@ -1,3 +1,5 @@
+import { localizedError } from '../../shared/errorMessages'
+
 export interface XstsResult {
   xstsToken: string
   userHash: string
@@ -23,7 +25,7 @@ async function authenticateXboxLive(msAccessToken: string): Promise<string> {
     })
   })
   if (!response.ok) {
-    throw new Error(`Xbox Live authentication failed: ${response.status} ${await response.text()}`)
+    throw localizedError('auth.xboxLiveFailed', { status: response.status, detail: await response.text() })
   }
   const data = (await response.json()) as XboxLiveTokenResponse
   return data.Token
@@ -43,14 +45,12 @@ async function authorizeXsts(xblToken: string): Promise<XstsResult> {
   if (!response.ok) {
     // Well-known XSTS error codes, see minecraft.wiki "Microsoft Authentication".
     if (data.XErr === 2148916233) {
-      throw new Error(
-        'Dieses Microsoft-Konto hat kein Xbox-Live-Profil. Auf xbox.com eines anlegen und erneut versuchen.'
-      )
+      throw localizedError('auth.noXboxProfile')
     }
     if (data.XErr === 2148916238) {
-      throw new Error('Dieser Account ist ein Kinderkonto ohne Zustimmung eines Erziehungsberechtigten für Xbox Live.')
+      throw localizedError('auth.childAccountNoConsent')
     }
-    throw new Error(`XSTS authorization failed: ${response.status} ${JSON.stringify(data)}`)
+    throw localizedError('auth.xstsFailed', { status: response.status, detail: JSON.stringify(data) })
   }
   return { xstsToken: data.Token, userHash: data.DisplayClaims.xui[0].uhs }
 }

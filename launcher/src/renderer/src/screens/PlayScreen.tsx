@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react'
-import { formatError } from '../formatError'
+import { Dropdown } from '../Dropdown'
+import { errorCode, formatError } from '../formatError'
+import { useTranslations } from '../i18n/LanguageContext'
+import { Logo } from '../Logo'
 import type {
   GameLogEvent,
   GameVersionSummary,
   Instance,
+  Language,
   LaunchProgressEvent,
   LauncherSettings,
   MinecraftProfile,
   ModBundleUpdateInfo,
   SkinLibraryEntry,
+  ThemeColors,
   UpdateStatus
 } from '../../../shared/types'
 import { isBundleCompatibleVersion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
+import { SettingsScreen } from './SettingsScreen'
 import { SkinEditorScreen } from './SkinEditorScreen'
 import { SkinScreen } from './SkinScreen'
 import { WorldsScreen } from './WorldsScreen'
@@ -27,9 +33,16 @@ interface Props {
   profile: MinecraftProfile
   onProfileUpdate: (profile: MinecraftProfile) => void
   onLogout: () => void
+  /** Owned by `App.tsx` (its `LanguageProvider` needs it too, for screens outside this one that
+   * aren't reachable from here, e.g. LoginScreen) - this screen only mirrors it into its own
+   * settings load/save cycle so a change made in `SettingsScreen` actually persists, the same way
+   * every other field below does. */
+  language: Language
+  onLanguageChange: (language: Language) => void
 }
 
-export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
+export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLanguageChange }: Props) {
+  const t = useTranslations()
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
   const [logs, setLogs] = useState<GameLogEvent[]>([])
@@ -39,6 +52,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [showSkin, setShowSkin] = useState(false)
   const [skinEditorRequest, setSkinEditorRequest] = useState<SkinEditorRequest>(null)
   const [showInstances, setShowInstances] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
   const [versionsError, setVersionsError] = useState<string | null>(null)
@@ -58,6 +72,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   const [appliedModBundleVersions, setAppliedModBundleVersions] = useState<LauncherSettings['appliedModBundleVersions']>({})
   const [appliedOwnModVersions, setAppliedOwnModVersions] = useState<LauncherSettings['appliedOwnModVersions']>({})
   const [appliedResourcepackVersions, setAppliedResourcepackVersions] = useState<LauncherSettings['appliedResourcepackVersions']>({})
+  const [maxMemoryMb, setMaxMemoryMb] = useState<LauncherSettings['maxMemoryMb']>(null)
+  const [consoleInSeparateWindow, setConsoleInSeparateWindow] = useState(false)
+  const [themeColors, setThemeColors] = useState<ThemeColors | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -82,9 +99,13 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         setAppliedOwnModVersions(settings.appliedOwnModVersions)
         setAppliedResourcepackVersions(settings.appliedResourcepackVersions)
         setBundleCompatibleVersions(bundleVersions)
+        setMaxMemoryMb(settings.maxMemoryMb)
+        setConsoleInSeparateWindow(settings.consoleInSeparateWindow)
+        setThemeColors(settings.themeColors)
+        onLanguageChange(settings.language)
         setSettingsLoaded(true)
       })
-      .catch((err) => setVersionsError(formatError(err)))
+      .catch((err) => setVersionsError(formatError(err, t)))
   }, [])
 
   useEffect(() => {
@@ -96,7 +117,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       dataRootOverride,
       appliedModBundleVersions,
       appliedOwnModVersions,
-      appliedResourcepackVersions
+      appliedResourcepackVersions,
+      maxMemoryMb,
+      consoleInSeparateWindow,
+      themeColors,
+      language
     })
   }, [
     settingsLoaded,
@@ -106,7 +131,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     dataRootOverride,
     appliedModBundleVersions,
     appliedOwnModVersions,
-    appliedResourcepackVersions
+    appliedResourcepackVersions,
+    maxMemoryMb,
+    consoleInSeparateWindow,
+    themeColors,
+    language
   ])
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
@@ -181,7 +210,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       setAppliedResourcepackVersions(updated.appliedResourcepackVersions)
       setModBundleUpdate(null)
     } catch (err) {
-      setModBundleUpdateError(formatError(err))
+      setModBundleUpdateError(formatError(err, t))
     } finally {
       setApplyingModBundleUpdate(false)
     }
@@ -192,13 +221,23 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     setBusy(true)
     setLogs([])
     setProgress(null)
+    if (consoleInSeparateWindow) {
+      // Fire-and-forget: a failed open just means the log panel silently stays inline for this run
+      // instead of blocking "Play" over a window that's only ever a convenience.
+      void window.api.openConsoleWindow()
+    }
     const unsubscribeProgress = window.api.onLaunchProgress(setProgress)
     const unsubscribeLog = window.api.onGameLog((event) => setLogs((prev) => [...prev.slice(-499), event]))
     try {
       await window.api.play(profile, selectedInstance.id)
     } catch (err) {
-      const message = formatError(err)
-      setLogs((prev) => [...prev, { source: 'launcher', level: 'error', message }])
+      // main already sent a "Start abgebrochen."/"Launch cancelled." info-level log line to both
+      // windows (see handlers.ts's LaunchPlay) before throwing this - showing it again here, in red,
+      // would duplicate it and misrepresent a deliberate Cancel-button click as a failure.
+      if (errorCode(err) !== 'launch.cancelled') {
+        const message = formatError(err, t)
+        setLogs((prev) => [...prev, { source: 'launcher', level: 'error', message }])
+      }
     } finally {
       unsubscribeProgress()
       unsubscribeLog()
@@ -206,8 +245,31 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
     }
   }
 
+  async function handleCancel(): Promise<void> {
+    await window.api.cancelLaunch()
+  }
+
   if (showCredits) {
     return <CreditsScreen onClose={() => setShowCredits(false)} />
+  }
+
+  if (showSettings) {
+    return (
+      <SettingsScreen
+        showSnapshots={showSnapshots}
+        onShowSnapshotsChange={setShowSnapshots}
+        maxMemoryMb={maxMemoryMb}
+        onMaxMemoryMbChange={setMaxMemoryMb}
+        consoleInSeparateWindow={consoleInSeparateWindow}
+        onConsoleInSeparateWindowChange={setConsoleInSeparateWindow}
+        themeColors={themeColors}
+        onThemeColorsChange={setThemeColors}
+        language={language}
+        onLanguageChange={onLanguageChange}
+        onDataRootOverrideChange={setDataRootOverride}
+        onClose={() => setShowSettings(false)}
+      />
+    )
   }
 
   if (showInstances) {
@@ -219,9 +281,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
         versionsError={versionsError}
         showSnapshots={showSnapshots}
         bundleCompatibleVersions={bundleCompatibleVersions}
-        onShowSnapshotsChange={setShowSnapshots}
         onInstancesChange={handleInstancesChange}
-        onDataRootOverrideChange={setDataRootOverride}
         onSelect={setSelectedInstanceId}
         onClose={() => setShowInstances(false)}
       />
@@ -268,19 +328,23 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
   return (
     <div className="play-screen">
       <header>
-        <div>
+        <div className="identity-row">
+          <Logo className="app-logo" />
           <strong>{profile.name}</strong>
-          {profile.isMock && <span className="mock-badge">Dev-Mock-Profil</span>}
+          {profile.isMock && <span className="mock-badge">{t.play.mockBadge}</span>}
         </div>
         <div className="header-actions">
           <button className="link-button" onClick={() => setShowSkin(true)}>
-            Skin
+            {t.play.headerSkin}
           </button>
           <button className="link-button" onClick={() => setShowCredits(true)}>
-            Credits
+            {t.play.headerCredits}
+          </button>
+          <button className="link-button" onClick={() => setShowSettings(true)}>
+            {t.play.headerSettings}
           </button>
           <button className="link-button" onClick={onLogout}>
-            Abmelden
+            {t.play.headerLogout}
           </button>
         </div>
       </header>
@@ -293,19 +357,18 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       {updateStatus && !updateDismissed && (updateStatus.state === 'available' || updateStatus.state === 'downloading' || updateStatus.state === 'downloaded') && (
         <div className="update-banner">
           <span>
-            {updateStatus.state === 'available' && `Update gefunden (Version ${updateStatus.version}) - wird heruntergeladen…`}
-            {updateStatus.state === 'downloading' && `Update wird heruntergeladen… (${updateStatus.percent ?? 0}%)`}
-            {updateStatus.state === 'downloaded' &&
-              `Update heruntergeladen (Version ${updateStatus.version}) - bereit zum Installieren.`}
+            {updateStatus.state === 'available' && t.play.update.available(updateStatus.version ?? '')}
+            {updateStatus.state === 'downloading' && t.play.update.downloading(updateStatus.percent ?? 0)}
+            {updateStatus.state === 'downloaded' && t.play.update.downloaded(updateStatus.version ?? '')}
           </span>
           <div className="header-actions">
             {updateStatus.state === 'downloaded' && (
               <button className="link-button" onClick={() => void window.api.installUpdateNow()}>
-                Jetzt neu starten
+                {t.play.update.restartNow}
               </button>
             )}
             <button className="link-button" onClick={() => setUpdateDismissed(true)}>
-              Ausblenden
+              {t.common.hide}
             </button>
           </div>
         </div>
@@ -314,82 +377,95 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout }: Props) {
       {modBundleUpdate && (
         <div className="update-banner">
           <span>
-            Neue Mod-Bundle-Version verfügbar (
-            {[
-              ...modBundleUpdate.outdatedMods.map((entry) => entry.name),
-              ...modBundleUpdate.outdatedResourcepacks.map((entry) => entry.name),
-              ...(modBundleUpdate.ownModUpdateAvailable ? ['eigener Mod'] : [])
-            ].join(', ')}
-            ).{modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
+            {t.play.modBundleUpdate.available(
+              [
+                ...modBundleUpdate.outdatedMods.map((entry) => entry.name),
+                ...modBundleUpdate.outdatedResourcepacks.map((entry) => entry.name),
+                ...(modBundleUpdate.ownModUpdateAvailable ? [t.play.modBundleUpdate.ownMod] : [])
+              ].join(', ')
+            )}
+            {modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
           </span>
           <div className="header-actions">
             <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => void handleApplyModBundleUpdate()}>
-              {applyingModBundleUpdate ? 'Wird aktualisiert…' : 'Aktualisieren'}
+              {applyingModBundleUpdate ? t.play.modBundleUpdate.applying : t.play.modBundleUpdate.apply}
             </button>
             <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => setModBundleUpdate(null)}>
-              Ausblenden
+              {t.common.hide}
             </button>
           </div>
         </div>
       )}
 
       <div className="version-picker">
-        <label htmlFor="instance-select">Instanz</label>
-        <select
+        <label htmlFor="instance-select">{t.play.instanceLabel}</label>
+        <Dropdown
           id="instance-select"
           value={selectedInstanceId ?? ''}
-          onChange={(e) => setSelectedInstanceId(e.target.value)}
+          onChange={setSelectedInstanceId}
           disabled={busy || instances.length === 0}
-        >
-          {instances.length === 0 && <option value="">Keine Instanz</option>}
-          {instances.map((instance) => (
-            <option key={instance.id} value={instance.id}>
-              {instance.name} ({instance.versionId})
-            </option>
-          ))}
-        </select>
+          options={
+            instances.length === 0
+              ? [{ value: '', label: t.play.noInstance }]
+              : instances.map((instance) => ({ value: instance.id, label: `${instance.name} (${instance.versionId})` }))
+          }
+        />
         <button className="secondary-button" onClick={() => setShowInstances(true)} disabled={busy}>
-          Instanzen verwalten…
+          {t.play.manageInstances}
         </button>
         <button className="secondary-button" onClick={() => setShowMods(true)} disabled={busy || !selectedInstance}>
-          Mods…
+          {t.play.mods}
         </button>
         <button className="secondary-button" onClick={() => setShowWorlds(true)} disabled={busy || !selectedInstance}>
-          Welten…
+          {t.play.worlds}
         </button>
-        {versionsError && <span className="error">Versionsliste konnte nicht geladen werden: {versionsError}</span>}
-        {instances.length === 0 && (
-          <span className="version-warning">Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.</span>
-        )}
+        {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
+        {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}
         {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
-          <span className="version-warning">
-            {selectedInstance.versionId} hat keine gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener
-            Client-Mod, …) — startet als reines Fabric+Vanilla ohne Mods.
-          </span>
+          <span className="version-warning">{t.play.bundleIncompatibleWarning(selectedInstance.versionId)}</span>
         )}
       </div>
 
-      <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy || !selectedInstance}>
-        {busy ? 'Läuft…' : 'Play'}
-      </button>
+      <div className="play-button-row">
+        <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy || !selectedInstance}>
+          {busy ? t.play.playing : t.play.play}
+        </button>
+        {/* Own user request: a Cancel button "wie bei anderen Clients üblich" that aborts an
+            in-progress launch (still downloading/installing, or already-running Minecraft alike -
+            see handlers.ts's LaunchPlay/gameProcess.ts). Shown here only when the console isn't in
+            its own separate window - that window gets the identical button instead
+            (ConsoleWindowView.tsx), so there's never a second one competing for the same click. */}
+        {busy && !consoleInSeparateWindow && (
+          <button className="secondary-button" onClick={() => void handleCancel()}>
+            {t.play.cancel}
+          </button>
+        )}
+      </div>
 
-      {progress && (
-        <div className="progress">
-          <span>
-            {progress.stage}
-            {progress.label ? ` — ${progress.label}` : ''} ({progress.completed}/{progress.total})
-          </span>
-          <progress value={progress.completed} max={Math.max(progress.total, 1)} />
-        </div>
+      {/* When the Settings screen's "Konsole in separatem Fenster" toggle is on, handlePlay opens
+          a second BrowserWindow (main/consoleWindow.ts) that receives the exact same log/progress
+          events instead - showing both here too would just be a confusing duplicate. */}
+      {!consoleInSeparateWindow && (
+        <>
+          {progress && (
+            <div className="progress">
+              <span>
+                {progress.stage}
+                {progress.label ? ` — ${progress.label}` : ''} ({progress.completed}/{progress.total})
+              </span>
+              <progress value={progress.completed} max={Math.max(progress.total, 1)} />
+            </div>
+          )}
+
+          <pre className="log-panel">
+            {logs.map((log, index) => (
+              <div key={index} className={log.level === 'error' ? 'log-error' : 'log-info'}>
+                {log.message}
+              </div>
+            ))}
+          </pre>
+        </>
       )}
-
-      <pre className="log-panel">
-        {logs.map((log, index) => (
-          <div key={index} className={log.level === 'error' ? 'log-error' : 'log-info'}>
-            {log.message}
-          </div>
-        ))}
-      </pre>
     </div>
   )
 }
