@@ -169,7 +169,7 @@ public final class ArmorStatusHud {
 	 * {@link ArmorStatusIconPosition#RIGHT} icon - callers stacking multiple rows into a column (see
 	 * {@link #drawBundled}) pass the same, widest value for every row so the icons line up in a
 	 * straight column too, instead of each icon trailing right after its own row's (differently
-	 * long) text; a single-row caller just passes that row's own text width.
+	 * long) text; a single-row caller passes that row's own {@link #reservedTextWidth}.
 	 */
 	public static void drawRow(GuiGraphics guiGraphics, Font font, Entry entry, int localX, int localY, boolean showIcon, ArmorStatusIconPosition iconPosition, int textVerticalOffset, int textColumnWidth) {
 		if (!showIcon) {
@@ -187,30 +187,37 @@ public final class ArmorStatusHud {
 		}
 	}
 
-	/** Widest entry text in the group - the shared column width {@link #drawBundled} passes to every row in a VERTICAL stack. */
-	private static int maxTextWidth(Font font, List<Entry> entries) {
+	/**
+	 * Text width reserved for one entry: at least as wide as its slot's {@link #buildMaxEntry}
+	 * placeholder, so the icons (and every entry after it in a HORIZONTAL row) stay on a fixed line
+	 * instead of shifting whenever the text gets shorter/longer - e.g. switching the main hand from
+	 * a "1561/1561" tool to a "64" block stack, per user request. Only grows past the placeholder
+	 * when the real text is even wider (long item names with {@link ClientConfig#armorStatusShowName}).
+	 */
+	public static int reservedTextWidth(Font font, ClientConfig config, Entry entry) {
+		return Math.max(font.width(entry.text()), font.width(buildMaxEntry(config, entry.slot()).text()));
+	}
+
+	/** Widest reserved text width in the group - the shared column width {@link #drawBundled} passes to every row in a VERTICAL stack. */
+	private static int maxTextWidth(Font font, ClientConfig config, List<Entry> entries) {
 		int max = 0;
 		for (Entry entry : entries) {
-			max = Math.max(max, font.width(entry.text()));
+			max = Math.max(max, reservedTextWidth(font, config, entry));
 		}
 		return max;
 	}
 
 	/** Total bundled width for the current direction - shared with the HUD editor's drag bounds. */
 	public static int bundledWidth(Font font, ClientConfig config, List<Entry> entries) {
-		boolean showIcon = config.armorStatusShowIcon;
+		int iconWidth = config.armorStatusShowIcon ? ICON_SIZE + ICON_GAP : 0;
 		if (config.armorStatusBundledDirection == ArmorStatusDirection.HORIZONTAL) {
 			int width = 0;
 			for (Entry entry : entries) {
-				width += contentWidth(font, entry.text(), showIcon);
+				width += reservedTextWidth(font, config, entry) + iconWidth;
 			}
 			return width + Math.max(0, entries.size() - 1) * GAP;
 		}
-		int max = 0;
-		for (Entry entry : entries) {
-			max = Math.max(max, contentWidth(font, entry.text(), showIcon));
-		}
-		return max;
+		return maxTextWidth(font, config, entries) + iconWidth;
 	}
 
 	/** Total bundled height for the current direction - shared with the HUD editor's drag bounds. */
@@ -273,7 +280,8 @@ public final class ArmorStatusHud {
 		guiGraphics.pose().translate(originX, originY);
 		guiGraphics.pose().scale(scale);
 
-		int columnWidth = config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL ? maxTextWidth(font, entries) : 0;
+		int columnWidth = config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL ? maxTextWidth(font, config, entries) : 0;
+		int iconWidth = showIcon ? ICON_SIZE + ICON_GAP : 0;
 
 		int cursor = 0;
 		for (Entry entry : entries) {
@@ -281,8 +289,9 @@ public final class ArmorStatusHud {
 				drawRow(guiGraphics, font, entry, 0, cursor, showIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, columnWidth);
 				cursor += rowHeight + GAP;
 			} else {
-				drawRow(guiGraphics, font, entry, cursor, 0, showIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, font.width(entry.text()));
-				cursor += contentWidth(font, entry.text(), showIcon) + GAP;
+				int reserved = reservedTextWidth(font, config, entry);
+				drawRow(guiGraphics, font, entry, cursor, 0, showIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, reserved);
+				cursor += reserved + iconWidth + GAP;
 			}
 		}
 

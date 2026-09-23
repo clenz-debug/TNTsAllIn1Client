@@ -3,7 +3,6 @@
 export const IpcChannel = {
   AuthRestore: 'auth:restore',
   AuthLogin: 'auth:login',
-  AuthLoginMock: 'auth:login-mock',
   AuthProgress: 'auth:progress',
   AuthProfile: 'auth:profile',
   LaunchPlay: 'launch:play',
@@ -31,6 +30,10 @@ export const IpcChannel = {
   InstancesWorldIcon: 'instances:world-icon',
   InstancesMoveWorld: 'instances:move-world',
   InstancesCopyWorld: 'instances:copy-world',
+  ResourcepacksList: 'resourcepacks:list',
+  ResourcepacksAdd: 'resourcepacks:add',
+  ResourcepacksRemove: 'resourcepacks:remove',
+  ResourcepacksRemoveAll: 'resourcepacks:remove-all',
   ClientImportPickFolder: 'client-import:pick-folder',
   ClientImportApply: 'client-import:apply',
   UpdateStatus: 'update:status',

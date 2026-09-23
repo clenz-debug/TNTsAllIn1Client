@@ -20,6 +20,11 @@
 		"MouseHandlerMixin",
 		"MultiPlayerGameModeMixin",
 		"OptionInstanceAccessor",
+		"OptionsResourcePacksMixin",
+		"PackMixin",
+		"PackRepositoryMixin",
+		"PackSelectionEntryMixin",
+		"PackSelectionModelMixin",
 		"RecipeBookComponentAccessor",
 		"RecipeBookPageAccessor",
 		"ScreenMixin"

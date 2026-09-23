@@ -29,19 +29,6 @@ export function LoginScreen({ onLoggedIn }: Props) {
     }
   }
 
-  async function handleMockLogin(): Promise<void> {
-    setBusy(true)
-    setError(null)
-    try {
-      const profile = await window.api.loginMock()
-      onLoggedIn(profile)
-    } catch (err) {
-      setError(formatError(err, t))
-    } finally {
-      setBusy(false)
-    }
-  }
-
   return (
     <div className="login-screen">
       <Logo className="login-logo" />
@@ -51,12 +38,6 @@ export function LoginScreen({ onLoggedIn }: Props) {
       <button className="primary-button" onClick={() => void handleLogin()} disabled={busy}>
         {t.login.loginButton}
       </button>
-
-      {import.meta.env.DEV && (
-        <button className="secondary-button" onClick={() => void handleMockLogin()} disabled={busy}>
-          {t.login.mockLoginButton}
-        </button>
-      )}
 
       {status && <p className="status">{status}</p>}
       {error && <p className="error">{error}</p>}

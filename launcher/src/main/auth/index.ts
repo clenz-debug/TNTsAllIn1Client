@@ -1,7 +1,7 @@
 import type { AuthProgressEvent, Language, MinecraftProfile } from '../../shared/types'
 import { loginWithMicrosoft, refreshMsToken } from './msOAuth'
 import { loginToXboxLive } from './xboxLive'
-import { completeMinecraftLogin, createMockProfile } from './minecraftAuth'
+import { completeMinecraftLogin } from './minecraftAuth'
 import { loadCachedAuth, saveCachedAuth } from './tokenCache'
 
 export type AuthProgressCallback = (event: AuthProgressEvent) => void
@@ -18,17 +18,8 @@ export async function performLogin(onProgress: AuthProgressCallback, language: L
 
   await saveCachedAuth({ msRefreshToken: msTokens.refreshToken, profile })
 
-  onProgress({
-    step: 'done',
-    message: profile.isMock
-      ? 'Angemeldet mit Dev-Mock-Profil (Mojang-API noch nicht freigeschaltet).'
-      : `Angemeldet als ${profile.name}.`
-  })
+  onProgress({ step: 'done', message: `Angemeldet als ${profile.name}.` })
   return profile
-}
-
-export async function loadMockProfile(): Promise<MinecraftProfile> {
-  return createMockProfile()
 }
 
 /** Silent re-login on startup using the cached MS refresh token. Returns null (never throws)

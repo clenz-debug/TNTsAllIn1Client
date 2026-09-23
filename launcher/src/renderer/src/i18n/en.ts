@@ -21,8 +21,7 @@ export const en: typeof de = {
   login: {
     title: "TNT's All-In-1 Client",
     subtitle: 'Sign in with your Microsoft account to play.',
-    loginButton: 'Sign in with Microsoft',
-    mockLoginButton: 'Skip login (dev mock — Mojang API not yet approved)'
+    loginButton: 'Sign in with Microsoft'
   },
   onboarding: {
     colorsHeading: 'Customize the colors',
@@ -37,7 +36,6 @@ export const en: typeof de = {
     headerSettings: 'Settings',
     headerLogout: 'Sign out',
     playerMenuLabel: 'Account menu',
-    mockBadge: 'Dev mock profile',
     update: {
       available: (version: string) => `Update found (version ${version}) - downloading…`,
       downloading: (percent: number) => `Downloading update… (${percent}%)`,
@@ -55,6 +53,7 @@ export const en: typeof de = {
     manageInstances: 'Manage instances…',
     mods: 'Mods…',
     worlds: 'Worlds…',
+    resourcepacks: 'Resource Packs…',
     versionListError: (error: string) => `Couldn't load the version list: ${error}`,
     noInstanceWarning: 'No instance created yet - create one via "Manage instances…".',
     bundleIncompatibleWarning: (versionId: string) =>
@@ -136,11 +135,21 @@ export const en: typeof de = {
     confirm: 'Confirm',
     working: 'Working…'
   },
+  resourcepacks: {
+    title: 'Resource Packs',
+    heading: (instance: string) => `External resource packs in "${instance}"`,
+    info: "Only your own packs are listed here - the client's bundled ones are managed automatically. Enable a pack in-game under Options → Resource Packs.",
+    add: 'Upload pack…',
+    dialogTitle: 'Choose resource pack(s)',
+    removeAll: 'Remove all',
+    empty: 'No resource packs of your own in this instance yet.',
+    confirmRemove: (name: string) => `Really delete resource pack "${name}" from this instance?`,
+    confirmRemoveAll: (count: number) =>
+      `Really delete all ${count} of your resource packs from this instance? The bundled packs stay.`
+  },
   skin: {
     renameTitle: 'Name your skin',
     title: 'Skin & Capes',
-    mockWarning:
-      "Skin management needs real Mojang API approval (currently in dev mock mode) - the preview already works, a real upload doesn't yet.",
     currentHeading: 'Current skin',
     noSkin: 'No skin set.',
     showCape: 'Show cape (applies to every skin here)',

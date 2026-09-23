@@ -22,8 +22,7 @@ export const de = {
   login: {
     title: "TNT's All-In-1 Client",
     subtitle: 'Mit deinem Microsoft-Account anmelden, um zu spielen.',
-    loginButton: 'Mit Microsoft anmelden',
-    mockLoginButton: 'Skip Login (Dev-Mock — Mojang-API noch nicht freigeschaltet)'
+    loginButton: 'Mit Microsoft anmelden'
   },
   // Own wishlist item ("client setup beim ersten start") - OnboardingScreen.tsx's colors step, the
   // only onboarding step that runs after the language is already picked (welcome/language stay
@@ -41,7 +40,6 @@ export const de = {
     headerSettings: 'Einstellungen',
     headerLogout: 'Abmelden',
     playerMenuLabel: 'Konto-Menü',
-    mockBadge: 'Dev-Mock-Profil',
     update: {
       available: (version: string) => `Update gefunden (Version ${version}) - wird heruntergeladen…`,
       downloading: (percent: number) => `Update wird heruntergeladen… (${percent}%)`,
@@ -59,6 +57,7 @@ export const de = {
     manageInstances: 'Instanzen verwalten…',
     mods: 'Mods…',
     worlds: 'Welten…',
+    resourcepacks: 'Texturepacks…',
     versionListError: (error: string) => `Versionsliste konnte nicht geladen werden: ${error}`,
     noInstanceWarning: 'Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.',
     bundleIncompatibleWarning: (versionId: string) =>
@@ -141,11 +140,21 @@ export const de = {
     confirm: 'Bestätigen',
     working: 'Wird ausgeführt…'
   },
+  resourcepacks: {
+    title: 'Texturepacks',
+    heading: (instance: string) => `Externe Texturepacks in "${instance}"`,
+    info: 'Hier stehen nur deine eigenen Packs - die mitgelieferten des Clients werden automatisch verwaltet. Aktivieren kannst du ein Pack im Spiel unter Optionen → Ressourcenpakete.',
+    add: 'Pack hochladen…',
+    dialogTitle: 'Texturepack(s) auswählen',
+    removeAll: 'Alle entfernen',
+    empty: 'Noch keine eigenen Texturepacks in dieser Instanz.',
+    confirmRemove: (name: string) => `Texturepack "${name}" wirklich aus dieser Instanz löschen?`,
+    confirmRemoveAll: (count: number) =>
+      `Wirklich alle ${count} eigenen Texturepacks aus dieser Instanz löschen? Die mitgelieferten Packs bleiben erhalten.`
+  },
   skin: {
     renameTitle: 'Skin benennen',
     title: 'Skin & Capes',
-    mockWarning:
-      'Skin-Verwaltung braucht die echte Mojang-API-Freischaltung (aktuell im Dev-Mock-Modus) - die Vorschau funktioniert schon, ein echter Upload noch nicht.',
     currentHeading: 'Aktueller Skin',
     noSkin: 'Kein Skin gesetzt.',
     showCape: 'Cape anzeigen (gilt für alle Skins hier)',

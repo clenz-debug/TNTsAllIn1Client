@@ -58,7 +58,7 @@ public class ArmorStatusSlotHud implements HudElement {
 		guiGraphics.pose().pushMatrix();
 		guiGraphics.pose().translate(x, y);
 		guiGraphics.pose().scale(layout.scale);
-		ArmorStatusHud.drawRow(guiGraphics, client.font, entry, 0, 0, config.armorStatusShowIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, client.font.width(entry.text()));
+		ArmorStatusHud.drawRow(guiGraphics, client.font, entry, 0, 0, config.armorStatusShowIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, ArmorStatusHud.reservedTextWidth(client.font, config, entry));
 		guiGraphics.pose().popMatrix();
 	}
 

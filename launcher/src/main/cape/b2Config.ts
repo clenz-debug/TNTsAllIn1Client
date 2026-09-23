@@ -28,8 +28,7 @@ const REQUIRED_VARS = [
  * Throws a clear German error rather than letting a `putCapeObject` call fail with a confusing
  * network/auth error if `.env` was never filled in - same "surface it, don't crash silently"
  * philosophy the rest of this app already follows, just via a thrown error instead of a dedicated
- * UI mode, since a missing `.env` is a one-time dev/build setup gap, not a long-lived expected
- * state like `profile.isMock`.
+ * UI mode, since a missing `.env` is a one-time dev/build setup gap, not a long-lived expected state.
  */
 export function getB2Config(): B2Config {
   const env = import.meta.env

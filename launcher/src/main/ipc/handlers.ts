@@ -23,7 +23,7 @@ import {
   type StorageMoveProgressEvent,
   type SystemMemoryInfo
 } from '../../shared/types'
-import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
+import { performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, loadPngFileForEditor, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
@@ -48,6 +48,7 @@ import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
+import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
@@ -115,8 +116,6 @@ export function registerIpcHandlers(): void {
       .catch(() => 'de' as const)
     return performLogin((progress) => event.sender.send(IpcChannel.AuthProgress, progress), language)
   })
-
-  ipcMain.handle(IpcChannel.AuthLoginMock, async () => loadMockProfile())
 
   // Renderer never gets direct filesystem/shell access (contextIsolation) - opening a link in the
   // system browser has to be proxied through the main process, same reasoning as the OAuth login
@@ -206,6 +205,22 @@ export function registerIpcHandlers(): void {
     IpcChannel.InstancesCopyWorld,
     async (_event: IpcMainInvokeEvent, sourceInstanceId: string, worldName: string, targetInstanceId: string) =>
       copyWorldBetweenInstances(sourceInstanceId, worldName, targetInstanceId)
+  )
+
+  ipcMain.handle(IpcChannel.ResourcepacksList, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    listResourcepacks(instanceId)
+  )
+
+  ipcMain.handle(IpcChannel.ResourcepacksAdd, async (event: IpcMainInvokeEvent, instanceId: string, dialogTitle: string) =>
+    addResourcepacks(instanceId, dialogTitle, BrowserWindow.fromWebContents(event.sender))
+  )
+
+  ipcMain.handle(IpcChannel.ResourcepacksRemove, async (_event: IpcMainInvokeEvent, instanceId: string, name: string) =>
+    removeResourcepack(instanceId, name)
+  )
+
+  ipcMain.handle(IpcChannel.ResourcepacksRemoveAll, async (_event: IpcMainInvokeEvent, instanceId: string) =>
+    removeAllResourcepacks(instanceId)
   )
 
   ipcMain.handle(IpcChannel.ClientImportPickFolder, async (event: IpcMainInvokeEvent) =>
@@ -459,7 +474,7 @@ export function registerIpcHandlers(): void {
         sendLog({
           source: 'launcher',
           level: 'info',
-          message: `Starte Minecraft ${installed.detail.id}${profile.isMock ? ' (Dev-Mock-Profil)' : ''}…`
+          message: `Starte Minecraft ${installed.detail.id}…`
         })
 
         await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)

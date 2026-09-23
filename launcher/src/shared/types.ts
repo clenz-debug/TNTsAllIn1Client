@@ -20,9 +20,6 @@ export interface MinecraftProfile {
   id: string
   name: string
   accessToken: string
-  /** true when steps 4/5 of the auth chain (login_with_xbox, profile) were mocked because the
-   * Mojang API allowlist request (aka.ms/mce-reviewappid) has not been approved yet. */
-  isMock: boolean
   skins: MinecraftSkin[]
   capes: MinecraftCape[]
 }
@@ -162,6 +159,13 @@ export interface CustomCapeStatus {
 export interface CustomModEntry {
   fileName: string
   enabled: boolean
+}
+
+/** One user-added resource pack in an instance's `game/resourcepacks` (`main/launch/resourcepacksManager.ts`)
+ * - `name` is the zip filename or folder name, `iconDataUri` its `pack.png` (null if it has none). */
+export interface ResourcepackEntry {
+  name: string
+  iconDataUri: string | null
 }
 
 /** Result of importing settings/mods from another client's folder (`main/launch/clientImport.ts`)

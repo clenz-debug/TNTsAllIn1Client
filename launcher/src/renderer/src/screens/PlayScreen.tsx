@@ -24,6 +24,7 @@ import { ModsScreen } from './ModsScreen'
 import { SettingsScreen } from './SettingsScreen'
 import { SkinEditorScreen } from './SkinEditorScreen'
 import { SkinScreen } from './SkinScreen'
+import { ResourcepacksScreen } from './ResourcepacksScreen'
 import { WorldsScreen } from './WorldsScreen'
 
 /** `'new'` opens the editor blank (template/own-PNG chooser); a `SkinLibraryEntry` opens it
@@ -50,6 +51,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [showCredits, setShowCredits] = useState(false)
   const [showMods, setShowMods] = useState(false)
   const [showWorlds, setShowWorlds] = useState(false)
+  const [showResourcepacks, setShowResourcepacks] = useState(false)
   const [showSkin, setShowSkin] = useState(false)
   const [skinEditorRequest, setSkinEditorRequest] = useState<SkinEditorRequest>(null)
   const [showInstances, setShowInstances] = useState(false)
@@ -336,6 +338,16 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     return <WorldsScreen instanceId={selectedInstance.id} instances={instances} onClose={() => setShowWorlds(false)} />
   }
 
+  if (showResourcepacks && selectedInstance) {
+    return (
+      <ResourcepacksScreen
+        instanceId={selectedInstance.id}
+        instanceName={selectedInstance.name}
+        onClose={() => setShowResourcepacks(false)}
+      />
+    )
+  }
+
   if (skinEditorRequest !== null) {
     return (
       <SkinEditorScreen
@@ -368,7 +380,6 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
             menuLabel={t.play.playerMenuLabel}
             onLogout={onLogout}
           />
-          {profile.isMock && <span className="mock-badge">{t.play.mockBadge}</span>}
         </div>
         <div className="header-actions">
           <button className="link-button" onClick={() => setShowSkin(true)}>
@@ -452,6 +463,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         </button>
         <button className="secondary-button" onClick={() => setShowWorlds(true)} disabled={busy || !selectedInstance}>
           {t.play.worlds}
+        </button>
+        <button className="secondary-button" onClick={() => setShowResourcepacks(true)} disabled={busy || !selectedInstance}>
+          {t.play.resourcepacks}
         </button>
         {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
         {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}

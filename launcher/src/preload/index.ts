@@ -6,6 +6,7 @@ import type {
   ClientImportResult,
   CustomCapeStatus,
   CustomModEntry,
+  ResourcepackEntry,
   GameLogEvent,
   GameVersionSummary,
   LaunchProgressEvent,
@@ -32,7 +33,6 @@ function subscribe<T>(channel: string, callback: (event: T) => void): () => void
 const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
-  loginMock: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLoginMock),
   play: (profile: MinecraftProfile, instanceId: string): Promise<void> =>
     ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId),
   cancelLaunch: (): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchCancel),
@@ -67,6 +67,13 @@ const api = {
     ipcRenderer.invoke(IpcChannel.InstancesMoveWorld, sourceInstanceId, worldName, targetInstanceId),
   copyWorldBetweenInstances: (sourceInstanceId: string, worldName: string, targetInstanceId: string): Promise<{ copiedTo: string }> =>
     ipcRenderer.invoke(IpcChannel.InstancesCopyWorld, sourceInstanceId, worldName, targetInstanceId),
+  listResourcepacks: (instanceId: string): Promise<ResourcepackEntry[]> => ipcRenderer.invoke(IpcChannel.ResourcepacksList, instanceId),
+  addResourcepacks: (instanceId: string, dialogTitle: string): Promise<ResourcepackEntry[]> =>
+    ipcRenderer.invoke(IpcChannel.ResourcepacksAdd, instanceId, dialogTitle),
+  removeResourcepack: (instanceId: string, name: string): Promise<ResourcepackEntry[]> =>
+    ipcRenderer.invoke(IpcChannel.ResourcepacksRemove, instanceId, name),
+  removeAllResourcepacks: (instanceId: string): Promise<ResourcepackEntry[]> =>
+    ipcRenderer.invoke(IpcChannel.ResourcepacksRemoveAll, instanceId),
   pickExternalClientFolder: (): Promise<string | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
   importFromExternalClient: (sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> =>
     ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId, versionId),

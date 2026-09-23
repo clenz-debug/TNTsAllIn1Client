@@ -57,10 +57,8 @@ public class ClientMenuScreen extends Screen {
 	 * (see vanilla's {@code FolderRepositorySource}) - the 5r dark-inventory resource pack. */
 	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-26.2-2026.6.0.zip";
 
-	/** Same "file/" + filename scheme as {@link #DARK_MODE_PACK_ID} - the user-assembled Vanilla
-	 * Tweaks bundle (connected/3D block models etc.), NOT the separate "TNT 26.1 Pack.zip" branding
-	 * pack also sitting in the same folder (that one stays manual-opt-in like any bundled pack,
-	 * nothing in the mod menu is supposed to manage it). */
+	/** Same "file/" + filename scheme as {@link #DARK_MODE_PACK_ID} - the Vanilla Tweaks 3D block
+	 * models selection. */
 	private static final String BLOCK_MODELS_3D_PACK_ID = "file/VanillaTweaks_r714399_MC26.2.x.zip";
 
 	private final @Nullable Screen parent;

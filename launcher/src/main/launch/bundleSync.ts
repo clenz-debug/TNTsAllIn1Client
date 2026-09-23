@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { copyFile, mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
@@ -40,6 +40,18 @@ async function syncBundleDir(bundleDir: string, destinationDir: string, excluded
     await Promise.all(files.map((file) => copyFile(join(bundleDir, file), join(destinationDir, file))))
   }
   await Promise.all([...excluded].map((file) => rm(join(destinationDir, file), { force: true })))
+}
+
+/**
+ * Tells our mod which files in `game/resourcepacks/` are bundled ones - it pins exactly those
+ * directly above Minecraft's "Default" pack and below every pack the user picks themselves (see
+ * the mod's `BundledResourcePacks`). Rewritten on every launch so it always matches the current
+ * bundle; lives in Fabric's config dir (`game/config/`) next to the mod's own config file.
+ */
+async function writeBundledResourcepackList(gameDir: string, fileNames: string[]): Promise<void> {
+  const configDir = join(gameDir, 'config')
+  await mkdir(configDir, { recursive: true })
+  await writeFile(join(configDir, 'tntsallin1client-bundled-resourcepacks.json'), JSON.stringify(fileNames, null, 2))
 }
 
 /**
@@ -175,7 +187,9 @@ export async function syncBundledContent(
   const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(resourcesRoot, versionId)
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
-  await syncBundleDir(bundledResourcepacksDir(versionId), join(gameDir, 'resourcepacks'))
+  const resourcepacksBundleDir = bundledResourcepacksDir(versionId)
+  await syncBundleDir(resourcepacksBundleDir, join(gameDir, 'resourcepacks'))
+  await writeBundledResourcepackList(gameDir, await listBundleFiles(resourcepacksBundleDir))
   await syncOwnModJar(ownModLibsDir, destModsDir)
   onProgress('bundles', 1, 1)
   return { skipped: false }

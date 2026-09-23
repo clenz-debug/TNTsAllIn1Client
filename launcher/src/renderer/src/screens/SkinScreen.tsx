@@ -323,8 +323,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         </button>
       </header>
 
-      {profile.isMock && <p className="version-warning">{t.skin.mockWarning}</p>}
-
       {error && <span className="error">{error}</span>}
 
       <section className="mods-section">
@@ -377,7 +375,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
                   <div className="skin-library-actions">
                     <button
                       className="secondary-button"
-                      disabled={busyLibraryId === entry.id || profile.isMock}
+                      disabled={busyLibraryId === entry.id}
                       onClick={() => void handleUseLibrarySkin(entry.id)}
                     >
                       {t.skin.use}
@@ -418,7 +416,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       <section className="mods-section">
         <h3>{t.skin.uploadHeading}</h3>
         <div>
-          <button className="secondary-button" onClick={() => void handleSelectSkinFile()} disabled={busy || profile.isMock}>
+          <button className="secondary-button" onClick={() => void handleSelectSkinFile()} disabled={busy}>
             {busy ? t.common.loading : t.skin.selectAndUpload}
           </button>
         </div>

@@ -1,3 +1,4 @@
+import { localizedErrorMessage } from '../../shared/errorMessages'
 import type { MinecraftCape, MinecraftProfile, MinecraftSkin } from '../../shared/types'
 import type { XstsResult } from './xboxLive'
 
@@ -12,29 +13,9 @@ interface MinecraftProfileResponse {
   capes: MinecraftCape[]
 }
 
-const MOCK_PROFILE: MinecraftProfile = {
-  id: '00000000-0000-0000-0000-000000000000',
-  name: 'DevPlayer',
-  accessToken: 'dev-fake-token',
-  isMock: true,
-  // Mojang's own well-known default Steve texture (public, unauthenticated) - lets the Phase 7
-  // skin screen's render pipeline (main-process fetch -> data URI -> <img>) be exercised even
-  // while real Mojang API access is still pending approval, same "build/verify against a mock"
-  // approach the rest of the auth chain already relies on.
-  skins: [
-    {
-      id: 'mock-skin',
-      state: 'ACTIVE',
-      url: 'https://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb',
-      variant: 'CLASSIC'
-    }
-  ],
-  capes: []
-}
-
 class MinecraftApiError extends Error {
   constructor(status: number, body: string) {
-    super(`Minecraft API call failed (${status}): ${body}`)
+    super(localizedErrorMessage('auth.minecraftApiFailed', { status, detail: body }))
     this.name = 'MinecraftApiError'
   }
 }
@@ -62,24 +43,11 @@ async function fetchProfile(minecraftAccessToken: string): Promise<MinecraftProf
   return (await response.json()) as MinecraftProfileResponse
 }
 
-/**
- * Steps 4+5 of the auth chain. Until the Azure app is approved via aka.ms/mce-reviewappid,
- * api.minecraftservices.com answers with 403 here — in that case (or any other failure at this
- * stage) we fall back to a clearly-marked dev profile so the download/launch pipeline can be
- * built and tested without waiting on Mojang. Delete the catch block once the real calls work;
- * nothing else needs to change.
- */
+/** Steps 4+5 of the auth chain: exchange the XSTS token for a Minecraft access token, then fetch
+ * the account's profile. Any failure here (e.g. an account that doesn't own Minecraft) propagates
+ * to the caller - the login screen shows it as a normal error. */
 export async function completeMinecraftLogin(xsts: XstsResult): Promise<MinecraftProfile> {
-  try {
-    const accessToken = await loginWithXbox(xsts)
-    const profile = await fetchProfile(accessToken)
-    return { id: profile.id, name: profile.name, accessToken, isMock: false, skins: profile.skins, capes: profile.capes }
-  } catch (error) {
-    console.warn('[auth] Minecraft API not available yet, falling back to dev mock profile:', error)
-    return MOCK_PROFILE
-  }
-}
-
-export function createMockProfile(): MinecraftProfile {
-  return MOCK_PROFILE
+  const accessToken = await loginWithXbox(xsts)
+  const profile = await fetchProfile(accessToken)
+  return { id: profile.id, name: profile.name, accessToken, skins: profile.skins, capes: profile.capes }
 }
