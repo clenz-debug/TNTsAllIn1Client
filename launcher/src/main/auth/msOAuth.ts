@@ -2,7 +2,9 @@ import { createHash, randomBytes } from 'node:crypto'
 import { createServer } from 'node:http'
 import { shell } from 'electron'
 import { localizedError } from '../../shared/errorMessages'
+import type { Language } from '../../shared/types'
 import { MS_CLIENT_ID, MS_TENANT } from '../config'
+import { renderAuthCallbackPage } from './authCallbackPage'
 
 const AUTHORIZE_ENDPOINT = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/authorize`
 const TOKEN_ENDPOINT = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/token`
@@ -37,7 +39,7 @@ interface AuthorizationResult {
  * redirect_uri we send must be `http://localhost:{port}` with nothing after the port. The server
  * only ever serves this one login attempt, so it treats any request as the callback rather than
  * matching on path. */
-async function getAuthorizationCode(): Promise<AuthorizationResult> {
+async function getAuthorizationCode(language: Language): Promise<AuthorizationResult> {
   const { verifier, challenge } = createPkcePair()
   const state = base64Url(randomBytes(16))
 
@@ -61,11 +63,7 @@ async function getAuthorizationCode(): Promise<AuthorizationResult> {
       const ok = !error && code !== null && returnedState === state
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-      res.end(
-        ok
-          ? '<html><body>Login erfolgreich. Dieses Fenster kann geschlossen werden.</body></html>'
-          : '<html><body>Login fehlgeschlagen. Dieses Fenster kann geschlossen werden.</body></html>'
-      )
+      res.end(renderAuthCallbackPage(ok, language))
 
       clearTimeout(timeout)
       server.close()
@@ -135,8 +133,8 @@ export async function refreshMsToken(refreshToken: string): Promise<MsTokenResul
   })
 }
 
-export async function loginWithMicrosoft(): Promise<MsTokenResult> {
-  const { code, verifier, redirectUri } = await getAuthorizationCode()
+export async function loginWithMicrosoft(language: Language): Promise<MsTokenResult> {
+  const { code, verifier, redirectUri } = await getAuthorizationCode(language)
   return await requestToken({
     grant_type: 'authorization_code',
     code,

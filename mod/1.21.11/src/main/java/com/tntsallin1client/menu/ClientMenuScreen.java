@@ -117,6 +117,13 @@ public class ClientMenuScreen extends Screen {
 				},
 				() -> new FpsCounterOptionsScreen(this));
 
+		list.addToggleRow(config.latencyHudEnabled, Component.translatable("gui.tntsallin1client.menu.latency_hud"),
+				value -> {
+					config.latencyHudEnabled = value;
+					config.save();
+				},
+				() -> new LatencyOptionsScreen(this));
+
 		list.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
 				value -> {
 					config.clientNameLabelEnabled = value;

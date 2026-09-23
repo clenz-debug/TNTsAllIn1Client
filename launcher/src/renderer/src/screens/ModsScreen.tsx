@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
@@ -136,20 +136,32 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
     }
   }
 
+  // Guards against out-of-order responses (own user report: "zeigt nicht das an was passen würde
+  // wenn ich manche sachen eingebe") - runSearch fires from several places in quick succession
+  // (debounced typing, Enter, pagination), and each request also fetches every result's icon
+  // individually (see modrinthApi.ts#searchModrinthMods), so response times vary a lot. Without
+  // this, a slower request for an *older* query could resolve after a faster one for the *current*
+  // query and silently overwrite its results with stale ones. Bumped at the start of every
+  // runSearch call; a response only gets applied if no newer search has started since.
+  const searchRequestIdRef = useRef(0)
+
   async function runSearch(pageNumber: number): Promise<void> {
     if (!isBundleCompatibleVersion(versionId, bundleCompatibleVersions)) return
+    const requestId = ++searchRequestIdRef.current
     setSearching(true)
     setError(null)
     try {
       const offset = (pageNumber - 1) * MODRINTH_SEARCH_PAGE_SIZE
       const page = await window.api.searchModrinthMods(searchQuery.trim(), versionId, offset, sortIndex)
+      if (requestId !== searchRequestIdRef.current) return
       setSearchResults(page.results)
       setTotalHits(page.totalHits)
       setCurrentPage(pageNumber)
     } catch (err) {
+      if (requestId !== searchRequestIdRef.current) return
       setError(formatError(err, t))
     } finally {
-      setSearching(false)
+      if (requestId === searchRequestIdRef.current) setSearching(false)
     }
   }
 

@@ -1,5 +1,11 @@
+import type { CSSProperties } from 'react'
+
 interface Props {
   className?: string
+  /** Lets a caller override the theme CSS custom properties this SVG reads (`--bg-panel`,
+   * `--green-1..4`) just for this one element - e.g. the Settings screen's color editor previewing
+   * a not-yet-applied color on a standalone logo, without touching the real page's own theme. */
+  style?: CSSProperties
 }
 
 /**
@@ -16,9 +22,9 @@ interface Props {
  * colors baked in) used for things that can't react live to a theme, e.g. the packaged app's icon
  * - keep both in sync if this shape itself ever changes.
  */
-export function Logo({ className }: Props) {
+export function Logo({ className, style }: Props) {
   return (
-    <svg viewBox="0 0 600 660" className={className} role="img" aria-label="TNT's All-In-1 Client">
+    <svg viewBox="0 0 600 660" className={className} style={style} role="img" aria-label="TNT's All-In-1 Client">
       <polygon
         points="200,40 400,40 560,200 560,400 400,560 200,560 40,400 40,200"
         fill="none"

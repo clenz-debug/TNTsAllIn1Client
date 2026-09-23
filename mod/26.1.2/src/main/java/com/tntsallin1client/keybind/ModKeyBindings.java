@@ -80,6 +80,16 @@ public final class ModKeyBindings {
 			CATEGORY
 	);
 
+	// Own user follow-up request ("wie beim Waypoint-Menü") - opens PinnedRecipeListScreen directly
+	// from gameplay, same "own keybind in addition to the mod menu" pattern as OPEN_WAYPOINTS.
+	// Unbound by default like most binds here.
+	public static final KeyMapping OPEN_PINNED_RECIPES = new KeyMapping(
+			"key.tntsallin1client.open_pinned_recipes",
+			InputConstants.Type.KEYSYM,
+			InputConstants.UNKNOWN.getValue(),
+			CATEGORY
+	);
+
 	// Waypoint system: opens the waypoint list/management screen directly from gameplay,
 	// same "own keybind in addition to the mod menu" pattern as OPEN_MENU itself.
 	// Unbound by default like most binds here.
@@ -120,6 +130,7 @@ public final class ModKeyBindings {
 		KeyMappingHelper.registerKeyMapping(SHULKER_PREVIEW);
 		KeyMappingHelper.registerKeyMapping(SPAWN_OVERLAY);
 		KeyMappingHelper.registerKeyMapping(PIN_RECIPE);
+		KeyMappingHelper.registerKeyMapping(OPEN_PINNED_RECIPES);
 		KeyMappingHelper.registerKeyMapping(OPEN_WAYPOINTS);
 		KeyMappingHelper.registerKeyMapping(CREATE_WAYPOINT);
 		KeyMappingHelper.registerKeyMapping(TOGGLE_FREECAM);

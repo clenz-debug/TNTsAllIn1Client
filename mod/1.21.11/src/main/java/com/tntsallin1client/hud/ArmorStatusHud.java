@@ -163,21 +163,37 @@ public final class ArmorStatusHud {
 		return showIcon ? Math.max(ICON_SIZE, font.lineHeight) : font.lineHeight;
 	}
 
-	/** Draws one row at an already-translated/scaled local origin - shared by both the individual and bundled HUD elements. */
-	public static void drawRow(GuiGraphics guiGraphics, Font font, Entry entry, int localX, int localY, boolean showIcon, ArmorStatusIconPosition iconPosition) {
+	/**
+	 * Draws one row at an already-translated/scaled local origin - shared by both the individual and
+	 * bundled HUD elements. {@code textColumnWidth} is the width reserved for the text before an
+	 * {@link ArmorStatusIconPosition#RIGHT} icon - callers stacking multiple rows into a column (see
+	 * {@link #drawBundled}) pass the same, widest value for every row so the icons line up in a
+	 * straight column too, instead of each icon trailing right after its own row's (differently
+	 * long) text; a single-row caller just passes that row's own text width.
+	 */
+	public static void drawRow(GuiGraphics guiGraphics, Font font, Entry entry, int localX, int localY, boolean showIcon, ArmorStatusIconPosition iconPosition, int textVerticalOffset, int textColumnWidth) {
 		if (!showIcon) {
 			guiGraphics.drawString(font, entry.text(), localX, localY, entry.color());
 			return;
 		}
 
-		int textY = localY + (ICON_SIZE - font.lineHeight) / 2;
+		int textY = localY + (ICON_SIZE - font.lineHeight) / 2 + textVerticalOffset;
 		if (iconPosition == ArmorStatusIconPosition.RIGHT) {
 			guiGraphics.drawString(font, entry.text(), localX, textY, entry.color());
-			guiGraphics.renderItem(entry.stack(), localX + font.width(entry.text()) + ICON_GAP, localY);
+			guiGraphics.renderItem(entry.stack(), localX + textColumnWidth + ICON_GAP, localY);
 		} else {
 			guiGraphics.renderItem(entry.stack(), localX, localY);
 			guiGraphics.drawString(font, entry.text(), localX + ICON_SIZE + ICON_GAP, textY, entry.color());
 		}
+	}
+
+	/** Widest entry text in the group - the shared column width {@link #drawBundled} passes to every row in a VERTICAL stack. */
+	private static int maxTextWidth(Font font, List<Entry> entries) {
+		int max = 0;
+		for (Entry entry : entries) {
+			max = Math.max(max, font.width(entry.text()));
+		}
+		return max;
 	}
 
 	/** Total bundled width for the current direction - shared with the HUD editor's drag bounds. */
@@ -257,13 +273,15 @@ public final class ArmorStatusHud {
 		guiGraphics.pose().translate(originX, originY);
 		guiGraphics.pose().scale(scale);
 
+		int columnWidth = config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL ? maxTextWidth(font, entries) : 0;
+
 		int cursor = 0;
 		for (Entry entry : entries) {
 			if (config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL) {
-				drawRow(guiGraphics, font, entry, 0, cursor, showIcon, config.armorStatusIconPosition);
+				drawRow(guiGraphics, font, entry, 0, cursor, showIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, columnWidth);
 				cursor += rowHeight + GAP;
 			} else {
-				drawRow(guiGraphics, font, entry, cursor, 0, showIcon, config.armorStatusIconPosition);
+				drawRow(guiGraphics, font, entry, cursor, 0, showIcon, config.armorStatusIconPosition, config.armorStatusTextVerticalOffset, font.width(entry.text()));
 				cursor += contentWidth(font, entry.text(), showIcon) + GAP;
 			}
 		}

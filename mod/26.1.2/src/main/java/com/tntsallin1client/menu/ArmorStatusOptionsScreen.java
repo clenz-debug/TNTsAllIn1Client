@@ -40,6 +40,8 @@ public class ArmorStatusOptionsScreen extends Screen {
 	private static final int BOTTOM_MARGIN = 10;
 	private static final int SCROLL_STEP = 16;
 	private static final int SCROLLBAR_GAP = 8;
+	private static final int MIN_TEXT_VERTICAL_OFFSET = -8;
+	private static final int MAX_TEXT_VERTICAL_OFFSET = 8;
 
 	private final Screen parent;
 	private @Nullable ColorPickerPanel colorPicker;
@@ -113,6 +115,15 @@ public class ArmorStatusOptionsScreen extends Screen {
 								config.armorStatusIconPosition = pos;
 								config.save();
 							}));
+			y += ROW_SPACING;
+
+			this.addRenderableWidget(new IntSliderButton(x, y, ROW_WIDTH, ROW_HEIGHT, MIN_TEXT_VERTICAL_OFFSET, MAX_TEXT_VERTICAL_OFFSET,
+					config.armorStatusTextVerticalOffset,
+					offset -> Component.translatable("gui.tntsallin1client.armor_status_options.text_vertical_offset", offset),
+					offset -> {
+						config.armorStatusTextVerticalOffset = offset;
+						config.save();
+					}));
 			y += ROW_SPACING;
 		}
 
@@ -198,6 +209,7 @@ public class ArmorStatusOptionsScreen extends Screen {
 		y += ROW_SPACING; // show icon
 		if (config.armorStatusShowIcon) {
 			y += ROW_SPACING; // icon position
+			y += ROW_SPACING; // text vertical offset
 		}
 		y += ROW_SPACING; // show max durability
 		y += ROW_SPACING + 6; // color mode

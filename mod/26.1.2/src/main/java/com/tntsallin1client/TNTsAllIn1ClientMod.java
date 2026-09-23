@@ -31,10 +31,12 @@ import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.FreecamHud;
 import com.tntsallin1client.hud.ItemCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
+import com.tntsallin1client.hud.LatencyHud;
 import com.tntsallin1client.inventory.ContainerClickPacingHandler;
 import com.tntsallin1client.inventory.QuickSortUi;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.PauseMenuIntegration;
+import com.tntsallin1client.menu.PinnedRecipeMenuIntegration;
 import com.tntsallin1client.menu.TitleScreenIntegration;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
 import com.tntsallin1client.recipe.PinnedRecipeHud;
@@ -69,6 +71,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Phase 5g: FPS counter HUD.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "fps_counter_hud"), new FpsCounterHud());
+
+		// Own wishlist item: latency (ping) counter HUD, same shape as the FPS counter above.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "latency_hud"), new LatencyHud());
 
 		// Phase 5j: fullbright toggle.
 		ClientTickEvents.END_CLIENT_TICK.register(FullbrightHandler::tick);
@@ -136,9 +141,11 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// Phase 5k: hold-to-preview shulker box contents.
 		ShulkerPreviewRenderer.registerScreenTracking();
 
-		// Phase 5ah: pin a recipe from the recipe book, shown as a movable HUD reminder.
+		// Phase 5ah: pin a recipe from the recipe book, shown as a movable HUD reminder, reachable
+		// via its own list/management screen directly from gameplay too (own user follow-up request).
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "pinned_recipe_hud"), new PinnedRecipeHud());
 		PinnedRecipeManager.register();
+		PinnedRecipeMenuIntegration.register();
 
 		// Waypoint system: in-world beam/label markers plus their own list/edit menu,
 		// reachable from the mod menu or directly via their own keybind.

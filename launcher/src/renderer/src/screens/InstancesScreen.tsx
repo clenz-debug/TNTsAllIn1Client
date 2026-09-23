@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
@@ -18,8 +19,8 @@ interface Props {
    * dropdown itself still lists every release/snapshot Fabric-supported version regardless. */
   bundleCompatibleVersions: string[]
   /** Both instance-list mutations (create/rename) and a delete result (fetched fresh from the
-   * main process, see `handleDelete`) funnel through here - the caller (PlayScreen) just mirrors
-   * whatever it's given into its own state and lets its existing save effect persist it. */
+   * main process, see `handleConfirmDelete`) funnel through here - the caller (PlayScreen) just
+   * mirrors whatever it's given into its own state and lets its existing save effect persist it. */
   onInstancesChange: (instances: Instance[], selectedInstanceId: string | null) => void
   onSelect: (id: string) => void
   onClose: () => void
@@ -58,6 +59,9 @@ export function InstancesScreen({
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Own themed replacement for window.confirm() (ConfirmDialog) - holds which instance is pending
+  // deletion between the "Löschen" click and the dialog's own confirm/cancel.
+  const [pendingDelete, setPendingDelete] = useState<Instance | null>(null)
   // Which instance's name is currently being edited inline (id), plus the in-progress text for it -
   // window.prompt() would have been simpler, but Electron's renderer doesn't implement it (unlike
   // alert()/confirm(), which do show a native dialog - confirmed the hard way: the "Löschen"
@@ -160,18 +164,17 @@ export function InstancesScreen({
     }
   }
 
-  async function handleDelete(instance: Instance): Promise<void> {
-    const confirmed = window.confirm(t.instances.deleteConfirm(instance.name))
-    if (!confirmed) return
-
+  async function handleConfirmDelete(): Promise<void> {
+    if (!pendingDelete) return
     setBusy(true)
     try {
-      const updated = await window.api.deleteInstance(instance.id)
+      const updated = await window.api.deleteInstance(pendingDelete.id)
       onInstancesChange(updated.instances, updated.selectedInstanceId)
     } catch (err) {
       setError(formatError(err, t))
     } finally {
       setBusy(false)
+      setPendingDelete(null)
     }
   }
 
@@ -283,7 +286,7 @@ export function InstancesScreen({
                   >
                     {cloningId === instance.id ? t.instances.cloning : t.instances.clone}
                   </button>
-                  <button className="link-button" onClick={() => void handleDelete(instance)} disabled={busy}>
+                  <button className="link-button" onClick={() => setPendingDelete(instance)} disabled={busy}>
                     {t.common.delete}
                   </button>
                 </div>
@@ -293,6 +296,17 @@ export function InstancesScreen({
           {instances.length === 0 && <li className="mods-empty">{t.instances.empty}</li>}
         </ul>
       </section>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          message={t.instances.deleteConfirm(pendingDelete.name)}
+          confirmLabel={t.common.delete}
+          cancelLabel={t.common.cancel}
+          busy={busy}
+          onConfirm={() => void handleConfirmDelete()}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   )
 }

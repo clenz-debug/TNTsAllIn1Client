@@ -12,6 +12,8 @@
   --text: #ffffff;
   --text-dim: #999999;
   --error: #d84c4c;
+  --success: #4caf50;
+  --warning: #d9a441;
   color-scheme: dark;
 }
 
@@ -41,16 +43,40 @@ body {
 
 .login-screen,
 .play-screen {
-  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 1rem;
   padding: 2rem;
 }
 
+.login-screen {
+  /* `min-height`, not a fixed `height` like `.play-screen` below - own user report that even a
+     `margin-bottom` added straight to the last child (the onboarding colors step's Skip/Next row)
+     produced zero visible extra space at the bottom. Root cause, confirmed by measuring the live
+     page: with a *fixed* `height: 100%`, this box's own bottom padding - and any overflowing child's
+     trailing margin - stops mattering once content taller than that fixed height overflows it, since
+     `scrollHeight` for the page turned out to end exactly at the last child's own border-box edge,
+     not a pixel further. `min-height: 100%` instead lets the box genuinely grow to fit tall content
+     (colors step) while still filling the full window for short content (LoginScreen, the
+     welcome/language steps) exactly as `height: 100%` did before - and because the box can now
+     actually grow, its own trailing padding/margin finally renders and counts toward scrolling.
+     `.play-screen` keeps its original fixed `height: 100%` - own separate content-fits-in-window
+     assumption, not touched here to avoid any regression risk on an already-working screen. */
+  min-height: 100%;
+  align-items: center;
+  /* `safe center` (own user report: OnboardingScreen's colors step got its own title clipped off at
+     the top in a non-maximized window) - plain `center` on a flex column whose content is taller
+     than the box overflows symmetrically above *and* below, but per the CSS box-alignment spec only
+     the "end" (bottom) overflow reliably stays reachable by scrolling; the "start" (top) overflow -
+     exactly the title here - is not, even though the page's own scrollbar is still there and moves.
+     `safe` falls back to start-alignment instead of centering once the content doesn't fit, keeping
+     everything scrollable into view; it's a no-op difference for shorter content (LoginScreen, the
+     welcome/language onboarding steps) that never overflows in the first place. */
+  justify-content: safe center;
+}
+
 .play-screen {
+  height: 100%;
   align-items: stretch;
   justify-content: flex-start;
 }
@@ -61,8 +87,13 @@ body {
   align-items: center;
 }
 
-.play-screen header .header-actions {
+/* Was scoped to `.play-screen header` only, but every screen that groups a couple of related
+   action buttons (Instanzen-Umbenennen, Welten-Verschieben, Settings-Farbeditor, ...) reuses this
+   exact class name expecting the same gap - without it those buttons had no spacing at all beyond
+   incidental whitespace, i.e. they sat right up against each other (own user report). */
+.header-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -293,6 +324,71 @@ select option {
   font-size: 0.75rem;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
+}
+
+/* Own user request - the header's player name became a button (head icon + name) that opens a
+   small "Abmelden" menu, replacing the separate logout button and the plain-text name. Same
+   trigger/menu chrome as `.dropdown-trigger`/`.dropdown-menu` for visual consistency, just without
+   the value-picker's arrow indicator (this isn't a select). */
+.player-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.player-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--green-2);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.player-menu-trigger:hover {
+  background: var(--green-1);
+}
+
+.player-head-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.player-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--green-2);
+  border-radius: 6px;
+  padding: 0.25rem;
+  margin: 0;
+  list-style: none;
+}
+
+.player-menu-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.player-menu-item:hover {
+  background: var(--green-3);
 }
 
 .status {
@@ -540,6 +636,99 @@ select option {
   margin-top: 0.75rem;
 }
 
+/* Same gap as .theme-reset-button above, so the Übernehmen/Abbrechen row doesn't sit right up
+   against the ThemePreview mockup above it (own user report). */
+.theme-edit-actions {
+  margin-top: 0.75rem;
+}
+
+/* The field heading ("Schrift bearbeiten") and the live contrast badge share one row - own user
+   report that the contrast number used to be a lone, unlabeled sentence floating between the color
+   picker and the preview, easy to miss and not obviously connected to either. */
+.theme-field-heading-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.theme-field-heading-row h4 {
+  margin: 0;
+}
+
+.contrast-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  cursor: help;
+}
+
+.contrast-badge-verdict {
+  font-weight: 600;
+}
+
+.contrast-badge-verdict[data-level='good'] {
+  color: var(--success);
+}
+
+.contrast-badge-verdict[data-level='borderline'] {
+  color: var(--warning);
+}
+
+.contrast-badge-verdict[data-level='bad'] {
+  color: var(--error);
+}
+
+/* Explains what the mockup below actually is (own user report: needed a caption saying this is a
+   preview of the future client). Plain heading+text, not its own flex row - the big logo sits next
+   to the mockup box itself below, not next to this caption (own user follow-up report: floating it
+   up here made it look like a stray disconnected icon instead of part of the preview). */
+.theme-preview-intro {
+  margin-top: 1rem;
+}
+
+.theme-preview-intro h4 {
+  margin: 0 0 0.2rem;
+}
+
+.theme-preview-intro p {
+  margin: 0;
+}
+
+/* ThemePreview's mockup box plus the big logo beside it, so both are clearly one visual unit
+   ("damit man beides sieht"). Left-aligned (own follow-up: "preview nach links schieben") instead
+   of centered, so the logo sits right up against the mockup's own right edge instead of the pair
+   floating in the middle with a big gap. Still wraps onto its own line on a narrow window instead
+   of squeezing the box down. */
+.theme-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+/* The big logo recolors live with the same previewed theme as ThemePreview itself, so both halves
+   of this row show the same not-yet-applied color. */
+/* This 150px is only the fallback for the brief moment before ThemePreview's own ResizeObserver
+   reports its real rendered height (see ThemePreview.tsx#onHeightChange /
+   SettingsScreen.tsx#previewHeight) - SettingsScreen then sets an inline `height` matching the
+   mockup exactly (own follow-up: "logo die selbe Höhe hat wie die Höhe vom preview"), which
+   overrides this. A pure-CSS `height: 100%` was tried first and does NOT work here: this logo sits
+   in a flex row whose own height is only as tall as the mockup makes it, so there's no ancestor
+   with a definite height for a percentage to resolve against - it blew up to a huge size instead
+   (own user report). `width: auto` scales proportionally via the SVG's own `viewBox` aspect ratio,
+   same as an `<img>` with only one dimension set. */
+.theme-preview-hero-logo {
+  width: auto;
+  height: 150px;
+  flex-shrink: 0;
+}
+
 .instances-row {
   display: flex;
   justify-content: space-between;
@@ -682,10 +871,12 @@ select option {
   max-width: 110px;
 }
 
+/* Column instead of a wrapping row - the default cross-axis `align-items: stretch` then makes
+   every button match the width of the widest label ("Bearbeiten") instead of each hugging its own
+   text, which is what actually made "Verwenden"/"Löschen" look smaller (own user request). */
 .skin-library-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   gap: 0.3rem;
 }
 
@@ -968,6 +1159,39 @@ select option {
 .login-logo {
   width: 140px;
   height: auto;
+}
+
+/* Own wishlist item ("client setup beim ersten start") - OnboardingScreen's welcome step shows two
+   full paragraphs (German + English) at once, unlike every other `.login-screen`-shaped screen's
+   single-line `.subtitle` - constrained width keeps long lines readable instead of stretching edge
+   to edge in a wide window, and the two paragraphs get a visible gap instead of running together. */
+.onboarding-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 480px;
+  text-align: center;
+  color: var(--text);
+}
+
+/* Own wishlist item ("der preview wie in den Einstellungen") - AppearanceEditor's swatch rows are
+   flex `justify-content: space-between`, which needs a real width to distribute against; the
+   Settings screen gets that for free from `.instances-screen`'s full-width column, but
+   `.login-screen`'s `align-items: center` otherwise shrinks every child to its own content width. */
+.onboarding-appearance {
+  width: 100%;
+  max-width: 480px;
+  text-align: left;
+}
+
+/* Own user report ("die buttons sind da schon sehr weit unten und am rand") - a plain margin on the
+   button row itself, not extra padding on `.login-screen`: this step's content is tall enough to
+   overflow and scroll (see `justify-content: safe center` above), and a scrolled-past container's
+   own bottom padding doesn't reliably create visual breathing room after its last, overflowing
+   child the way a margin on that child itself does. */
+.onboarding-actions {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .theme-preview-log {

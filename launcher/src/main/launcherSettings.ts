@@ -89,7 +89,16 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
     const needsBundleVersionMigration = parsed.appliedOwnModVersions === undefined
 
     if (!needsInstanceMigration && !needsBundleVersionMigration) {
-      return { ...DEFAULT_LAUNCHER_SETTINGS, ...parsed, appliedModBundleVersions: parsed.appliedModBundleVersions as LauncherSettings['appliedModBundleVersions'] }
+      return {
+        ...DEFAULT_LAUNCHER_SETTINGS,
+        ...parsed,
+        appliedModBundleVersions: parsed.appliedModBundleVersions as LauncherSettings['appliedModBundleVersions'],
+        // Missing on an existing, successfully-parsed file means it predates this field entirely,
+        // not a genuinely fresh install (that path is DEFAULT_LAUNCHER_SETTINGS, via the outer
+        // catch below) - grandfather already-set-up installs in rather than replaying onboarding on
+        // their next launch just because they upgraded.
+        onboardingCompleted: parsed.onboardingCompleted ?? true
+      }
     }
 
     // At least one legacy shape detected - migrate whichever parts are actually old in one pass,
@@ -121,7 +130,10 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
       // ignored here rather than migrated - it was only ever a derived-shades accent tone, not a
       // full ThemeColors object, so there's nothing sensible to map it onto.
       themeColors: parsed.themeColors ?? DEFAULT_LAUNCHER_SETTINGS.themeColors,
-      language: parsed.language ?? DEFAULT_LAUNCHER_SETTINGS.language
+      language: parsed.language ?? DEFAULT_LAUNCHER_SETTINGS.language,
+      // Same grandfathering as the fast path above - this branch only runs for a file that already
+      // existed (needed instance/bundle-version migration), never a genuinely fresh install.
+      onboardingCompleted: parsed.onboardingCompleted ?? true
     }
     await saveLauncherSettings(settings)
     return settings

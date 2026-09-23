@@ -1,8 +1,32 @@
 import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { formatError } from '../formatError'
-import { useTranslations } from '../i18n/LanguageContext'
+import { useLanguage, useTranslations } from '../i18n/LanguageContext'
 import type { CustomCapeStatus, MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
+
+/** A freshly picked-but-not-yet-uploaded skin PNG, awaiting name + variant on the pending-upload
+ * preview screen below - own user request: choose both there, after picking the file, instead of
+ * the variant beforehand and the name afterward. */
+interface PendingSkinUpload {
+  dataUri: string
+  variant: SkinVariant
+  name: string
+}
+
+/** `loadSkinPngForEditor` hands back a `data:image/png;base64,...` URI (small enough to inline,
+ * same reasoning as `SkinLibraryEntry.dataUri`) - the actual upload IPC needs raw bytes instead
+ * (structured-clone carries `ArrayBuffer` across the context bridge natively, see
+ * `skinBuffer.ts#canvasToPngBytes`), so this decodes the base64 payload back into one. */
+function dataUriToArrayBuffer(dataUri: string): ArrayBuffer {
+  const base64 = dataUri.slice(dataUri.indexOf(',') + 1)
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes.buffer
+}
 
 interface Props {
   profile: MinecraftProfile
@@ -45,6 +69,7 @@ async function fetchSkinTextureWithRetry(url: string, attempts = 5, delayMs = 10
  * drag-to-rotate 3D model instead of a flat thumbnail - own user request. */
 export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: Props) {
   const t = useTranslations()
+  const language = useLanguage()
   const activeSkin = profile.skins.find((s) => s.state === 'ACTIVE') ?? profile.skins[0] ?? null
   const activeCape = profile.capes.find((c) => c.state === 'ACTIVE') ?? null
   const activeSkinVariant: SkinVariant = activeSkin?.variant === 'SLIM' ? 'slim' : 'classic'
@@ -54,33 +79,36 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   // Single toggle shared by every rendered model (current + library) - the user explicitly wants
   // one "with/without cape" choice that applies everywhere, not a per-skin setting.
   const [showCape, setShowCape] = useState(true)
-  const [variant, setVariant] = useState<SkinVariant>(activeSkin?.variant === 'SLIM' ? 'slim' : 'classic')
   // Bumped by every action that changes which skin is active (upload, "Verwenden") - forces the
   // preview effect below to refetch even if `activeSkin.url` happens to come back unchanged (own
   // user request after "Verwenden" didn't visibly update the 3D model): Mojang's skin URLs are
   // content-hashed, so switching to a skin whose bytes match one already seen would otherwise
   // never re-trigger a fetch by URL alone.
   const [skinRevision, setSkinRevision] = useState(0)
-  // Set right after a direct upload succeeds - own user request: name the skin *after* picking/
-  // uploading the file, not before, on its own dedicated screen showing the uploaded skin as a
-  // live 3D model (not just a text prompt). The upload itself starts with a placeholder name;
-  // saving here calls SkinLibraryRename with the id already known from the upload result.
-  const [pendingRename, setPendingRename] = useState<SkinLibraryEntry | null>(null)
-  const [renamingBusy, setRenamingBusy] = useState(false)
+  // Set right after picking a file for direct upload - own user request: choose the name *and*
+  // variant together here, after picking the file (not the variant beforehand and the name
+  // afterward), on its own dedicated screen showing the picked skin as a live 3D model before it's
+  // ever actually uploaded to Mojang. "Abbrechen"/the header back button both just discard this
+  // without calling the upload IPC at all.
+  const [pendingUpload, setPendingUpload] = useState<PendingSkinUpload | null>(null)
+  const [uploadBusy, setUploadBusy] = useState(false)
   const [library, setLibrary] = useState<SkinLibraryEntry[]>([])
   const [libraryPage, setLibraryPage] = useState(0)
   const [busy, setBusy] = useState(false)
   const [busyLibraryId, setBusyLibraryId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Own themed replacement for window.confirm() (ConfirmDialog).
+  const [pendingDeleteLibrary, setPendingDeleteLibrary] = useState<SkinLibraryEntry | null>(null)
 
   // Own, unrelated cosmetic system (Backblaze B2 + the bundled "Cape Provider" mod) - completely
   // separate from Mojang's own cape above, which is why this lives in its own state/section rather
   // than reusing `activeCape`/`capePreview`. `pendingCape` holds a picked-but-not-yet-uploaded PNG
-  // for the confirm/preview step, same two-step flow the skin library's `pendingRename` uses.
+  // for the confirm/preview step, same two-step flow `pendingUpload` above uses.
   const [customCape, setCustomCape] = useState<CustomCapeStatus>({ exists: false, dataUri: null })
   const [pendingCape, setPendingCape] = useState<{ dataUri: string; width: number; height: number } | null>(null)
   const [capeBusy, setCapeBusy] = useState(false)
   const [capeError, setCapeError] = useState<string | null>(null)
+  const [confirmingRemoveCape, setConfirmingRemoveCape] = useState(false)
 
   useEffect(() => {
     setSkinPreview(null)
@@ -115,18 +143,17 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       .catch(() => undefined)
   }, [profile.id])
 
-  async function handleUpload(): Promise<void> {
+  async function handleSelectSkinFile(): Promise<void> {
     setBusy(true)
     setError(null)
     try {
-      const result = await window.api.uploadSkin(profile, variant)
-      if (result) {
-        onProfileUpdate(result.profile)
-        setSkinRevision((r) => r + 1)
-        const updatedLibrary = await window.api.listSkinLibrary()
-        setLibrary(updatedLibrary)
-        const newEntry = updatedLibrary.find((entry) => entry.id === result.libraryEntryId)
-        if (newEntry) setPendingRename(newEntry)
+      const picked = await window.api.loadSkinPngForEditor()
+      if (picked) {
+        setPendingUpload({
+          dataUri: picked.dataUri,
+          variant: 'classic',
+          name: t.skinEditor.defaultName(new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US'))
+        })
       }
     } catch (err) {
       setError(formatError(err, t))
@@ -135,18 +162,21 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     }
   }
 
-  async function handleConfirmRename(): Promise<void> {
-    if (!pendingRename) return
-    setRenamingBusy(true)
+  async function handleConfirmUpload(): Promise<void> {
+    if (!pendingUpload) return
+    setUploadBusy(true)
     setError(null)
     try {
-      await window.api.renameSkinInLibrary(pendingRename.id, pendingRename.name)
+      const pngBytes = dataUriToArrayBuffer(pendingUpload.dataUri)
+      const result = await window.api.uploadSkin(profile, pngBytes, pendingUpload.variant, pendingUpload.name)
+      onProfileUpdate(result.profile)
+      setSkinRevision((r) => r + 1)
       setLibrary(await window.api.listSkinLibrary())
-      setPendingRename(null)
+      setPendingUpload(null)
     } catch (err) {
       setError(formatError(err, t))
     } finally {
-      setRenamingBusy(false)
+      setUploadBusy(false)
     }
   }
 
@@ -166,18 +196,18 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     }
   }
 
-  async function handleDeleteLibrarySkin(entry: SkinLibraryEntry): Promise<void> {
-    const confirmed = window.confirm(t.skin.deleteLibraryConfirm(entry.name))
-    if (!confirmed) return
-    setBusyLibraryId(entry.id)
+  async function handleConfirmDeleteLibrarySkin(): Promise<void> {
+    if (!pendingDeleteLibrary) return
+    setBusyLibraryId(pendingDeleteLibrary.id)
     setError(null)
     try {
-      await window.api.deleteSkinFromLibrary(entry.id)
-      setLibrary((current) => current.filter((e) => e.id !== entry.id))
+      await window.api.deleteSkinFromLibrary(pendingDeleteLibrary.id)
+      setLibrary((current) => current.filter((e) => e.id !== pendingDeleteLibrary.id))
     } catch (err) {
       setError(formatError(err, t))
     } finally {
       setBusyLibraryId(null)
+      setPendingDeleteLibrary(null)
     }
   }
 
@@ -206,9 +236,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     }
   }
 
-  async function handleRemoveCape(): Promise<void> {
-    const confirmed = window.confirm(t.skin.removeCapeConfirm)
-    if (!confirmed) return
+  async function handleConfirmRemoveCape(): Promise<void> {
     setCapeBusy(true)
     setCapeError(null)
     try {
@@ -218,6 +246,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       setCapeError(formatError(err, t))
     } finally {
       setCapeBusy(false)
+      setConfirmingRemoveCape(false)
     }
   }
 
@@ -225,12 +254,12 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   const safePage = Math.min(libraryPage, totalPages - 1)
   const pageEntries = library.slice(safePage * LIBRARY_PAGE_SIZE, safePage * LIBRARY_PAGE_SIZE + LIBRARY_PAGE_SIZE)
 
-  if (pendingRename) {
+  if (pendingUpload) {
     return (
       <div className="mods-screen">
         <header>
           <strong>{t.skin.renameTitle}</strong>
-          <button className="link-button" onClick={() => setPendingRename(null)}>
+          <button className="link-button" disabled={uploadBusy} onClick={() => setPendingUpload(null)}>
             {t.common.back}
           </button>
         </header>
@@ -239,8 +268,8 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
 
         <section className="mods-section skin-upload-confirm">
           <SkinModelPreview
-            skinDataUri={pendingRename.dataUri}
-            variant={pendingRename.variant}
+            skinDataUri={pendingUpload.dataUri}
+            variant={pendingUpload.variant}
             capeDataUri={null}
             showCape={false}
             width={220}
@@ -249,14 +278,37 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
           <input
             type="text"
             className="skin-editor-name-input"
-            value={pendingRename.name}
-            onChange={(event) => setPendingRename({ ...pendingRename, name: event.target.value })}
+            value={pendingUpload.name}
+            onChange={(event) => setPendingUpload({ ...pendingUpload, name: event.target.value })}
             placeholder={t.skin.namePlaceholder}
             autoFocus
           />
-          <button className="primary-button" disabled={renamingBusy} onClick={() => void handleConfirmRename()}>
-            {renamingBusy ? t.skin.saving : t.common.save}
-          </button>
+          <label className="checkbox-label">
+            <input
+              type="radio"
+              name="pending-upload-variant"
+              checked={pendingUpload.variant === 'classic'}
+              onChange={() => setPendingUpload({ ...pendingUpload, variant: 'classic' })}
+            />
+            {t.skin.variantClassic}
+          </label>
+          <label className="checkbox-label">
+            <input
+              type="radio"
+              name="pending-upload-variant"
+              checked={pendingUpload.variant === 'slim'}
+              onChange={() => setPendingUpload({ ...pendingUpload, variant: 'slim' })}
+            />
+            {t.skin.variantSlim}
+          </label>
+          <div>
+            <button className="primary-button" disabled={uploadBusy} onClick={() => void handleConfirmUpload()}>
+              {uploadBusy ? t.skin.uploading : t.common.save}
+            </button>
+            <button className="link-button" disabled={uploadBusy} onClick={() => setPendingUpload(null)}>
+              {t.common.cancel}
+            </button>
+          </div>
         </section>
       </div>
     )
@@ -336,7 +388,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
                     <button
                       className="link-button"
                       disabled={busyLibraryId === entry.id}
-                      onClick={() => void handleDeleteLibrarySkin(entry)}
+                      onClick={() => setPendingDeleteLibrary(entry)}
                     >
                       {t.common.delete}
                     </button>
@@ -365,17 +417,9 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
 
       <section className="mods-section">
         <h3>{t.skin.uploadHeading}</h3>
-        <label className="checkbox-label">
-          <input type="radio" name="variant" checked={variant === 'classic'} onChange={() => setVariant('classic')} />
-          {t.skin.variantClassic}
-        </label>
-        <label className="checkbox-label">
-          <input type="radio" name="variant" checked={variant === 'slim'} onChange={() => setVariant('slim')} />
-          {t.skin.variantSlim}
-        </label>
         <div>
-          <button className="secondary-button" onClick={() => void handleUpload()} disabled={busy || profile.isMock}>
-            {busy ? t.skin.uploading : t.skin.selectAndUpload}
+          <button className="secondary-button" onClick={() => void handleSelectSkinFile()} disabled={busy || profile.isMock}>
+            {busy ? t.common.loading : t.skin.selectAndUpload}
           </button>
         </div>
       </section>
@@ -413,13 +457,35 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
               {t.skin.selectCapePng}
             </button>
             {customCape.exists && (
-              <button className="link-button" disabled={capeBusy} onClick={() => void handleRemoveCape()}>
+              <button className="link-button" disabled={capeBusy} onClick={() => setConfirmingRemoveCape(true)}>
                 {t.common.remove}
               </button>
             )}
           </div>
         )}
       </section>
+
+      {pendingDeleteLibrary && (
+        <ConfirmDialog
+          message={t.skin.deleteLibraryConfirm(pendingDeleteLibrary.name)}
+          confirmLabel={t.common.delete}
+          cancelLabel={t.common.cancel}
+          busy={busyLibraryId === pendingDeleteLibrary.id}
+          onConfirm={() => void handleConfirmDeleteLibrarySkin()}
+          onCancel={() => setPendingDeleteLibrary(null)}
+        />
+      )}
+
+      {confirmingRemoveCape && (
+        <ConfirmDialog
+          message={t.skin.removeCapeConfirm}
+          confirmLabel={t.common.remove}
+          cancelLabel={t.common.cancel}
+          busy={capeBusy}
+          onConfirm={() => void handleConfirmRemoveCape()}
+          onCancel={() => setConfirmingRemoveCape(false)}
+        />
+      )}
     </div>
   )
 }

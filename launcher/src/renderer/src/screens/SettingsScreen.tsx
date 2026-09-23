@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
+import { AppearanceEditor } from '../AppearanceEditor'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
-import { ColorPicker } from '../skinEditor/ColorPicker'
-import { ThemePreview } from '../ThemePreview'
 import type { Language, StorageInfo, StorageMoveProgressEvent, SystemMemoryInfo, ThemeColors } from '../../../shared/types'
-import { applyThemeColors, resolveThemeColors, worstTextContrast } from '../theme'
 
 function formatBytes(bytes: number): string {
   const gb = bytes / 1024 ** 3
@@ -24,19 +22,6 @@ const MIN_MEMORY_MB = 512
  * only ever defaults new installations to `-Xmx2G`). Only backed off below that on genuinely
  * low-RAM systems, so half the detected total is never exceeded and the OS keeps some headroom. */
 const RECOMMENDED_MAX_MEMORY_MB = 4096
-
-/** One row per {@link ThemeColors} field in the Settings screen's "Erscheinungsbild" list -
- * `key` is what gets edited/merged, `labelKey` picks the translated label out of
- * `t.settings.appearance.fields`. */
-const THEME_FIELDS: Array<{ key: keyof ThemeColors; labelKey: keyof ReturnType<typeof useTranslations>['settings']['appearance']['fields'] }> = [
-  { key: 'background1', labelKey: 'background1' },
-  { key: 'background2', labelKey: 'background2' },
-  { key: 'accent1', labelKey: 'accent1' },
-  { key: 'accent2', labelKey: 'accent2' },
-  { key: 'accent3', labelKey: 'accent3' },
-  { key: 'accent4', labelKey: 'accent4' },
-  { key: 'text', labelKey: 'text' }
-]
 
 interface Props {
   showSnapshots: boolean
@@ -134,40 +119,6 @@ export function SettingsScreen({
     onMaxMemoryMbChange(Math.min(totalMemoryMb, Math.max(MIN_MEMORY_MB, Math.round(value))))
   }
 
-  const committedTheme = resolveThemeColors(themeColors)
-  // Which field's editor is currently open (null = the plain list of swatches) plus that field's
-  // own in-progress value - deliberately never fed into `applyThemeColors` until "Übernehmen":
-  // the whole point of a preview/confirm flow ("der User muss manuell bestätigen") is that
-  // clicking "Abbrechen" leaves the real, already-applied page exactly as it was, no revert logic
-  // needed because nothing outside `ThemePreview`'s own scoped `style` ever saw the draft color.
-  const [editingField, setEditingField] = useState<keyof ThemeColors | null>(null)
-  const [draftColor, setDraftColor] = useState('#000000')
-
-  function startEditingField(field: keyof ThemeColors): void {
-    setEditingField(field)
-    setDraftColor(committedTheme[field])
-  }
-
-  function handleConfirmField(): void {
-    if (!editingField) return
-    const updated: ThemeColors = { ...committedTheme, [editingField]: draftColor }
-    applyThemeColors(updated)
-    onThemeColorsChange(updated)
-    setEditingField(null)
-  }
-
-  function handleResetTheme(): void {
-    const confirmed = window.confirm(t.settings.appearance.resetConfirm)
-    if (!confirmed) return
-    applyThemeColors(null)
-    onThemeColorsChange(null)
-  }
-
-  const previewTheme: ThemeColors = editingField ? { ...committedTheme, [editingField]: draftColor } : committedTheme
-  const contrast = worstTextContrast(previewTheme)
-  const contrastLabel =
-    contrast < 3 ? t.settings.appearance.contrastBad : contrast < 4.5 ? t.settings.appearance.contrastBorderline : t.settings.appearance.contrastGood
-
   return (
     <div className="instances-screen">
       <header>
@@ -263,47 +214,7 @@ export function SettingsScreen({
       <section className="instances-section">
         <h3>{t.settings.appearance.heading}</h3>
         <p className="version-warning">{t.settings.appearance.description}</p>
-
-        {editingField === null ? (
-          <>
-            <ul className="instances-list">
-              {THEME_FIELDS.map((field) => (
-                <li key={field.key} className="instances-row">
-                  <div className="instance-info">
-                    <span className="theme-color-swatch" style={{ background: committedTheme[field.key] }} />
-                    <strong>{t.settings.appearance.fields[field.labelKey]}</strong>
-                    <span className="instance-version">{committedTheme[field.key]}</span>
-                  </div>
-                  <button className="link-button" onClick={() => startEditingField(field.key)}>
-                    {t.settings.appearance.change}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <button className="secondary-button theme-reset-button" onClick={handleResetTheme} disabled={themeColors === null}>
-              {t.settings.appearance.resetToDefault}
-            </button>
-          </>
-        ) : (
-          <>
-            <h4>{t.settings.appearance.editField(t.settings.appearance.fields[THEME_FIELDS.find((field) => field.key === editingField)!.labelKey])}</h4>
-            <ColorPicker color={draftColor} onChange={setDraftColor} />
-            {/* Non-blocking hint, not a gate - the actual safety mechanism is the pixel-accurate
-                preview below plus requiring an explicit "Übernehmen" click (own wishlist item: "da
-                muss man aber dafür sorgen dass ... die Schrift sichtbar ist"). A human judging the
-                real rendered result below catches cases this single formula would miss. */}
-            <p className="version-warning">{t.settings.appearance.contrastHint(contrast.toFixed(1), contrastLabel)}</p>
-            <ThemePreview colors={previewTheme} />
-            <div className="header-actions">
-              <button className="secondary-button" onClick={handleConfirmField}>
-                {t.settings.appearance.apply}
-              </button>
-              <button className="link-button" onClick={() => setEditingField(null)}>
-                {t.settings.appearance.cancel}
-              </button>
-            </div>
-          </>
-        )}
+        <AppearanceEditor themeColors={themeColors} onThemeColorsChange={onThemeColorsChange} />
       </section>
 
       <section className="instances-section">

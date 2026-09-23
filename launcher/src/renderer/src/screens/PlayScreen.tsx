@@ -3,6 +3,7 @@ import { Dropdown } from '../Dropdown'
 import { errorCode, formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { Logo } from '../Logo'
+import { PlayerMenuButton } from '../PlayerMenuButton'
 import type {
   GameLogEvent,
   GameVersionSummary,
@@ -87,6 +88,32 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
 
   const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
 
+  const [headTextureDataUri, setHeadTextureDataUri] = useState<string | null>(null)
+
+  // Own follow-up request ("der Button mit dem Namen sollte zusätzlich die Vorderseite vom Kopf
+  // des aktuellen mc skins ... zeigen") - refetches whenever the account's active skin changes
+  // (e.g. right after uploading a new one in the Skin screen), same "find the ACTIVE entry, fall
+  // back to the first one" logic SkinScreen already uses to pick which skin is "the" current one.
+  useEffect(() => {
+    const activeSkin = profile.skins.find((skin) => skin.state === 'ACTIVE') ?? profile.skins[0] ?? null
+    if (!activeSkin) {
+      setHeadTextureDataUri(null)
+      return
+    }
+    let cancelled = false
+    window.api
+      .fetchSkinTexture(activeSkin.url)
+      .then((dataUri) => {
+        if (!cancelled) setHeadTextureDataUri(dataUri)
+      })
+      .catch(() => {
+        if (!cancelled) setHeadTextureDataUri(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [profile.skins])
+
   useEffect(() => {
     Promise.all([window.api.loadSettings(), window.api.listVersions(), window.api.listBundleCompatibleVersions()])
       .then(([settings, list, bundleVersions]) => {
@@ -121,7 +148,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       maxMemoryMb,
       consoleInSeparateWindow,
       themeColors,
-      language
+      language,
+      // Always true here, never a field this screen itself tracks - PlayScreen only ever mounts
+      // once App.tsx's own onboarding gate has already passed (see OnboardingScreen.tsx), so there's
+      // no scenario where a save from here could still be pre-onboarding.
+      onboardingCompleted: true
     })
   }, [
     settingsLoaded,
@@ -330,7 +361,13 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       <header>
         <div className="identity-row">
           <Logo className="app-logo" />
-          <strong>{profile.name}</strong>
+          <PlayerMenuButton
+            name={profile.name}
+            headTextureDataUri={headTextureDataUri}
+            logoutLabel={t.play.headerLogout}
+            menuLabel={t.play.playerMenuLabel}
+            onLogout={onLogout}
+          />
           {profile.isMock && <span className="mock-badge">{t.play.mockBadge}</span>}
         </div>
         <div className="header-actions">
@@ -342,9 +379,6 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           </button>
           <button className="link-button" onClick={() => setShowSettings(true)}>
             {t.play.headerSettings}
-          </button>
-          <button className="link-button" onClick={onLogout}>
-            {t.play.headerLogout}
           </button>
         </div>
       </header>

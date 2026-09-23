@@ -151,9 +151,7 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` gegen z.B.
 
 
 persöhnliche liste was fehlt:
-- client setup beim ersten start (inkl. sprachauswahl im launcher, farben, etc...)
 - ingame mods auf andere versionen porten (wichtig sind vor allem die vollversionen)
 - ingame und launcher design anpassen
     - dazu gehört die auswahl mc standard design oder cleaneres design in den eingestellten farben (gilt für ingame, da launcher immer in unseren design sein sollte)
     - Logo anpassen auch an die farben
-- im Launcher das abmelden und die anzeige des angemeldeten spieler anpassen, vll das man nicht den abmelden button hat sondern man den namen zu nem button macht und man dann eine auswahl kommt abmelden oder so, der button mit dem namen sollte zusätzlich die vorderseite vom kopf des aktuellen mc skinns (mit den 3d effekten) zeigen

@@ -47,9 +47,10 @@ export interface SkinLibraryEntry {
   dataUri: string
 }
 
-/** Result of the direct-upload flow (`SkinUpload` IPC) - carries the new library entry's id
- * alongside the updated profile so the renderer can immediately offer to rename it (own user
- * request: name the skin *after* picking/uploading the file, not before). */
+/** Result of the direct-upload flow (`SkinUpload` IPC) - the renderer already picked the file,
+ * name, and variant on its own pending-upload preview screen before this call is ever made (own
+ * user request: choose the name *and* variant together at that step, not the variant beforehand),
+ * so `libraryEntryId` is just the resulting library entry alongside the updated profile. */
 export interface SkinUploadResult {
   profile: MinecraftProfile
   libraryEntryId: string
@@ -243,6 +244,13 @@ export interface LauncherSettings {
    * `SettingsScreen.tsx` reads `useTranslations()` so far (see `renderer/src/i18n/`) - every other
    * screen is still hardcoded German regardless of this setting until it's migrated too. */
   language: Language
+  /** Own wishlist item ("client setup beim ersten start") - gates `App.tsx`'s onboarding wizard
+   * (`OnboardingScreen.tsx`), shown once before the very first login on a fresh install. `false`
+   * only ever comes from {@link DEFAULT_LAUNCHER_SETTINGS} (a genuinely fresh install, no settings
+   * file yet) - `main/launcherSettings.ts#loadLauncherSettings` grandfathers in any *existing* file
+   * missing this key as already-completed instead, so upgrading an already-set-up install never
+   * replays onboarding on people who never needed it. */
+  onboardingCompleted: boolean
 }
 
 export type Language = 'de' | 'en'
@@ -294,7 +302,8 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   maxMemoryMb: null,
   consoleInSeparateWindow: false,
   themeColors: null,
-  language: 'de'
+  language: 'de',
+  onboardingCompleted: false
 }
 
 /** `main/index.ts#createWindow`'s/`main/consoleWindow.ts`'s own `os.totalmem()` reading, shown in

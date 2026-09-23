@@ -25,11 +25,22 @@ export const de = {
     loginButton: 'Mit Microsoft anmelden',
     mockLoginButton: 'Skip Login (Dev-Mock — Mojang-API noch nicht freigeschaltet)'
   },
+  // Own wishlist item ("client setup beim ersten start") - OnboardingScreen.tsx's colors step, the
+  // only onboarding step that runs after the language is already picked (welcome/language stay
+  // hardcoded-bilingual instead, see that file's own doc comment for why).
+  onboarding: {
+    colorsHeading: 'Passe die Farben an',
+    colorsExplanation:
+      'Du kannst die Farben des Launchers ganz nach deinem Geschmack anpassen - das wirkt sich auf den gesamten Client aus. Du kannst diesen Schritt auch überspringen und die Standardfarben behalten.',
+    skip: 'Überspringen (Standardfarben)',
+    next: 'Weiter'
+  },
   play: {
     headerSkin: 'Skin',
     headerCredits: 'Credits',
     headerSettings: 'Einstellungen',
     headerLogout: 'Abmelden',
+    playerMenuLabel: 'Konto-Menü',
     mockBadge: 'Dev-Mock-Profil',
     update: {
       available: (version: string) => `Update gefunden (Version ${version}) - wird heruntergeladen…`,
@@ -145,11 +156,11 @@ export const de = {
     edit: 'Bearbeiten',
     pageOf: (current: number, total: number) => `Seite ${current} / ${total}`,
     next: 'Weiter',
-    uploadHeading: 'Direkt hochladen',
+    uploadHeading: 'Skins vom PC hochladen',
     variantClassic: 'Classic (Steve-Arme)',
     variantSlim: 'Slim (Alex-Arme)',
     uploading: 'Lädt hoch…',
-    selectAndUpload: 'PNG auswählen & hochladen',
+    selectAndUpload: 'PNG auswählen',
     capeHeading: 'Eigenes Cape (Cape Provider)',
     capeDescription:
       'Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter "Gebündelte Mods" zuschaltbar. Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben.',
@@ -247,10 +258,13 @@ export const de = {
       resetConfirm:
         'Alle Farben (Hintergründe, Akzenttöne, Schrift) auf den Standard zurücksetzen? Eigene Anpassungen gehen dabei verloren.',
       editField: (label: string) => `${label} bearbeiten`,
-      contrastHint: (ratio: string, label: string) => `Kontrast Schrift/Hintergrund (ungünstigster betroffener Fall): ${ratio}:1 - ${label}`,
+      contrastLabel: 'Kontrast',
+      contrastExplain: 'Kontrast zwischen der Schriftfarbe und dem ungünstigsten betroffenen Hintergrund/Akzent.',
       contrastBad: 'schwer lesbar!',
       contrastBorderline: 'könnte knapp sein',
       contrastGood: 'gut lesbar',
+      previewHeading: 'Vorschau',
+      previewDescription: 'So sieht dein Client aus, sobald du diese Farbe übernimmst.',
       apply: 'Übernehmen',
       cancel: 'Abbrechen'
     },

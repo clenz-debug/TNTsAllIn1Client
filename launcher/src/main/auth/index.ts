@@ -1,4 +1,4 @@
-import type { AuthProgressEvent, MinecraftProfile } from '../../shared/types'
+import type { AuthProgressEvent, Language, MinecraftProfile } from '../../shared/types'
 import { loginWithMicrosoft, refreshMsToken } from './msOAuth'
 import { loginToXboxLive } from './xboxLive'
 import { completeMinecraftLogin, createMockProfile } from './minecraftAuth'
@@ -6,9 +6,9 @@ import { loadCachedAuth, saveCachedAuth } from './tokenCache'
 
 export type AuthProgressCallback = (event: AuthProgressEvent) => void
 
-export async function performLogin(onProgress: AuthProgressCallback): Promise<MinecraftProfile> {
+export async function performLogin(onProgress: AuthProgressCallback, language: Language): Promise<MinecraftProfile> {
   onProgress({ step: 'ms-oauth', message: 'Öffne Microsoft-Login im Browser…' })
-  const msTokens = await loginWithMicrosoft()
+  const msTokens = await loginWithMicrosoft(language)
 
   onProgress({ step: 'xbox-live', message: 'Melde bei Xbox Live an…' })
   const xsts = await loginToXboxLive(msTokens.accessToken)

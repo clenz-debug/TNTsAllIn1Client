@@ -24,11 +24,19 @@ export const en: typeof de = {
     loginButton: 'Sign in with Microsoft',
     mockLoginButton: 'Skip login (dev mock — Mojang API not yet approved)'
   },
+  onboarding: {
+    colorsHeading: 'Customize the colors',
+    colorsExplanation:
+      "You can customize the launcher's colors entirely to your taste - this affects the whole client. You can also skip this step and keep the default colors.",
+    skip: 'Skip (default colors)',
+    next: 'Next'
+  },
   play: {
     headerSkin: 'Skin',
     headerCredits: 'Credits',
     headerSettings: 'Settings',
     headerLogout: 'Sign out',
+    playerMenuLabel: 'Account menu',
     mockBadge: 'Dev mock profile',
     update: {
       available: (version: string) => `Update found (version ${version}) - downloading…`,
@@ -143,11 +151,11 @@ export const en: typeof de = {
     edit: 'Edit',
     pageOf: (current: number, total: number) => `Page ${current} / ${total}`,
     next: 'Next',
-    uploadHeading: 'Upload directly',
+    uploadHeading: 'Upload skins from PC',
     variantClassic: 'Classic (Steve arms)',
     variantSlim: 'Slim (Alex arms)',
     uploading: 'Uploading…',
-    selectAndUpload: 'Select & upload PNG',
+    selectAndUpload: 'Select PNG',
     capeHeading: 'Custom cape (Cape Provider)',
     capeDescription:
       'Visible to other players who have "Cape Provider" installed - toggle it on in this instance\'s Mods screen under "Bundled mods". Your own, high-resolution capes, independent of Mojang\'s cape above.',
@@ -244,10 +252,13 @@ export const en: typeof de = {
       resetToDefault: 'Reset to default',
       resetConfirm: 'Reset all colors (backgrounds, accent tones, text) to the default? Your own customizations will be lost.',
       editField: (label: string) => `Edit ${label}`,
-      contrastHint: (ratio: string, label: string) => `Text/background contrast (worst affected case): ${ratio}:1 - ${label}`,
+      contrastLabel: 'Contrast',
+      contrastExplain: 'Contrast between the text color and the worst-affected background/accent color.',
       contrastBad: 'hard to read!',
       contrastBorderline: 'could be tight',
       contrastGood: 'easy to read',
+      previewHeading: 'Preview',
+      previewDescription: 'This is what your client will look like once you apply this color.',
       apply: 'Apply',
       cancel: 'Cancel'
     },

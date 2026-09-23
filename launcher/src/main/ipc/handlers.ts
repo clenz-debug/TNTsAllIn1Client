@@ -1,6 +1,6 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
-import { readFile, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
 import { totalmem } from 'node:os'
 import { join } from 'node:path'
 import { describeError, localizedError } from '../../shared/errorMessages'
@@ -24,7 +24,7 @@ import {
   type SystemMemoryInfo
 } from '../../shared/types'
 import { loadMockProfile, performLogin, tryRestoreSession } from '../auth'
-import { fetchTextureDataUri, loadPngFileForEditor, uploadSkin, uploadSkinBuffer } from '../auth/skinApi'
+import { fetchTextureDataUri, loadPngFileForEditor, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
@@ -104,9 +104,17 @@ function broadcastLaunchBusy(event: IpcMainInvokeEvent, busy: boolean): void {
 export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.AuthRestore, async () => tryRestoreSession())
 
-  ipcMain.handle(IpcChannel.AuthLogin, async (event: IpcMainInvokeEvent) =>
-    performLogin((progress) => event.sender.send(IpcChannel.AuthProgress, progress))
-  )
+  ipcMain.handle(IpcChannel.AuthLogin, async (event: IpcMainInvokeEvent) => {
+    // Own follow-up question: "ist die Nachricht immer auf Deutsch?" - the OAuth callback page
+    // (rendered in msOAuth.ts, entirely outside the renderer's own i18n system) needs the current
+    // language passed in explicitly. Same "read settings directly, fall back to 'de'" pattern the
+    // cancelled-launch log line above already uses, for the same reason: this main-process code has
+    // no access to the renderer's own `useTranslations()`.
+    const language = await loadLauncherSettings()
+      .then((s) => s.language)
+      .catch(() => 'de' as const)
+    return performLogin((progress) => event.sender.send(IpcChannel.AuthProgress, progress), language)
+  })
 
   ipcMain.handle(IpcChannel.AuthLoginMock, async () => loadMockProfile())
 
@@ -230,36 +238,28 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannel.SkinFetchTexture, async (_event: IpcMainInvokeEvent, url: string) => fetchTextureDataUri(url))
 
-  // Skin PNGs picked via a native dialog (same "no HTML5 drag&drop under sandbox:true" reasoning
-  // as ModsScreen's "add custom mod" flow, see modsManager.ts) - null return means the dialog was
-  // cancelled, not an error. The upload endpoint's own response already contains the fresh
-  // skins/capes, so the renderer never needs a separate refetch - just merge it into its copy of
-  // the profile and hand it back here to keep auth.json's cached profile in sync too.
+  // The renderer already picked the file (via SkinEditorLoadPng, shared with the pixel editor's
+  // own "load PNG" step) and let the user set name + variant together on its pending-upload
+  // preview screen before ever calling this - own user request, so there's no dialog and no
+  // "cancelled" case left here, just the actual upload. The upload endpoint's own response already
+  // contains the fresh skins/capes, so the renderer never needs a separate refetch - just merge it
+  // into its copy of the profile and hand it back here to keep auth.json's cached profile in sync too.
   ipcMain.handle(
     IpcChannel.SkinUpload,
-    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> => {
-      const dialogOptions: Electron.OpenDialogOptions = {
-        title: 'Skin-PNG auswählen',
-        properties: ['openFile'],
-        filters: [{ name: 'PNG-Bild', extensions: ['png'] }]
-      }
-      const window = BrowserWindow.fromWebContents(event.sender)
-      const result = window ? await dialog.showOpenDialog(window, dialogOptions) : await dialog.showOpenDialog(dialogOptions)
-      if (result.canceled || result.filePaths.length === 0) return null
-
-      const { skins, capes } = await uploadSkin(profile.accessToken, result.filePaths[0], variant)
+    async (
+      _event: IpcMainInvokeEvent,
+      profile: MinecraftProfile,
+      pngBytes: ArrayBuffer,
+      variant: SkinVariant,
+      name: string
+    ): Promise<SkinUploadResult> => {
+      const buffer = Buffer.from(pngBytes)
+      const { skins, capes } = await uploadSkinBuffer(profile.accessToken, buffer, variant)
       const updatedProfile: MinecraftProfile = { ...profile, skins, capes }
       await updateCachedProfile(updatedProfile)
       // So every skin the account has ever worn - regardless of whether it came from this direct
       // upload or the pixel editor - ends up in the "Meine Skins" library, not just editor saves.
-      // Starts with a placeholder name - own user request was to name it *after* picking/uploading
-      // the file, not before, so the renderer immediately follows up with a SkinLibraryRename call
-      // using the id returned here.
-      const libraryEntry = await saveSkinToLibrary(
-        await readFile(result.filePaths[0]),
-        variant,
-        `Hochgeladen am ${new Date().toLocaleDateString('de-DE')}`
-      )
+      const libraryEntry = await saveSkinToLibrary(buffer, variant, name)
       return { profile: updatedProfile, libraryEntryId: libraryEntry.id }
     }
   )

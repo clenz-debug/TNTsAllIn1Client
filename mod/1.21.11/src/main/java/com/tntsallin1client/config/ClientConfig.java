@@ -16,7 +16,6 @@ import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.recipe.PinnedRecipe;
 import com.tntsallin1client.waypoint.Waypoint;
 import net.fabricmc.loader.api.FabricLoader;
-import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -80,6 +79,10 @@ public class ClientConfig {
 	// 5g: always-visible FPS counter, no F3 needed.
 	public boolean fpsCounterEnabled = false;
 	public HudLayout fpsCounterHudLayout = new HudLayout();
+
+	// Own wishlist item: always-visible latency (ping) counter, same shape as the FPS counter above.
+	public boolean latencyHudEnabled = false;
+	public HudLayout latencyHudLayout = new HudLayout();
 
 	// 5h: hold-to-zoom.
 	public boolean zoomEnabled = false;
@@ -192,15 +195,40 @@ public class ClientConfig {
 	public int coordinatesHudTextColor = 0xFFFFFFFF;
 	public int itemCounterTextColor = 0xFFFFFFFF;
 	public int fpsCounterTextColor = 0xFFFFFFFF;
+	public int latencyTextColor = 0xFFFFFFFF;
 	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;
 	public int keystrokesTextColor = 0xFFFFFFFF;
 
-	// 5ah: recipe pinned from the crafting-table/inventory recipe book, shown as a
-	// movable HUD reminder. Null until the player actually pins something.
+	// 5ah: recipes pinned from the crafting-table/inventory recipe book, shown as a movable HUD
+	// reminder - up to PinnedRecipeManager#MAX_PINNED at once (own user request, "maximal
+	// Hauptrezepte 5 Rezepte"), each independently show/hide-able (PinnedRecipe#visible) and
+	// removable via PinnedRecipeListScreen. Empty until the player actually pins something.
 	public boolean pinnedRecipeEnabled = false;
-	public @Nullable PinnedRecipe pinnedRecipe = null;
+	public List<PinnedRecipe> pinnedRecipes = new ArrayList<>();
 	public HudLayout pinnedRecipeHudLayout = new HudLayout();
+	// Own user request - only the "->" arrow's color.
+	public int pinnedRecipeArrowColor = 0xFFFFFFFF;
+	// Own follow-up request ("die Farben bei den Zahlen der Hauptrezepte sollen ... einstellbar
+	// sein") - the main ingredient/result stack-count badges used to be vanilla's own
+	// GuiGraphics#renderItemDecorations rendering, which has no color parameter; PinnedRecipeHud now
+	// reproduces that method's own decompiled layout math by hand (renderItemBar/renderItemCooldown/
+	// renderItemCount) with the count text's color pulled out as this setting instead of vanilla's
+	// hardcoded white (see PinnedRecipeHud#renderStack).
+	public int pinnedRecipeCountColor = 0xFFFFFFFF;
+	// Own user request - shows each craftable ingredient's own one-level sub-recipe in miniature
+	// underneath it (see PinnedIngredient#subIngredients / PinnedRecipeHud).
+	public boolean pinnedRecipeShowSubIngredients = false;
+	// Own follow-up request ("die Zahlen sollen wie die Pfeile auch von der Farbe her angepasst
+	// werden") - the small sub-ingredient counts next to each mini icon are a separate plain text
+	// draw from the main counts above, with their own color (see PinnedRecipeHud#drawSubIcons).
+	public int pinnedRecipeSubIngredientCountColor = 0xFFFFFFFF;
+	// Own follow-up request ("die Items ... nicht verschwinden [lassen] wenn man sie im Inv hat"):
+	// off by default (existing behavior) counts down against inventory contents and drops a fully-
+	// satisfied ingredient's row entirely; on, every ingredient always shows its full static
+	// requirement regardless of what's already in the player's inventory (see
+	// PinnedRecipeHud#buildVisibleRows).
+	public boolean pinnedRecipeShowFullAmounts = false;
 
 	// Waypoint system: user-created markers shown in-world as a beam + name label (see
 	// WaypointRenderer), managed from their own list/edit screens (see WaypointListScreen),
@@ -241,6 +269,12 @@ public class ClientConfig {
 	public boolean armorStatusShowName = true;
 	public boolean armorStatusShowIcon = true;
 	public ArmorStatusIconPosition armorStatusIconPosition = ArmorStatusIconPosition.LEFT;
+	// Nudges the durability/count text up (negative) or down (positive) relative to the icon, on
+	// top of the centering ArmorStatusHud#drawRow already does by default - Minecraft's font
+	// reserves a little blank space below digits for descenders they don't have, so the
+	// mathematically-centered text still looks slightly high against the icon; this lets a user
+	// dial in a pixel-perfect look instead of that always being slightly off.
+	public int armorStatusTextVerticalOffset = 0;
 	// false replaces "current/max" with just "current" for damageable items (stack counts are
 	// unaffected either way, they were never shown as a fraction).
 	public boolean armorStatusShowMaxDurability = true;

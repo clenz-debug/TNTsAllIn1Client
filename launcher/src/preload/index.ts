@@ -72,8 +72,8 @@ const api = {
     ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId, versionId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),
   fetchSkinTexture: (url: string): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinFetchTexture, url),
-  uploadSkin: (profile: MinecraftProfile, variant: SkinVariant): Promise<SkinUploadResult | null> =>
-    ipcRenderer.invoke(IpcChannel.SkinUpload, profile, variant),
+  uploadSkin: (profile: MinecraftProfile, pngBytes: ArrayBuffer, variant: SkinVariant, name: string): Promise<SkinUploadResult> =>
+    ipcRenderer.invoke(IpcChannel.SkinUpload, profile, pngBytes, variant, name),
   loadSkinPngForEditor: (): Promise<{ dataUri: string; width: number; height: number } | null> =>
     ipcRenderer.invoke(IpcChannel.SkinEditorLoadPng),
   loadSkinTemplate: (variant: SkinVariant): Promise<string> => ipcRenderer.invoke(IpcChannel.SkinEditorLoadTemplate, variant),

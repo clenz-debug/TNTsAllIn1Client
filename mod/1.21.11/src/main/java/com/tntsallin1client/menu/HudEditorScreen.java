@@ -12,7 +12,7 @@ import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
 import com.tntsallin1client.hud.ItemCounterHud;
 import com.tntsallin1client.hud.KeystrokesHud;
-import com.tntsallin1client.recipe.PinnedRecipe;
+import com.tntsallin1client.hud.LatencyHud;
 import com.tntsallin1client.recipe.PinnedRecipeHud;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -80,6 +80,12 @@ public class HudEditorScreen extends Screen {
 					Component.translatable("gui.tntsallin1client.menu.fps_counter"),
 					config.fpsCounterHudLayout,
 					this::fpsCounterBounds));
+		}
+		if (config.latencyHudEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.latency_hud"),
+					config.latencyHudLayout,
+					this::latencyBounds));
 		}
 		if (config.keystrokesEnabled) {
 			entries.add(new Entry(
@@ -275,24 +281,29 @@ public class HudEditorScreen extends Screen {
 
 	private Rect pinnedRecipeBounds() {
 		ClientConfig config = ClientConfig.get();
-		PinnedRecipe recipe = config.pinnedRecipe;
-		LocalPlayer player = this.minecraft.player;
-		if (recipe == null || player == null) {
+		if (config.pinnedRecipes.isEmpty()) {
 			// Unlike coordinatesBounds/itemCounterBounds, there is no sensible placeholder here -
 			// nothing is pinned yet, so there is nothing to position. The element simply can't be
 			// dragged in the editor until the player actually pins a recipe once.
 			return null;
 		}
+		LocalPlayer player = this.minecraft.player;
 
 		// Same live inventory-countdown as the actual HudElement render, not the static full
 		// requirement - otherwise the drag handles here wouldn't line up with what's actually drawn.
-		int ingredientCount = PinnedRecipeHud.remainingIngredientStacks(recipe, player).size();
+		// Falls back to each recipe's full original requirement if there's no live player yet
+		// (e.g. title screen) to count down against.
+		List<PinnedRecipeHud.VisibleRow> rows = player != null
+				? PinnedRecipeHud.buildVisibleRows(config, player)
+				: PinnedRecipeHud.buildMaxVisibleRows(config);
+
+		boolean showSub = config.pinnedRecipeShowSubIngredients;
 		HudLayout layout = config.pinnedRecipeHudLayout;
-		float x = layout.customPosition ? layout.x : PinnedRecipeHud.defaultX(this.width, this.font, ingredientCount);
+		float x = layout.customPosition ? layout.x : PinnedRecipeHud.defaultX(this.width, this.font, rows, showSub);
 		float y = layout.customPosition ? layout.y : PinnedRecipeHud.defaultY();
 
-		int unscaledWidth = PinnedRecipeHud.contentWidth(this.font, ingredientCount);
-		int unscaledHeight = PinnedRecipeHud.contentHeight();
+		int unscaledWidth = PinnedRecipeHud.contentWidth(this.font, rows, showSub);
+		int unscaledHeight = PinnedRecipeHud.contentHeight(this.font, rows, showSub);
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}
@@ -304,6 +315,20 @@ public class HudEditorScreen extends Screen {
 		HudLayout layout = config.fpsCounterHudLayout;
 		float x = layout.customPosition ? layout.x : FpsCounterHud.defaultX(this.width, this.font, label);
 		float y = layout.customPosition ? layout.y : FpsCounterHud.defaultY();
+
+		int unscaledWidth = this.font.width(label);
+		int unscaledHeight = this.font.lineHeight;
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect latencyBounds() {
+		ClientConfig config = ClientConfig.get();
+		String label = LatencyHud.buildLabel(this.minecraft);
+
+		HudLayout layout = config.latencyHudLayout;
+		float x = layout.customPosition ? layout.x : LatencyHud.defaultX(this.width, this.font, label);
+		float y = layout.customPosition ? layout.y : LatencyHud.defaultY();
 
 		int unscaledWidth = this.font.width(label);
 		int unscaledHeight = this.font.lineHeight;

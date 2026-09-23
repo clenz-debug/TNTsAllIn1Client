@@ -65,16 +65,6 @@ export async function uploadSkinBuffer(accessToken: string, fileBuffer: Buffer, 
   return (await response.json()) as SkinUploadResponse
 }
 
-/**
- * Uploads a new skin PNG picked straight from disk (Phase 7, step 1's original direct-upload
- * button - kept working unchanged after the step-3 refactor). Thin `readFile` + delegate wrapper
- * around {@link uploadSkinBuffer}, which now holds the actual validation/upload logic.
- */
-export async function uploadSkin(accessToken: string, filePath: string, variant: SkinVariant): Promise<SkinUploadResponse> {
-  const fileBuffer = await readFile(filePath)
-  return uploadSkinBuffer(accessToken, fileBuffer, variant)
-}
-
 const OPEN_SKIN_PNG_DIALOG: Electron.OpenDialogOptions = {
   title: 'Skin-PNG auswählen',
   properties: ['openFile'],
@@ -82,11 +72,11 @@ const OPEN_SKIN_PNG_DIALOG: Electron.OpenDialogOptions = {
 }
 
 /**
- * Opens the same native "Skin-PNG auswählen" dialog as the direct-upload button, but only reads
- * and validates the file - does **not** upload it to Mojang. This is the "load a PNG into the
- * pixel editor" path (Phase 7 step 3): the user may want to tweak it further before it ever
- * becomes their active skin. Returns `null` if the dialog was cancelled, same convention as the
- * existing `SkinUpload` IPC handler.
+ * Opens the native "Skin-PNG auswählen" dialog and reads + validates the picked file - does
+ * **not** upload it to Mojang. Shared by two callers: the pixel editor's "load a PNG to keep
+ * editing" path (Phase 7 step 3), and the direct-upload button's pending-upload preview screen
+ * (name + variant chosen there, actual upload deferred to that screen's confirm button). Returns
+ * `null` if the dialog was cancelled.
  */
 export async function loadPngFileForEditor(window: BrowserWindow | null): Promise<{ buffer: Buffer; width: number; height: number } | null> {
   const result = window ? await dialog.showOpenDialog(window, OPEN_SKIN_PNG_DIALOG) : await dialog.showOpenDialog(OPEN_SKIN_PNG_DIALOG)
