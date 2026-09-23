@@ -255,9 +255,16 @@ export interface LauncherSettings {
    * missing this key as already-completed instead, so upgrading an already-set-up install never
    * replays onboarding on people who never needed it. */
   onboardingCompleted: boolean
+  /** Settings screen's "Client-Design" picker / last onboarding step (own user request) - how our
+   * mod draws the title screen and its mod menu: vanilla Minecraft look, or our own design in the
+   * launcher's theme colors. Handed to the game on every launch and read back after it exits (see
+   * `main/launch/clientDesignSync.ts`), since the title screen's logo button can switch it in-game too. */
+  clientDesign: ClientDesign
 }
 
 export type Language = 'de' | 'en'
+
+export type ClientDesign = 'minecraft' | 'client'
 
 /** The full themeable palette (Settings screen's "Erscheinungsbild" section) - `background1`/
  * `background2` map to `--bg`/`--bg-panel`, `accent1`-`accent4` to `--green-1..4`, `text` to
@@ -307,7 +314,8 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   consoleInSeparateWindow: false,
   themeColors: null,
   language: 'de',
-  onboardingCompleted: false
+  onboardingCompleted: false,
+  clientDesign: 'minecraft'
 }
 
 /** `main/index.ts#createWindow`'s/`main/consoleWindow.ts`'s own `os.totalmem()` reading, shown in

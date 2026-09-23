@@ -5,6 +5,7 @@ import { useTranslations } from '../i18n/LanguageContext'
 import { Logo } from '../Logo'
 import { PlayerMenuButton } from '../PlayerMenuButton'
 import type {
+  ClientDesign,
   GameLogEvent,
   GameVersionSummary,
   Instance,
@@ -77,6 +78,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [appliedResourcepackVersions, setAppliedResourcepackVersions] = useState<LauncherSettings['appliedResourcepackVersions']>({})
   const [maxMemoryMb, setMaxMemoryMb] = useState<LauncherSettings['maxMemoryMb']>(null)
   const [consoleInSeparateWindow, setConsoleInSeparateWindow] = useState(false)
+  const [clientDesign, setClientDesign] = useState<ClientDesign>('minecraft')
   const [themeColors, setThemeColors] = useState<ThemeColors | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
@@ -130,6 +132,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         setBundleCompatibleVersions(bundleVersions)
         setMaxMemoryMb(settings.maxMemoryMb)
         setConsoleInSeparateWindow(settings.consoleInSeparateWindow)
+        setClientDesign(settings.clientDesign)
         setThemeColors(settings.themeColors)
         onLanguageChange(settings.language)
         setSettingsLoaded(true)
@@ -151,6 +154,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       consoleInSeparateWindow,
       themeColors,
       language,
+      clientDesign,
       // Always true here, never a field this screen itself tracks - PlayScreen only ever mounts
       // once App.tsx's own onboarding gate has already passed (see OnboardingScreen.tsx), so there's
       // no scenario where a save from here could still be pre-onboarding.
@@ -168,7 +172,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     maxMemoryMb,
     consoleInSeparateWindow,
     themeColors,
-    language
+    language,
+    clientDesign
   ])
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
@@ -275,6 +280,13 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       unsubscribeProgress()
       unsubscribeLog()
       setBusy(false)
+      // The title screen's logo button can switch the design in-game - main already copied that
+      // into the settings file once the game exited (clientDesignSync.ts#readBackClientDesign), so
+      // pick it up here too, before this screen's next save would write the old value back.
+      window.api
+        .loadSettings()
+        .then((settings) => setClientDesign(settings.clientDesign))
+        .catch(() => undefined)
     }
   }
 
@@ -299,6 +311,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         onThemeColorsChange={setThemeColors}
         language={language}
         onLanguageChange={onLanguageChange}
+        clientDesign={clientDesign}
+        onClientDesignChange={setClientDesign}
         onDataRootOverrideChange={setDataRootOverride}
         onClose={() => setShowSettings(false)}
       />

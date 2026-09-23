@@ -425,7 +425,7 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
             </div>
             <ColorPicker color={color} onChange={setColor} />
             <label className="checkbox-label">
-              <input type="checkbox" checked={gridEnabled} onChange={(event) => toggleGrid(event.target.checked)} />
+              <input type="checkbox" className="toggle-switch" checked={gridEnabled} onChange={(event) => toggleGrid(event.target.checked)} />
               {t.skinEditor.showGrid}
             </label>
           </section>

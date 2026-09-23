@@ -27,7 +27,8 @@
 		"PackSelectionModelMixin",
 		"RecipeBookComponentAccessor",
 		"RecipeBookPageAccessor",
-		"ScreenMixin"
+		"ScreenMixin",
+		"TitleScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

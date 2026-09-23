@@ -28,7 +28,10 @@ export const en: typeof de = {
     colorsExplanation:
       "You can customize the launcher's colors entirely to your taste - this affects the whole client. You can also skip this step and keep the default colors.",
     skip: 'Skip (default colors)',
-    next: 'Next'
+    next: 'Next',
+    designHeading: 'Choose the in-game design',
+    designExplanation:
+      'The title screen and the Client Mods menu can look like regular Minecraft or use the client design in your colors. You can change this anytime in the settings or right on the in-game title screen.'
   },
   play: {
     headerSkin: 'Skin',
@@ -275,6 +278,13 @@ export const en: typeof de = {
       heading: 'Language',
       german: 'German',
       english: 'English'
+    },
+    clientDesign: {
+      heading: 'Client design',
+      description:
+        'How the title screen and the Client Mods menu look in-game. You can also switch in-game: via the "Client Design" button in the Minecraft design, via the logo in the client design.',
+      minecraft: 'Minecraft design',
+      client: 'Client design (your colors)'
     }
   },
   errors: {

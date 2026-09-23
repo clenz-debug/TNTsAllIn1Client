@@ -3,7 +3,7 @@ import { AppearanceEditor } from '../AppearanceEditor'
 import { Dropdown } from '../Dropdown'
 import { useTranslations } from '../i18n/LanguageContext'
 import { Logo } from '../Logo'
-import type { Language, ThemeColors } from '../../../shared/types'
+import type { ClientDesign, Language, ThemeColors } from '../../../shared/types'
 
 interface Props {
   /** Current in-memory language - still the plain `'de'` default until this screen's own language
@@ -16,8 +16,11 @@ interface Props {
   onLanguageChange: (language: Language) => void
   themeColors: ThemeColors | null
   onThemeColorsChange: (value: ThemeColors | null) => void
-  /** Called once, after the colors step (whether skipped or actually customized) - `App.tsx`
-   * persists `language`/`themeColors`/`onboardingCompleted` together at that point and this screen
+  /** Last step before the Microsoft login (own user request) - live, same as `themeColors`. */
+  clientDesign: ClientDesign
+  onClientDesignChange: (value: ClientDesign) => void
+  /** Called once, after the design step (the last one) - `App.tsx`
+   * persists `language`/`themeColors`/`clientDesign`/`onboardingCompleted` together at that point and this screen
    * unmounts, falling through to the normal Login/PlayScreen flow ("dann kommt man weiter zum
    * Bereich wo man sich anmelden muss", own user request) - no separate login step lives inside
    * onboarding itself, `LoginScreen` already *is* that step once `onboardingCompleted` is true and
@@ -25,12 +28,12 @@ interface Props {
   onComplete: () => void
 }
 
-type Step = 'welcome' | 'language' | 'colors'
+type Step = 'welcome' | 'language' | 'colors' | 'design'
 
 /**
  * Own wishlist item ("client setup beim ersten start") - shown once, before the very first login,
- * gated by `LauncherSettings.onboardingCompleted` (see that field's own doc comment). Three steps
- * so far (welcome, language, colors) - more slot into the {@link Step} union and the switch below
+ * gated by `LauncherSettings.onboardingCompleted` (see that field's own doc comment). Four steps
+ * so far (welcome, language, colors, design) - more slot into the {@link Step} union and the switch below
  * as they get specified.
  *
  * <p>The welcome and language steps deliberately do *not* use `useTranslations()`/`t.*` like every
@@ -42,7 +45,15 @@ type Step = 'welcome' | 'language' | 'colors'
  * `onLanguageChange` already fired, so it switches to the normal single-language `t.*` system like
  * every other post-onboarding screen.
  */
-export function OnboardingScreen({ language, onLanguageChange, themeColors, onThemeColorsChange, onComplete }: Props) {
+export function OnboardingScreen({
+  language,
+  onLanguageChange,
+  themeColors,
+  onThemeColorsChange,
+  clientDesign,
+  onClientDesignChange,
+  onComplete
+}: Props) {
   const [step, setStep] = useState<Step>('welcome')
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(language)
 
@@ -98,14 +109,22 @@ export function OnboardingScreen({ language, onLanguageChange, themeColors, onTh
     )
   }
 
-  return <OnboardingColorsStep themeColors={themeColors} onThemeColorsChange={onThemeColorsChange} onComplete={onComplete} />
+  if (step === 'colors') {
+    return <OnboardingColorsStep themeColors={themeColors} onThemeColorsChange={onThemeColorsChange} onNext={() => setStep('design')} />
+  }
+
+  return <OnboardingDesignStep clientDesign={clientDesign} onClientDesignChange={onClientDesignChange} onComplete={onComplete} />
 }
 
 /** Split out from the `step === 'colors'` branch above purely so `useTranslations()` can be called
  * at all - it reads `LanguageProvider`'s context, which by this point already reflects the language
  * step's `onLanguageChange` call, but a hook still can't be called conditionally inside the same
  * component body as the two bilingual steps above it. */
-function OnboardingColorsStep({ themeColors, onThemeColorsChange, onComplete }: Pick<Props, 'themeColors' | 'onThemeColorsChange' | 'onComplete'>) {
+function OnboardingColorsStep({
+  themeColors,
+  onThemeColorsChange,
+  onNext
+}: Pick<Props, 'themeColors' | 'onThemeColorsChange'> & { onNext: () => void }) {
   const t = useTranslations()
   return (
     <div className="login-screen">
@@ -119,9 +138,38 @@ function OnboardingColorsStep({ themeColors, onThemeColorsChange, onComplete }: 
         <AppearanceEditor themeColors={themeColors} onThemeColorsChange={onThemeColorsChange} />
       </div>
       <div className="header-actions onboarding-actions">
-        <button className="secondary-button" onClick={onComplete}>
+        <button className="secondary-button" onClick={onNext}>
           {t.onboarding.skip}
         </button>
+        <button className="primary-button" onClick={onNext}>
+          {t.onboarding.next}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/** Asks which in-game design to use (own user request: last question before the Microsoft login) -
+ * same Dropdown as the Settings screen's own "Client-Design" picker, which can change it later. */
+function OnboardingDesignStep({ clientDesign, onClientDesignChange, onComplete }: Pick<Props, 'clientDesign' | 'onClientDesignChange' | 'onComplete'>) {
+  const t = useTranslations()
+  return (
+    <div className="login-screen">
+      <Logo className="login-logo" />
+      <h1>TNT&apos;s All-In-1 Client</h1>
+      <p className="subtitle">{t.onboarding.designHeading}</p>
+      <div className="onboarding-text">
+        <p>{t.onboarding.designExplanation}</p>
+      </div>
+      <Dropdown
+        value={clientDesign}
+        onChange={(value) => onClientDesignChange(value as ClientDesign)}
+        options={[
+          { value: 'minecraft', label: t.settings.clientDesign.minecraft },
+          { value: 'client', label: t.settings.clientDesign.client }
+        ]}
+      />
+      <div className="header-actions onboarding-actions">
         <button className="primary-button" onClick={onComplete}>
           {t.onboarding.next}
         </button>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Language, MinecraftProfile, ThemeColors } from '../../shared/types'
+import type { ClientDesign, Language, MinecraftProfile, ThemeColors } from '../../shared/types'
 import { LanguageProvider, useTranslations } from './i18n/LanguageContext'
 import { LoginScreen } from './screens/LoginScreen'
 import { OnboardingScreen } from './screens/OnboardingScreen'
@@ -30,6 +30,7 @@ export default function App() {
   // outside PlayScreen by `OnboardingScreen`'s colors step, which needs it live so `AppearanceEditor`
   // (rendered from both places) always edits/previews the one real in-memory value.
   const [themeColors, setThemeColors] = useState<ThemeColors | null>(null)
+  const [clientDesign, setClientDesign] = useState<ClientDesign>('minecraft')
   // Starts `false` (same default as `DEFAULT_LAUNCHER_SETTINGS`) - stays that way, showing
   // `OnboardingScreen`, until the settings-load effect below resolves either way. `settingsLoaded`
   // gates rendering on it below so a brand-new install never flashes Login/PlayScreen first.
@@ -70,7 +71,7 @@ export default function App() {
   // those with stale/absent values.
   async function handleOnboardingComplete(): Promise<void> {
     const settings = await window.api.loadSettings()
-    await window.api.saveSettings({ ...settings, language, themeColors, onboardingCompleted: true })
+    await window.api.saveSettings({ ...settings, language, themeColors, clientDesign, onboardingCompleted: true })
     setOnboardingCompleted(true)
   }
 
@@ -84,6 +85,8 @@ export default function App() {
           onLanguageChange={setLanguage}
           themeColors={themeColors}
           onThemeColorsChange={setThemeColors}
+          clientDesign={clientDesign}
+          onClientDesignChange={setClientDesign}
           onComplete={() => void handleOnboardingComplete()}
         />
       ) : profile ? (

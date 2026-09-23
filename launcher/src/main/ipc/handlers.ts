@@ -51,6 +51,7 @@ import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomM
 import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
+import { readBackClientDesign, writeClientDesignFiles } from '../launch/clientDesignSync'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
@@ -469,6 +470,7 @@ export function registerIpcHandlers(): void {
         // something meaningfully different per instance. See sharedSettings.ts.
         await applySharedOptions(gameDir)
         await applySharedServers(gameDir)
+        await writeClientDesignFiles(gameDir, settings)
 
         sendProgress('launching', 0, 1, installed.detail.id)
         sendLog({
@@ -480,6 +482,7 @@ export function registerIpcHandlers(): void {
         await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)
         await saveSharedOptions(gameDir)
         await saveSharedServers(gameDir)
+        await readBackClientDesign(gameDir)
         sendProgress('done', 1, 1)
       } catch (err) {
         if (signal.aborted) {

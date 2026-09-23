@@ -343,7 +343,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         )}
         {activeCape && (
           <label className="checkbox-label">
-            <input type="checkbox" checked={showCape} onChange={(event) => setShowCape(event.target.checked)} />
+            <input type="checkbox" className="toggle-switch" checked={showCape} onChange={(event) => setShowCape(event.target.checked)} />
             {t.skin.showCape}
           </label>
         )}

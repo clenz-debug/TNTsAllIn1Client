@@ -133,7 +133,8 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
       language: parsed.language ?? DEFAULT_LAUNCHER_SETTINGS.language,
       // Same grandfathering as the fast path above - this branch only runs for a file that already
       // existed (needed instance/bundle-version migration), never a genuinely fresh install.
-      onboardingCompleted: parsed.onboardingCompleted ?? true
+      onboardingCompleted: parsed.onboardingCompleted ?? true,
+      clientDesign: parsed.clientDesign ?? DEFAULT_LAUNCHER_SETTINGS.clientDesign
     }
     await saveLauncherSettings(settings)
     return settings

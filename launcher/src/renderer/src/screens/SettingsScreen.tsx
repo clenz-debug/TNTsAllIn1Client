@@ -3,7 +3,7 @@ import { AppearanceEditor } from '../AppearanceEditor'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
-import type { Language, StorageInfo, StorageMoveProgressEvent, SystemMemoryInfo, ThemeColors } from '../../../shared/types'
+import type { ClientDesign, Language, StorageInfo, StorageMoveProgressEvent, SystemMemoryInfo, ThemeColors } from '../../../shared/types'
 
 function formatBytes(bytes: number): string {
   const gb = bytes / 1024 ** 3
@@ -34,6 +34,8 @@ interface Props {
   onThemeColorsChange: (value: ThemeColors | null) => void
   language: Language
   onLanguageChange: (value: Language) => void
+  clientDesign: ClientDesign
+  onClientDesignChange: (value: ClientDesign) => void
   onDataRootOverrideChange: (path: string) => void
   onClose: () => void
 }
@@ -59,6 +61,8 @@ export function SettingsScreen({
   onThemeColorsChange,
   language,
   onLanguageChange,
+  clientDesign,
+  onClientDesignChange,
   onDataRootOverrideChange,
   onClose
 }: Props) {
@@ -133,7 +137,7 @@ export function SettingsScreen({
       <section className="instances-section">
         <h3>{t.settings.memory.heading}</h3>
         <label className="checkbox-label">
-          <input type="checkbox" checked={memoryAuto} onChange={(e) => handleMemoryAutoChange(e.target.checked)} />
+          <input type="checkbox" className="toggle-switch" checked={memoryAuto} onChange={(e) => handleMemoryAutoChange(e.target.checked)} />
           {t.settings.memory.auto}
         </label>
         {!memoryAuto && (
@@ -194,7 +198,7 @@ export function SettingsScreen({
       <section className="instances-section">
         <h3>{t.settings.instances.heading}</h3>
         <label className="checkbox-label">
-          <input type="checkbox" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
+          <input type="checkbox" className="toggle-switch" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
           {t.settings.instances.showSnapshots}
         </label>
       </section>
@@ -204,6 +208,7 @@ export function SettingsScreen({
         <label className="checkbox-label">
           <input
             type="checkbox"
+            className="toggle-switch"
             checked={consoleInSeparateWindow}
             onChange={(e) => onConsoleInSeparateWindowChange(e.target.checked)}
           />
@@ -225,6 +230,19 @@ export function SettingsScreen({
           options={[
             { value: 'de', label: t.settings.language.german },
             { value: 'en', label: t.settings.language.english }
+          ]}
+        />
+      </section>
+
+      <section className="instances-section">
+        <h3>{t.settings.clientDesign.heading}</h3>
+        <p className="version-warning">{t.settings.clientDesign.description}</p>
+        <Dropdown
+          value={clientDesign}
+          onChange={(value) => onClientDesignChange(value as ClientDesign)}
+          options={[
+            { value: 'minecraft', label: t.settings.clientDesign.minecraft },
+            { value: 'client', label: t.settings.clientDesign.client }
           ]}
         />
       </section>

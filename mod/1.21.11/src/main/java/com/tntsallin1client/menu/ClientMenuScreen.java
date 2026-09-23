@@ -1,10 +1,5 @@
 package com.tntsallin1client.menu;
 
-import com.tntsallin1client.config.ClientConfig;
-import com.tntsallin1client.debug.QuickInfoDebugEntry;
-import dev.tr7zw.skinlayers.SkinLayersModBase;
-import dev.tr7zw.skinlayers.versionless.ModBase;
-import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -18,7 +13,6 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.repository.PackRepository;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -28,7 +22,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Phase 5e: ingame mod menu, top level. Just the on/off switch per feature.
+ * Phase 5e: ingame mod menu, top level (Minecraft design - the client design shows the same
+ * {@link ClientMenuFeatures} as cards instead, see {@link ClientModsCardScreen}). Just the on/off switch per feature.
  * Features with more to configure than a toggle get their own dedicated
  * options screen (e.g. {@link ItemCounterOptionsScreen}), opened via a
  * small button next to that feature's toggle - deliberately not one shared
@@ -53,24 +48,6 @@ public class ClientMenuScreen extends Screen {
 	private static final int LIST_TOP = SEARCH_BOX_Y + ROW_HEIGHT + 6;
 	private static final int FOOTER_HEIGHT = 30;
 
-	/**
-	 * Exact filenames of the 5p 3D-block-model resource packs bundled in
-	 * {@code launcher/resourcepacks-bundle/} (pack IDs are "file/" + the file
-	 * name on disk, see vanilla's {@code FolderRepositorySource}) - excludes
-	 * the unrelated Default Dark Mode pack. Update this list if any of those
-	 * files are ever renamed or upgraded to a new version number, same
-	 * upkeep requirement as {@link CreditsScreen}'s own hardcoded entry list.
-	 */
-	private static final List<String> BLOCK_MODEL_PACK_IDS = List.of(
-			"file/Bushy-Vegetation-3.5.2.zip",
-			"file/3D-Bushy-Bushie-1.0.zip",
-			"file/Mushrooms-Plus-26.1_v1.4.zip",
-			"file/Vanilla-Spinning-Stonecutter-3D-1.0.0.zip",
-			"file/VanillaTweaks_r346678_MC1.21.x.zip");
-
-	/** Same "file/" + filename scheme as {@link #BLOCK_MODEL_PACK_IDS}, see there - the 5r dark-inventory resource pack. */
-	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-1.21.11-2026.4.0.zip";
-
 	private final @Nullable Screen parent;
 
 	/**
@@ -90,253 +67,10 @@ public class ClientMenuScreen extends Screen {
 
 	@Override
 	protected void init() {
-		ClientConfig config = ClientConfig.get();
 		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT;
 		FeatureList list = new FeatureList(this.minecraft, this.width, listHeight, LIST_TOP);
 
-		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_hud"));
-
-		list.addToggleRow(config.coordinatesHudEnabled, Component.translatable("gui.tntsallin1client.menu.coordinates_hud"),
-				value -> {
-					config.coordinatesHudEnabled = value;
-					config.save();
-				},
-				() -> new CoordinatesHudOptionsScreen(this));
-
-		list.addToggleRow(config.itemCounterEnabled, Component.translatable("gui.tntsallin1client.menu.item_counter"),
-				value -> {
-					config.itemCounterEnabled = value;
-					config.save();
-				},
-				() -> new ItemCounterOptionsScreen(this));
-
-		list.addToggleRow(config.fpsCounterEnabled, Component.translatable("gui.tntsallin1client.menu.fps_counter"),
-				value -> {
-					config.fpsCounterEnabled = value;
-					config.save();
-				},
-				() -> new FpsCounterOptionsScreen(this));
-
-		list.addToggleRow(config.latencyHudEnabled, Component.translatable("gui.tntsallin1client.menu.latency_hud"),
-				value -> {
-					config.latencyHudEnabled = value;
-					config.save();
-				},
-				() -> new LatencyOptionsScreen(this));
-
-		list.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
-				value -> {
-					config.clientNameLabelEnabled = value;
-					config.save();
-				},
-				() -> new ClientNameLabelOptionsScreen(this));
-
-		list.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
-				value -> {
-					config.keystrokesEnabled = value;
-					config.save();
-				},
-				() -> new KeystrokesOptionsScreen(this));
-
-		list.addToggleRow(config.armorStatusEnabled, Component.translatable("gui.tntsallin1client.menu.armor_status"),
-				value -> {
-					config.armorStatusEnabled = value;
-					config.save();
-				},
-				() -> new ArmorStatusOptionsScreen(this));
-
-		list.addToggleRow(config.f3QuickInfoEnabled, Component.translatable("gui.tntsallin1client.menu.f3_quick_info"),
-				value -> {
-					config.f3QuickInfoEnabled = value;
-					config.save();
-					QuickInfoDebugEntry.applyVanillaEntryVisibility(this.minecraft);
-				},
-				() -> new F3OptionsScreen(this));
-
-		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_rendering"));
-
-		list.addToggleRow(config.zoomEnabled, Component.translatable("gui.tntsallin1client.menu.zoom"),
-				value -> {
-					config.zoomEnabled = value;
-					config.save();
-				},
-				() -> new ZoomOptionsScreen(this));
-
-		list.addToggleRow(config.freecamEnabled, Component.translatable("gui.tntsallin1client.menu.freecam"),
-				value -> {
-					config.freecamEnabled = value;
-					config.save();
-				},
-				() -> new FreecamOptionsScreen(this));
-
-		list.addToggleRow(config.customCrosshairEnabled, Component.translatable("gui.tntsallin1client.menu.crosshair"),
-				value -> {
-					config.customCrosshairEnabled = value;
-					config.save();
-				},
-				() -> new CrosshairOptionsScreen(this));
-
-		list.addToggleRow(config.fullbrightEnabled, Component.translatable("gui.tntsallin1client.menu.fullbright"),
-				value -> {
-					config.fullbrightEnabled = value;
-					config.save();
-				});
-
-		// Sodium's own Video-Einstellungen screen replaces vanilla's entirely and doesn't carry this
-		// option over (checked directly against the bundled Sodium jar - no "View Bobbing"/"bobView"
-		// string anywhere in it), so with Sodium active there's no menu left to reach it from at all.
-		// A plain vanilla OptionInstance<Boolean> otherwise - no validation-bypass trick needed like
-		// FullbrightHandler's gamma hack, reads/writes straight through, no separate ClientConfig
-		// field either since vanilla's own options.txt already persists it.
-		list.addToggleRow(this.minecraft.options.bobView().get(), Component.translatable("gui.tntsallin1client.menu.view_bobbing"),
-				value -> {
-					this.minecraft.options.bobView().set(value);
-					this.minecraft.options.save();
-				});
-
-		list.addToggleRow(config.spawnOverlayEnabled, Component.translatable("gui.tntsallin1client.menu.spawn_overlay"),
-				value -> {
-					config.spawnOverlayEnabled = value;
-					config.save();
-				},
-				() -> new SpawnOverlayOptionsScreen(this));
-
-		list.addToggleRow(config.customHitboxColorEnabled, Component.translatable("gui.tntsallin1client.menu.hitbox_color"),
-				value -> {
-					config.customHitboxColorEnabled = value;
-					config.save();
-				},
-				() -> new HitboxColorOptionsScreen(this));
-
-		list.addToggleRow(config.customBlockOutlineColorEnabled, Component.translatable("gui.tntsallin1client.menu.block_outline_color"),
-				value -> {
-					config.customBlockOutlineColorEnabled = value;
-					config.save();
-				},
-				() -> new BlockOutlineColorOptionsScreen(this));
-
-		list.addToggleRow(config.itemTiltEnabled, Component.translatable("gui.tntsallin1client.menu.item_tilt"),
-				value -> {
-					config.itemTiltEnabled = value;
-					config.save();
-				});
-
-		list.addToggleRow(config.waypointsEnabled, Component.translatable("gui.tntsallin1client.menu.waypoints"),
-				value -> {
-					config.waypointsEnabled = value;
-					config.save();
-				},
-				() -> new WaypointOptionsScreen(this));
-
-		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
-		list.addToggleRow(connectedTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
-				value -> {
-					if (value) {
-						connectedTextures.enable();
-					} else {
-						connectedTextures.disable();
-					}
-				});
-
-		ContinuityFeatureStates.FeatureState emissiveTextures = ContinuityFeatureStates.get().getEmissiveTexturesState();
-		list.addToggleRow(emissiveTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.emissive_textures"),
-				value -> {
-					if (value) {
-						emissiveTextures.enable();
-					} else {
-						emissiveTextures.disable();
-					}
-				});
-
-		PackRepository packRepository = this.minecraft.getResourcePackRepository();
-		boolean blockModels3dEnabled = BLOCK_MODEL_PACK_IDS.stream().anyMatch(packRepository.getSelectedIds()::contains);
-		list.addToggleRow(blockModels3dEnabled, Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
-				value -> {
-					if (value) {
-						BLOCK_MODEL_PACK_IDS.forEach(packRepository::addPack);
-					} else {
-						BLOCK_MODEL_PACK_IDS.forEach(packRepository::removePack);
-					}
-					this.minecraft.options.updateResourcePacks(packRepository);
-				});
-
-		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
-		list.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
-				value -> {
-					if (value) {
-						packRepository.addPack(DARK_MODE_PACK_ID);
-					} else {
-						packRepository.removePack(DARK_MODE_PACK_ID);
-					}
-					this.minecraft.options.updateResourcePacks(packRepository);
-				});
-
-		boolean skinLayers3dEnabled = ModBase.config.enableHat || ModBase.config.enableJacket
-				|| ModBase.config.enableLeftSleeve || ModBase.config.enableRightSleeve
-				|| ModBase.config.enableLeftPants || ModBase.config.enableRightPants;
-		list.addToggleRow(skinLayers3dEnabled, Component.translatable("gui.tntsallin1client.menu.skin_layers_3d"),
-				value -> {
-					ModBase.config.enableHat = value;
-					ModBase.config.enableJacket = value;
-					ModBase.config.enableLeftSleeve = value;
-					ModBase.config.enableRightSleeve = value;
-					ModBase.config.enableLeftPants = value;
-					ModBase.config.enableRightPants = value;
-					SkinLayersModBase.instance.writeConfig();
-				});
-
-		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_inventory"));
-
-		list.addToggleRow(config.quickSortEnabled, Component.translatable("gui.tntsallin1client.menu.quick_sort"),
-				value -> {
-					config.quickSortEnabled = value;
-					config.save();
-				},
-				() -> new QuickSortOptionsScreen(this));
-
-		list.addToggleRow(config.containerClickPacingEnabled, Component.translatable("gui.tntsallin1client.menu.container_click_pacing"),
-				value -> {
-					config.containerClickPacingEnabled = value;
-					config.save();
-				});
-
-		list.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
-				value -> {
-					config.shulkerPreviewEnabled = value;
-					config.save();
-				},
-				() -> new ShulkerPreviewOptionsScreen(this));
-
-		list.addToggleRow(config.screenshotToastEnabled, Component.translatable("gui.tntsallin1client.menu.screenshot_toast"),
-				value -> {
-					config.screenshotToastEnabled = value;
-					config.save();
-				});
-
-		list.addToggleRow(config.pinnedRecipeEnabled, Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
-				value -> {
-					config.pinnedRecipeEnabled = value;
-					config.save();
-				},
-				() -> new PinnedRecipeOptionsScreen(this));
-
-		list.beginSection(Component.translatable("gui.tntsallin1client.menu.section_misc"));
-
-		list.addToggleRow(config.discordPresenceEnabled, Component.translatable("gui.tntsallin1client.menu.discord_presence"),
-				value -> {
-					config.discordPresenceEnabled = value;
-					config.save();
-				},
-				() -> new DiscordPresenceOptionsScreen(this));
-
-		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
-				() -> this.minecraft.setScreen(new HudEditorScreen(this)));
-
-		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.external_mods_button"),
-				() -> this.minecraft.setScreen(new ExternalModsScreen(this)));
-
-		list.addButtonRow(Component.translatable("gui.tntsallin1client.menu.credits_button"),
-				() -> this.minecraft.setScreen(new CreditsScreen(this)));
+		ClientMenuFeatures.populate(list, this);
 
 		list.finishBuilding();
 		list.filter(this.searchQuery);
@@ -379,7 +113,7 @@ public class ClientMenuScreen extends Screen {
 	 * never leaves a heading floating above an empty group), the same {@code replaceEntries} mechanism
 	 * used before sections existed (Phase 5v).
 	 */
-	private static class FeatureList extends ContainerObjectSelectionList<FeatureList.Row> {
+	private static class FeatureList extends ContainerObjectSelectionList<FeatureList.Row> implements FeatureSink {
 		private final List<Section> sections = new ArrayList<>();
 		private @Nullable Section currentSection;
 
@@ -392,17 +126,14 @@ public class ClientMenuScreen extends Screen {
 			return ROW_WIDTH;
 		}
 
-		/** Starts a new in-list section; every row added afterwards belongs to it, until the next call. */
-		void beginSection(Component label) {
+		@Override
+		public void beginSection(Component label) {
 			this.currentSection = new Section(Row.header(label, this.minecraft.font));
 			this.sections.add(this.currentSection);
 		}
 
-		void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle) {
-			addToggleRow(initial, label, onToggle, null);
-		}
-
-		void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle,
+		@Override
+		public void addToggleRow(boolean initial, Component label, Consumer<Boolean> onToggle,
 				@Nullable Supplier<Screen> optionsScreenFactory) {
 			boolean hasOptions = optionsScreenFactory != null;
 			int toggleWidth = hasOptions ? ROW_WIDTH - OPTIONS_BUTTON_WIDTH - TOGGLE_GAP : ROW_WIDTH;
@@ -417,7 +148,8 @@ public class ClientMenuScreen extends Screen {
 			this.currentSection.rows.add(new Row(toggle, options, label.getString()));
 		}
 
-		void addButtonRow(Component label, Runnable onPress) {
+		@Override
+		public void addButtonRow(ButtonRole role, Component label, Runnable onPress) {
 			Button button = Button.builder(label, b -> onPress.run()).bounds(0, 0, ROW_WIDTH, ROW_HEIGHT).build();
 			this.currentSection.rows.add(new Row(button, null, label.getString()));
 		}

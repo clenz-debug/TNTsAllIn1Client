@@ -32,7 +32,10 @@ export const de = {
     colorsExplanation:
       'Du kannst die Farben des Launchers ganz nach deinem Geschmack anpassen - das wirkt sich auf den gesamten Client aus. Du kannst diesen Schritt auch überspringen und die Standardfarben behalten.',
     skip: 'Überspringen (Standardfarben)',
-    next: 'Weiter'
+    next: 'Weiter',
+    designHeading: 'Wähle das Design im Spiel',
+    designExplanation:
+      'Der Startbildschirm und das Client-Mods-Menü können wie normales Minecraft aussehen oder im eigenen Client-Design in deinen Farben. Du kannst das jederzeit in den Einstellungen oder direkt im Spiel auf dem Startbildschirm ändern.'
   },
   play: {
     headerSkin: 'Skin',
@@ -281,6 +284,13 @@ export const de = {
       heading: 'Sprache',
       german: 'Deutsch',
       english: 'Englisch'
+    },
+    clientDesign: {
+      heading: 'Client-Design',
+      description:
+        'Wie der Startbildschirm und das Client-Mods-Menü im Spiel aussehen. Umschalten geht auch im Spiel: im Minecraft-Design über den Button „Client-Design“, im Client-Design über das Logo.',
+      minecraft: 'Minecraft-Design',
+      client: 'Client-Design (deine Farben)'
     }
   },
   /**

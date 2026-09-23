@@ -27,7 +27,7 @@ public final class PauseMenuIntegration {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (ModKeyBindings.OPEN_MENU.consumeClick()) {
 				if (client.screen == null) {
-					client.setScreen(new ClientMenuScreen(null));
+					client.setScreen(ClientMenus.create(null));
 				}
 			}
 		});
@@ -51,7 +51,7 @@ public final class PauseMenuIntegration {
 
 			Screens.getWidgets(screen).add(Button.builder(
 					Component.translatable("gui.tntsallin1client.menu.open_button"),
-					button -> client.setScreen(new ClientMenuScreen(pauseScreen))
+					button -> client.setScreen(ClientMenus.create(pauseScreen))
 				)
 				.bounds(x, y, width, height)
 				.build());
