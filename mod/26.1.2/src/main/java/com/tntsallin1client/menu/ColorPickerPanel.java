@@ -134,13 +134,13 @@ public class ColorPickerPanel {
 		guiGraphics.fill(hueX, hueMarkerY, hueX + HUE_SLIDER_WIDTH, hueMarkerY + 1, 0xFFFFFFFF);
 
 		int labelX = this.x + this.redField.getWidth() + 6;
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.color_picker.red"), labelX, this.redField.getY() + 6, labelColor);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.color_picker.green"), labelX, this.greenField.getY() + 6, labelColor);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.color_picker.blue"), labelX, this.blueField.getY() + 6, labelColor);
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.color_picker.red"), labelX, this.redField.getY() + 6, labelColor);
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.color_picker.green"), labelX, this.greenField.getY() + 6, labelColor);
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.color_picker.blue"), labelX, this.blueField.getY() + 6, labelColor);
 
 		int swatchX = this.hexField.getX() + this.hexField.getWidth() + SWATCH_GAP;
 		ColorPickerHelper.drawSwatch(guiGraphics, swatchX, this.hexField.getY(), SWATCH_SIZE, Mth.hsvToArgb(this.hue, this.saturation, this.value, 255));
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.color_picker.hex"), labelX, this.hexField.getY() + 6, labelColor);
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.color_picker.hex"), labelX, this.hexField.getY() + 6, labelColor);
 	}
 
 	public boolean mouseClicked(MouseButtonEvent event) {

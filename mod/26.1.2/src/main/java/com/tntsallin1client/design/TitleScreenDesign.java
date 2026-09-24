@@ -28,7 +28,8 @@ import java.util.function.Consumer;
  *
  * <p>The switch animation: the theme background fades over (or away from) the vanilla title screen
  * while the logo grows out of the vanilla layout's Client Design button into its big spot in the
- * client layout (or shrinks back into it). Only one title screen exists at a time, so the transition state is static.
+ * client layout (or shrinks back into it). The pause menu ({@link PauseScreenDesign}) runs the very
+ * same animation - only one of the two screens is ever open, so the transition state is static.
  */
 public final class TitleScreenDesign {
 	private static final long TRANSITION_MS = 800;
@@ -76,7 +77,7 @@ public final class TitleScreenDesign {
 
 	// --- Layout -------------------------------------------------------------------------------
 
-	/** Called by {@code TitleScreenIntegration} whenever it places the vanilla layout's Client Design button. */
+	/** Called by {@code TitleScreenIntegration}/{@code PauseMenuIntegration} whenever they place the vanilla layout's Client Design button. */
 	public static void setMinecraftAnchor(int x, int y, int width, int height) {
 		minecraftAnchor = Rect.centered(x + width / 2.0f, y + (height - ANCHOR_LOGO_HEIGHT) / 2, ANCHOR_LOGO_HEIGHT);
 	}
@@ -168,7 +169,7 @@ public final class TitleScreenDesign {
 
 	/** Logo button in the client layout: back to vanilla - the vanilla widgets are built right away and fade in under the animation.
 	 * {@code rebuild} must go through Fabric's init events (see {@code TitleScreenMixin}), or our own vanilla-layout buttons go missing. */
-	private static void switchToMinecraft(Rect from, Runnable rebuild) {
+	public static void switchToMinecraft(Rect from, Runnable rebuild) {
 		ClientDesign.setClient(false);
 		transitionFrom = from;
 		transitionToClient = false;
@@ -194,17 +195,18 @@ public final class TitleScreenDesign {
 	}
 
 	/**
-	 * Draws the animation on top of the vanilla title screen and reports whether it just finished -
-	 * the caller then rebuilds the widgets (towards the client design) or simply stops.
+	 * Draws the animation on top of the vanilla screen and reports whether it just finished - the
+	 * caller then rebuilds the widgets (towards the client design) or simply stops. {@code clientLogo}
+	 * is where the logo sits in that screen's client layout.
 	 */
-	public static boolean renderTransition(GuiGraphicsExtractor graphics, int width, int height) {
+	public static boolean renderTransition(GuiGraphicsExtractor graphics, int width, int height, Rect clientLogo) {
 		if (!isRunning()) {
 			return false;
 		}
 		float t = progress();
 		float backgroundAlpha = transitionToClient ? t : 1.0f - t;
 		graphics.fill(0, 0, width, height, ClientTheme.withAlpha(ClientTheme.get().background1, backgroundAlpha));
-		Rect to = transitionToClient ? clientLogoRect(width, height) : minecraftAnchor(width, height);
+		Rect to = transitionToClient ? clientLogo : minecraftAnchor(width, height);
 		Rect logo = transitionFrom.lerp(to, t);
 		ClientLogo.draw(graphics, logo.x, logo.y, logo.height, 1.0f);
 

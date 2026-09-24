@@ -134,16 +134,16 @@ public class KeystrokesOptionsScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.active_color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.active_color_label"),
 				this.labelX, this.activeLabelY, 0xFFFFFFFF);
 		this.activeColorPicker.render(guiGraphics, 0xFFFFFFFF);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.text_color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.keystrokes_options.text_color_label"),
 				this.labelX, this.textLabelY, 0xFFFFFFFF);
 		this.textColorPicker.render(guiGraphics, 0xFFFFFFFF);
 		guiGraphics.disableScissor();
 
 		this.scrollBar.render(guiGraphics);
-		guiGraphics.centeredText(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override

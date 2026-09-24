@@ -55,6 +55,7 @@ public final class SpawnOverlayRenderer {
 	private static final int NIGHT_ONLY_COLOR = 0xFFFFAA00;
 
 	private static boolean visible = false;
+	private static boolean keyWasDown = false;
 	private static int ticksUntilRescan = 0;
 	private static List<BlockPos> alwaysPositions = List.of();
 	private static List<BlockPos> nightOnlyPositions = List.of();
@@ -74,11 +75,17 @@ public final class SpawnOverlayRenderer {
 			return;
 		}
 
+		// Toggle reacts to the key's press edge, not consumeClick(): vanilla's
+		// KeyboardHandler#keyPress calls KeyMapping.click for GLFW_REPEAT events
+		// too, so holding the key a bit too long queued several clicks and
+		// flipped the overlay on/off repeatedly - often ending up off.
+		boolean keyDown = ModKeyBindings.SPAWN_OVERLAY.isDown();
 		if (config.spawnOverlayHoldMode) {
-			setVisible(ModKeyBindings.SPAWN_OVERLAY.isDown());
-		} else if (ModKeyBindings.SPAWN_OVERLAY.consumeClick()) {
+			setVisible(keyDown);
+		} else if (keyDown && !keyWasDown) {
 			setVisible(!visible);
 		}
+		keyWasDown = keyDown;
 
 		if (!visible) {
 			return;

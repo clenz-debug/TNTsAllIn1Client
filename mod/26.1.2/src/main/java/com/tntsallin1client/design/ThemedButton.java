@@ -27,15 +27,27 @@ public class ThemedButton extends AbstractButton {
 
 	@Override
 	protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-		ClientTheme theme = ClientTheme.get();
 		boolean highlighted = this.active && this.isHoveredOrFocused();
-		int fill = ClientTheme.withAlpha(highlighted ? theme.accent1 : theme.background2, this.alpha);
-		int border = ClientTheme.withAlpha(highlighted ? theme.accent4 : theme.accent2, this.alpha);
-		int text = ClientTheme.withAlpha(theme.text, this.active ? this.alpha : this.alpha * 0.5f);
+		drawFrame(graphics, this.getX(), this.getY(), this.getWidth(), this.getHeight(), highlighted, this.alpha);
+		renderLabel(graphics, textColor(this.active, this.alpha));
+	}
 
-		graphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), fill);
-		graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), border);
-		renderLabel(graphics, text);
+	/** The button box - also used for vanilla buttons on themed screens ({@code AbstractButtonThemeMixin}). */
+	public static void drawFrame(GuiGraphicsExtractor graphics, int x, int y, int width, int height, boolean highlighted, float alpha) {
+		ClientTheme theme = ClientTheme.get();
+		graphics.fill(x, y, x + width, y + height, ClientTheme.withAlpha(highlighted ? theme.accent1 : theme.background2, alpha));
+		graphics.outline(x, y, width, height, ClientTheme.withAlpha(highlighted ? theme.accent4 : theme.accent2, alpha));
+	}
+
+	public static int textColor(boolean active, float alpha) {
+		return ClientTheme.withAlpha(ClientTheme.get().text, active ? alpha : alpha * 0.5f);
+	}
+
+	/** A caption centered in a box, cut to fit - vanilla buttons can carry longer labels than ours. */
+	public static void drawCenteredLabel(GuiGraphicsExtractor graphics, Component message, int x, int y, int width, int height, int color) {
+		var font = Minecraft.getInstance().font;
+		Component label = ClientFont.fit(font, message.getString(), width - 6);
+		graphics.text(font, label, x + (width - font.width(label)) / 2, y + (height - font.lineHeight) / 2, color, false);
 	}
 
 	/** The centered caption - overridden by icon-only buttons. */

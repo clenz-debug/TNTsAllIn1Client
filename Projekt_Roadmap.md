@@ -155,3 +155,7 @@ persöhnliche liste was fehlt:
 - ingame und launcher design anpassen
     - dazu gehört die auswahl mc standard design oder cleaneres design in den eingestellten farben (gilt für ingame, da launcher immer in unseren design sein sollte)
     - Logo anpassen auch an die farben
+
+- Schriftart ändern (sollte glatter sein)
+- Logo noch nicht perfekt stellen kacke die an den balken nich nicht gut
+- dieagonale balken beim n sind graphisch auch nicht so schön siht noch nicht so aus wie ich will

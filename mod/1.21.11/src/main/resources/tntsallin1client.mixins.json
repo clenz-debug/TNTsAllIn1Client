@@ -4,11 +4,16 @@
 	"package": "com.tntsallin1client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"AbstractButtonThemeMixin",
 		"AbstractContainerScreenAccessor",
 		"AbstractContainerScreenMixin",
 		"AbstractRecipeBookScreenAccessor",
+		"AbstractScrollAreaThemeMixin",
+		"AbstractSelectionListThemeMixin",
+		"AbstractSliderButtonThemeMixin",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
+		"EditBoxThemeMixin",
 		"EntityHitboxDebugRendererMixin",
 		"EntityTurnMixin",
 		"GuiMixin",
@@ -25,9 +30,11 @@
 		"PackRepositoryMixin",
 		"PackSelectionEntryMixin",
 		"PackSelectionModelMixin",
+		"PauseScreenMixin",
 		"RecipeBookComponentAccessor",
 		"RecipeBookPageAccessor",
 		"ScreenMixin",
+		"ScreenThemeMixin",
 		"TitleScreenMixin"
 	],
 	"injectors": {

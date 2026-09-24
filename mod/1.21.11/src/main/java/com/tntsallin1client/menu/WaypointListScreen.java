@@ -122,12 +122,12 @@ public class WaypointListScreen extends Screen {
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		if (this.worldKey == null) {
-			guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_list.no_world"),
+			MenuText.centered(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.waypoint_list.no_world"),
 					this.width / 2, LIST_TOP + 10, 0xFFAAAAAA);
 		} else if (ClientConfig.get().waypointsFor(this.worldKey).isEmpty()) {
-			guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_list.empty"),
+			MenuText.centered(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.waypoint_list.empty"),
 					this.width / 2, LIST_TOP + 10, 0xFFAAAAAA);
 		}
 	}

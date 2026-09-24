@@ -170,9 +170,9 @@ public class PinnedRecipeListScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.centeredText(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		if (ClientConfig.get().pinnedRecipes.isEmpty()) {
-			guiGraphics.centeredText(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_list.empty"),
+			MenuText.centered(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_list.empty"),
 					this.width / 2, LIST_TOP + 10, 0xFFAAAAAA);
 		}
 	}
@@ -268,7 +268,7 @@ public class PinnedRecipeListScreen extends Screen {
 				int qtyGroupWidth = QTY_BUTTON_WIDTH * 2 + QTY_EDIT_BOX_WIDTH;
 				int labelWidth = ROW_WIDTH - qtyGroupWidth - WIDGET_GAP - VISIBLE_TOGGLE_WIDTH - WIDGET_GAP - REMOVE_BUTTON_WIDTH - WIDGET_GAP;
 				int labelY = this.getContentY() + (ROW_HEIGHT - this.font.lineHeight) / 2;
-				guiGraphics.text(this.font, rowLabel(this.recipe), this.getContentX(), labelY, 0xFFFFFFFF);
+				MenuText.text(guiGraphics, this.font, rowLabel(this.recipe), this.getContentX(), labelY, 0xFFFFFFFF);
 
 				int minusX = this.getContentX() + labelWidth + WIDGET_GAP;
 				this.minusButton.setPosition(minusX, this.getContentY());

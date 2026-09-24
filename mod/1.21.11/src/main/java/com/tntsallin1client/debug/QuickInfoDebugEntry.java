@@ -2,6 +2,7 @@ package com.tntsallin1client.debug;
 
 import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.spawnoverlay.SpawnRiskCalculator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntry;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +50,14 @@ public class QuickInfoDebugEntry implements DebugScreenEntry {
 
 		BlockPos pos = camera.blockPosition();
 		int blockLight = client.level.getBrightness(LightLayer.BLOCK, pos);
-		String spawnHint = blockLight < 8 ? " (mobs can spawn here)" : "";
+		// Same classification as the spawn overlay: the old "block light < 8" rule is
+		// pre-1.18 - since then any block light above the dimension's limit (0 in the
+		// overworld) blocks hostile spawns, so light 7 claimed "can spawn" wrongly.
+		String spawnHint = switch (SpawnRiskCalculator.classify(client.level, pos)) {
+			case ALWAYS -> " " + Component.translatable("gui.tntsallin1client.f3_quick_info.spawn_always").getString();
+			case NIGHT_ONLY -> " " + Component.translatable("gui.tntsallin1client.f3_quick_info.spawn_night").getString();
+			case NEVER -> "";
+		};
 
 		debugScreenDisplayer.addToGroup(GROUP, List.of(
 				HEADER + "-- Quick Info --" + RESET,

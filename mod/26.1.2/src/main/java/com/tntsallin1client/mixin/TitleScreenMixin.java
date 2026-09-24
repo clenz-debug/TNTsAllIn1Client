@@ -60,7 +60,7 @@ public abstract class TitleScreenMixin extends Screen implements TitleScreenLayo
 
 	@Inject(method = "extractRenderState", at = @At("TAIL"))
 	private void tntsallin1client$renderTransition(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
-		if (TitleScreenDesign.renderTransition(graphics, this.width, this.height)) {
+		if (TitleScreenDesign.renderTransition(graphics, this.width, this.height, TitleScreenDesign.clientLogoRect(this.width, this.height))) {
 			if (TitleScreenDesign.useClientLayout()) {
 				tntsallin1client$rebuild();
 			} else {

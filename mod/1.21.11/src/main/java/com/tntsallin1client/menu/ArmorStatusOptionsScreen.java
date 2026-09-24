@@ -235,13 +235,13 @@ public class ArmorStatusOptionsScreen extends Screen {
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.drawString(this.font, Component.translatable("gui.tntsallin1client.armor_status_options.color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.armor_status_options.color_label"),
 				this.labelX, this.colorLabelY, 0xFFFFFFFF);
 		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 		guiGraphics.disableScissor();
 
 		this.scrollBar.render(guiGraphics);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override

@@ -203,21 +203,21 @@ public class PinnedRecipeOptionsScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.count_color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.count_color_label"),
 				this.labelX, this.countColorLabelY, 0xFFFFFFFF);
 		this.countColorPicker.render(guiGraphics, 0xFFFFFFFF);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.arrow_color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.arrow_color_label"),
 				this.labelX, this.arrowColorLabelY, 0xFFFFFFFF);
 		this.arrowColorPicker.render(guiGraphics, 0xFFFFFFFF);
-		guiGraphics.text(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.sub_count_color_label"),
+		MenuText.text(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.sub_count_color_label"),
 				this.labelX, this.subCountColorLabelY, 0xFFFFFFFF);
 		this.subCountColorPicker.render(guiGraphics, 0xFFFFFFFF);
-		guiGraphics.centeredText(this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.hint"),
+		MenuText.centered(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.pinned_recipe_options.hint"),
 				this.width / 2, this.hintY, 0xFFAAAAAA);
 		guiGraphics.disableScissor();
 
 		this.scrollBar.render(guiGraphics);
-		guiGraphics.centeredText(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	private void updateRebindButtonLabels() {

@@ -255,7 +255,7 @@ public class CrosshairOptionsScreen extends Screen {
 		guiGraphics.disableScissor();
 
 		this.scrollBar.render(guiGraphics);
-		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override

@@ -58,7 +58,7 @@ public class ClientNameLabelOptionsScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-		guiGraphics.centeredText(this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		this.colorPicker.render(guiGraphics, 0xFFFFFFFF);
 	}
 
