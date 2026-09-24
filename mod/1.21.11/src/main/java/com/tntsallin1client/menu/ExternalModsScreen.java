@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * mixed into {@link ClientMenuScreen}'s own feature list) - Dawn Client's version instead
  * shows one picture per external mod, the same way vanilla's resourcepack screen shows a
  * pack's icon, except nothing here can be activated/deactivated. The mods that actually
- * have a togglable feature (Continuity's connected/emissive textures, 3D Skin Layers) keep
+ * have a togglable feature (Continuity's connected textures, 3D Skin Layers) keep
  * their toggle rows in {@link ClientMenuScreen} itself - this screen exists purely so a
  * mod's own settings screen, where one exists, has one obvious, uncluttered place to reach
  * instead of an "Options" button sitting next to its toggle in the main feature list.

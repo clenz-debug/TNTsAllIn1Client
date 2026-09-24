@@ -4,7 +4,7 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import dev.tr7zw.skinlayers.SkinLayersModBase;
 import dev.tr7zw.skinlayers.versionless.ModBase;
-import me.pepperbell.continuity.api.client.ContinuityFeatureStates;
+import me.pepperbell.continuity.client.config.ContinuityConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -179,24 +179,15 @@ public final class ClientMenuFeatures {
 				},
 				() -> new WaypointOptionsScreen(parent));
 
-		ContinuityFeatureStates.FeatureState connectedTextures = ContinuityFeatureStates.get().getConnectedTexturesState();
-		sink.addToggleRow(connectedTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
+		// Continuity's own config option, not its ContinuityFeatureStates API: those states are
+		// thread-local and never saved, so toggling them here only reached the client thread (not
+		// Sodium's chunk-building threads) and was back on after every restart. Same three steps as
+		// Continuity's own config screen: set, save continuity.json, rebuild the chunk meshes.
+		sink.addToggleRow(ContinuityConfig.INSTANCE.connectedTextures.get(), Component.translatable("gui.tntsallin1client.menu.connected_textures"),
 				value -> {
-					if (value) {
-						connectedTextures.enable();
-					} else {
-						connectedTextures.disable();
-					}
-				});
-
-		ContinuityFeatureStates.FeatureState emissiveTextures = ContinuityFeatureStates.get().getEmissiveTexturesState();
-		sink.addToggleRow(emissiveTextures.isEnabled(), Component.translatable("gui.tntsallin1client.menu.emissive_textures"),
-				value -> {
-					if (value) {
-						emissiveTextures.enable();
-					} else {
-						emissiveTextures.disable();
-					}
+					ContinuityConfig.INSTANCE.connectedTextures.set(value);
+					ContinuityConfig.INSTANCE.save();
+					minecraft.levelRenderer.allChanged();
 				});
 
 		PackRepository packRepository = minecraft.getResourcePackRepository();
@@ -244,12 +235,6 @@ public final class ClientMenuFeatures {
 					config.save();
 				},
 				() -> new QuickSortOptionsScreen(parent));
-
-		sink.addToggleRow(config.containerClickPacingEnabled, Component.translatable("gui.tntsallin1client.menu.container_click_pacing"),
-				value -> {
-					config.containerClickPacingEnabled = value;
-					config.save();
-				});
 
 		sink.addToggleRow(config.shulkerPreviewEnabled, Component.translatable("gui.tntsallin1client.menu.shulker_preview"),
 				value -> {

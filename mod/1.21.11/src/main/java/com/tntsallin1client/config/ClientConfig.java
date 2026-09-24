@@ -61,10 +61,8 @@ public class ClientConfig {
 	// Defensive: paces outgoing container-click packets (see ContainerClickPacingHandler) so a
 	// burst - fast manual clicking, drag-across-slots, this mod's own InventorySorter - can't
 	// trip a server's packet-rate/anti-dupe limiter ("Too many suspicious packets" kicks).
-	// Defaults to enabled, unlike this file's other feature flags - it's a pure safety net with
-	// no noticeable downside, meant to protect the player automatically on any server without
-	// them needing to know to turn it on.
-	public boolean containerClickPacingEnabled = true;
+	// Always on, no toggle and no Client Mods menu entry (own user decision) - it's a pure safety
+	// net with no noticeable downside, meant to protect the player on any server automatically.
 	// Packets allowed to leave per client tick before extras start queuing. Not exposed as a UI
 	// control in v1 - hand-edit this file if a lower/higher pace is ever needed. Valid range
 	// 1-20 (clamped defensively at the point of use, see ContainerClickPacingHandler#tick).

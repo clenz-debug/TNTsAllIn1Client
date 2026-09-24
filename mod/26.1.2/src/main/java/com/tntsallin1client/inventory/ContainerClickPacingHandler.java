@@ -41,10 +41,6 @@ public final class ContainerClickPacingHandler {
 
 	/** Called from the mixin instead of the original {@code connection.send(packet)} call. */
 	public static void enqueue(ClientPacketListener connection, Packet<?> packet) {
-		if (!ClientConfig.get().containerClickPacingEnabled) {
-			connection.send(packet);
-			return;
-		}
 		queue.addLast(packet);
 	}
 
@@ -58,13 +54,6 @@ public final class ContainerClickPacingHandler {
 			// Defensive fallback - dropAll() via the disconnect hook should already have
 			// cleared the queue before this could ever be reached.
 			queue.clear();
-			return;
-		}
-
-		if (!ClientConfig.get().containerClickPacingEnabled) {
-			// Toggled off mid-session with packets still queued - flush immediately rather
-			// than keep pacing them out under a feature the player just turned off.
-			sendAll(connection);
 			return;
 		}
 
