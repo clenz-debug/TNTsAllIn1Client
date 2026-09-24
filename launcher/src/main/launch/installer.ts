@@ -2,8 +2,9 @@ import { join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
 import type { LaunchStage } from '../../shared/types'
 import { dataRoot } from '../dataRoot'
-import { librariesForCurrentOs, libraryDestinationPath } from './classpath'
+import { librariesForCurrentOs, libraryDestinationPath, nativesArtifactForCurrentOs } from './classpath'
 import { downloadAll, type DownloadTask } from './downloader'
+import { extractNatives, type NativesJar } from './nativesExtractor'
 import { fetchVersionDetail, type VersionDetail } from './versionManifest'
 
 export interface InstalledVersion {
@@ -93,7 +94,14 @@ export async function installVersion(
   const libraries = librariesForCurrentOs(detail.libraries)
   const libraryTasks: DownloadTask[] = []
   const libraryPaths: string[] = []
+  const nativesJars: NativesJar[] = []
   for (const lib of libraries) {
+    const nativesArtifact = nativesArtifactForCurrentOs(lib)
+    if (nativesArtifact) {
+      const destination = libraryDestinationPath(nativesArtifact.path)
+      libraryTasks.push({ url: nativesArtifact.url, destination, sha1: nativesArtifact.sha1 })
+      nativesJars.push({ path: destination, exclude: lib.extract?.exclude ?? [] })
+    }
     const artifact = lib.downloads?.artifact
     if (!artifact) continue
     const destination = libraryDestinationPath(artifact.path)
@@ -101,6 +109,10 @@ export async function installVersion(
     libraryPaths.push(destination)
   }
   await downloadAll(libraryTasks, 8, (completed, total, label) => onProgress('libraries', completed, total, label), signal)
+  // Only pre-1.19 versions have any - `-Djava.library.path=${natives_directory}` points LWJGL here.
+  if (nativesJars.length > 0) {
+    await extractNatives(nativesJars, join(dir, 'natives'))
+  }
 
   const assetsDir = sharedAssetsDir()
   const assetIndex = await fetchAssetIndex(detail.assetIndex.url, signal)

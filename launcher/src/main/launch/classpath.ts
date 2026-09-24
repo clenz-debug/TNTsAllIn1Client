@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { dataRoot } from '../dataRoot'
-import type { LibraryEntry, Rule } from './versionManifest'
+import type { LibraryArtifact, LibraryEntry, Rule } from './versionManifest'
 
 const OS_NAME = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'osx' : 'linux'
 
@@ -21,11 +21,20 @@ export function matchesRules(rules: Rule[] | undefined, features: Record<string,
   return allowed
 }
 
-/** Modern (LWJGL3-based) version manifests list platform-specific natives as regular library
- * entries filtered by `rules` — LWJGL extracts its own natives from whatever's on the classpath
- * at runtime, so no separate "natives" extraction step is needed for 1.21.11. */
+/** Modern (1.19+) version manifests list platform-specific natives as regular library entries
+ * filtered by `rules` — LWJGL extracts its own natives from whatever's on the classpath at
+ * runtime. Older versions ship them as classifier jars instead, see
+ * {@link nativesArtifactForCurrentOs}. */
 export function librariesForCurrentOs(libraries: LibraryEntry[]): LibraryEntry[] {
   return libraries.filter((lib) => matchesRules(lib.rules))
+}
+
+/** The native-libraries jar a pre-1.19 library entry ships for the current OS (see
+ * `LibraryEntry.natives`), or null for libraries without one - every modern entry. */
+export function nativesArtifactForCurrentOs(lib: LibraryEntry): LibraryArtifact | null {
+  const classifier = lib.natives?.[OS_NAME]?.replace('${arch}', process.arch === 'ia32' ? '32' : '64')
+  if (!classifier) return null
+  return lib.downloads?.classifiers?.[classifier] ?? null
 }
 
 /** Shared across every instance and every version (own user request: instances of the same version

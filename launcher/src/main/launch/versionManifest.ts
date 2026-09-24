@@ -48,8 +48,13 @@ export interface LibraryArtifact {
 
 export interface LibraryEntry {
   name: string
-  downloads?: { artifact?: LibraryArtifact }
+  downloads?: { artifact?: LibraryArtifact; classifiers?: Record<string, LibraryArtifact> }
   rules?: Rule[]
+  /** Only in versions up to 1.18.2 (LWJGL 3.2 and older): OS name -> key into
+   * `downloads.classifiers` for the jar holding that OS's native libraries (DLLs), which the
+   * launcher itself has to extract - see `nativesExtractor.ts`. May contain `${arch}`. */
+  natives?: Record<string, string>
+  extract?: { exclude?: string[] }
 }
 
 export interface VersionDetail {

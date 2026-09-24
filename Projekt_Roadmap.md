@@ -152,10 +152,6 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` gegen z.B.
 
 persöhnliche liste was fehlt:
 - ingame mods auf andere versionen porten (wichtig sind vor allem die vollversionen)
-- ingame und launcher design anpassen
-    - dazu gehört die auswahl mc standard design oder cleaneres design in den eingestellten farben (gilt für ingame, da launcher immer in unseren design sein sollte)
-    - Logo anpassen auch an die farben
-
-- Schriftart ändern (sollte glatter sein)
-- Logo noch nicht perfekt stellen kacke die an den balken nich nicht gut
-- dieagonale balken beim n sind graphisch auch nicht so schön siht noch nicht so aus wie ich will
+- kann man offline verwenden? → aktuell nein; als Plan aufgenommen, Umsetzung später (2026-09-24). Idee: ohne Internet mit dem zuletzt gespeicherten Profil (Name/UUID/Skin) starten statt Login-Screen, Online-Abfragen beim Start (Mojang-Versionsliste, Fabric-Meta, Java-Runtime, Modrinth) überspringen wenn schon alles installiert ist. Geht dann nur Einzelspieler/LAN, keine Online-Mode-Server; einmal online eingeloggt muss man gewesen sein (kein Offline-Modus ohne gekauften Account)
+- start der 1.16.5 klappt nicht → Fix gebaut (2026-09-24), noch nicht live getestet: Versionen 1.14–1.18.2 liefern ihre LWJGL-DLLs als natives-Pakete, die der Launcher jetzt herunterlädt und vor jedem Start in `natives/` der Instanz entpackt (`nativesExtractor.ts`)
+- Idee für später: Versionen vor 1.14 (z.B. 1.8.9 für PvP) unterstützen. Aktuell nicht auswählbar, weil der Launcher alles über Fabric startet und Fabric erst ab 1.14 geht. Nötig wäre: Start ohne Mod-Loader oder über Legacy Fabric (1.8.9–1.13.2), Unterstützung für das alte Startformat `minecraftArguments` (vor 1.13); LWJGL-2-DLLs entpackt der natives-Fix oben schon mit. Unsere Mod-Features gäbe es dort erst nach einer Portierung

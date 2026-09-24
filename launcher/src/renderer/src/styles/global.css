@@ -270,7 +270,8 @@ select option {
   height: 1.3rem;
   margin: 0;
   border-radius: 999px;
-  background: var(--green-1);
+  /* Off state in background color 2 (own user request), on state in main color 4 below. */
+  background: var(--bg-panel);
   border: 1px solid var(--green-2);
   cursor: pointer;
   transition: background-color 0.15s ease;

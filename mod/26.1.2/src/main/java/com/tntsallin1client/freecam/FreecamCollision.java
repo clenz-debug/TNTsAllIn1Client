@@ -2,6 +2,7 @@ package com.tntsallin1client.freecam;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +28,9 @@ import java.util.List;
  * are themselves built on - is the only way to actually skip specific blocks. Entity-entity
  * collision (other players/mobs) is intentionally not checked - passing through them isn't a
  * wall-hack concern.
+ *
+ * <p>Unloaded chunks and everything below the world's minimum Y count as solid blocks - an
+ * invisible border keeping the camera inside the terrain the client actually has.
  */
 public final class FreecamCollision {
 	private FreecamCollision() {
@@ -36,6 +40,14 @@ public final class FreecamCollision {
 		AABB swept = box.expandTowards(desired);
 		List<VoxelShape> colliders = new ArrayList<>();
 		for (BlockPos pos : BlockPos.betweenClosed(swept)) {
+			// Invisible border: the client reads unloaded chunks and everything below the world as
+			// air, so without this the camera could leave the loaded area (or dive under the world)
+			// and look at the loaded terrain's cut edge - caves and all - from outside.
+			if (pos.getY() < level.getMinY()
+					|| !level.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()))) {
+				colliders.add(Shapes.block().move(pos.getX(), pos.getY(), pos.getZ()));
+				continue;
+			}
 			BlockState state = level.getBlockState(pos);
 			if (state.is(BlockTags.DOORS, s -> true)
 					|| state.is(BlockTags.FENCE_GATES, s -> true)

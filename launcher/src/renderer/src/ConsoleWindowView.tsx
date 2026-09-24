@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LanguageProvider, useTranslations } from './i18n/LanguageContext'
+import { applyThemeColors } from './theme'
 import type { GameLogEvent, LaunchProgressEvent, Language } from '../../shared/types'
 
 /**
@@ -10,7 +11,7 @@ import type { GameLogEvent, LaunchProgressEvent, Language } from '../../shared/t
  * log panel does; `ipc/handlers.ts#LaunchPlay` sends both windows the same events.
  *
  * This is its own separate renderer entry point, never a descendant of `App` - so it needs its
- * own `LanguageProvider`, loading the current language itself rather than receiving it as a prop.
+ * own `LanguageProvider`, loading the current language (and theme colors) itself rather than receiving them as props.
  */
 export function ConsoleWindowView() {
   const [logs, setLogs] = useState<GameLogEvent[]>([])
@@ -43,10 +44,15 @@ export function ConsoleWindowView() {
     }
   }, [])
 
+  // Same startup read as `App`'s: this window has its own document, so the user's theme colors
+  // have to be applied here too - otherwise it stays on the default CSS colors.
   useEffect(() => {
     window.api
       .loadSettings()
-      .then((settings) => setLanguage(settings.language))
+      .then((settings) => {
+        applyThemeColors(settings.themeColors)
+        setLanguage(settings.language)
+      })
       .catch(() => undefined)
   }, [])
 
