@@ -195,6 +195,8 @@
   "gui.tntsallin1client.menu.connected_textures": "Connected Textures",
   "gui.tntsallin1client.menu.block_models_3d": "3D Block Models",
   "gui.tntsallin1client.menu.skin_layers_3d": "3D Skin Layers",
+  "gui.tntsallin1client.block_models_3d_options.title": "3D Block Models Options",
+  "gui.tntsallin1client.menu.items_3d_inventory": "3D Items in Inventory",
   "gui.tntsallin1client.menu.dark_mode": "Dark Mode",
   "gui.tntsallin1client.menu.hud_editor_button": "Move / Resize HUD",
   "gui.tntsallin1client.menu.external_mods_button": "External Mods",

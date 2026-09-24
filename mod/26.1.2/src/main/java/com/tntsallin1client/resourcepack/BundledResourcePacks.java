@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
 import org.slf4j.Logger;
 
@@ -36,6 +37,9 @@ public final class BundledResourcePacks {
 	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("tntsallin1client-bundled-resourcepacks.json");
 	/** Same as vanilla's "Default" pack minus {@code required} - the user can still turn ours off. */
 	private static final PackSelectionConfig PINNED_ABOVE_DEFAULT = new PackSelectionConfig(false, Pack.Position.BOTTOM, true);
+
+	/** "file/" + the generated pack's file name, which ends in the Minecraft version. */
+	private static final String FLAT_ICONS_PACK_PREFIX = "file/TNT-Flat-Inventory-Icons-";
 
 	private static Set<String> bundledFileNames;
 
@@ -70,6 +74,7 @@ public final class BundledResourcePacks {
 		List<Pack> foundation = new ArrayList<>();
 		List<Pack> continuity = new ArrayList<>();
 		List<Pack> ours = new ArrayList<>();
+		List<Pack> flatIcons = new ArrayList<>();
 		List<Pack> darkMode = new ArrayList<>();
 		List<Pack> user = new ArrayList<>();
 		List<Pack> top = new ArrayList<>();
@@ -79,6 +84,8 @@ public final class BundledResourcePacks {
 					continuity.add(pack);
 				} else if (isDarkModePack(pack)) {
 					darkMode.add(pack);
+				} else if (pack.getId().startsWith(FLAT_ICONS_PACK_PREFIX)) {
+					flatIcons.add(pack);
 				} else {
 					ours.add(pack);
 				}
@@ -95,6 +102,9 @@ public final class BundledResourcePacks {
 		}
 		foundation.addAll(continuity);
 		foundation.addAll(ours);
+		// Directly above the other bundled packs (Vanilla Tweaks), so its GUI-only overrides win
+		// over Vanilla Tweaks' item models - but still below the user's own packs.
+		foundation.addAll(flatIcons);
 		foundation.addAll(darkMode);
 		foundation.addAll(user);
 		foundation.addAll(top);
@@ -102,6 +112,11 @@ public final class BundledResourcePacks {
 	}
 
 	/** Whether this is one of our pinned packs (fixed like "Default", but optional). */
+	/** The generated "flat inventory icons" add-on pack for this version, if the launcher bundled it. */
+	public static String flatInventoryIconsPackId(PackRepository repository) {
+		return repository.getAvailableIds().stream().filter(id -> id.startsWith(FLAT_ICONS_PACK_PREFIX)).findFirst().orElse(null);
+	}
+
 	public static boolean isPinned(Pack pack) {
 		return pack.selectionConfig().equals(PINNED_ABOVE_DEFAULT);
 	}

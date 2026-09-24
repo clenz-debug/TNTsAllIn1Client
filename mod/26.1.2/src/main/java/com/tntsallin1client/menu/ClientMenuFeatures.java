@@ -189,7 +189,8 @@ public final class ClientMenuFeatures {
 						packRepository.removePack(BLOCK_MODELS_3D_PACK_ID);
 					}
 					minecraft.options.updateResourcePacks(packRepository);
-				});
+				},
+				() -> new BlockModels3dOptionsScreen(parent));
 
 		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
 		sink.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
