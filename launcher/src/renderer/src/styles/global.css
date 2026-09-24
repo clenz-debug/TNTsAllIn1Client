@@ -881,6 +881,232 @@ select option {
   gap: 0.3rem;
 }
 
+/* Cape collection (own user decision: stays on this PC, only the active cape is uploaded) - reuses
+   the skin library's cards, but a flat image of the whole cape texture instead of a 3D model; the
+   big preview above shows whichever card was clicked on the player's own skin. */
+.cape-library-entry--selected {
+  border-color: var(--green-4);
+}
+
+.cape-thumbnail-button {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.cape-thumbnail {
+  display: block;
+  width: 110px;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: var(--bg);
+  border-radius: 4px;
+}
+
+.cape-library-size {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.cape-active-badge {
+  color: var(--green-4);
+}
+
+.cape-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cape-pending {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.cape-converter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid var(--green-1);
+  border-radius: 6px;
+}
+
+.cape-converter h3 {
+  margin: 0;
+}
+
+.cape-converter-file {
+  margin-left: 0.6rem;
+  color: var(--text-dim);
+}
+
+.cape-converter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cape-converter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cape-converter-row > span {
+  min-width: 7rem;
+}
+
+/* Section picker: the picture with a face-shaped frame; the frame's huge shadow dims everything
+   outside it, clipped to the picture by the stage's overflow. */
+.cape-crop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cape-crop-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.cape-crop-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Square symbol-only button (e.g. the cape converter's eyedropper in the color picker's hex row). */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--green-2);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  border-color: var(--green-4);
+}
+
+.icon-button--active {
+  background: var(--green-4);
+  border-color: var(--green-4);
+  color: var(--bg);
+}
+
+/* Cape editor: the texture canvas stays pixel-sharp at any zoom; the 3D preview sits below it. */
+.cape-editor-canvas-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 660px;
+}
+
+.cape-editor-canvas {
+  image-rendering: pixelated;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.cape-panels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+/* The outside face with its four edges around it, like an unfolded cape. */
+.cape-net {
+  display: grid;
+  grid-template-areas:
+    '. top .'
+    'left outside right'
+    '. bottom .';
+  gap: 0.35rem;
+  align-items: end;
+}
+
+.cape-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.cape-panel--edgeTop {
+  grid-area: top;
+}
+.cape-panel--edgeLeft {
+  grid-area: left;
+}
+.cape-panel--outside {
+  grid-area: outside;
+}
+.cape-panel--edgeRight {
+  grid-area: right;
+}
+.cape-panel--edgeBottom {
+  grid-area: bottom;
+  flex-direction: column-reverse;
+  align-self: start;
+}
+
+.cape-panel-title {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* The 1-texel side edges are too narrow for a horizontal title - it runs alongside instead. */
+.cape-panel--vertical {
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.cape-panel--vertical .cape-panel-title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.cape-panel--edgeRight {
+  flex-direction: row-reverse;
+}
+
+.cape-editor-tool-row {
+  flex-wrap: wrap;
+}
+
+.cape-crop-stage--picking {
+  cursor: crosshair;
+}
+
+.cape-crop-frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--green-4);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  cursor: move;
+  touch-action: none;
+}
+
 .skin-library-pagination {
   display: flex;
   align-items: center;

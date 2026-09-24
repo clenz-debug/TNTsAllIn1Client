@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SkinViewer } from 'skinview3d'
 import { CanvasTexture, NearestFilter, type Texture } from 'three'
 import { formatError } from '../formatError'
+import { useIsWrapped } from '../useIsWrapped'
 import { useLanguage, useTranslations } from '../i18n/LanguageContext'
 import type { SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { BODY_PART_TOGGLES } from '../skinEditor/bodyParts'
@@ -63,6 +64,8 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const layoutRef = useRef<HTMLDivElement>(null)
+  const layoutWrapped = useIsWrapped(layoutRef)
   const viewerRef = useRef<SkinViewer | null>(null)
   const toolRef = useRef(tool)
   const colorRef = useRef(color)
@@ -397,7 +400,9 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
 
       {error && <span className="error">{error}</span>}
 
-      <div className="skin-editor-layout">
+      {layoutWrapped && <p className="version-warning editor-width-hint">{t.skinEditor.widenWindowHint}</p>}
+
+      <div ref={layoutRef} className="skin-editor-layout">
         <canvas ref={canvasRef} className="skin-editor-canvas" width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
 
         <div className="skin-editor-tools">

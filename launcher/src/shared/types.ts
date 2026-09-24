@@ -134,20 +134,33 @@ export interface ModrinthSearchPage {
   totalHits: number
 }
 
-/** Result of a successful custom-cape upload (`main/cape/capeStorage.ts`) - `url` is the public
- * Backblaze B2 URL baked into the bundled "Cape Provider" mod's lookup template, `dataUri` is the
- * same PNG re-encoded for an immediate `SkinModelPreview` refresh without a second network round
- * trip. */
+/** Result of making a cape the active one (`main/cape/capeStorage.ts`) - `url` is the public URL
+ * on our cape server the bundled "Cape Provider" mod looks up, `dataUri`/`sha1` let the renderer
+ * refresh its preview and "active" marker without refetching. */
 export interface CapeUploadResult {
   url: string
   dataUri: string
+  sha1: string
 }
 
-/** Whether the current account has a custom cape stored in our B2 bucket - `dataUri` is set
- * whenever `exists` is true, so the renderer never needs a separate fetch just to preview it. */
+/** The account's active custom cape on our server - `dataUri`/`sha1` are set whenever `exists` is
+ * true; `sha1` is what marks the matching entry of the local collection as active. */
 export interface CustomCapeStatus {
   exists: boolean
   dataUri: string | null
+  sha1: string | null
+}
+
+/** One cape of the local collection (`main/cape/capeLibrary.ts`) - never uploaded until the user
+ * makes it the active one. */
+export interface CapeLibraryEntry {
+  id: string
+  name: string
+  createdAt: string
+  width: number
+  height: number
+  sha1: string
+  dataUri: string
 }
 
 /** One mod the user added themselves to an instance's `game/mods` (as opposed to a bundled one) -
@@ -191,6 +204,9 @@ export interface Instance {
    * this replaces. Opt-in per instance now instead of one shared global list, for the same reason
    * instances exist at all: two instances of the same version can have different mods enabled. */
   enabledBundledMods: string[]
+  /** Filename prefixes of default-on bundled mods (`shared/bundledMods.ts`) the user turned OFF
+   * for this instance - optional so instances saved before this existed load unchanged. */
+  disabledBundledMods?: string[]
 }
 
 /** Persisted across app restarts (Phase 6b) - see `main/launcherSettings.ts` for the on-disk

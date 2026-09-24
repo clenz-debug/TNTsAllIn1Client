@@ -39,6 +39,7 @@ export const de = {
   },
   play: {
     headerSkin: 'Skin',
+    headerCapes: 'Capes',
     headerCredits: 'Credits',
     headerSettings: 'Einstellungen',
     headerLogout: 'Abmelden',
@@ -157,7 +158,7 @@ export const de = {
   },
   skin: {
     renameTitle: 'Skin benennen',
-    title: 'Skin & Capes',
+    title: 'Skins',
     currentHeading: 'Aktueller Skin',
     noSkin: 'Kein Skin gesetzt.',
     showCape: 'Cape anzeigen (gilt für alle Skins hier)',
@@ -173,15 +174,81 @@ export const de = {
     variantSlim: 'Slim (Alex-Arme)',
     uploading: 'Lädt hoch…',
     selectAndUpload: 'PNG auswählen',
-    capeHeading: 'Eigenes Cape (Cape Provider)',
+    capeHeading: 'Capes',
     capeDescription:
-      'Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter "Gebündelte Mods" zuschaltbar. Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben.',
+      'Eigene, hochauflösende Capes, unabhängig von Mojangs Cape oben. Sichtbar für andere Spieler, die "Cape Provider" installiert haben - im Mods-Bildschirm dieser Instanz unter "Gebündelte Mods" zuschaltbar. Deine Sammlung bleibt auf diesem PC, nur das aktive Cape wird hochgeladen.',
+    capeRequirements: 'PNG im Format 2:1, von 64x32 bis 2048x1024, höchstens 5 MB.',
     upload: 'Hochladen',
-    selectCapePng: 'Cape-PNG auswählen',
+    selectCapePng: 'Cape-PNG hinzufügen',
+    converterOpen: 'Bild zu Cape umwandeln',
+    converterHeading: 'Bild zu Cape umwandeln',
+    converterDescription:
+      'Beliebiges Bild auswählen - es wird auf die Außenseite des Capes gesetzt, also die Seite, die andere von hinten sehen. Die Vorschau oben zeigt das Ergebnis sofort.',
+    converterSelectImage: 'Bild auswählen',
+    converterChangeImage: 'Anderes Bild',
+    converterResolution: 'Auflösung',
+    converterFit: 'Anpassung',
+    converterFitCover: 'Ausschnitt wählen',
+    converterFitContain: 'Ganzes Bild (mit Rand)',
+    converterZoom: 'Ausschnitt-Größe',
+    converterPipetteHint: 'Klick ins Bild übernimmt die Farbe als Randfarbe.',
+    converterCropHint: 'Rahmen mit der Maus verschieben, mit dem Regler oder dem Mausrad größer/kleiner machen.',
+    converterInside: 'Innenseite',
+    converterInsideMirror: 'Bild gespiegelt',
+    converterInsideColor: 'Randfarbe',
+    converterPixelated: 'Scharfe Pixel (für Pixel-Art)',
+    converterBackground: 'Randfarbe (Kanten, Rand, Elytra)',
+    converterApply: 'Übernehmen',
+    converterTooLarge: 'Das Ergebnis ist größer als 5 MB - bitte eine kleinere Auflösung wählen.',
+    converterLoadFailed: 'Das Bild konnte nicht geladen werden.',
+    converterDefaultName: (file: string) => `Cape aus ${file}`,
+    capeNamePlaceholder: 'Name des Capes',
+    capeDefaultName: (date: string) => `Cape vom ${date}`,
+    capeSaveToCollection: 'In Sammlung speichern',
+    capeCollectionHeading: 'Meine Capes',
+    capeCollectionEmpty: 'Noch keine Capes gespeichert.',
+    capeActivate: 'Aktivieren',
+    capeDeactivate: 'Deaktivieren',
+    capeDeactivating: 'Wird deaktiviert…',
+    capeActivating: 'Wird aktiviert…',
+    capeActive: 'Aktiv',
+    capeNoActive: 'Kein eigenes Cape aktiv.',
+    capeRemoveActive: 'Cape deaktivieren',
+    capePreviewHint: 'Klick auf ein Cape zeigt es in der Vorschau.',
+    deleteCapeConfirm: (name: string) => `"${name}" wirklich aus deiner Sammlung löschen?`,
     deleteLibraryConfirm: (name: string) => `"${name}" wirklich aus der Bibliothek löschen?`,
-    removeCapeConfirm: 'Eigenes Cape wirklich entfernen?',
+    removeCapeConfirm:
+      'Das aktive Cape ist nicht in deiner Sammlung auf diesem PC - nach dem Deaktivieren ist es weg. Trotzdem deaktivieren?',
     namePlaceholder: 'Name des Skins',
     saving: 'Speichert…'
+  },
+  capeEditor: {
+    title: 'Cape-Editor',
+    open: 'Cape zeichnen',
+    edit: 'Bearbeiten',
+    newHeading: 'Neues Cape',
+    loadHeading: 'Cape vom PC bearbeiten',
+    loadHint: 'Eine Cape-PNG von deinem PC öffnen und hier weiterbearbeiten - 2:1, von 64x32 bis 2048x1024. Gespeichert wird sie als neues Cape in deiner Sammlung.',
+    loadFromPc: 'Cape-PNG vom PC laden',
+    resolution: 'Auflösung',
+    baseColor: 'Grundfarbe',
+    start: 'Loslegen',
+    toolFill: 'Füllen',
+    brushSize: 'Stiftgröße',
+    panels: {
+      outside: 'Außen',
+      inside: 'Innen',
+      edgeTop: 'Rand oben',
+      edgeBottom: 'Rand unten',
+      edgeLeft: 'Rand links',
+      edgeRight: 'Rand rechts',
+      elytra: 'Elytra'
+    },
+    regionsHint:
+      'Außen = die Seite, die andere von hinten sehen, mit ihren vier Rändern drumherum. Innen liegt am Rücken, Elytra wird beim Tragen einer Elytra benutzt. Gemalt wird immer nur auf dem Raster, auf dem du anfängst.',
+    mirrorOutside: 'Außen → Innen spiegeln',
+    saveUpdate: 'Änderungen speichern',
+    reactivateHint: 'Ist dieses Cape gerade aktiv, danach erneut „Aktivieren“, damit andere die neue Version sehen.'
   },
   skinEditor: {
     defaultName: (date: string) => `Skin vom ${date}`,
@@ -199,6 +266,8 @@ export const de = {
     undo: 'Rückgängig',
     redo: 'Wiederholen',
     showGrid: 'Pixel-Raster anzeigen',
+    widenWindowHint:
+      'Tipp: Zieh das Launcher-Fenster breiter - dann stehen Werkzeuge und Farbpalette neben der Zeichenfläche und du musst zum Farbwechsel nicht hoch- und runterscrollen.',
     visibilityHeading: 'Sichtbarkeit',
     visibilityHint: 'Auf ein Körperteil klicken, um es ein-/auszublenden.',
     layerBase: 'Basis',
@@ -319,13 +388,15 @@ export const de = {
       invalidPng: 'Datei ist kein gültiges PNG.'
     },
     cape: {
-      notConfigured: (p: { missing: string }) =>
-        `Cape-Upload nicht konfiguriert - fehlende Variable(n) in launcher/.env: ${p.missing} (siehe .env.example).`,
-      wrongDimensions: (p: { width: number; height: number; actualWidth: number; actualHeight: number }) =>
-        `Capes müssen exakt ${p.width}x${p.height} sein, diese Datei ist ${p.actualWidth}x${p.actualHeight}.`,
+      wrongDimensions: (p: { actualWidth: number | string; actualHeight: number | string }) =>
+        `Capes müssen im Format 2:1 zwischen 64x32 und 2048x1024 sein (64x32, 128x64, 256x128, …), diese Datei ist ${p.actualWidth}x${p.actualHeight}.`,
+      tooLarge: (p: { maxMb: number }) => `Das Cape ist zu groß - höchstens ${p.maxMb} MB.`,
+      unauthorized: 'Deine Anmeldung ist abgelaufen - bitte im Launcher ab- und wieder anmelden.',
+      rateLimited: 'Zu viele Cape-Änderungen in kurzer Zeit - bitte ein paar Minuten warten.',
+      libraryEntryNotFound: 'Dieses Cape ist nicht mehr in deiner Sammlung.',
       statusLoadFailed: (p: { status: number | string }) => `Cape-Status konnte nicht geladen werden (${p.status}).`,
-      uploadFailed: (p: { status: number | string; detail: string }) => `Cape-Upload zu B2 fehlgeschlagen (${p.status}): ${p.detail}`,
-      deleteFailed: (p: { status: number | string; detail: string }) => `Cape-Löschen bei B2 fehlgeschlagen (${p.status}): ${p.detail}`
+      uploadFailed: (p: { status: number | string; detail: string }) => `Cape-Upload fehlgeschlagen (${p.status}): ${p.detail}`,
+      deleteFailed: (p: { status: number | string; detail: string }) => `Cape entfernen fehlgeschlagen (${p.status}): ${p.detail}`
     },
     skin: {
       wrongDimensions: (p: { width: number; height: number }) =>

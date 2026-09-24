@@ -1,0 +1,20 @@
+{
+  "name": "tntsallin1client-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Server-side services for TNT's All-In-1 Client (custom capes; later friends/presence)",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

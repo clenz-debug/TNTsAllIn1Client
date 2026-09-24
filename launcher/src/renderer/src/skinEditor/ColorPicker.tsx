@@ -1,9 +1,13 @@
+import type { ReactNode } from 'react'
 import { useEffect, useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
 interface Props {
   color: string
   onChange: (color: string) => void
+  /** Optional extra control at the end of the hex row, right next to the current-color swatch -
+   * e.g. the cape converter's eyedropper button. */
+  hexRowAccessory?: ReactNode
 }
 
 const WHEEL_SIZE = 140
@@ -82,7 +86,7 @@ function hexToRgb(hex: string): [number, number, number] | null {
  * button, so the whole native picker is replaced with this component, which has no eyedropper at
  * all - sampling a color is exclusively the Pipette tool's job now.
  */
-export function ColorPicker({ color, onChange }: Props) {
+export function ColorPicker({ color, onChange, hexRowAccessory }: Props) {
   const wheelCanvasRef = useRef<HTMLCanvasElement>(null)
   const rgb = hexToRgb(color) ?? [0, 0, 0]
   const [hue, saturation, value] = rgbToHsv(rgb[0], rgb[1], rgb[2])
@@ -205,6 +209,7 @@ export function ColorPicker({ color, onChange }: Props) {
           }}
         />
         <span className="color-picker-current-swatch" style={{ background: color }} />
+        {hexRowAccessory}
       </div>
 
       <div className="color-picker-rgb-row">

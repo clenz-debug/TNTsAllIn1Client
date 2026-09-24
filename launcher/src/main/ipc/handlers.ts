@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { describeError, localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
 import {
+  type CapeLibraryEntry,
   type CapeUploadResult,
   type ClientImportResult,
   type CustomCapeStatus,
@@ -27,6 +28,7 @@ import { performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, loadPngFileForEditor, uploadSkinBuffer } from '../auth/skinApi'
 import { updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
+import { deleteCapeFromLibrary, listCapeLibrary, readCapeLibraryPng, saveCapeToLibrary, updateCapeInLibrary } from '../cape/capeLibrary'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
 import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
 import { getBundleCompatibleVersions, hasLocalBundleContent, isVersionBundleCompatible } from '../launch/bundleCompat'
@@ -347,12 +349,37 @@ export function registerIpcHandlers(): void {
     IpcChannel.CapeUpload,
     async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, pngDataUri: string): Promise<CapeUploadResult> => {
       const base64 = pngDataUri.split(',')[1] ?? ''
-      return uploadCustomCape(profile.id, Buffer.from(base64, 'base64'))
+      return uploadCustomCape(profile.accessToken, profile.id, Buffer.from(base64, 'base64'))
     }
   )
 
   ipcMain.handle(IpcChannel.CapeDelete, async (_event: IpcMainInvokeEvent, profile: MinecraftProfile): Promise<void> =>
-    deleteCustomCape(profile.id)
+    deleteCustomCape(profile.accessToken)
+  )
+
+  ipcMain.handle(IpcChannel.CapeLibraryList, async (): Promise<CapeLibraryEntry[]> => listCapeLibrary())
+
+  ipcMain.handle(
+    IpcChannel.CapeLibrarySave,
+    async (_event: IpcMainInvokeEvent, pngDataUri: string, name: string): Promise<CapeLibraryEntry> =>
+      saveCapeToLibrary(Buffer.from(pngDataUri.split(',')[1] ?? '', 'base64'), name)
+  )
+
+  ipcMain.handle(IpcChannel.CapeLibraryDelete, async (_event: IpcMainInvokeEvent, id: string) => deleteCapeFromLibrary(id))
+
+  ipcMain.handle(
+    IpcChannel.CapeLibraryUpdate,
+    async (_event: IpcMainInvokeEvent, id: string, pngDataUri: string, name: string): Promise<CapeLibraryEntry | null> =>
+      updateCapeInLibrary(id, Buffer.from(pngDataUri.split(',')[1] ?? '', 'base64'), name)
+  )
+
+  ipcMain.handle(
+    IpcChannel.CapeLibraryActivate,
+    async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, id: string): Promise<CapeUploadResult> => {
+      const buffer = await readCapeLibraryPng(id)
+      if (!buffer) throw localizedError('cape.libraryEntryNotFound')
+      return uploadCustomCape(profile.accessToken, profile.id, buffer)
+    }
   )
 
   ipcMain.handle(IpcChannel.CapeStatus, async (_event: IpcMainInvokeEvent, profile: MinecraftProfile): Promise<CustomCapeStatus> =>
@@ -452,7 +479,14 @@ export function registerIpcHandlers(): void {
 
         const vanilla = await installVersion(sendProgress, versionId, instance.id, signal)
         const installed = await installFabricLoader(vanilla, sendProgress, signal)
-        await syncBundledContent(installed.instanceDir, sendProgress, bundleCompatible, versionId, instance.enabledBundledMods)
+        await syncBundledContent(
+          installed.instanceDir,
+          sendProgress,
+          bundleCompatible,
+          versionId,
+          instance.enabledBundledMods,
+          instance.disabledBundledMods
+        )
         const classpath = buildClasspath(installed.libraryPaths, installed.clientJarPath)
         const args = buildLaunchArgs({
           detail: installed.detail,

@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { isBundledModEnabled } from '../../shared/bundledMods'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
 import { bundledModsDir, bundledResourcepacksDir, bundledResourcesRoot, ownModDir } from './resourcePaths'
@@ -162,7 +163,8 @@ export async function syncBundledContent(
   onProgress: InstallProgressCallback,
   bundleCompatible: boolean,
   versionId: string,
-  enabledBundledMods: string[] = []
+  enabledBundledMods: string[] = [],
+  disabledBundledMods: string[] = []
 ): Promise<{ skipped: boolean }> {
   onProgress('bundles', 0, 1)
   if (!bundleCompatible) {
@@ -176,9 +178,10 @@ export async function syncBundledContent(
 
   const modsBundleDir = bundledModsDir(versionId)
   const allBundledMods = await listBundleFiles(modsBundleDir)
-  const enabledSet = new Set(enabledBundledMods)
   const disabledMods = new Set(
-    allBundledMods.filter((file) => !enabledSet.has(file) && !isAlwaysEnabledBundledMod(file))
+    allBundledMods.filter(
+      (file) => !isAlwaysEnabledBundledMod(file) && !isBundledModEnabled({ enabledBundledMods, disabledBundledMods }, file)
+    )
   )
 
   // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/<versionId>/ (see

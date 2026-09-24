@@ -1,0 +1,15 @@
+# systemd *user* unit for the cape upload service (no root needed; the server owner enabled
+# lingering for this user, so it runs without an open login and starts on boot).
+# Installed to ~/.config/systemd/user/ by deploy.sh.
+[Unit]
+Description=TNT's All-In-1 Client - custom cape upload service
+After=network-online.target
+
+[Service]
+ExecStart=%h/.local/node/bin/node %h/tntcapes-backend/dist/server.js
+WorkingDirectory=%h/tntcapes-backend
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

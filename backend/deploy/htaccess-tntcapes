@@ -1,0 +1,16 @@
+# Deployed as ~/www/tntcapes/.htaccess (the vhost allows overrides). The server-wide
+# "Options Indexes" would otherwise list every player's cape file.
+Options -Indexes
+
+<FilesMatch "\.png$">
+    <IfModule mod_headers.c>
+        # Short cache: a changed cape shows up for others within minutes, without refetching every frame.
+        Header set Cache-Control "public, max-age=300"
+        Header set X-Content-Type-Options "nosniff"
+    </IfModule>
+</FilesMatch>
+
+# Only the <uuid>.png files are public - not the service's temp files.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

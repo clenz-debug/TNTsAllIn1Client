@@ -35,6 +35,7 @@ export const en: typeof de = {
   },
   play: {
     headerSkin: 'Skin',
+    headerCapes: 'Capes',
     headerCredits: 'Credits',
     headerSettings: 'Settings',
     headerLogout: 'Sign out',
@@ -152,7 +153,7 @@ export const en: typeof de = {
   },
   skin: {
     renameTitle: 'Name your skin',
-    title: 'Skin & Capes',
+    title: 'Skins',
     currentHeading: 'Current skin',
     noSkin: 'No skin set.',
     showCape: 'Show cape (applies to every skin here)',
@@ -168,15 +169,80 @@ export const en: typeof de = {
     variantSlim: 'Slim (Alex arms)',
     uploading: 'Uploading…',
     selectAndUpload: 'Select PNG',
-    capeHeading: 'Custom cape (Cape Provider)',
+    capeHeading: 'Capes',
     capeDescription:
-      'Visible to other players who have "Cape Provider" installed - toggle it on in this instance\'s Mods screen under "Bundled mods". Your own, high-resolution capes, independent of Mojang\'s cape above.',
+      'Your own, high-resolution capes, independent of Mojang\'s cape above. Visible to other players who have "Cape Provider" installed - toggle it on in this instance\'s Mods screen under "Bundled mods". Your collection stays on this PC, only the active cape is uploaded.',
+    capeRequirements: 'PNG in 2:1 format, from 64x32 up to 2048x1024, at most 5 MB.',
     upload: 'Upload',
-    selectCapePng: 'Select cape PNG',
+    selectCapePng: 'Add cape PNG',
+    converterOpen: 'Convert image to cape',
+    converterHeading: 'Convert image to cape',
+    converterDescription:
+      'Pick any image - it is placed on the outside of the cape, the side others see from behind. The preview above shows the result right away.',
+    converterSelectImage: 'Select image',
+    converterChangeImage: 'Different image',
+    converterResolution: 'Resolution',
+    converterFit: 'Fit',
+    converterFitCover: 'Choose section',
+    converterFitContain: 'Whole image (with border)',
+    converterZoom: 'Section size',
+    converterPipetteHint: 'Click into the image to use that color as the border color.',
+    converterCropHint: 'Drag the frame with the mouse, make it bigger/smaller with the slider or the mouse wheel.',
+    converterInside: 'Inside',
+    converterInsideMirror: 'Mirrored image',
+    converterInsideColor: 'Border color',
+    converterPixelated: 'Sharp pixels (for pixel art)',
+    converterBackground: 'Border color (edges, border, elytra)',
+    converterApply: 'Apply',
+    converterTooLarge: 'The result is larger than 5 MB - please choose a smaller resolution.',
+    converterLoadFailed: 'The image could not be loaded.',
+    converterDefaultName: (file: string) => `Cape from ${file}`,
+    capeNamePlaceholder: "Cape's name",
+    capeDefaultName: (date: string) => `Cape from ${date}`,
+    capeSaveToCollection: 'Save to collection',
+    capeCollectionHeading: 'My capes',
+    capeCollectionEmpty: 'No capes saved yet.',
+    capeActivate: 'Activate',
+    capeDeactivate: 'Deactivate',
+    capeDeactivating: 'Deactivating…',
+    capeActivating: 'Activating…',
+    capeActive: 'Active',
+    capeNoActive: 'No custom cape active.',
+    capeRemoveActive: 'Deactivate cape',
+    capePreviewHint: 'Click a cape to show it in the preview.',
+    deleteCapeConfirm: (name: string) => `Really delete "${name}" from your collection?`,
     deleteLibraryConfirm: (name: string) => `Really delete "${name}" from the library?`,
-    removeCapeConfirm: 'Really remove your custom cape?',
+    removeCapeConfirm: 'The active cape is not in your collection on this PC - after deactivating it, it is gone. Deactivate anyway?',
     namePlaceholder: "Skin's name",
     saving: 'Saving…'
+  },
+  capeEditor: {
+    title: 'Cape editor',
+    open: 'Draw cape',
+    edit: 'Edit',
+    newHeading: 'New cape',
+    loadHeading: 'Edit a cape from your PC',
+    loadHint: 'Open a cape PNG from your PC and keep editing it here - 2:1, from 64x32 up to 2048x1024. It is saved as a new cape in your collection.',
+    loadFromPc: 'Load cape PNG from PC',
+    resolution: 'Resolution',
+    baseColor: 'Base color',
+    start: 'Start',
+    toolFill: 'Fill',
+    brushSize: 'Brush size',
+    panels: {
+      outside: 'Outside',
+      inside: 'Inside',
+      edgeTop: 'Top edge',
+      edgeBottom: 'Bottom edge',
+      edgeLeft: 'Left edge',
+      edgeRight: 'Right edge',
+      elytra: 'Elytra'
+    },
+    regionsHint:
+      'Outside = the side others see from behind, with its four edges around it. Inside faces your back, elytra is used while wearing an elytra. Painting always stays on the grid you start on.',
+    mirrorOutside: 'Mirror outside → inside',
+    saveUpdate: 'Save changes',
+    reactivateHint: 'If this cape is currently active, click "Activate" again afterwards so others see the new version.'
   },
   skinEditor: {
     defaultName: (date: string) => `Skin from ${date}`,
@@ -194,6 +260,8 @@ export const en: typeof de = {
     undo: 'Undo',
     redo: 'Redo',
     showGrid: 'Show pixel grid',
+    widenWindowHint:
+      'Tip: Make the launcher window wider - then the tools and color palette sit next to the canvas and you no longer have to scroll up and down to change color.',
     visibilityHeading: 'Visibility',
     visibilityHint: 'Click a body part to show/hide it.',
     layerBase: 'Base',
@@ -303,13 +371,15 @@ export const en: typeof de = {
       invalidPng: 'File is not a valid PNG.'
     },
     cape: {
-      notConfigured: (p: { missing: string }) =>
-        `Cape upload not configured - missing variable(s) in launcher/.env: ${p.missing} (see .env.example).`,
-      wrongDimensions: (p: { width: number; height: number; actualWidth: number; actualHeight: number }) =>
-        `Capes must be exactly ${p.width}x${p.height}, this file is ${p.actualWidth}x${p.actualHeight}.`,
+      wrongDimensions: (p: { actualWidth: number | string; actualHeight: number | string }) =>
+        `Capes must be 2:1 between 64x32 and 2048x1024 (64x32, 128x64, 256x128, …), this file is ${p.actualWidth}x${p.actualHeight}.`,
+      tooLarge: (p: { maxMb: number }) => `The cape is too large - at most ${p.maxMb} MB.`,
+      unauthorized: 'Your login has expired - please log out and back in to the launcher.',
+      rateLimited: 'Too many cape changes in a short time - please wait a few minutes.',
+      libraryEntryNotFound: 'This cape is no longer in your collection.',
       statusLoadFailed: (p: { status: number | string }) => `Could not load cape status (${p.status}).`,
-      uploadFailed: (p: { status: number | string; detail: string }) => `Cape upload to B2 failed (${p.status}): ${p.detail}`,
-      deleteFailed: (p: { status: number | string; detail: string }) => `Cape delete on B2 failed (${p.status}): ${p.detail}`
+      uploadFailed: (p: { status: number | string; detail: string }) => `Cape upload failed (${p.status}): ${p.detail}`,
+      deleteFailed: (p: { status: number | string; detail: string }) => `Removing the cape failed (${p.status}): ${p.detail}`
     },
     skin: {
       wrongDimensions: (p: { width: number; height: number }) =>

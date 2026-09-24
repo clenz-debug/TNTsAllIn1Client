@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel } from '../shared/ipc'
 import type {
   AuthProgressEvent,
+  CapeLibraryEntry,
   CapeUploadResult,
   ClientImportResult,
   CustomCapeStatus,
@@ -102,6 +103,14 @@ const api = {
     ipcRenderer.invoke(IpcChannel.CapeUpload, profile, pngDataUri),
   deleteCape: (profile: MinecraftProfile): Promise<void> => ipcRenderer.invoke(IpcChannel.CapeDelete, profile),
   getCapeStatus: (profile: MinecraftProfile): Promise<CustomCapeStatus> => ipcRenderer.invoke(IpcChannel.CapeStatus, profile),
+  listCapeLibrary: (): Promise<CapeLibraryEntry[]> => ipcRenderer.invoke(IpcChannel.CapeLibraryList),
+  saveCapeToLibrary: (pngDataUri: string, name: string): Promise<CapeLibraryEntry> =>
+    ipcRenderer.invoke(IpcChannel.CapeLibrarySave, pngDataUri, name),
+  deleteCapeFromLibrary: (id: string): Promise<void> => ipcRenderer.invoke(IpcChannel.CapeLibraryDelete, id),
+  updateCapeInLibrary: (id: string, pngDataUri: string, name: string): Promise<CapeLibraryEntry | null> =>
+    ipcRenderer.invoke(IpcChannel.CapeLibraryUpdate, id, pngDataUri, name),
+  activateLibraryCape: (profile: MinecraftProfile, id: string): Promise<CapeUploadResult> =>
+    ipcRenderer.invoke(IpcChannel.CapeLibraryActivate, profile, id),
   checkModBundleUpdate: (versionId: string): Promise<ModBundleUpdateInfo> =>
     ipcRenderer.invoke(IpcChannel.ModBundleCheckUpdate, versionId),
   applyModBundleUpdate: (versionId: string): Promise<LauncherSettings> =>

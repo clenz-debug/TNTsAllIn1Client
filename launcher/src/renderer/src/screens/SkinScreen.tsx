@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ConfirmDialog } from '../ConfirmDialog'
 import { formatError } from '../formatError'
 import { useLanguage, useTranslations } from '../i18n/LanguageContext'
-import type { CustomCapeStatus, MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
+import type { MinecraftProfile, SkinLibraryEntry, SkinVariant } from '../../../shared/types'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
 
 /** A freshly picked-but-not-yet-uploaded skin PNG, awaiting name + variant on the pending-upload
@@ -100,16 +100,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
   // Own themed replacement for window.confirm() (ConfirmDialog).
   const [pendingDeleteLibrary, setPendingDeleteLibrary] = useState<SkinLibraryEntry | null>(null)
 
-  // Own, unrelated cosmetic system (Backblaze B2 + the bundled "Cape Provider" mod) - completely
-  // separate from Mojang's own cape above, which is why this lives in its own state/section rather
-  // than reusing `activeCape`/`capePreview`. `pendingCape` holds a picked-but-not-yet-uploaded PNG
-  // for the confirm/preview step, same two-step flow `pendingUpload` above uses.
-  const [customCape, setCustomCape] = useState<CustomCapeStatus>({ exists: false, dataUri: null })
-  const [pendingCape, setPendingCape] = useState<{ dataUri: string; width: number; height: number } | null>(null)
-  const [capeBusy, setCapeBusy] = useState(false)
-  const [capeError, setCapeError] = useState<string | null>(null)
-  const [confirmingRemoveCape, setConfirmingRemoveCape] = useState(false)
-
   useEffect(() => {
     setSkinPreview(null)
     if (!activeSkin) return
@@ -132,16 +122,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
       .then(setLibrary)
       .catch((err) => setError(formatError(err, t)))
   }, [])
-
-  useEffect(() => {
-    // A missing/not-yet-configured custom cape isn't worth alarming the user with on every screen
-    // open - same "silently swallow, secondary information" reasoning as the Mojang capePreview
-    // effect above.
-    window.api
-      .getCapeStatus(profile)
-      .then(setCustomCape)
-      .catch(() => undefined)
-  }, [profile.id])
 
   async function handleSelectSkinFile(): Promise<void> {
     setBusy(true)
@@ -208,45 +188,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
     } finally {
       setBusyLibraryId(null)
       setPendingDeleteLibrary(null)
-    }
-  }
-
-  async function handleSelectCapePng(): Promise<void> {
-    setCapeError(null)
-    try {
-      const picked = await window.api.selectCapePng()
-      if (picked) setPendingCape(picked)
-    } catch (err) {
-      setCapeError(formatError(err, t))
-    }
-  }
-
-  async function handleConfirmCapeUpload(): Promise<void> {
-    if (!pendingCape) return
-    setCapeBusy(true)
-    setCapeError(null)
-    try {
-      const result = await window.api.uploadCape(profile, pendingCape.dataUri)
-      setCustomCape({ exists: true, dataUri: result.dataUri })
-      setPendingCape(null)
-    } catch (err) {
-      setCapeError(formatError(err, t))
-    } finally {
-      setCapeBusy(false)
-    }
-  }
-
-  async function handleConfirmRemoveCape(): Promise<void> {
-    setCapeBusy(true)
-    setCapeError(null)
-    try {
-      await window.api.deleteCape(profile)
-      setCustomCape({ exists: false, dataUri: null })
-    } catch (err) {
-      setCapeError(formatError(err, t))
-    } finally {
-      setCapeBusy(false)
-      setConfirmingRemoveCape(false)
     }
   }
 
@@ -422,47 +363,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         </div>
       </section>
 
-      <section className="mods-section">
-        <h3>{t.skin.capeHeading}</h3>
-        <p className="version-warning">{t.skin.capeDescription}</p>
-        {capeError && <span className="error">{capeError}</span>}
-
-        {skinPreview ? (
-          <SkinModelPreview
-            skinDataUri={skinPreview}
-            variant={activeSkinVariant}
-            capeDataUri={pendingCape?.dataUri ?? customCape.dataUri}
-            showCape={true}
-            width={200}
-            height={240}
-          />
-        ) : (
-          <p>{t.common.loading}</p>
-        )}
-
-        {pendingCape ? (
-          <div>
-            <button className="primary-button" disabled={capeBusy} onClick={() => void handleConfirmCapeUpload()}>
-              {capeBusy ? t.skin.uploading : t.skin.upload}
-            </button>
-            <button className="link-button" disabled={capeBusy} onClick={() => setPendingCape(null)}>
-              {t.common.cancel}
-            </button>
-          </div>
-        ) : (
-          <div>
-            <button className="secondary-button" onClick={() => void handleSelectCapePng()}>
-              {t.skin.selectCapePng}
-            </button>
-            {customCape.exists && (
-              <button className="link-button" disabled={capeBusy} onClick={() => setConfirmingRemoveCape(true)}>
-                {t.common.remove}
-              </button>
-            )}
-          </div>
-        )}
-      </section>
-
       {pendingDeleteLibrary && (
         <ConfirmDialog
           message={t.skin.deleteLibraryConfirm(pendingDeleteLibrary.name)}
@@ -474,16 +374,6 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         />
       )}
 
-      {confirmingRemoveCape && (
-        <ConfirmDialog
-          message={t.skin.removeCapeConfirm}
-          confirmLabel={t.common.remove}
-          cancelLabel={t.common.cancel}
-          busy={capeBusy}
-          onConfirm={() => void handleConfirmRemoveCape()}
-          onCancel={() => setConfirmingRemoveCape(false)}
-        />
-      )}
     </div>
   )
 }

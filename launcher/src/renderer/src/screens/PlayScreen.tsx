@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { defaultOnPrefix } from '../../../shared/bundledMods'
 import { Dropdown } from '../Dropdown'
 import { errorCode, formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
@@ -24,6 +25,7 @@ import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
 import { SettingsScreen } from './SettingsScreen'
 import { SkinEditorScreen } from './SkinEditorScreen'
+import { CapeScreen } from './CapeScreen'
 import { SkinScreen } from './SkinScreen'
 import { ResourcepacksScreen } from './ResourcepacksScreen'
 import { WorldsScreen } from './WorldsScreen'
@@ -54,6 +56,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [showWorlds, setShowWorlds] = useState(false)
   const [showResourcepacks, setShowResourcepacks] = useState(false)
   const [showSkin, setShowSkin] = useState(false)
+  const [showCapes, setShowCapes] = useState(false)
   const [skinEditorRequest, setSkinEditorRequest] = useState<SkinEditorRequest>(null)
   const [showInstances, setShowInstances] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -187,12 +190,19 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       prev.map((instance) =>
         instance.id !== selectedInstance.id
           ? instance
-          : {
-              ...instance,
-              enabledBundledMods: enabled
-                ? [...instance.enabledBundledMods, fileName]
-                : instance.enabledBundledMods.filter((f) => f !== fileName)
-            }
+          : defaultOnPrefix(fileName)
+            ? {
+                ...instance,
+                disabledBundledMods: enabled
+                  ? (instance.disabledBundledMods ?? []).filter((p) => p !== defaultOnPrefix(fileName))
+                  : [...(instance.disabledBundledMods ?? []), defaultOnPrefix(fileName)!]
+              }
+            : {
+                ...instance,
+                enabledBundledMods: enabled
+                  ? [...instance.enabledBundledMods, fileName]
+                  : instance.enabledBundledMods.filter((f) => f !== fileName)
+              }
       )
     )
   }
@@ -341,6 +351,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         instanceId={selectedInstance.id}
         versionId={selectedInstance.versionId}
         enabledBundledMods={selectedInstance.enabledBundledMods}
+        disabledBundledMods={selectedInstance.disabledBundledMods}
         bundleCompatibleVersions={bundleCompatibleVersions}
         onToggleBundledMod={handleToggleBundledMod}
         onClose={() => setShowMods(false)}
@@ -371,6 +382,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     )
   }
 
+  if (showCapes) {
+    return <CapeScreen profile={profile} onClose={() => setShowCapes(false)} />
+  }
+
   if (showSkin) {
     return (
       <SkinScreen
@@ -398,6 +413,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         <div className="header-actions">
           <button className="link-button" onClick={() => setShowSkin(true)}>
             {t.play.headerSkin}
+          </button>
+          <button className="link-button" onClick={() => setShowCapes(true)}>
+            {t.play.headerCapes}
           </button>
           <button className="link-button" onClick={() => setShowCredits(true)}>
             {t.play.headerCredits}

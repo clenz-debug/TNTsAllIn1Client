@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
+import { isBundledModEnabled } from '../../../shared/bundledMods'
 import {
   isBundleCompatibleVersion,
   MODRINTH_SEARCH_PAGE_SIZE,
@@ -34,6 +35,7 @@ interface Props {
   instanceId: string
   versionId: string
   enabledBundledMods: string[]
+  disabledBundledMods?: string[]
   /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
    * see `bundleCompat.ts`), replacing the old single hardcoded `MINECRAFT_VERSION` check. */
   bundleCompatibleVersions: string[]
@@ -41,7 +43,15 @@ interface Props {
   onClose: () => void
 }
 
-export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCompatibleVersions, onToggleBundledMod, onClose }: Props) {
+export function ModsScreen({
+  instanceId,
+  versionId,
+  enabledBundledMods,
+  disabledBundledMods,
+  bundleCompatibleVersions,
+  onToggleBundledMod,
+  onClose
+}: Props) {
   const t = useTranslations()
   // Built inside the component (not at module scope) so its labels can come from `t` - the sort
   // order values themselves (`ModrinthSortIndex`) still match Modrinth's own `index=` API values.
@@ -213,7 +223,7 @@ export function ModsScreen({ instanceId, versionId, enabledBundledMods, bundleCo
                 <input
                   type="checkbox"
                   className="toggle-switch"
-                  checked={enabledBundledMods.includes(fileName)}
+                  checked={isBundledModEnabled({ enabledBundledMods, disabledBundledMods }, fileName)}
                   onChange={(e) => onToggleBundledMod(fileName, e.target.checked)}
                 />
                 {fileName}

@@ -51,10 +51,9 @@ const OWN_MOD_PREFIX = 'tntsallin1client-'
  *    for them. Gating them a second time behind the launcher's toggle first would just be a
  *    redundant, easy-to-forget extra step before the ingame toggle even becomes reachable.
  *
- * With the current bundle, this happens to cover every jar in `mods-bundle/` - the Mods screen's
- * toggle list is empty until a *future* bundled mod without its own ingame control gets added.
- * That's fine: the opt-in mechanism (`listToggleableBundledMods`, `enabledBundledMods`) stays
- * correct and ready for that case rather than being removed just because it's unused today.
+ * Every other bundled jar (today only Cape Provider) shows up as a switch in the Mods screen -
+ * off by default unless listed in `shared/bundledMods.ts`'s default-on prefixes, which Cape
+ * Provider is (own user request: on by default, but still the user's choice).
  */
 const ALWAYS_ENABLED_PREFIXES = [
   'fabric-api-',
