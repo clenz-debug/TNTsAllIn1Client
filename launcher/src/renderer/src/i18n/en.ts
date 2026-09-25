@@ -142,7 +142,19 @@ export const en: typeof de = {
     moveWarning:
       'Warning: different Minecraft versions or mods between instances can corrupt this world or cause crashes (e.g. missing mod blocks/items not installed in the target instance, or a chunk format an older version can\'t load). This is at your own risk and cannot be undone afterwards.',
     confirm: 'Confirm',
-    working: 'Working…'
+    working: 'Working…',
+    uploadInfo:
+      'Bring worlds from your PC into this instance - as a folder or as a ZIP. Picking a whole saves folder brings in every world inside it. The original stays untouched.',
+    uploadFolder: 'Upload world folder…',
+    uploadZip: 'Upload world ZIP…',
+    uploadDialogFolder: 'Select world folder(s)',
+    uploadDialogZip: 'Select world ZIP(s)',
+    uploading: 'Uploading…',
+    actionTitleDelete: (world: string) => `Remove world "${world}"`,
+    deleteInfo: 'The world is moved to the recycle bin - you can restore it from there if needed.',
+    deletedStatus: (world: string) => `World "${world}" moved to the recycle bin.`,
+    uploadedStatus: (worlds: string[]) =>
+      worlds.length === 1 ? `World "${worlds[0]}" uploaded.` : `${worlds.length} worlds uploaded: ${worlds.join(', ')}.`
   },
   resourcepacks: {
     title: 'Resource Packs',
@@ -404,6 +416,12 @@ export const en: typeof de = {
     instance: {
       unknown: (p: { instanceId: string }) => `Unknown instance: ${p.instanceId}`,
       notFound: (p: { instanceId: string }) => `Instance ${p.instanceId} not found.`
+    },
+    worlds: {
+      noWorldFound: 'No Minecraft world found in your selection (a world is a folder with a level.dat inside).',
+      deleteFailed: (p: { world: string }) =>
+        `World "${p.world}" could not be removed. Is it open in the game right now? Close the game or the world first.`,
+      zipUnreadable: (p: { file: string }) => `"${p.file}" is not a valid ZIP file or is damaged.`
     },
     modBundle: {
       manifestLoadFailed: (p: { status: number | string }) => `Could not load mod bundle manifest (${p.status}).`

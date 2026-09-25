@@ -6,7 +6,7 @@ import type { Instance } from '../../../shared/types'
 
 interface PendingAction {
   world: string
-  kind: 'copy' | 'move'
+  kind: 'copy' | 'move' | 'delete'
 }
 
 interface Props {
@@ -36,30 +36,66 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
 
   const otherInstances = instances.filter((instance) => instance.id !== instanceId)
 
+  async function loadWorlds(): Promise<void> {
+    const list = await window.api.listInstanceWorlds(instanceId)
+    setWorlds(list)
+    // One icon fetch per world, in parallel - a missing icon.png resolves to `null` rather
+    // than rejecting (see `instanceManager.ts#getWorldIcon`), so this never needs its own
+    // per-world error handling.
+    const entries = await Promise.all(list.map(async (world) => [world, await window.api.getWorldIcon(instanceId, world)] as const))
+    setIcons(Object.fromEntries(entries))
+  }
+
   useEffect(() => {
     setLoading(true)
     setError(null)
-    window.api
-      .listInstanceWorlds(instanceId)
-      .then(async (list) => {
-        setWorlds(list)
-        // One icon fetch per world, in parallel - a missing icon.png resolves to `null` rather
-        // than rejecting (see `instanceManager.ts#getWorldIcon`), so this never needs its own
-        // per-world error handling.
-        const entries = await Promise.all(list.map(async (world) => [world, await window.api.getWorldIcon(instanceId, world)] as const))
-        setIcons(Object.fromEntries(entries))
-      })
+    loadWorlds()
       .catch((err) => setError(formatError(err, t)))
       .finally(() => setLoading(false))
   }, [instanceId])
 
-  function openAction(world: string, kind: 'copy' | 'move'): void {
+  async function importWorlds(kind: 'folder' | 'zip'): Promise<void> {
+    setBusy(true)
+    setError(null)
+    setStatus(null)
+    try {
+      const imported = await window.api.importWorlds(instanceId, kind, kind === 'folder' ? t.worlds.uploadDialogFolder : t.worlds.uploadDialogZip)
+      if (imported.length > 0) {
+        await loadWorlds()
+        setStatus(t.worlds.uploadedStatus(imported))
+      }
+    } catch (err) {
+      setError(formatError(err, t))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function openAction(world: string, kind: PendingAction['kind']): void {
     setPendingAction({ world, kind })
     setTargetInstanceId(otherInstances[0]?.id ?? '')
     setStatus(null)
   }
 
+  async function confirmDelete(world: string): Promise<void> {
+    setBusy(true)
+    setError(null)
+    try {
+      setWorlds(await window.api.deleteWorld(instanceId, world))
+      setStatus(t.worlds.deletedStatus(world))
+      setPendingAction(null)
+    } catch (err) {
+      setError(formatError(err, t))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function confirmAction(): Promise<void> {
+    if (pendingAction?.kind === 'delete') {
+      await confirmDelete(pendingAction.world)
+      return
+    }
     if (!pendingAction || !targetInstanceId) return
     const target = instances.find((instance) => instance.id === targetInstanceId)
     if (!target) return
@@ -97,6 +133,16 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
 
       <section className="mods-section">
         <h3>{t.worlds.heading}</h3>
+        <p className="version-warning">{t.worlds.uploadInfo}</p>
+        <div className="header-actions">
+          <button className="secondary-button" onClick={() => void importWorlds('folder')} disabled={busy}>
+            {t.worlds.uploadFolder}
+          </button>
+          <button className="secondary-button" onClick={() => void importWorlds('zip')} disabled={busy}>
+            {t.worlds.uploadZip}
+          </button>
+          {busy && !pendingAction && <span className="status">{t.worlds.uploading}</span>}
+        </div>
         <ul className="mods-list">
           {loading && <li className="mods-empty">{t.common.loading}</li>}
           {!loading && worlds.length === 0 && <li className="mods-empty">{t.worlds.empty}</li>}
@@ -126,6 +172,9 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
                   >
                     {t.worlds.move}
                   </button>
+                  <button className="link-button" onClick={() => openAction(world, 'delete')} disabled={busy}>
+                    {t.common.remove}
+                  </button>
                 </div>
               </li>
             ))}
@@ -137,25 +186,33 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
         <div className="modal-overlay">
           <div className="modal-box">
             <strong>
-              {pendingAction.kind === 'move' ? t.worlds.actionTitleMove(pendingAction.world) : t.worlds.actionTitleCopy(pendingAction.world)}
+              {pendingAction.kind === 'delete'
+                ? t.worlds.actionTitleDelete(pendingAction.world)
+                : pendingAction.kind === 'move'
+                  ? t.worlds.actionTitleMove(pendingAction.world)
+                  : t.worlds.actionTitleCopy(pendingAction.world)}
             </strong>
-            <label className="checkbox-label">
-              {t.worlds.targetInstanceLabel}
-              <Dropdown
-                value={targetInstanceId}
-                onChange={setTargetInstanceId}
-                options={otherInstances.map((instance) => ({
-                  value: instance.id,
-                  label: `${instance.name} (${instance.versionId})`
-                }))}
-              />
-            </label>
+            {pendingAction.kind === 'delete' ? (
+              <p className="version-warning">{t.worlds.deleteInfo}</p>
+            ) : (
+              <label className="checkbox-label">
+                {t.worlds.targetInstanceLabel}
+                <Dropdown
+                  value={targetInstanceId}
+                  onChange={setTargetInstanceId}
+                  options={otherInstances.map((instance) => ({
+                    value: instance.id,
+                    label: `${instance.name} (${instance.versionId})`
+                  }))}
+                />
+              </label>
+            )}
             {pendingAction.kind === 'move' && <p className="version-warning">{t.worlds.moveWarning}</p>}
             <div className="modal-actions">
               <button className="secondary-button" onClick={() => setPendingAction(null)} disabled={busy}>
                 {t.common.cancel}
               </button>
-              <button className="primary-button" onClick={() => void confirmAction()} disabled={busy || !targetInstanceId}>
+              <button className="primary-button" onClick={() => void confirmAction()} disabled={busy || (pendingAction.kind !== 'delete' && !targetInstanceId)}>
                 {busy ? t.worlds.working : t.worlds.confirm}
               </button>
             </div>

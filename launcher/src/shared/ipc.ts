@@ -30,6 +30,8 @@ export const IpcChannel = {
   InstancesWorldIcon: 'instances:world-icon',
   InstancesMoveWorld: 'instances:move-world',
   InstancesCopyWorld: 'instances:copy-world',
+  InstancesImportWorlds: 'instances:import-worlds',
+  InstancesDeleteWorld: 'instances:delete-world',
   ResourcepacksList: 'resourcepacks:list',
   ResourcepacksAdd: 'resourcepacks:add',
   ResourcepacksRemove: 'resourcepacks:remove',

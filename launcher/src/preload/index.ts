@@ -68,6 +68,10 @@ const api = {
     ipcRenderer.invoke(IpcChannel.InstancesMoveWorld, sourceInstanceId, worldName, targetInstanceId),
   copyWorldBetweenInstances: (sourceInstanceId: string, worldName: string, targetInstanceId: string): Promise<{ copiedTo: string }> =>
     ipcRenderer.invoke(IpcChannel.InstancesCopyWorld, sourceInstanceId, worldName, targetInstanceId),
+  importWorlds: (instanceId: string, kind: 'folder' | 'zip', dialogTitle: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.InstancesImportWorlds, instanceId, kind, dialogTitle),
+  deleteWorld: (instanceId: string, worldName: string): Promise<string[]> =>
+    ipcRenderer.invoke(IpcChannel.InstancesDeleteWorld, instanceId, worldName),
   listResourcepacks: (instanceId: string): Promise<ResourcepackEntry[]> => ipcRenderer.invoke(IpcChannel.ResourcepacksList, instanceId),
   addResourcepacks: (instanceId: string, dialogTitle: string): Promise<ResourcepackEntry[]> =>
     ipcRenderer.invoke(IpcChannel.ResourcepacksAdd, instanceId, dialogTitle),

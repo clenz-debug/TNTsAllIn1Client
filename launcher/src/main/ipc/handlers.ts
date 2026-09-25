@@ -41,6 +41,7 @@ import { installVersion } from '../launch/installer'
 import {
   cloneInstance,
   copyWorldBetweenInstances,
+  deleteWorld,
   deleteInstance,
   getWorldIcon,
   listInstanceWorlds,
@@ -51,6 +52,7 @@ import { buildLaunchArgs } from '../launch/launchArgs'
 import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
 import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
+import { importWorlds } from '../launch/worldImport'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { readBackClientDesign, writeClientDesignFiles } from '../launch/clientDesignSync'
@@ -208,6 +210,16 @@ export function registerIpcHandlers(): void {
     IpcChannel.InstancesCopyWorld,
     async (_event: IpcMainInvokeEvent, sourceInstanceId: string, worldName: string, targetInstanceId: string) =>
       copyWorldBetweenInstances(sourceInstanceId, worldName, targetInstanceId)
+  )
+
+  ipcMain.handle(
+    IpcChannel.InstancesImportWorlds,
+    async (event: IpcMainInvokeEvent, instanceId: string, kind: 'folder' | 'zip', dialogTitle: string) =>
+      importWorlds(instanceId, kind, dialogTitle, BrowserWindow.fromWebContents(event.sender))
+  )
+
+  ipcMain.handle(IpcChannel.InstancesDeleteWorld, async (_event: IpcMainInvokeEvent, instanceId: string, worldName: string) =>
+    deleteWorld(instanceId, worldName)
   )
 
   ipcMain.handle(IpcChannel.ResourcepacksList, async (_event: IpcMainInvokeEvent, instanceId: string) =>

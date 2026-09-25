@@ -1,3 +1,4 @@
+import { shell } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { cp, mkdir, readdir, readFile, rename, rm } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -6,7 +7,7 @@ import type { Instance, LauncherSettings } from '../../shared/types'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
 
-function savesDir(instanceId: string): string {
+export function savesDir(instanceId: string): string {
   return join(instanceDir(instanceId), 'game', 'saves')
 }
 
@@ -101,15 +102,34 @@ export async function getWorldIcon(instanceId: string, worldName: string): Promi
 /** A `worldName` guaranteed free in `targetInstanceId`'s `saves/` - a numbered suffix rather than
  * overwriting or failing on a collision, same "just make it work, resolve the name after"
  * convention as {@link cloneInstance}'s "(Kopie)" suffix. Shared by
- * {@link moveWorldBetweenInstances} and {@link copyWorldBetweenInstances} so a name collision is
- * resolved identically either way. */
-async function resolveFreeWorldName(targetInstanceId: string, worldName: string): Promise<string> {
+ * {@link moveWorldBetweenInstances}, {@link copyWorldBetweenInstances} and `worldImport.ts` so a name
+ * collision is resolved identically either way. */
+export async function resolveFreeWorldName(targetInstanceId: string, worldName: string): Promise<string> {
   const existing = new Set(await listInstanceWorlds(targetInstanceId))
   let candidate = worldName
   for (let suffix = 2; existing.has(candidate); suffix++) {
     candidate = `${worldName} (${suffix})`
   }
   return candidate
+}
+
+/**
+ * Removes one world from an instance (own user request) - into the system's recycle bin rather
+ * than deleting it for good, so a wrong click can still be undone from there. Only names
+ * {@link listInstanceWorlds} actually returns are accepted, which keeps anything outside `saves/`
+ * (`..` in a name) out of reach. Fails with `worlds.deleteFailed` if the bin refuses, most likely
+ * because the world is open in a running game right now (its `session.lock` is held).
+ */
+export async function deleteWorld(instanceId: string, worldName: string): Promise<string[]> {
+  if (!(await listInstanceWorlds(instanceId)).includes(worldName)) {
+    throw localizedError('worlds.deleteFailed', { world: worldName })
+  }
+  try {
+    await shell.trashItem(join(savesDir(instanceId), worldName))
+  } catch {
+    throw localizedError('worlds.deleteFailed', { world: worldName })
+  }
+  return listInstanceWorlds(instanceId)
 }
 
 /**

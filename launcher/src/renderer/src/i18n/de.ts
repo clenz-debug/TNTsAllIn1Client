@@ -148,7 +148,19 @@ export const de = {
     moveWarning:
       'Achtung: Unterschiedliche Minecraft-Versionen oder Mods zwischen den Instanzen können diese Welt beschädigen oder zum Absturz führen (z.B. fehlende Blöcke/Items aus Mods, die in der Zielinstanz nicht installiert sind, oder ein Chunk-Format, das eine ältere Version nicht laden kann). Das geschieht auf eigene Gefahr und kann danach nicht rückgängig gemacht werden.',
     confirm: 'Bestätigen',
-    working: 'Wird ausgeführt…'
+    working: 'Wird ausgeführt…',
+    uploadInfo:
+      'Welten von deinem PC in diese Instanz übernehmen - als Ordner oder als ZIP. Wählst du einen ganzen saves-Ordner, werden alle Welten darin übernommen. Das Original bleibt unverändert.',
+    uploadFolder: 'Weltordner hochladen…',
+    uploadZip: 'Welt-ZIP hochladen…',
+    uploadDialogFolder: 'Weltordner auswählen',
+    uploadDialogZip: 'Welt-ZIP(s) auswählen',
+    uploading: 'Wird hochgeladen…',
+    actionTitleDelete: (world: string) => `Welt "${world}" entfernen`,
+    deleteInfo: 'Die Welt wird in den Papierkorb verschoben - von dort kannst du sie bei Bedarf wiederherstellen.',
+    deletedStatus: (world: string) => `Welt "${world}" in den Papierkorb verschoben.`,
+    uploadedStatus: (worlds: string[]) =>
+      worlds.length === 1 ? `Welt "${worlds[0]}" hochgeladen.` : `${worlds.length} Welten hochgeladen: ${worlds.join(', ')}.`
   },
   resourcepacks: {
     title: 'Texturepacks',
@@ -422,6 +434,12 @@ export const de = {
     instance: {
       unknown: (p: { instanceId: string }) => `Unbekannte Instanz: ${p.instanceId}`,
       notFound: (p: { instanceId: string }) => `Instanz ${p.instanceId} nicht gefunden.`
+    },
+    worlds: {
+      noWorldFound: 'In der Auswahl wurde keine Minecraft-Welt gefunden (eine Welt ist ein Ordner mit einer level.dat darin).',
+      deleteFailed: (p: { world: string }) =>
+        `Welt "${p.world}" konnte nicht entfernt werden. Ist sie gerade im Spiel geöffnet? Dann erst das Spiel bzw. die Welt schließen.`,
+      zipUnreadable: (p: { file: string }) => `"${p.file}" ist keine gültige oder eine beschädigte ZIP-Datei.`
     },
     modBundle: {
       manifestLoadFailed: (p: { status: number | string }) => `Mod-Bundle-Manifest konnte nicht geladen werden (${p.status}).`
