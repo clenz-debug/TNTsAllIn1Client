@@ -42,6 +42,13 @@ public final class EssentialCompat {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("tntsallin1client-essential.json");
 	private static final String KEY_NAMESPACE = "essential";
+	/**
+	 * Bumped whenever an older list of handled keys can't be trusted any more - an older one then
+	 * counts as empty, so every Essential key is unbound once again. 2: the launcher used to drop
+	 * Essential's bindings from the shared options.txt after playing an instance without Essential,
+	 * which put them back on their defaults while this list still called them handled.
+	 */
+	private static final int FILE_VERSION = 2;
 
 	private static Boolean loaded;
 
@@ -96,7 +103,8 @@ public final class EssentialCompat {
 		}
 		try {
 			JsonObject json = new Gson().fromJson(Files.readString(FILE), JsonObject.class);
-			if (json != null && json.has("unboundKeys")) {
+			boolean current = json != null && json.has("version") && json.get("version").getAsInt() == FILE_VERSION;
+			if (current && json.has("unboundKeys")) {
 				for (JsonElement key : json.getAsJsonArray("unboundKeys")) {
 					keys.add(key.getAsString());
 				}
@@ -111,6 +119,7 @@ public final class EssentialCompat {
 		JsonArray array = new JsonArray();
 		keys.stream().sorted().forEach(array::add);
 		JsonObject json = new JsonObject();
+		json.addProperty("version", FILE_VERSION);
 		json.add("unboundKeys", array);
 		try {
 			Files.createDirectories(FILE.getParent());
