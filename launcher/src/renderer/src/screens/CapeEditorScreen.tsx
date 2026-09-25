@@ -7,6 +7,7 @@ import { useIsWrapped } from '../useIsWrapped'
 import { useLanguage, useTranslations } from '../i18n/LanguageContext'
 import { ColorPicker } from '../skinEditor/ColorPicker'
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
+import { ToolIcon } from '../skinEditor/ToolIcon'
 import type { CapeLibraryEntry, SkinVariant } from '../../../shared/types'
 
 type Tool = 'pencil' | 'eraser' | 'fill' | 'eyedropper'
@@ -450,8 +451,8 @@ export function CapeEditorScreen({ entry, skinDataUri, skinVariant, onSaved, onC
   }
 
   const toolButton = (id: Tool, label: string) => (
-    <button className={`tool-button${tool === id ? ' active' : ''}`} onClick={() => setTool(id)}>
-      {label}
+    <button className={`tool-button${tool === id ? ' active' : ''}`} onClick={() => setTool(id)} title={label} aria-label={label}>
+      <ToolIcon name={id} />
     </button>
   )
 
@@ -519,10 +520,10 @@ export function CapeEditorScreen({ entry, skinDataUri, skinVariant, onSaved, onC
               {toolButton('fill', t.capeEditor.toolFill)}
               {toolButton('eyedropper', t.skinEditor.toolEyedropper)}
               <button className="tool-button" disabled={!canUndo} onClick={handleUndo} title={t.skinEditor.undo} aria-label={t.skinEditor.undo}>
-                ↶
+                <ToolIcon name="undo" />
               </button>
               <button className="tool-button" disabled={!canRedo} onClick={handleRedo} title={t.skinEditor.redo} aria-label={t.skinEditor.redo}>
-                ↷
+                <ToolIcon name="redo" />
               </button>
             </div>
             <label className="cape-converter-row">

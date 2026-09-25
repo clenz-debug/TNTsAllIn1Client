@@ -9,6 +9,7 @@ import { BODY_PART_TOGGLES } from '../skinEditor/bodyParts'
 import { BodyPartDiagram } from '../skinEditor/BodyPartDiagram'
 import { ColorPicker } from '../skinEditor/ColorPicker'
 import { hitTest, uvToPixel } from '../skinEditor/raycastPaint'
+import { ToolIcon } from '../skinEditor/ToolIcon'
 import {
   canvasToPngBytes,
   createGridCanvas,
@@ -389,6 +390,12 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
     )
   }
 
+  const toolButton = (id: PaintTool, label: string) => (
+    <button className={`tool-button${tool === id ? ' active' : ''}`} onClick={() => setTool(id)} title={label} aria-label={label}>
+      <ToolIcon name={id} />
+    </button>
+  )
+
   return (
     <div className="mods-screen skin-editor-screen">
       <header>
@@ -409,23 +416,15 @@ export function SkinEditorScreen({ onClose, editingLibraryEntry }: Props) {
           <section className="mods-section">
             <h3>{t.skinEditor.toolHeading}</h3>
             <div className="skin-editor-tool-row">
-              <button className={`tool-button${tool === 'pencil' ? ' active' : ''}`} onClick={() => setTool('pencil')}>
-                {t.skinEditor.toolPencil}
-              </button>
-              <button className={`tool-button${tool === 'eraser' ? ' active' : ''}`} onClick={() => setTool('eraser')}>
-                {t.skinEditor.toolEraser}
-              </button>
-              <button className={`tool-button${tool === 'eyedropper' ? ' active' : ''}`} onClick={() => setTool('eyedropper')}>
-                {t.skinEditor.toolEyedropper}
-              </button>
-              <button className={`tool-button${tool === 'view' ? ' active' : ''}`} onClick={() => setTool('view')}>
-                {t.skinEditor.toolView}
-              </button>
+              {toolButton('pencil', t.skinEditor.toolPencil)}
+              {toolButton('eraser', t.skinEditor.toolEraser)}
+              {toolButton('eyedropper', t.skinEditor.toolEyedropper)}
+              {toolButton('view', t.skinEditor.toolView)}
               <button className="tool-button" disabled={!canUndo} onClick={handleUndo} title={t.skinEditor.undo} aria-label={t.skinEditor.undo}>
-                ↶
+                <ToolIcon name="undo" />
               </button>
               <button className="tool-button" disabled={!canRedo} onClick={handleRedo} title={t.skinEditor.redo} aria-label={t.skinEditor.redo}>
-                ↷
+                <ToolIcon name="redo" />
               </button>
             </div>
             <ColorPicker color={color} onChange={setColor} />

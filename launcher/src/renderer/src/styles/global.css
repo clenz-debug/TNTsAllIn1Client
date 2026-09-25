@@ -1229,8 +1229,15 @@ select option {
   color: var(--text);
   border: 1px solid var(--green-1);
   border-radius: 6px;
-  padding: 0.5rem 0.9rem;
+  padding: 0.45rem 0.6rem;
   cursor: pointer;
+}
+
+/* The editors' tool symbols (ToolIcon.tsx) - a fixed size so every button in the row matches. */
+.tool-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .tool-button.active {

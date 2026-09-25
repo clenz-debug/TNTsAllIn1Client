@@ -73,7 +73,7 @@ export const de = {
     noInstanceWarning: 'Noch keine Instanz angelegt - über "Instanzen verwalten…" eine erstellen.',
     bundleIncompatibleWarning: (versionId: string) =>
       `${versionId} hat keine gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, …) — startet als reines Fabric+Vanilla ohne Mods.`,
-    play: 'Play',
+    play: 'Spielen',
     playing: 'Läuft…',
     cancel: 'Start abbrechen'
   },
@@ -467,7 +467,7 @@ export const de = {
     skin: {
       wrongDimensions: (p: { width: number; height: number }) =>
         `Minecraft-Skins müssen 64x64 (oder das alte 64x32-Format) sein, diese Datei ist ${p.width}x${p.height}.`,
-      needInstanceFirst: 'Erst eine Instanz starten (Play-Klick), um die Steve/Alex-Vorlage laden zu können.',
+      needInstanceFirst: 'Erst eine Instanz starten (auf „Spielen“ klicken), um die Steve/Alex-Vorlage laden zu können.',
       templateEntryNotFound: (p: { entryPath: string; jarPath: string }) =>
         `Konnte "${p.entryPath}" nicht in ${p.jarPath} finden - der Pfad hat sich vermutlich mit einer neueren Minecraft-Version geändert.`
     },
