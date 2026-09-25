@@ -1,8 +1,17 @@
 {
   "versions": {
     "1.21.11": {
-      "ownMod": null,
+      "ownMod": {
+        "version": "0.1.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.0/tntsallin1client-0.1.0-mc1.21.11.jar",
+        "sha1": "202c1d7869c93f356e77a87363fbf07047f1c51b"
+      },
       "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "zGF3drOQ"
+        },
         {
           "name": "sodium",
           "modrinthProjectId": "AANobbMI",
@@ -27,9 +36,97 @@
           "name": "cape-provider",
           "modrinthProjectId": "orXAsira",
           "modrinthVersionId": "6bSwsL3J"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
         }
       ],
-      "bundledResourcepacks": []
+      "bundledResourcepacks": [
+        {
+          "name": "3D-Bushy-Bushie-1.0",
+          "version": "1.0",
+          "url": "https://cdn.modrinth.com/data/L5gAJjNG/versions/ClDYa9B9/3D_Bushy_Bushies%20%283%29.zip",
+          "sha1": "abaae611e205d9e8fd74f49450942a5d7ad9f3b1"
+        },
+        {
+          "name": "Bushy-Vegetation-3.5.2",
+          "version": "3.5.2",
+          "url": "https://cdn.modrinth.com/data/Yfm2j4w2/versions/2VhYpHqk/bushy_vegetation.zip",
+          "sha1": "9d78b5b905f43a46463d7f848a04ec95a0f01508"
+        },
+        {
+          "name": "Default-Dark-Mode-1.21.11-2026.4.0",
+          "version": "2026.4.0",
+          "url": "https://cdn.modrinth.com/data/6SLU7tS5/versions/sPDc9hXF/Default-Dark-Mode-1.21.11-2026.4.0.zip",
+          "sha1": "fb44a18556bd2954b7ac566b677ed13b9b30f42b"
+        },
+        {
+          "name": "Mushrooms-Plus-26.1_v1.4",
+          "version": "26.1_v1.4",
+          "url": "https://cdn.modrinth.com/data/mpL9oaYU/versions/RkNsyGvs/MushroomsPlus_26.1_v1.4.zip",
+          "sha1": "4b9f5335786aee9dd4e9ba83af4399b6069c382f"
+        },
+        {
+          "name": "Vanilla-Spinning-Stonecutter-3D-1.0.0",
+          "version": "1.0.0",
+          "url": "https://cdn.modrinth.com/data/tOQ8D1JO/versions/6BGExoAz/SpinningStonecutters3D.zip",
+          "sha1": "322fbf276780e1b78a3637ba9a98e0aa1106df72"
+        }
+      ]
+    },
+    "26.1.2": {
+      "ownMod": {
+        "version": "0.1.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.0/tntsallin1client-0.1.0-mc26.1.2.jar",
+        "sha1": "9001085b5f6f3dcb6ce56d04bd1ed5eaf18c197d"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "3dM0X6ou"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "tZQ3jqnf"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "Oqq8TOAV"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "l1mM6Ov7"
+        },
+        {
+          "name": "3dskinlayers",
+          "modrinthProjectId": "zV5r3pPn",
+          "modrinthVersionId": "yGhuC8Hx"
+        },
+        {
+          "name": "cape-provider",
+          "modrinthProjectId": "orXAsira",
+          "modrinthVersionId": "GILlUz33"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "6jk4EtFt"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "Default-Dark-Mode-26.2-2026.6.0",
+          "version": "2026.6.0",
+          "url": "https://cdn.modrinth.com/data/6SLU7tS5/versions/tPC8gaIQ/Default-Dark-Mode-26.2-2026.6.0.zip",
+          "sha1": "5f9740e6866d8814624fcde84945d98193c51552"
+        }
+      ]
     }
   }
 }
