@@ -111,6 +111,11 @@ export const en: typeof de = {
     ownHeading: 'Your mods',
     addMod: 'Add mod…',
     noneAdded: 'No mods of your own added yet.',
+    notices: {
+      essential:
+        "Essential detected: while it's installed, the game runs in the Minecraft design (Essential's menus can't be restyled), and Essential's keys are set to \"not bound\" on the first start. Essential cosmetics can cover client capes.",
+      optifine: "OptiFine/OptiFabric isn't compatible with Sodium - the game won't start with it. Use Iris for shaders instead."
+    },
     sortOptions: {
       relevance: 'Relevance',
       downloads: 'Downloads',

@@ -18,6 +18,7 @@
   "gui.tntsallin1client.menu.open_button": "Client Mods",
   "gui.tntsallin1client.design.switch": "Design wechseln",
   "gui.tntsallin1client.design.button": "Client-Design",
+  "gui.tntsallin1client.design.essential_locked": "Nicht verfügbar, solange Essential installiert ist - dessen Menüs gibt es nur im Minecraft-Design.",
   "gui.tntsallin1client.cards.move_resize": "Verschieben/Größe",
   "gui.tntsallin1client.cards.options": "Optionen",
   "gui.tntsallin1client.cards.enabled": "Aktiviert",

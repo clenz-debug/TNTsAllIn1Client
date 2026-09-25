@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.compat.EssentialCompat;
 import com.tntsallin1client.design.PauseScreenDesign;
 import com.tntsallin1client.design.PauseScreenLayoutAccess;
 import com.tntsallin1client.design.TitleScreenDesign;
@@ -79,9 +80,9 @@ public final class PauseMenuIntegration {
 					.bounds(x, y, half, height)
 					.build());
 			TitleScreenDesign.setMinecraftAnchor(designX, y, half, height);
-			widgets.add(Button.builder(Component.translatable("gui.tntsallin1client.design.button"), button -> TitleScreenDesign.switchToClient())
+			widgets.add(EssentialCompat.lockDesignSwitch(Button.builder(Component.translatable("gui.tntsallin1client.design.button"), button -> TitleScreenDesign.switchToClient())
 					.bounds(designX, y, half, height)
-					.build());
+					.build()));
 			PauseScreenDesign.measure(widgets);
 		});
 	}

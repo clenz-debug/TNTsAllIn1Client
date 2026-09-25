@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
+import com.tntsallin1client.compat.EssentialCompat;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.discord.DiscordPresenceManager;
@@ -109,6 +110,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		DebugScreenEntries.register(quickInfoId, new QuickInfoDebugEntry());
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "system_info_overlay"), new SystemInfoOverlay());
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+			// Essential's keys overlap with ours - unbind them once, see EssentialCompat.
+			EssentialCompat.unbindNewKeys(client);
 			client.debugEntries.setStatus(quickInfoId, DebugScreenEntryStatus.IN_OVERLAY);
 			QuickInfoDebugEntry.applyVanillaEntryVisibility(client);
 		});

@@ -2,7 +2,9 @@ import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { basename, join } from 'node:path'
 import { copyFile, mkdir, readdir, rename, rm } from 'node:fs/promises'
-import type { CustomModEntry } from '../../shared/types'
+import type { Readable } from 'node:stream'
+import { openPromise } from 'yauzl'
+import type { CustomModEntry, ModNotice } from '../../shared/types'
 import { loadLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
 import { bundledModsDir } from './resourcePaths'
@@ -20,12 +22,54 @@ function disabledFileName(fileName: string): string {
 
 /** Turns a raw `game/mods` directory entry into a `CustomModEntry`, or `null` for anything that's
  * neither an active nor a disabled jar (e.g. a stray non-mod file someone dropped in there). */
-function toCustomModEntry(rawName: string): CustomModEntry | null {
+function toCustomModEntry(rawName: string): Omit<CustomModEntry, 'notice'> | null {
   if (rawName.endsWith(DISABLED_SUFFIX) && rawName.slice(0, -DISABLED_SUFFIX.length).endsWith('.jar')) {
     return { fileName: rawName.slice(0, -DISABLED_SUFFIX.length), enabled: false }
   }
   if (rawName.endsWith('.jar')) {
     return { fileName: rawName, enabled: true }
+  }
+  return null
+}
+
+/** Fabric mod ids behind each {@link ModNotice}. Essential's jar in the mods folder is
+ * `essential-container` (the real `essential` mod gets downloaded by it at startup), OptiFabric is
+ * what makes OptiFine load on Fabric - Sodium's own `fabric.mod.json` declares it as `breaks`. */
+const NOTICE_MOD_IDS: Record<string, ModNotice> = {
+  'essential-container': 'essential',
+  essential: 'essential',
+  optifabric: 'optifine'
+}
+
+async function streamToString(stream: Readable): Promise<string> {
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) {
+    chunks.push(chunk as Buffer)
+  }
+  return Buffer.concat(chunks).toString('utf8')
+}
+
+/** Which {@link ModNotice} a jar deserves, if any - by its `fabric.mod.json` id, or for a plain
+ * OptiFine jar (no `fabric.mod.json` at all) by its `net/optifine/` classes. Unreadable jars and
+ * broken JSON just get no notice; this is only a hint, never a reason to fail listing the mods. */
+async function detectModNotice(jarPath: string): Promise<ModNotice | null> {
+  try {
+    const zipfile = await openPromise(jarPath, { lazyEntries: true, autoClose: true })
+    try {
+      for await (const entry of zipfile.eachEntry()) {
+        if (entry.fileName === 'fabric.mod.json') {
+          const json = JSON.parse(await streamToString(await zipfile.openReadStreamPromise(entry))) as { id?: unknown }
+          return typeof json.id === 'string' ? (NOTICE_MOD_IDS[json.id] ?? null) : null
+        }
+        if (entry.fileName.startsWith('net/optifine/')) {
+          return 'optifine'
+        }
+      }
+    } finally {
+      zipfile.close()
+    }
+  } catch {
+    // Not a readable jar - no notice.
   }
   return null
 }
@@ -105,10 +149,16 @@ export async function listCustomMods(instanceId: string): Promise<CustomModEntry
   const instance = settings.instances.find((candidate) => candidate.id === instanceId)
   const bundled = new Set(instance ? await listBundledMods(instance.versionId) : [])
   const rawEntries = await readdir(modsDir).catch(() => [])
-  return rawEntries
+  const entries = rawEntries
     .map(toCustomModEntry)
-    .filter((entry): entry is CustomModEntry => entry !== null)
+    .filter((entry): entry is Omit<CustomModEntry, 'notice'> => entry !== null)
     .filter((entry) => !bundled.has(entry.fileName) && !entry.fileName.startsWith(OWN_MOD_PREFIX))
+  return Promise.all(
+    entries.map(async (entry) => ({
+      ...entry,
+      notice: await detectModNotice(join(modsDir, entry.enabled ? entry.fileName : disabledFileName(entry.fileName)))
+    }))
+  )
 }
 
 /**

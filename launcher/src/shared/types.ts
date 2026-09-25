@@ -169,9 +169,15 @@ export interface CapeLibraryEntry {
  * rather than deleting it - own user request: "das man installierte externe mods deaktivieren kann
  * und nicht nur entfernen kann". `fileName` is always the plain `.jar` name, regardless of whether
  * it's currently enabled or disabled on disk - the stable identity the Mods screen keys its list on. */
+/** A known troublemaker among custom mods, shown as a hint under its row (`modsManager.ts#detectModNotice`):
+ * `essential` switches our client design off and has its keys unbound by our mod, `optifine`
+ * (OptiFine or OptiFabric) can't run next to the always-on Sodium at all. */
+export type ModNotice = 'essential' | 'optifine'
+
 export interface CustomModEntry {
   fileName: string
   enabled: boolean
+  notice: ModNotice | null
 }
 
 /** One user-added resource pack in an instance's `game/resourcepacks` (`main/launch/resourcepacksManager.ts`)

@@ -116,6 +116,12 @@ export const de = {
     ownHeading: 'Eigene Mods',
     addMod: 'Mod hinzufügen…',
     noneAdded: 'Keine eigenen Mods hinzugefügt.',
+    notices: {
+      essential:
+        'Essential erkannt: Solange es installiert ist, läuft das Spiel im Minecraft-Design (Essentials Menüs lassen sich nicht anpassen), und Essentials Tasten werden beim ersten Start auf „nicht belegt“ gesetzt. Essential-Cosmetics können Client-Capes überdecken.',
+      optifine:
+        'OptiFine/OptiFabric ist nicht mit Sodium kompatibel - das Spiel startet damit nicht. Für Shader stattdessen Iris verwenden.'
+    },
     sortOptions: {
       relevance: 'Relevanz',
       downloads: 'Downloads',

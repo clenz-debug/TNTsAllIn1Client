@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
+import com.tntsallin1client.compat.EssentialCompat;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 
@@ -27,7 +28,11 @@ public final class ClientDesign {
 	private ClientDesign() {
 	}
 
+	/** Always false while Essential is installed (see {@link EssentialCompat}) - without touching the saved choice, so it's back once Essential is removed. */
 	public static synchronized boolean isClient() {
+		if (EssentialCompat.isLoaded()) {
+			return false;
+		}
 		if (client == null) {
 			client = load();
 		}

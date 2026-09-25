@@ -334,7 +334,7 @@ export function ModsScreen({
         </button>
         <ul className="mods-list">
           {customMods.map((mod) => (
-            <li key={mod.fileName} className="mods-row">
+            <li key={mod.fileName} className={`mods-row${mod.enabled && mod.notice ? ' mods-row-with-notice' : ''}`}>
               <label className="checkbox-label">
                 <input
                   type="checkbox"
@@ -348,6 +348,9 @@ export function ModsScreen({
               <button className="link-button" onClick={() => void handleRemove(mod.fileName)} disabled={busy}>
                 {t.common.remove}
               </button>
+              {mod.enabled && mod.notice && (
+                <p className={`mods-row-notice${mod.notice === 'optifine' ? ' error' : ''}`}>{t.mods.notices[mod.notice]}</p>
+              )}
             </li>
           ))}
           {customMods.length === 0 && <li className="mods-empty">{t.mods.noneAdded}</li>}

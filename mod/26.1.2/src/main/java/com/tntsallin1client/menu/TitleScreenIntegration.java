@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.compat.EssentialCompat;
 import com.tntsallin1client.design.TitleScreenDesign;
 import com.tntsallin1client.design.TitleScreenLayoutAccess;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -61,11 +62,11 @@ public final class TitleScreenIntegration {
 
 			int designX = scaledWidth / 2 + 2;
 			TitleScreenDesign.setMinecraftAnchor(designX, y, BUTTON_WIDTH, BUTTON_HEIGHT);
-			Screens.getWidgets(screen).add(Button.builder(
+			Screens.getWidgets(screen).add(EssentialCompat.lockDesignSwitch(Button.builder(
 						Component.translatable("gui.tntsallin1client.design.button"),
 						button -> TitleScreenDesign.switchToClient())
 					.bounds(designX, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-					.build());
+					.build()));
 		});
 	}
 }
