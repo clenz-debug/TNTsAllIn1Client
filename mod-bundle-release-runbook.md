@@ -129,6 +129,11 @@ müsste einmal von Hand neu installiert werden:
   Instanzen scheinbar weg
 - Releases immer als normales Release veröffentlichen (`releaseType: release`), nie als Entwurf oder
   Vorabversion - die sieht das Auto-Update nicht
+- `nsis.deleteAppDataOnUninstall` bleibt aus (Standard) - sonst löscht die Deinstallation den
+  Datenordner mit Login, Instanzen und **Welten**. Zum Installationsordner: wählt jemand einen
+  bestehenden Ordner (z.B. `A:\MC`), hängt der Installer selbst einen Unterordner `tntsallin1client`
+  an, damit die Deinstallation nur den eigenen Ordner löscht - das nicht per eigenem NSIS-Skript
+  aushebeln.
 - falls später signiert wird: ein einmal genutztes Zertifikat nicht gegen eines mit anderem
   Herausgebernamen tauschen
 
