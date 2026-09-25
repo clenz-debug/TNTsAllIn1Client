@@ -1,9 +1,9 @@
 import { app } from 'electron'
-import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { isBundledModEnabled } from '../../shared/bundledMods'
 import type { LaunchStage } from '../../shared/types'
-import { isAlwaysEnabledBundledMod } from './modsManager'
+import { isAlwaysEnabledBundledMod, OWN_MOD_PREFIX } from './modsManager'
 import { bakedOwnModDir, bundledModsDir, bundledResourcepacksDir, bundledResourcesRoot, ownModDir } from './resourcePaths'
 
 export type InstallProgressCallback = (
@@ -56,6 +56,31 @@ async function writeBundledResourcepackList(gameDir: string, fileNames: string[]
 }
 
 /**
+ * Which jars in `game/mods/` the last sync put there itself. A bundle update brings new file names
+ * (Modrinth's embed the version), and the old jar must then leave the instance too - otherwise
+ * Fabric finds the same mod twice and refuses to start. Only files on this list are ever removed
+ * that way, never anything the user added. Launcher-internal, next to the resourcepack list above.
+ */
+function syncedModsFile(gameDir: string): string {
+  return join(gameDir, 'config', 'tntsallin1client-synced-mods.json')
+}
+
+async function readSyncedMods(gameDir: string): Promise<string[]> {
+  try {
+    const parsed: unknown = JSON.parse(await readFile(syncedModsFile(gameDir), 'utf8'))
+    return Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === 'string') : []
+  } catch {
+    // Not written yet (instance last synced by an older launcher) - nothing known to clean up.
+    return []
+  }
+}
+
+async function writeSyncedMods(gameDir: string, fileNames: string[]): Promise<void> {
+  await mkdir(join(gameDir, 'config'), { recursive: true })
+  await writeFile(syncedModsFile(gameDir), JSON.stringify(fileNames, null, 2))
+}
+
+/**
  * Copies whichever jar in `libsDir` is newest into `destModsDir`, overwriting whatever's already
  * there under that name. In dev mode `libsDir` is `mod/<versionId>/build/libs/` directly - our own
  * mod jar changes constantly during development, unlike the third-party jars in `mods-bundle/`, so
@@ -75,19 +100,19 @@ async function writeBundledResourcepackList(gameDir: string, fileNames: string[]
  * Either way, excludes `-sources.jar`/`-dev.jar` (Loom's unremapped intermediary-names jar, not
  * safe to run standalone) so only the real, remapped runtime jar is ever picked.
  */
-async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void> {
+async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<string | null> {
   let entries: string[]
   try {
     entries = await readdir(libsDir)
   } catch {
     // Mod hasn't been built yet on this checkout (no `gradlew build` run) - nothing to pull in.
-    return
+    return null
   }
 
   const candidates = entries.filter(
     (name) => name.endsWith('.jar') && !name.includes('-sources') && !name.includes('-dev')
   )
-  if (candidates.length === 0) return
+  if (candidates.length === 0) return null
 
   const withMtime = await Promise.all(
     candidates.map(async (name) => ({ name, mtimeMs: (await stat(join(libsDir, name))).mtimeMs }))
@@ -96,6 +121,14 @@ async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void
 
   await mkdir(destModsDir, { recursive: true })
   await copyFile(join(libsDir, newest.name), join(destModsDir, newest.name))
+  // A new version of our mod is a new file name (`tntsallin1client-<version>.jar`), so the previous
+  // one would stay and Fabric would refuse to start with our mod twice. By prefix rather than via
+  // the synced-mods list: instances synced before that list existed hold the old jar too.
+  const stale = (await readdir(destModsDir)).filter(
+    (name) => name !== newest.name && name.startsWith(OWN_MOD_PREFIX) && name.endsWith('.jar')
+  )
+  await Promise.all(stale.map((name) => rm(join(destModsDir, name), { force: true })))
+  return newest.name
 }
 
 /**
@@ -127,9 +160,10 @@ async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string)
  * Previously all of this was a one-off manual copy (see Phase 4/5p in Aktuelle_Phase.md) — meaning
  * a fresh or reset instance directory silently lost it, and (worse) a stale manual copy of our own
  * mod jar could sit there indefinitely without anyone noticing. Only ever adds/overwrites the
- * synced files, never deletes anything else already in those folders (see `syncBundleDir`'s own
- * doc comment for the one deliberate exception: mods currently toggled off), so anything the user
- * places there by hand survives a sync.
+ * synced files, never deletes anything else already in those folders, so anything the user places
+ * there by hand survives a sync. Deliberate exceptions, all jars the launcher put there itself: mods
+ * currently toggled off (see `syncBundleDir`), and jars a bundle update replaced with a new file
+ * name (see `readSyncedMods` and `syncOwnModJar`).
  *
  * Doesn't touch `options.txt` — a resourcepack still has to be enabled once in-game (Optionen ->
  * Ressourcenpakete), same as any resourcepack in vanilla Minecraft. This only guarantees the file
@@ -189,11 +223,21 @@ export async function syncBundledContent(
   // live build instead, see resolveDevOwnModLibsDir.
   const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(resourcesRoot, versionId)
 
+  const previouslySynced = await readSyncedMods(gameDir)
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
   const resourcepacksBundleDir = bundledResourcepacksDir(versionId)
   await syncBundleDir(resourcepacksBundleDir, join(gameDir, 'resourcepacks'))
   await writeBundledResourcepackList(gameDir, await listBundleFiles(resourcepacksBundleDir))
-  await syncOwnModJar(ownModLibsDir, destModsDir)
+  const ownModJar = await syncOwnModJar(ownModLibsDir, destModsDir)
+
+  // An empty bundle listing means the folder is missing, not that every mod was dropped - keep the
+  // instance's jars and the list as they are then.
+  if (allBundledMods.length > 0) {
+    const current = new Set([...allBundledMods, ...(ownModJar ? [ownModJar] : [])])
+    const superseded = previouslySynced.filter((name) => !current.has(name))
+    await Promise.all(superseded.map((name) => rm(join(destModsDir, name), { force: true })))
+    await writeSyncedMods(gameDir, [...allBundledMods.filter((name) => !disabledMods.has(name)), ...(ownModJar ? [ownModJar] : [])])
+  }
   onProgress('bundles', 1, 1)
   return { skipped: false }
 }

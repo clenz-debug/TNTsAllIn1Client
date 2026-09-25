@@ -78,7 +78,7 @@ async function detectModNotice(jarPath: string): Promise<ModNotice | null> {
  * produces starts with this, regardless of version (`tntsallin1client-0.1.0.jar` etc.). Used to
  * exclude our own mod from the "custom mods" list below - it's not something the user adds or
  * removes here, it's what makes this "our" client to begin with. */
-const OWN_MOD_PREFIX = 'tntsallin1client-'
+export const OWN_MOD_PREFIX = 'tntsallin1client-'
 
 /**
  * Bundled jar filename prefixes that are never optional via the Mods screen's toggle - always
