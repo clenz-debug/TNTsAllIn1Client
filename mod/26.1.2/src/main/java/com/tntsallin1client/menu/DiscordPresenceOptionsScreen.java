@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.offline.OfflineProfile;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -92,6 +93,11 @@ public class DiscordPresenceOptionsScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		if (OfflineProfile.isOfflineLaunch()) {
+			// DiscordPresenceManager skips offline launches - say so, the toggles below still read "on".
+			MenuText.centered(guiGraphics, this.font, Component.translatable("gui.tntsallin1client.discord_presence_options.offline_hint"),
+					this.width / 2, 26, 0xFFFFCC66);
+		}
 	}
 
 	@Override

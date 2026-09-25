@@ -251,6 +251,7 @@
   "gui.tntsallin1client.menu.discord_presence": "Discord Activity",
   "gui.tntsallin1client.discord_presence_options.title": "Discord Activity Options",
   "gui.tntsallin1client.discord_presence_options.enabled": "Enabled",
+  "gui.tntsallin1client.discord_presence_options.offline_hint": "Turned off in offline mode - Discord needs internet.",
   "gui.tntsallin1client.discord_presence_options.show_game_mode": "Show Singleplayer/Multiplayer",
   "gui.tntsallin1client.discord_presence_options.show_version": "Show Minecraft Version",
   "gui.tntsallin1client.discord_presence_options.show_world_name": "Show World Name (Singleplayer)",

@@ -52,7 +52,7 @@ export const de = {
     },
     offline: {
       banner:
-        'Offline-Modus: keine Internetverbindung. Du kannst Einzelspieler und LAN spielen; Server, Skin-/Cape-Upload, Mod-Suche und Updates brauchen Internet.',
+        'Offline-Modus: keine Internetverbindung. Du kannst Einzelspieler und LAN spielen; Server, Discord-Anzeige, Skin-/Cape-Upload, Mod-Suche und Updates brauchen Internet.',
       reconnect: 'Erneut verbinden',
       reconnecting: 'Verbinde…',
       stillOffline: 'Immer noch keine Verbindung.'

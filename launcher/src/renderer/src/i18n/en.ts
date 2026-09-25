@@ -48,7 +48,7 @@ export const en: typeof de = {
     },
     offline: {
       banner:
-        'Offline mode: no internet connection. You can play singleplayer and LAN; servers, skin/cape upload, mod search and updates need internet.',
+        'Offline mode: no internet connection. You can play singleplayer and LAN; servers, Discord presence, skin/cape upload, mod search and updates need internet.',
       reconnect: 'Reconnect',
       reconnecting: 'Connecting…',
       stillOffline: 'Still no connection.'
