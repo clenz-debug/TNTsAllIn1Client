@@ -35,7 +35,8 @@ import java.util.UUID;
  * library needed either way.
  *
  * <p>Not thread-safe by itself - {@link com.tntsallin1client.discord.DiscordPresenceManager} is the
- * only caller, and only ever from the client tick thread.
+ * only caller, and only ever from its own single IPC thread (the handshake can block indefinitely,
+ * see there).
  */
 public final class DiscordIpcClient implements AutoCloseable {
 	private static final int OP_HANDSHAKE = 0;

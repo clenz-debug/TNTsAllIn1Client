@@ -2,6 +2,7 @@ package com.tntsallin1client.discord;
 
 import com.tntsallin1client.TNTsAllIn1ClientMod;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.offline.OfflineProfile;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -12,6 +13,8 @@ import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Drives Discord Rich Presence off the client's own tick loop - own user request ("in Discord soll
@@ -26,15 +29,30 @@ import java.util.List;
  * (why {@code getWorldPath(LevelResource.ROOT)} needs {@code normalize()} before
  * {@code getFileName()}, why multiplayer is keyed by {@code ServerData#ip} not the editable
  * {@code #name}) - same underlying "which world/server am I in" question, so the same proven answer.
+ *
+ * <p>All IPC (connect, handshake, sending) runs on its own {@link #IPC} thread, never on the tick
+ * thread: Discord only answers the handshake once it's connected to its own servers, so without
+ * internet the handshake read blocks indefinitely - on the tick thread that froze the whole game at
+ * the loading screen (found in the offline mode's first live test). The tick thread only decides
+ * what to send and hands it over; while a job is still {@link #busy}, it simply skips.
  */
 public final class DiscordPresenceManager {
 	private static final long RECONNECT_INTERVAL_MILLIS = 15_000;
 	private static final int TICKS_BETWEEN_UPDATES = 20;
 
-	private static @Nullable DiscordIpcClient client;
+	private static final ExecutorService IPC = Executors.newSingleThreadExecutor(runnable -> {
+		Thread thread = new Thread(runnable, "TNT Discord IPC");
+		thread.setDaemon(true);
+		return thread;
+	});
+
+	/** Only ever written on the {@link #IPC} thread, read on the tick thread. */
+	private static volatile @Nullable DiscordIpcClient client;
+	private static volatile @Nullable RichPresenceData lastSent;
+	private static volatile @Nullable String lastScopeKey;
+	/** A job is queued or running on {@link #IPC} - no new one until it's done. */
+	private static volatile boolean busy;
 	private static long lastConnectAttemptMillis = 0;
-	private static @Nullable RichPresenceData lastSent;
-	private static @Nullable String lastScopeKey;
 	private static long scopeStartMillis;
 	private static int tickCounter;
 
@@ -42,9 +60,11 @@ public final class DiscordPresenceManager {
 	}
 
 	public static void tick(Minecraft mc) {
+		if (busy) return;
 		ClientConfig config = ClientConfig.get();
-		if (!config.discordPresenceEnabled) {
-			if (client != null) disconnect();
+		// Offline launch (see OfflineProfile): Discord can't show a presence without internet anyway.
+		if (!config.discordPresenceEnabled || OfflineProfile.isOfflineLaunch()) {
+			if (client != null) runOnIpc(DiscordPresenceManager::disconnect);
 			return;
 		}
 
@@ -58,13 +78,31 @@ public final class DiscordPresenceManager {
 
 		RichPresenceData desired = computePresence(mc, config);
 		if (!desired.equals(lastSent)) {
+			runOnIpc(() -> send(desired));
+		}
+	}
+
+	private static void runOnIpc(Runnable job) {
+		busy = true;
+		IPC.execute(() -> {
 			try {
-				client.setActivity(desired);
-				lastSent = desired;
-			} catch (IOException e) {
-				TNTsAllIn1ClientMod.LOGGER.info("[{}] Discord IPC connection lost, will retry.", TNTsAllIn1ClientMod.MOD_ID);
-				disconnect();
+				job.run();
+			} finally {
+				busy = false;
 			}
+		});
+	}
+
+	/** On the {@link #IPC} thread. */
+	private static void send(RichPresenceData desired) {
+		DiscordIpcClient current = client;
+		if (current == null) return;
+		try {
+			current.setActivity(desired);
+			lastSent = desired;
+		} catch (IOException e) {
+			TNTsAllIn1ClientMod.LOGGER.info("[{}] Discord IPC connection lost, will retry.", TNTsAllIn1ClientMod.MOD_ID);
+			disconnect();
 		}
 	}
 
@@ -72,20 +110,25 @@ public final class DiscordPresenceManager {
 		long now = System.currentTimeMillis();
 		if (now - lastConnectAttemptMillis < RECONNECT_INTERVAL_MILLIS) return;
 		lastConnectAttemptMillis = now;
-		try {
-			client = DiscordIpcClient.connect(Long.parseLong(config.discordApplicationClientId));
-		} catch (IOException | NumberFormatException e) {
-			// Discord not running (IOException - every candidate pipe/socket connect failed), or the
-			// placeholder client id in ClientConfig was never replaced with a real one
-			// (NumberFormatException) - neither is worth logging every 15s, both are simply "not
-			// ready yet" until they're not.
-			client = null;
-		}
+		String clientId = config.discordApplicationClientId;
+		runOnIpc(() -> {
+			try {
+				client = DiscordIpcClient.connect(Long.parseLong(clientId));
+			} catch (IOException | NumberFormatException e) {
+				// Discord not running (IOException - every candidate pipe/socket connect failed), or the
+				// placeholder client id in ClientConfig was never replaced with a real one
+				// (NumberFormatException) - neither is worth logging every 15s, both are simply "not
+				// ready yet" until they're not.
+				client = null;
+			}
+		});
 	}
 
+	/** On the {@link #IPC} thread. */
 	private static void disconnect() {
-		if (client != null) {
-			client.close();
+		DiscordIpcClient current = client;
+		if (current != null) {
+			current.close();
 			client = null;
 		}
 		lastSent = null;
