@@ -1,0 +1,4 @@
+# Files that run on the Linux server (deploy script, systemd unit, Apache override) must keep LF
+# line endings - core.autocrlf would otherwise turn them into CRLF on a fresh Windows checkout.
+backend/deploy/* text eol=lf
+*.sh text eol=lf
