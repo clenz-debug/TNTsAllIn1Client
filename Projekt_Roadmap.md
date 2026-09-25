@@ -169,7 +169,7 @@ Launcher: `electron-builder` (NSIS/dmg/AppImage) + `electron-updater` gegen z.B.
 
 
 persöhnliche liste was fehlt:
-- **Tests mit einem zweiten Spieler** → [check] alle bestanden (2026-09-25, mit einem Bekannten mit eher schwachem PC; Installation über den öffentlichen Link lief ohne Hilfe):
+- **Tests mit einem zweiten Spieler** → [check] alle bestanden (2026-09-25, mit einem Bekannten mit eher schwachem PC):
   - [check] live bestätigt (2026-09-25, auf beiden Seiten) - Freunde (Phase 8 Schritt 1): er installiert den Client und meldet sich einmal an → du schickst ihm eine Anfrage per Name (und umgekehrt: gegenseitige Anfragen sollen direkt zu Freunden machen) → annehmen/ablehnen/zurückziehen → Status durchschalten (Online/Abwesend/Nicht stören/Unsichtbar) und prüfen, dass es beim anderen nach spätestens ~20 s ankommt → "Server verbergen" an/aus → Einzelspieler/Hauptmenü/Server-Anzeige → Launcher schließen = sofort offline → Freund entfernen
   - [check] live bestätigt (2026-09-25, spürbarer FPS-Gewinn auf dem schwächeren PC des Bekannten) - FPS auf schwacher Hardware: gleiche Welt, gleiche Einstellungen (Sichtweite, Grafik) einmal im normalen Minecraft-Launcher (Vanilla) und einmal mit unserem Client (Sodium/Lithium laufen immer mit), FPS mit dem FPS-Zähler bzw. F3 vergleichen und notieren. Falls es ruckelt: RAM-Einstellung im Launcher prüfen
   - [check] live bestätigt (2026-09-25) - Custom Capes (Phase 7b): sieht er dein hochgeladenes Cape im Spiel, und ist ein HD-Cape unverzerrt?
