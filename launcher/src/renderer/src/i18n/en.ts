@@ -414,6 +414,10 @@ export const en: typeof de = {
         'How the title screen and the Client Mods menu look in-game. You can also switch in-game: via the "Client Design" button in the Minecraft design, via the logo in the client design.',
       minecraft: 'Minecraft design',
       client: 'Client design (your colors)'
+    },
+    about: {
+      heading: 'About',
+      version: (version: string) => `Launcher version ${version}`
     }
   },
   errors: {

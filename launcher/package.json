@@ -1,6 +1,6 @@
 {
   "name": "tntsallin1client-launcher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Electron launcher for TNT's All-In-1 Client",
   "author": "clenz-debug",

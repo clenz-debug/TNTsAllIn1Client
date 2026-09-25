@@ -90,6 +90,10 @@ win:
   # in mod/*/), so this lives alongside the runtime icon in resources/ instead, which isn't ignored.
   icon: resources/icon.ico
 nsis:
+  # No version in the file name (own user request): a permanent direct link to the newest installer,
+  # .../releases/latest/download/tntsallin1client-setup.exe. Auto-update reads the file name from
+  # latest.yml, so it doesn't care. The version shows in the launcher's settings ("About").
+  artifactName: tntsallin1client-setup.${ext}
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true

@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from 'electron'
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { writeFile } from 'node:fs/promises'
 import { totalmem } from 'node:os'
 import { join } from 'node:path'
@@ -597,6 +597,9 @@ export function registerIpcHandlers(): void {
   // simply lost, not queued. This lets that window ask once on mount instead of only ever reacting
   // to a broadcast it may have missed.
   ipcMain.handle(IpcChannel.LaunchIsBusy, () => currentLaunchController !== null)
+
+  // Settings screen's "About": the installer file no longer carries the version in its name.
+  ipcMain.handle(IpcChannel.AppVersion, () => app.getVersion())
 
   // Friends (Phase 8) - see friends/friendsService.ts. Start/stop follow PlayScreen: started with an
   // online profile, stopped on logout or in offline mode.

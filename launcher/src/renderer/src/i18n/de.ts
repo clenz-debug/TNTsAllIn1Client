@@ -422,6 +422,10 @@ export const de = {
         'Wie der Startbildschirm und das Client-Mods-Menü im Spiel aussehen. Umschalten geht auch im Spiel: im Minecraft-Design über den Button „Client-Design“, im Client-Design über das Logo.',
       minecraft: 'Minecraft-Design',
       client: 'Client-Design (deine Farben)'
+    },
+    about: {
+      heading: 'Über',
+      version: (version: string) => `Launcher-Version ${version}`
     }
   },
   /**

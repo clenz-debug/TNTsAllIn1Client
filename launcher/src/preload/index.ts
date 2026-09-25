@@ -127,6 +127,7 @@ const api = {
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
   getSystemMemoryInfo: (): Promise<SystemMemoryInfo> => ipcRenderer.invoke(IpcChannel.SystemMemoryInfo),
   openConsoleWindow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.ConsoleWindowOpen),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke(IpcChannel.AppVersion),
   startFriends: (): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsStart),
   stopFriends: (): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsStop),
   getFriendsState: (): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsGetState),

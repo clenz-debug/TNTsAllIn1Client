@@ -123,6 +123,12 @@ export function SettingsScreen({
     onMaxMemoryMbChange(Math.min(totalMemoryMb, Math.max(MIN_MEMORY_MB, Math.round(value))))
   }
 
+  // "About": the launcher's own version - the installer's file name no longer shows it (own user request).
+  const [appVersion, setAppVersion] = useState<string | null>(null)
+  useEffect(() => {
+    void window.api.getAppVersion().then(setAppVersion)
+  }, [])
+
   return (
     <div className="instances-screen">
       <header>
@@ -245,6 +251,11 @@ export function SettingsScreen({
             { value: 'client', label: t.settings.clientDesign.client }
           ]}
         />
+      </section>
+
+      <section className="instances-section">
+        <h3>{t.settings.about.heading}</h3>
+        <p className="version-warning">{appVersion ? t.settings.about.version(appVersion) : t.common.loading}</p>
       </section>
     </div>
   )
