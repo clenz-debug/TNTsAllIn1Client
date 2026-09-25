@@ -33,6 +33,10 @@ export const de = {
       'Du kannst die Farben des Launchers ganz nach deinem Geschmack anpassen - das wirkt sich auf den gesamten Client aus. Du kannst diesen Schritt auch überspringen und die Standardfarben behalten.',
     skip: 'Überspringen (Standardfarben)',
     next: 'Weiter',
+    storageHeading: 'Wähle den Speicherort',
+    storageExplanation:
+      'Hier speichert der Launcher Minecraft, deine Instanzen und deine Welten - das können mit der Zeit viele Gigabyte werden. Egal, wo du den Launcher installiert hast: Erst einmal liegt das in deinem Benutzerordner (siehe unten). Ist dort wenig Platz, wähle am besten einen eigenen, leeren Ordner auf einer anderen Festplatte. Du kannst das auch später in den Einstellungen ändern.',
+    storageMoving: 'Wird verschoben…',
     designHeading: 'Wähle das Design im Spiel',
     designExplanation:
       'Der Startbildschirm und das Client-Mods-Menü können wie normales Minecraft aussehen oder im eigenen Client-Design in deinen Farben. Du kannst das jederzeit in den Einstellungen oder direkt im Spiel auf dem Startbildschirm ändern.'

@@ -29,6 +29,10 @@ export const en: typeof de = {
       "You can customize the launcher's colors entirely to your taste - this affects the whole client. You can also skip this step and keep the default colors.",
     skip: 'Skip (default colors)',
     next: 'Next',
+    storageHeading: 'Choose where to store your game data',
+    storageExplanation:
+      'This is where the launcher keeps Minecraft, your instances and your worlds - over time that can add up to many gigabytes. No matter where you installed the launcher, it starts out in your user folder (see below). If space is tight there, it is best to pick a separate, empty folder on another drive. You can also change this later in the settings.',
+    storageMoving: 'Moving…',
     designHeading: 'Choose the in-game design',
     designExplanation:
       'The title screen and the Client Mods menu can look like regular Minecraft or use the client design in your colors. You can change this anytime in the settings or right on the in-game title screen.'

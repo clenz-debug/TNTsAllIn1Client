@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AppearanceEditor } from '../AppearanceEditor'
 import { Dropdown } from '../Dropdown'
+import { formatBytes } from '../formatBytes'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import type { ClientDesign, Language, StorageInfo, StorageMoveProgressEvent, SystemMemoryInfo, ThemeColors } from '../../../shared/types'
-
-function formatBytes(bytes: number): string {
-  const gb = bytes / 1024 ** 3
-  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / 1024 ** 2).toFixed(0)} MB`
-}
 
 /** Fallback used only while `getSystemMemoryInfo()` hasn't resolved yet (or failed) - large enough
  * that the "Max RAM" number input isn't stuck at some tiny, clearly-wrong ceiling in the meantime. */

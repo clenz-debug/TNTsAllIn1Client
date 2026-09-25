@@ -1,0 +1,5 @@
+/** "12.3 GB" / "512 MB" - the Settings screen's and onboarding's free-space and memory labels. */
+export function formatBytes(bytes: number): string {
+  const gb = bytes / 1024 ** 3
+  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / 1024 ** 2).toFixed(0)} MB`
+}
