@@ -122,9 +122,16 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   }, [profile.skins])
 
   useEffect(() => {
-    Promise.all([window.api.loadSettings(), window.api.listVersions(), window.api.listBundleCompatibleVersions()])
-      .then(([settings, list, bundleVersions]) => {
-        setVersions(list)
+    // The version list is loaded on its own: it comes from the internet (or its offline cache,
+    // see main/offline.ts), and must never keep the instances - all local - from showing up.
+    window.api
+      .listVersions()
+      .then(setVersions)
+      .catch((err) => {
+        if (!profile.offline) setVersionsError(formatError(err, t))
+      })
+    Promise.all([window.api.loadSettings(), window.api.listBundleCompatibleVersions()])
+      .then(([settings, bundleVersions]) => {
         setShowSnapshots(settings.showSnapshots)
         setInstances(settings.instances)
         setSelectedInstanceId(settings.selectedInstanceId)
@@ -223,6 +230,27 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [modBundleUpdate, setModBundleUpdate] = useState<ModBundleUpdateInfo | null>(null)
   const [modBundleUpdateError, setModBundleUpdateError] = useState<string | null>(null)
   const [applyingModBundleUpdate, setApplyingModBundleUpdate] = useState(false)
+  const [reconnecting, setReconnecting] = useState(false)
+  const [reconnectFailed, setReconnectFailed] = useState(false)
+
+  /** Offline mode's "Erneut verbinden": a normal silent re-login. Still offline → stays as it is;
+   * the login was actually rejected (e.g. refresh token expired) → back to the login screen. */
+  async function handleReconnect(): Promise<void> {
+    setReconnecting(true)
+    setReconnectFailed(false)
+    try {
+      const restored = await window.api.restoreSession()
+      if (!restored) {
+        onLogout()
+      } else if (restored.offline) {
+        setReconnectFailed(true)
+      } else {
+        onProfileUpdate(restored)
+      }
+    } finally {
+      setReconnecting(false)
+    }
+  }
 
   useEffect(() => {
     if (!selectedInstance) {
@@ -425,6 +453,20 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           </button>
         </div>
       </header>
+
+      {profile.offline && (
+        <div className="update-banner">
+          <span>
+            {t.play.offline.banner}
+            {reconnectFailed && <span className="error"> {t.play.offline.stillOffline}</span>}
+          </span>
+          <div className="header-actions">
+            <button className="link-button" disabled={reconnecting} onClick={() => void handleReconnect()}>
+              {reconnecting ? t.play.offline.reconnecting : t.play.offline.reconnect}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 'checking'/'not-available'/'error' deliberately show no banner - same "purely informational,
           a failed check is never worth surfacing" reasoning the old Phase 6d check already had.

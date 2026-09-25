@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
 import type { LaunchStage } from '../../shared/types'
 import { dataRoot } from '../dataRoot'
+import { cachedJson } from '../offline'
 import { downloadAll, type DownloadTask } from './downloader'
 
 /** Fixed, well-known manifest URL Mojang's own launcher uses to look up Java runtimes - not tied
@@ -92,11 +93,17 @@ export async function ensureJavaRuntime(component: string, onProgress: InstallPr
   const javaBinaryPath = join(dir, ...javaBinaryRelativePath(osKey).split('/'))
   const versionMarkerPath = join(dir, '.version')
 
-  const manifestResponse = await fetch(RUNTIME_MANIFEST_URL, { signal })
-  if (!manifestResponse.ok) {
-    throw localizedError('launch.javaManifestFetchFailed', { status: manifestResponse.status })
-  }
-  const manifest = (await manifestResponse.json()) as RuntimeManifest
+  const manifest = await cachedJson(
+    'java-runtime-manifest',
+    async () => {
+      const manifestResponse = await fetch(RUNTIME_MANIFEST_URL, { signal })
+      if (!manifestResponse.ok) {
+        throw localizedError('launch.javaManifestFetchFailed', { status: manifestResponse.status })
+      }
+      return (await manifestResponse.json()) as RuntimeManifest
+    },
+    signal
+  )
   const ref = manifest[osKey]?.[component]?.[0]
   if (!ref) {
     throw localizedError('launch.noJavaRuntimeForComponent', { component, osKey })

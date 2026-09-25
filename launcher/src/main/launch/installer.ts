@@ -2,6 +2,7 @@ import { join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
 import type { LaunchStage } from '../../shared/types'
 import { dataRoot } from '../dataRoot'
+import { cachedJson } from '../offline'
 import { librariesForCurrentOs, libraryDestinationPath, nativesArtifactForCurrentOs } from './classpath'
 import { downloadAll, type DownloadTask } from './downloader'
 import { extractNatives, type NativesJar } from './nativesExtractor'
@@ -56,12 +57,18 @@ interface AssetIndex {
   objects: Record<string, { hash: string }>
 }
 
-async function fetchAssetIndex(url: string, signal?: AbortSignal): Promise<AssetIndex> {
-  const response = await fetch(url, { signal })
-  if (!response.ok) {
-    throw localizedError('launch.assetIndexFetchFailed', { status: response.status })
-  }
-  return (await response.json()) as AssetIndex
+async function fetchAssetIndex(id: string, url: string, signal?: AbortSignal): Promise<AssetIndex> {
+  return cachedJson(
+    `asset-index-${id}`,
+    async () => {
+      const response = await fetch(url, { signal })
+      if (!response.ok) {
+        throw localizedError('launch.assetIndexFetchFailed', { status: response.status })
+      }
+      return (await response.json()) as AssetIndex
+    },
+    signal
+  )
 }
 
 export type InstallProgressCallback = (
@@ -115,7 +122,7 @@ export async function installVersion(
   }
 
   const assetsDir = sharedAssetsDir()
-  const assetIndex = await fetchAssetIndex(detail.assetIndex.url, signal)
+  const assetIndex = await fetchAssetIndex(detail.assetIndex.id, detail.assetIndex.url, signal)
   const assetIndexDestination = join(assetsDir, 'indexes', `${detail.assetIndex.id}.json`)
   await downloadAll(
     [{ url: detail.assetIndex.url, destination: assetIndexDestination, sha1: detail.assetIndex.sha1 }],

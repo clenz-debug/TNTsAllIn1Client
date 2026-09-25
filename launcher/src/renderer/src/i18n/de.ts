@@ -50,6 +50,13 @@ export const de = {
       downloaded: (version: string) => `Update heruntergeladen (Version ${version}) - bereit zum Installieren.`,
       restartNow: 'Jetzt neu starten'
     },
+    offline: {
+      banner:
+        'Offline-Modus: keine Internetverbindung. Du kannst Einzelspieler und LAN spielen; Server, Skin-/Cape-Upload, Mod-Suche und Updates brauchen Internet.',
+      reconnect: 'Erneut verbinden',
+      reconnecting: 'Verbinde…',
+      stillOffline: 'Immer noch keine Verbindung.'
+    },
     modBundleUpdate: {
       available: (names: string) => `Neue Mod-Bundle-Version verfügbar (${names}).`,
       ownMod: 'eigener Mod',
@@ -467,7 +474,9 @@ export const de = {
        * reaches `formatError` (see `formatError.ts#errorCode`) and shows `play.launchCancelled`
        * instead, so this entry is only ever seen if some other, not-yet-updated call site ends up
        * showing a `launch.cancelled` error through the normal path. */
-      cancelled: 'Start abgebrochen.'
+      cancelled: 'Start abgebrochen.',
+      offlineNotReady:
+        'Keine Internetverbindung, und für diese Instanz fehlen noch Dateien. Offline starten geht erst, nachdem die Instanz einmal online gestartet wurde.'
     },
     mods: {
       searchFailed: (p: { status: number | string }) => `Modrinth-Suche fehlgeschlagen (${p.status})`,

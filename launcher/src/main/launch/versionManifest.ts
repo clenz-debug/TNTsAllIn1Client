@@ -1,4 +1,5 @@
 import { localizedError } from '../../shared/errorMessages'
+import { cachedJson } from '../offline'
 
 const VERSION_MANIFEST_URL = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
 
@@ -14,11 +15,17 @@ interface VersionManifest {
 }
 
 async function fetchManifest(signal?: AbortSignal): Promise<VersionManifest> {
-  const manifestResponse = await fetch(VERSION_MANIFEST_URL, { signal })
-  if (!manifestResponse.ok) {
-    throw localizedError('launch.versionManifestFetchFailed', { status: manifestResponse.status })
-  }
-  return (await manifestResponse.json()) as VersionManifest
+  return cachedJson(
+    'mojang-version-manifest',
+    async () => {
+      const manifestResponse = await fetch(VERSION_MANIFEST_URL, { signal })
+      if (!manifestResponse.ok) {
+        throw localizedError('launch.versionManifestFetchFailed', { status: manifestResponse.status })
+      }
+      return (await manifestResponse.json()) as VersionManifest
+    },
+    signal
+  )
 }
 
 /** Raw Mojang manifest entries (release/snapshot/old_beta/old_alpha, newest first) — used by
@@ -74,16 +81,24 @@ export interface VersionDetail {
   javaVersion?: { component: string; majorVersion: number }
 }
 
+/** Cached per version as a whole (see `offline.ts`), so an offline launch doesn't even need the
+ * manifest to find the detail's URL first. */
 export async function fetchVersionDetail(versionId: string, signal?: AbortSignal): Promise<VersionDetail> {
-  const manifest = await fetchManifest(signal)
-  const entry = manifest.versions.find((v) => v.id === versionId)
-  if (!entry) {
-    throw localizedError('launch.versionNotFound', { versionId })
-  }
+  return cachedJson(
+    `version-${versionId}`,
+    async () => {
+      const manifest = await fetchManifest(signal)
+      const entry = manifest.versions.find((v) => v.id === versionId)
+      if (!entry) {
+        throw localizedError('launch.versionNotFound', { versionId })
+      }
 
-  const detailResponse = await fetch(entry.url, { signal })
-  if (!detailResponse.ok) {
-    throw localizedError('launch.versionDetailFetchFailed', { versionId, status: detailResponse.status })
-  }
-  return (await detailResponse.json()) as VersionDetail
+      const detailResponse = await fetch(entry.url, { signal })
+      if (!detailResponse.ok) {
+        throw localizedError('launch.versionDetailFetchFailed', { versionId, status: detailResponse.status })
+      }
+      return (await detailResponse.json()) as VersionDetail
+    },
+    signal
+  )
 }

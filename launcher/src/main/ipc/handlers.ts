@@ -56,10 +56,12 @@ import { importWorlds } from '../launch/worldImport'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { readBackClientDesign, writeClientDesignFiles } from '../launch/clientDesignSync'
+import { refreshOfflineProfileCache, writeOfflineProfileFiles } from '../launch/offlineProfile'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
 import { fetchVersionDetail } from '../launch/versionManifest'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
+import { isNetworkError, setPreferCache } from '../offline'
 import { loadDefaultSkinTemplate } from '../skin/defaultTemplate'
 import {
   deleteSkinFromLibrary,
@@ -426,6 +428,11 @@ export function registerIpcHandlers(): void {
       currentLaunchController = controller
       const { signal } = controller
       broadcastLaunchBusy(event, true)
+      // Offline mode: read launch metadata straight from its cache instead of waiting for every
+      // request to fail first (see offline.ts). Game files are skipped by the downloader anyway.
+      setPreferCache(profile.offline === true)
+      // Online: refresh the skin/cape copy offline launches use - in parallel to the install below.
+      const offlineProfileRefresh = profile.offline ? Promise.resolve() : refreshOfflineProfileCache(profile)
 
       const sendProgress = (stage: LaunchStage, completed: number, total: number, label?: string): void => {
         const payload = { stage, completed, total, label }
@@ -517,6 +524,8 @@ export function registerIpcHandlers(): void {
         await applySharedOptions(gameDir)
         await applySharedServers(gameDir)
         await writeClientDesignFiles(gameDir, settings)
+        await offlineProfileRefresh
+        await writeOfflineProfileFiles(gameDir, profile)
 
         sendProgress('launching', 0, 1, installed.detail.id)
         sendLog({
@@ -544,8 +553,14 @@ export function registerIpcHandlers(): void {
           sendLog({ source: 'launcher', level: 'info', message: language === 'en' ? 'Launch cancelled.' : 'Start abgebrochen.' })
           throw localizedError('launch.cancelled')
         }
+        // Something this launch needs isn't on disk yet and there's no internet to fetch it -
+        // typically an instance/version that was never started online on this PC.
+        if (isNetworkError(err)) {
+          throw localizedError('launch.offlineNotReady')
+        }
         throw err
       } finally {
+        setPreferCache(false)
         currentLaunchController = null
         broadcastLaunchBusy(event, false)
       }

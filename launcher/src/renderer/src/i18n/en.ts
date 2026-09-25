@@ -46,6 +46,13 @@ export const en: typeof de = {
       downloaded: (version: string) => `Update downloaded (version ${version}) - ready to install.`,
       restartNow: 'Restart now'
     },
+    offline: {
+      banner:
+        'Offline mode: no internet connection. You can play singleplayer and LAN; servers, skin/cape upload, mod search and updates need internet.',
+      reconnect: 'Reconnect',
+      reconnecting: 'Connecting…',
+      stillOffline: 'Still no connection.'
+    },
     modBundleUpdate: {
       available: (names: string) => `A new mod bundle version is available (${names}).`,
       ownMod: 'own mod',
@@ -444,7 +451,9 @@ export const en: typeof de = {
       versionNotFound: (p: { versionId: string }) => `Minecraft version ${p.versionId} not found in version manifest.`,
       versionDetailFetchFailed: (p: { versionId: string; status: number | string }) =>
         `Failed to fetch version detail for ${p.versionId}: ${p.status}`,
-      cancelled: 'Launch cancelled.'
+      cancelled: 'Launch cancelled.',
+      offlineNotReady:
+        "No internet connection, and this instance is still missing files. Launching offline only works after the instance was started online once."
     },
     mods: {
       searchFailed: (p: { status: number | string }) => `Modrinth search failed (${p.status})`,

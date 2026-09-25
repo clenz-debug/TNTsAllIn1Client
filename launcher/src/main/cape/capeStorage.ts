@@ -25,7 +25,7 @@ const CAPE_MAX_WIDTH = 2048
 
 /** Dashed UUID, matching the server's file names and the mods' `§id` URL template - see
  * `backend/src/capes.ts#dashedUuid` for why `§idNoHyphen` can't be used. */
-function publicUrlFor(uuid: string): string {
+export function publicUrlFor(uuid: string): string {
   const hex = uuid.replace(/-/g, '').toLowerCase()
   const dashed = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
   return `${CAPE_PUBLIC_BASE}/${dashed}.png`

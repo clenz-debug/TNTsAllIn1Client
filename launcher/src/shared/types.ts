@@ -22,6 +22,10 @@ export interface MinecraftProfile {
   accessToken: string
   skins: MinecraftSkin[]
   capes: MinecraftCape[]
+  /** Set when the session couldn't be refreshed for lack of internet and the last cached profile
+   * is used instead (`main/auth/index.ts#tryRestoreSession`) - singleplayer/LAN only, the access
+   * token is likely expired. */
+  offline?: boolean
 }
 
 /** Model/arm-width choice for a skin upload - "classic" (Steve, 4px arms) or "slim" (Alex, 3px

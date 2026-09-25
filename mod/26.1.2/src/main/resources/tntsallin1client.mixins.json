@@ -36,6 +36,8 @@
 		"RecipeBookPageAccessor",
 		"ScreenMixin",
 		"ScreenThemeMixin",
+		"SkinManagerMixin",
+		"SkinTextureDownloaderInvoker",
 		"TitleScreenMixin"
 	],
 	"injectors": {
