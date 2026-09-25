@@ -313,10 +313,20 @@ export interface FriendEntry extends FriendPlayer {
   activity: FriendActivity | null
 }
 
+/** An invitation into a friend's singleplayer world (Phase 8b). `address` is the host's e4mc
+ * address; `version` the Minecraft version of that world - joining needs an instance with it. */
+export interface WorldInvite {
+  from: FriendPlayer
+  address: string
+  version: string
+  expires: number
+}
+
 export interface FriendsOverview {
   friends: FriendEntry[]
   incoming: FriendPlayer[]
   outgoing: FriendPlayer[]
+  invites: WorldInvite[]
 }
 
 /** The player's own friends settings - own file (`main/friends/friendsService.ts`), not part of

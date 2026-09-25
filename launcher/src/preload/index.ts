@@ -36,8 +36,9 @@ function subscribe<T>(channel: string, callback: (event: T) => void): () => void
 const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
-  play: (profile: MinecraftProfile, instanceId: string): Promise<void> =>
-    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId),
+  /** `joinAddress`: start straight into that server (friends "join", Phase 8). */
+  play: (profile: MinecraftProfile, instanceId: string, joinAddress?: string): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId, joinAddress),
   cancelLaunch: (): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchCancel),
   isLaunchBusy: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.LaunchIsBusy),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),
@@ -135,6 +136,8 @@ const api = {
   removeFriendRequest: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveRequest, uuid),
   removeFriend: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveFriend, uuid),
   getFriendSkin: (uuid: string): Promise<string | null> => ipcRenderer.invoke(IpcChannel.FriendsHead, uuid),
+  dismissInvite: (fromUuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsDismissInvite, fromUuid),
+  joinInGame: (address: string): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsJoinInGame, address),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),

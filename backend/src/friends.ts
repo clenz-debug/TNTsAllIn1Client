@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { MAX_FRIENDS, MAX_OUTGOING_REQUESTS, PRESENCE_TIMEOUT_MS, config } from './config.js'
+import { INVITE_TTL_MS, MAX_FRIENDS, MAX_OUTGOING_REQUESTS, PRESENCE_TIMEOUT_MS, config } from './config.js'
 import type { VerifiedProfile } from './mojang.js'
 
 /**
@@ -42,10 +42,21 @@ export interface FriendEntry extends PlayerSummary {
   activity: Activity | null
 }
 
+/** An invitation into a friend's singleplayer world (Phase 8b), as the invited player sees it.
+ * `address` is the host's public e4mc address - only ever handed to the invited friend. */
+export interface WorldInvite {
+  from: PlayerSummary
+  address: string
+  /** Minecraft version of the host's world - the friend needs an instance with the same one. */
+  version: string
+  expires: number
+}
+
 export interface FriendsOverview {
   friends: FriendEntry[]
   incoming: PlayerSummary[]
   outgoing: PlayerSummary[]
+  invites: WorldInvite[]
 }
 
 export class FriendsError extends Error {
@@ -84,6 +95,15 @@ db.exec(`
     from_uuid TEXT NOT NULL REFERENCES players (uuid),
     to_uuid   TEXT NOT NULL REFERENCES players (uuid),
     created   INTEGER NOT NULL,
+    PRIMARY KEY (from_uuid, to_uuid)
+  );
+  -- Phase 8b: one open invitation per host/friend pair, replaced when the host invites again.
+  CREATE TABLE IF NOT EXISTS world_invites (
+    from_uuid TEXT NOT NULL REFERENCES players (uuid),
+    to_uuid   TEXT NOT NULL REFERENCES players (uuid),
+    address   TEXT NOT NULL,
+    version   TEXT NOT NULL,
+    expires   INTEGER NOT NULL,
     PRIMARY KEY (from_uuid, to_uuid)
   );
 `)
@@ -162,15 +182,31 @@ function toFriendEntry(row: PlayerRow, now: number): FriendEntry {
 
 const STATUS_ORDER: Record<VisibleStatus, number> = { online: 0, dnd: 1, away: 2, offline: 3 }
 
+const selectInvites = db.prepare(`
+  SELECT p.uuid, p.name, i.address, i.version, i.expires
+  FROM world_invites i JOIN players p ON p.uuid = i.from_uuid
+  WHERE i.to_uuid = ? AND i.expires > ? ORDER BY i.expires DESC
+`)
+const deleteExpiredInvites = db.prepare('DELETE FROM world_invites WHERE expires <= ?')
+
+/** Called periodically by the server - expired invitations are never shown anyway. */
+export function pruneInvites(): void {
+  deleteExpiredInvites.run(Date.now())
+}
+
 export function overview(uuid: string): FriendsOverview {
   const now = Date.now()
   const friends = (selectFriends.all(uuid, uuid, uuid) as unknown as PlayerRow[])
     .map((row) => toFriendEntry(row, now))
     .sort((x, y) => STATUS_ORDER[x.status] - STATUS_ORDER[y.status] || x.name.localeCompare(y.name, undefined, { sensitivity: 'base' }))
+  const invites = (selectInvites.all(uuid, now) as unknown as Array<PlayerSummary & { address: string; version: string; expires: number }>).map(
+    (row) => ({ from: { uuid: row.uuid, name: row.name }, address: row.address, version: row.version, expires: row.expires })
+  )
   return {
     friends,
     incoming: selectIncoming.all(uuid) as unknown as PlayerSummary[],
-    outgoing: selectOutgoing.all(uuid) as unknown as PlayerSummary[]
+    outgoing: selectOutgoing.all(uuid) as unknown as PlayerSummary[],
+    invites
   }
 }
 
@@ -236,8 +272,39 @@ export function removeRequest(uuid: string, otherUuid: string): FriendsOverview 
   return overview(uuid)
 }
 
+const deleteInvite = db.prepare('DELETE FROM world_invites WHERE from_uuid = ? AND to_uuid = ?')
+
 export function removeFriend(uuid: string, friendUuid: string): FriendsOverview {
   const [a, b] = pair(uuid, friendUuid)
   deleteFriendship.run(a, b)
+  deleteInvite.run(uuid, friendUuid)
+  deleteInvite.run(friendUuid, uuid)
+  return overview(uuid)
+}
+
+const upsertInvite = db.prepare(`
+  INSERT INTO world_invites (from_uuid, to_uuid, address, version, expires) VALUES (?, ?, ?, ?, ?)
+  ON CONFLICT (from_uuid, to_uuid) DO UPDATE SET address = excluded.address, version = excluded.version, expires = excluded.expires
+`)
+const deleteInvitesFrom = db.prepare('DELETE FROM world_invites WHERE from_uuid = ?')
+
+/** Phase 8b: invite a friend into the caller's world, reachable at `address` (e4mc). Friends only. */
+export function sendInvite(fromUuid: string, toUuid: string, address: string, version: string): FriendsOverview {
+  const [a, b] = pair(fromUuid, toUuid)
+  if (!isFriend.get(a, b)) throw new FriendsError(403, 'not_friends')
+  upsertInvite.run(fromUuid, toUuid, address, version, Date.now() + INVITE_TTL_MS)
+  return overview(fromUuid)
+}
+
+/** Host withdraws the invitation to one friend, or to everyone (world closed) when `toUuid` is null. */
+export function revokeInvites(fromUuid: string, toUuid: string | null): FriendsOverview {
+  if (toUuid) deleteInvite.run(fromUuid, toUuid)
+  else deleteInvitesFrom.run(fromUuid)
+  return overview(fromUuid)
+}
+
+/** Invited player declines (or has just used it to join). */
+export function dismissInvite(uuid: string, fromUuid: string): FriendsOverview {
+  deleteInvite.run(fromUuid, uuid)
   return overview(uuid)
 }

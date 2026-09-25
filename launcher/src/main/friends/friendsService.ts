@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
@@ -6,7 +7,7 @@ import { IpcChannel } from '../../shared/ipc'
 import type { FriendsOverview, FriendsPrefs, FriendsState, FriendsStatus } from '../../shared/types'
 import { tryRestoreSession } from '../auth'
 import { loadCachedAuth } from '../auth/tokenCache'
-import { currentGameActivity } from '../launch/gameActivity'
+import { currentGameActivity, isGameRunning, resetGameInbox, takeOutboxCommands, writeGameInbox } from '../launch/gameActivity'
 import { isNetworkError } from '../offline'
 
 /**
@@ -109,6 +110,8 @@ const KNOWN_ERROR_CODES = new Set([
   'too_many_friends',
   'too_many_requests',
   'request_not_found',
+  'not_friends',
+  'invalid_body',
   'unknown'
 ])
 
@@ -129,11 +132,88 @@ async function ping(): Promise<void> {
   broadcast()
 }
 
+// --- Bridge to the running game (Phase 8b) -----------------------------------------------------
+// See launch/gameActivity.ts for the files. Checked every second while friends are running, so an
+// invitation sent from the pause menu reaches the backend right away, not only with the next ping.
+
+const BRIDGE_INTERVAL_MS = 1_000
+const JOIN_REQUEST_TTL_MS = 30_000
+const MAX_RESULTS = 20
+
+let bridgeTimer: NodeJS.Timeout | null = null
+let bridgeBusy = false
+/** The mod invited someone during this game - withdrawn automatically when the game ends, in case
+ * the mod couldn't do it itself (crash, killed process). */
+let invitedThisGame = false
+let pendingJoin: { id: string; address: string; expires: number } | null = null
+const results = new Map<string, string>()
+
+async function bridgeTick(): Promise<void> {
+  if (bridgeBusy) return
+  bridgeBusy = true
+  try {
+    if (!isGameRunning()) {
+      pendingJoin = null
+      results.clear()
+      resetGameInbox()
+      if (invitedThisGame) {
+        invitedThisGame = false
+        overview = await call<FriendsOverview>('DELETE', '/invites').catch(() => overview)
+      }
+      return
+    }
+
+    const commands = await takeOutboxCommands()
+    for (const command of commands) {
+      try {
+        if (command.type === 'invite') {
+          overview = await call<FriendsOverview>('POST', '/invites', { to: command.to, address: command.address, version: command.version })
+          invitedThisGame = true
+        } else if (command.type === 'revoke') {
+          overview = await call<FriendsOverview>('DELETE', `/invites/${encodeURIComponent(command.to)}`)
+        } else if (command.type === 'revokeAll') {
+          overview = await call<FriendsOverview>('DELETE', '/invites')
+          invitedThisGame = false
+        } else if (command.type === 'dismiss') {
+          overview = await call<FriendsOverview>('POST', `/invites/${encodeURIComponent(command.from)}/dismiss`)
+        }
+        results.set(command.id, 'ok')
+      } catch (err) {
+        results.set(command.id, errorCode(err))
+      }
+      while (results.size > MAX_RESULTS) results.delete(results.keys().next().value as string)
+    }
+
+    if (commands.length > 0) broadcast()
+    if (pendingJoin && pendingJoin.expires < Date.now()) pendingJoin = null
+    await writeGameInbox({
+      dnd: prefs.status === 'dnd',
+      friends: (overview?.friends ?? [])
+        .filter((friend) => friend.status !== 'offline')
+        .map((friend) => ({ uuid: friend.uuid, name: friend.name, status: friend.status })),
+      invites: overview?.invites ?? [],
+      join: pendingJoin ? { id: pendingJoin.id, address: pendingJoin.address } : null,
+      results: Object.fromEntries(results)
+    })
+  } catch (err) {
+    console.warn('[friends] Game bridge failed:', err)
+  } finally {
+    bridgeBusy = false
+  }
+}
+
+/** Friends screen's "join" while the game already runs: the mod connects there itself. */
+export function joinInGame(address: string): void {
+  pendingJoin = { id: randomUUID(), address, expires: Date.now() + JOIN_REQUEST_TTL_MS }
+  void bridgeTick()
+}
+
 /** PlayScreen shown with an online profile - start pinging (no-op if already running). */
 export async function startFriends(): Promise<void> {
   await loadPrefs()
   if (timer) return
   timer = setInterval(() => void ping(), PING_INTERVAL_MS)
+  bridgeTimer = setInterval(() => void bridgeTick(), BRIDGE_INTERVAL_MS)
   await ping()
 }
 
@@ -143,6 +223,10 @@ export async function stopFriends(announce: boolean): Promise<void> {
   if (timer) {
     clearInterval(timer)
     timer = null
+  }
+  if (bridgeTimer) {
+    clearInterval(bridgeTimer)
+    bridgeTimer = null
   }
   const wasRunning = overview !== null
   overview = null
@@ -187,6 +271,11 @@ export function removeFriendRequest(uuid: string): Promise<FriendsState> {
 
 export function removeFriend(uuid: string): Promise<FriendsState> {
   return action('DELETE', `/friends/${encodeURIComponent(uuid)}`)
+}
+
+/** Invited player declines a world invitation - or has just used it to join. */
+export function dismissInvite(fromUuid: string): Promise<FriendsState> {
+  return action('POST', `/invites/${encodeURIComponent(fromUuid)}/dismiss`)
 }
 
 /** Launcher closing: tell friends right away instead of after the backend's timeout - but never

@@ -77,5 +77,7 @@ export const IpcChannel = {
   FriendsAcceptRequest: 'friends:accept-request',
   FriendsRemoveRequest: 'friends:remove-request',
   FriendsRemoveFriend: 'friends:remove-friend',
-  FriendsHead: 'friends:head'
+  FriendsHead: 'friends:head',
+  FriendsDismissInvite: 'friends:dismiss-invite',
+  FriendsJoinInGame: 'friends:join-in-game'
 } as const

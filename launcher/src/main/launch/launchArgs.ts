@@ -14,6 +14,8 @@ export interface LaunchContext {
   /** `LauncherSettings.maxMemoryMb` - `null` passes no `-Xmx` at all (today's behavior, whatever
    * the JVM's own default heap is). */
   maxMemoryMb: number | null
+  /** Friends "join" (Phase 8): start straight into this server (`host` or `host:port`). */
+  quickPlayMultiplayer?: string
 }
 
 function resolvePlaceholders(value: string, vars: Record<string, string>): string {
@@ -22,7 +24,8 @@ function resolvePlaceholders(value: string, vars: Record<string, string>): strin
 
 function flattenArguments(
   entries: Array<string | ConditionalArgument> | undefined,
-  vars: Record<string, string>
+  vars: Record<string, string>,
+  features: Record<string, boolean> = {}
 ): string[] {
   if (!entries) return []
   const result: string[] = []
@@ -31,7 +34,7 @@ function flattenArguments(
       result.push(resolvePlaceholders(entry, vars))
       continue
     }
-    if (!matchesRules(entry.rules)) continue
+    if (!matchesRules(entry.rules, features)) continue
     const values = Array.isArray(entry.value) ? entry.value : [entry.value]
     for (const value of values) result.push(resolvePlaceholders(value, vars))
   }
@@ -39,7 +42,7 @@ function flattenArguments(
 }
 
 export function buildLaunchArgs(context: LaunchContext): string[] {
-  const { detail, instanceDir, assetsDir, classpath, profile, maxMemoryMb } = context
+  const { detail, instanceDir, assetsDir, classpath, profile, maxMemoryMb, quickPlayMultiplayer } = context
   const vars: Record<string, string> = {
     auth_player_name: profile.name,
     version_name: detail.id,
@@ -55,11 +58,19 @@ export function buildLaunchArgs(context: LaunchContext): string[] {
     natives_directory: join(instanceDir, 'natives'),
     launcher_name: 'TNTsAllIn1ClientLauncher',
     launcher_version: '0.1.0',
-    classpath
+    classpath,
+    quickPlayMultiplayer: quickPlayMultiplayer ?? ''
   }
+  const features = { is_quick_play_multiplayer: !!quickPlayMultiplayer }
 
   const jvmArgs = flattenArguments(detail.arguments?.jvm, vars)
-  const gameArgs = flattenArguments(detail.arguments?.game, vars)
+  const gameArgs = flattenArguments(detail.arguments?.game, vars, features)
+  // Versions before Quick Play (1.20) take the older --server/--port pair instead.
+  const hasQuickPlay = JSON.stringify(detail.arguments?.game ?? []).includes('quickPlayMultiplayer')
+  if (quickPlayMultiplayer && !hasQuickPlay) {
+    const [host, port] = quickPlayMultiplayer.split(':')
+    gameArgs.push('--server', host, '--port', port || '25565')
+  }
 
   if (jvmArgs.length === 0) {
     // Fallback for the (unexpected, for 1.21.11) case of a version JSON without a modern

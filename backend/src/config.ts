@@ -25,3 +25,5 @@ export const CAPE_MAX_WIDTH = 2048
 export const PRESENCE_TIMEOUT_MS = 60 * 1000
 export const MAX_FRIENDS = 200
 export const MAX_OUTGOING_REQUESTS = 50
+/** A world invitation can be accepted this long (Phase 8b) - the host can always send a new one. */
+export const INVITE_TTL_MS = 10 * 60 * 1000

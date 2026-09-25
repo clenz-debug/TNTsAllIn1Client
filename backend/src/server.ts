@@ -6,11 +6,15 @@ import {
   FriendsError,
   STATUSES,
   acceptRequest,
+  dismissInvite,
   goOffline,
   overview,
+  pruneInvites,
   registerPlayer,
   removeFriend,
   removeRequest,
+  revokeInvites,
+  sendInvite,
   sendRequest,
   setPresence,
   type Activity,
@@ -36,6 +40,10 @@ import { RateLimiter } from './rateLimit.js'
  *   POST   /friends/requests/<uuid>/accept
  *   DELETE /friends/requests/<uuid>       - decline an incoming or withdraw an outgoing request
  *   DELETE /friends/<uuid>                - remove a friend
+ *   POST   /invites                       - body: { to, address, version }; invite a friend into the caller's world
+ *   DELETE /invites                       - withdraw all of the caller's invitations (world closed)
+ *   DELETE /invites/<uuid>                - withdraw the invitation to one friend
+ *   POST   /invites/<uuid>/dismiss        - invited player declines (or used) the invitation from <uuid>
  * Errors are JSON `{ error: <code> }` so the launcher can map them to its own de/en messages.
  */
 
@@ -49,6 +57,9 @@ const friendsLimiter = new RateLimiter(300, 10 * 60 * 1000)
 const friendsIpLimiter = new RateLimiter(1000, 10 * 60 * 1000)
 const JSON_MAX_BYTES = 4 * 1024
 const UUID_PATTERN = /^[0-9a-f]{32}$/
+/** e4mc hands out host names like `abc-def.eu.e4mc.link`, optionally with a port. */
+const ADDRESS_PATTERN = /^[a-zA-Z0-9.-]{1,253}(:\d{1,5})?$/
+const VERSION_PATTERN = /^[\w.+-]{1,32}$/
 
 class HttpError extends Error {
   constructor(
@@ -193,6 +204,20 @@ async function routeFriends(req: IncomingMessage, res: ServerResponse, path: str
     if (segments[0] === 'friends' && segments.length === 2 && UUID_PATTERN.test(segments[1]) && req.method === 'DELETE') {
       return sendJson(res, 200, { ...removeFriend(me, segments[1]) })
     }
+    if (path === '/invites' && req.method === 'POST') {
+      const body = await readJson(req)
+      const { to, address, version } = body
+      if (typeof to !== 'string' || !UUID_PATTERN.test(to) || typeof address !== 'string' || !ADDRESS_PATTERN.test(address)) {
+        throw new HttpError(400, 'invalid_body')
+      }
+      if (typeof version !== 'string' || !VERSION_PATTERN.test(version)) throw new HttpError(400, 'invalid_body')
+      return sendJson(res, 200, { ...sendInvite(me, to, address, version) })
+    }
+    if (path === '/invites' && req.method === 'DELETE') return sendJson(res, 200, { ...revokeInvites(me, null) })
+    if (segments[0] === 'invites' && segments[1] && UUID_PATTERN.test(segments[1])) {
+      if (segments.length === 2 && req.method === 'DELETE') return sendJson(res, 200, { ...revokeInvites(me, segments[1]) })
+      if (segments.length === 3 && segments[2] === 'dismiss' && req.method === 'POST') return sendJson(res, 200, { ...dismissInvite(me, segments[1]) })
+    }
   } catch (error) {
     if (error instanceof FriendsError) throw new HttpError(error.status, error.code)
     throw error
@@ -213,7 +238,7 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
     if (req.method === 'DELETE') return handleDelete(req, res)
     throw new HttpError(405, 'method_not_allowed')
   }
-  if (path === '/friends' || path.startsWith('/friends/') || path === '/presence' || path.startsWith('/presence/')) {
+  if (['/friends', '/presence', '/invites'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
     return routeFriends(req, res, path)
   }
   throw new HttpError(404, 'not_found')
@@ -241,6 +266,7 @@ setInterval(() => {
   ipLimiter.prune()
   friendsLimiter.prune()
   friendsIpLimiter.prune()
+  pruneInvites()
 }, 10 * 60 * 1000).unref()
 
 server.listen(config.port, config.host, () => {

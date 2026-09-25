@@ -39,7 +39,9 @@ import { importFromExternalClient, pickExternalClientFolder } from '../launch/cl
 import { installFabricLoader } from '../launch/fabricInstaller'
 import {
   acceptFriendRequest,
+  dismissInvite,
   getFriendsState,
+  joinInGame,
   removeFriend,
   removeFriendRequest,
   sendFriendRequest,
@@ -435,7 +437,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
-    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string) => {
+    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string, joinAddress?: string) => {
       assertStorageNotBusy()
       const controller = new AbortController()
       currentLaunchController = controller
@@ -526,7 +528,8 @@ export function registerIpcHandlers(): void {
           assetsDir: installed.assetsDir,
           classpath,
           profile,
-          maxMemoryMb: settings.maxMemoryMb
+          maxMemoryMb: settings.maxMemoryMb,
+          quickPlayMultiplayer: joinAddress
         })
 
         const gameDir = join(installed.instanceDir, 'game')
@@ -606,4 +609,6 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.FriendsRemoveRequest, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriendRequest(uuid))
   ipcMain.handle(IpcChannel.FriendsRemoveFriend, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriend(uuid))
   ipcMain.handle(IpcChannel.FriendsHead, async (_event: IpcMainInvokeEvent, uuid: string) => getPlayerSkin(uuid))
+  ipcMain.handle(IpcChannel.FriendsDismissInvite, async (_event: IpcMainInvokeEvent, fromUuid: string) => dismissInvite(fromUuid))
+  ipcMain.handle(IpcChannel.FriendsJoinInGame, (_event: IpcMainInvokeEvent, address: string) => joinInGame(address))
 }

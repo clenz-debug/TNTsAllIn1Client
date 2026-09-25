@@ -7,6 +7,7 @@ import { Logo } from '../Logo'
 import { PlayerMenuButton } from '../PlayerMenuButton'
 import type {
   FriendsState,
+  WorldInvite,
   ClientDesign,
   GameLogEvent,
   GameVersionSummary,
@@ -22,7 +23,7 @@ import type {
 } from '../../../shared/types'
 import { isBundleCompatibleVersion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
-import { FriendsScreen } from './FriendsScreen'
+import { FriendsScreen, InviteBanner } from './FriendsScreen'
 import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
 import { SettingsScreen } from './SettingsScreen'
@@ -310,8 +311,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     }
   }
 
-  async function handlePlay(): Promise<void> {
-    if (!selectedInstance) return
+  /** `instance`/`joinAddress`: friends "join" (Phase 8) - a specific instance, started straight
+   * into that server. Plain "Play" uses the selected instance and the normal title screen. */
+  async function handlePlay(instance: Instance | null = selectedInstance, joinAddress?: string): Promise<void> {
+    if (!instance) return
     setBusy(true)
     setLogs([])
     setProgress(null)
@@ -323,7 +326,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     const unsubscribeProgress = window.api.onLaunchProgress(setProgress)
     const unsubscribeLog = window.api.onGameLog((event) => setLogs((prev) => [...prev.slice(-499), event]))
     try {
-      await window.api.play(profile, selectedInstance.id)
+      await window.api.play(profile, instance.id, joinAddress)
     } catch (err) {
       // main already sent a "Start abgebrochen."/"Launch cancelled." info-level log line to both
       // windows (see handlers.ts's LaunchPlay) before throwing this - showing it again here, in red,
@@ -346,6 +349,30 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     }
   }
 
+  /**
+   * Friends "join" - a server a friend is on, or a world invitation. If the game already runs, the
+   * mod connects there itself (via the launcher's file bridge). Otherwise the game starts straight
+   * into it: an invitation needs an instance with the host world's Minecraft version (the selected
+   * one if it fits), a server just uses the selected instance. Returns an error text, or null.
+   */
+  async function handleJoin(address: string, invite: WorldInvite | null): Promise<string | null> {
+    if (busy) {
+      await window.api.joinInGame(address)
+      if (invite) void window.api.dismissInvite(invite.from.uuid).catch(() => undefined)
+      return null
+    }
+    const instance = invite
+      ? selectedInstance?.versionId === invite.version
+        ? selectedInstance
+        : (instances.find((candidate) => candidate.versionId === invite.version) ?? null)
+      : selectedInstance
+    if (!instance) return invite ? t.friends.noInstanceForVersion(invite.version) : t.friends.noInstance
+    if (invite) void window.api.dismissInvite(invite.from.uuid).catch(() => undefined)
+    setShowFriends(false)
+    void handlePlay(instance, address)
+    return null
+  }
+
   async function handleCancel(): Promise<void> {
     await window.api.cancelLaunch()
   }
@@ -355,7 +382,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   }
 
   if (showFriends && friendsState && !profile.offline) {
-    return <FriendsScreen state={friendsState} onClose={() => setShowFriends(false)} />
+    return <FriendsScreen state={friendsState} gameRunning={busy} onJoin={handleJoin} onClose={() => setShowFriends(false)} />
   }
 
   if (showSettings) {
@@ -494,6 +521,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           </div>
         </div>
       )}
+
+      {(friendsState?.overview?.invites ?? []).map((invite) => (
+        <InviteBanner key={invite.from.uuid} invite={invite} onJoin={handleJoin} />
+      ))}
 
       {/* 'checking'/'not-available'/'error' deliberately show no banner - same "purely informational,
           a failed check is never worth surfacing" reasoning the old Phase 6d check already had.

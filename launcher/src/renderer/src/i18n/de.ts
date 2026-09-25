@@ -192,6 +192,11 @@ export const de = {
     friendsHeading: (count: number) => `Freunde (${count})`,
     empty: 'Noch keine Freunde - schick oben eine Anfrage.',
     confirmRemove: (name: string) => `${name} aus deiner Freundesliste entfernen?`,
+    join: 'Beitreten',
+    joinInGameHint: 'Das Spiel läuft schon - du wirst direkt dorthin verbunden.',
+    inviteText: (name: string, version: string) => `${name} lädt dich in seine Welt ein (Minecraft ${version}).`,
+    noInstanceForVersion: (version: string) => `Du brauchst eine Instanz mit Minecraft ${version} - leg unter "Instanzen" eine an.`,
+    noInstance: 'Wähle zuerst eine Instanz aus.',
     activity: {
       launcher: 'Im Launcher',
       menu: 'Im Hauptmenü',
@@ -488,6 +493,8 @@ export const de = {
       too_many_friends: 'Die Freundesliste ist voll (höchstens 200 Freunde).',
       too_many_requests: 'Zu viele offene Anfragen (höchstens 50) - warte, bis einige beantwortet sind.',
       request_not_found: 'Diese Anfrage gibt es nicht mehr.',
+      not_friends: 'Ihr seid nicht (mehr) befreundet.',
+      invalid_body: 'Ungültige Anfrage an den Freunde-Server.',
       unknown: 'Unbekannter Fehler beim Freunde-Server.'
     },
     worlds: {

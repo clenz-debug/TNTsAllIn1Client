@@ -94,6 +94,8 @@ const OWN_MOD_PREFIX = 'tntsallin1client-'
  *    "Connected Textures"/"3D Skin Layers" rows), which is the actually meaningful control surface
  *    for them. Gating them a second time behind the launcher's toggle first would just be a
  *    redundant, easy-to-forget extra step before the ingame toggle even becomes reachable.
+ *  - `e4mc-`: world invitations to friends (Phase 8b) depend on it. Our mod keeps its public tunnel
+ *    switched off except while inviting (`E4mcControl.java`), so a normal "Open to LAN" stays local.
  *
  * Every other bundled jar (today only Cape Provider) shows up as a switch in the Mods screen -
  * off by default unless listed in `shared/bundledMods.ts`'s default-on prefixes, which Cape
@@ -104,7 +106,8 @@ const ALWAYS_ENABLED_PREFIXES = [
   'sodium-fabric-',
   'lithium-fabric-',
   'continuity-',
-  'skinlayers3d-fabric-'
+  'skinlayers3d-fabric-',
+  'e4mc-'
 ]
 
 export function isAlwaysEnabledBundledMod(fileName: string): boolean {

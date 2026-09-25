@@ -27,6 +27,11 @@
           "name": "cape-provider",
           "modrinthProjectId": "orXAsira",
           "modrinthVersionId": "6bSwsL3J"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
         }
       ],
       "bundledResourcepacks": []

@@ -186,6 +186,11 @@ export const en: typeof de = {
     friendsHeading: (count: number) => `Friends (${count})`,
     empty: 'No friends yet - send a request above.',
     confirmRemove: (name: string) => `Remove ${name} from your friends list?`,
+    join: 'Join',
+    joinInGameHint: 'The game is already running - you get connected there directly.',
+    inviteText: (name: string, version: string) => `${name} invites you into their world (Minecraft ${version}).`,
+    noInstanceForVersion: (version: string) => `You need an instance with Minecraft ${version} - create one under "Instances".`,
+    noInstance: 'Select an instance first.',
     activity: {
       launcher: 'In the launcher',
       menu: 'In the main menu',
@@ -470,6 +475,8 @@ export const en: typeof de = {
       too_many_friends: 'Your friends list is full (200 friends at most).',
       too_many_requests: 'Too many open requests (50 at most) - wait until some are answered.',
       request_not_found: 'This request no longer exists.',
+      not_friends: "You're not (or no longer) friends.",
+      invalid_body: 'Invalid request to the friends server.',
       unknown: 'Unknown error from the friends server.'
     },
     worlds: {

@@ -4,11 +4,61 @@ import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { PlayerHeadIcon } from '../PlayerHeadIcon'
-import type { FriendActivity, FriendEntry, FriendsState, FriendsStatus } from '../../../shared/types'
+import type { FriendActivity, FriendEntry, FriendsState, FriendsStatus, WorldInvite } from '../../../shared/types'
+
+/** PlayScreen's `handleJoin` - resolves to an error text, or null once the join is on its way. */
+type JoinHandler = (address: string, invite: WorldInvite | null) => Promise<string | null>
 
 interface Props {
   state: FriendsState
+  /** The game is running - "join" then hands over to the mod instead of starting the game. */
+  gameRunning: boolean
+  onJoin: JoinHandler
   onClose: () => void
+}
+
+/**
+ * One world invitation (Phase 8b) with join/decline - shown on the play screen above everything
+ * else and in the Friends screen, so it's seen wherever the player is.
+ */
+export function InviteBanner({ invite, onJoin }: { invite: WorldInvite; onJoin: JoinHandler }) {
+  const t = useTranslations()
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function join(): Promise<void> {
+    setBusy(true)
+    setError(await onJoin(invite.address, invite))
+    setBusy(false)
+  }
+
+  async function decline(): Promise<void> {
+    setBusy(true)
+    try {
+      await window.api.dismissInvite(invite.from.uuid)
+    } catch (err) {
+      setError(formatError(err, t))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="update-banner">
+      <span>
+        {t.friends.inviteText(invite.from.name, invite.version)}
+        {error && <span className="error"> {error}</span>}
+      </span>
+      <div className="header-actions">
+        <button className="link-button" disabled={busy} onClick={() => void join()}>
+          {t.friends.join}
+        </button>
+        <button className="link-button" disabled={busy} onClick={() => void decline()}>
+          {t.friends.decline}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 const STATUS_OPTIONS: FriendsStatus[] = ['online', 'away', 'dnd', 'invisible']
@@ -19,7 +69,7 @@ const STATUS_OPTIONS: FriendsStatus[] = ['online', 'away', 'dnd', 'invisible']
  * friends list with live presence. All data comes from `main/friends/friendsService.ts`, which
  * refreshes it every ~20 s and pushes it here through PlayScreen's `state`.
  */
-export function FriendsScreen({ state, onClose }: Props) {
+export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
   const t = useTranslations()
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
@@ -87,6 +137,10 @@ export function FriendsScreen({ state, onClose }: Props) {
           {t.common.back}
         </button>
       </header>
+
+      {(overview?.invites ?? []).map((invite) => (
+        <InviteBanner key={invite.from.uuid} invite={invite} onJoin={onJoin} />
+      ))}
 
       {state.error && <span className="error">{t.errors.friends[state.error as keyof typeof t.errors.friends] ?? t.errors.friends.unknown}</span>}
       {actionError && <span className="error">{actionError}</span>}
@@ -197,6 +251,19 @@ export function FriendsScreen({ state, onClose }: Props) {
                   </span>
                 </div>
                 <div className="header-actions">
+                  {friend.activity?.kind === 'multiplayer' && friend.activity.server && (
+                    <button
+                      className="link-button"
+                      disabled={busy}
+                      title={gameRunning ? t.friends.joinInGameHint : undefined}
+                      onClick={() => {
+                        const server = friend.activity?.server
+                        if (server) void run(() => onJoin(server, null).then((message) => (message ? Promise.reject(new Error(message)) : null)))
+                      }}
+                    >
+                      {t.friends.join}
+                    </button>
+                  )}
                   <button className="link-button" disabled={busy} onClick={() => setPendingRemoval(friend)}>
                     {t.common.remove}
                   </button>
