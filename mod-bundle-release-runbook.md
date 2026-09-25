@@ -109,21 +109,28 @@ nicht beim Sprung auf 1.0.
    **vor** dem Installer-Bau anpassen (Abschnitt B, Schritte 3-6) - der Installer legt eine Kopie des
    Manifests als `seed-manifest.json` bei, damit ein frisch installierter Launcher seine gebündelten
    Stände als aktuell erkennt.
-4. Installer bauen und veröffentlichen (im Ordner `launcher/`):
+4. Tag und Release **vorher selbst anlegen**, dann Installer bauen und hochladen (im Ordner `launcher/`):
    ```powershell
+   git tag -a v<version> -m "TNT's All-In-1 Client <version>"
+   git push origin v<version>
+   gh release create v<version> --verify-tag --title <version> --notes "…"
    $env:GH_TOKEN = gh auth token
    npm run release:win
    ```
-   Legt das Release `v<version>` mit Installer, `.blockmap` und `latest.yml` an. Vorher das Tag
-   auf den getesteten Commit setzen und nur das Tag pushen (`git tag -a v<version> …`,
-   `git push origin v<version>`), damit das Release auf genau diesen Code zeigt.
-   **Danach prüfen:** `gh release list` - electron-builder lädt die Dateien parallel hoch und legt
-   dabei manchmal **zwei** Releases zum selben Tag an (passiert bei v0.1.0). Dann per
-   `gh api repos/clenz-debug/TNTsAllIn1Client/releases` das Release **mit** `latest.yml` und
-   Installer behalten, das andere löschen (`gh api -X DELETE …/releases/<id>`, das Tag bleibt), die
-   fehlende Datei nachladen (lokal heißt sie `TNT's All-In-1 Client Setup <version>.exe.blockmap`,
-   auf GitHub `tntsallin1client-setup-<version>.exe.blockmap`) und das verbliebene Release mit
+   Das Tag auf den getesteten Commit, nur das Tag pushen - das Release zeigt so auf genau diesen
+   Code, `main` (und damit das Manifest) bleibt bis Schritt 6 unberührt. Das Release selbst anlegen:
+   electron-builder lädt jede Datei mit einem eigenen Veröffentlicher hoch, und findet der kein
+   Release, legt jeder eins an - bei v0.1.0 und v0.1.1 entstanden so je **zwei** Releases zum selben
+   Tag. Ein vorhandenes, normales Release nutzen beide, sofern es jünger als 2 Stunden ist.
+   Hochgeladen werden Installer (`tntsallin1client-setup.exe`, ohne Versionsnummer - ab 0.1.1),
+   `.blockmap` und `latest.yml`. **Danach prüfen:** `gh release view v<version>` zeigt alle drei.
+   Sollte es doch doppelt sein: per `gh api repos/clenz-debug/TNTsAllIn1Client/releases` das Release
+   mit `latest.yml` behalten, das andere löschen (`gh api -X DELETE …/releases/<id>`, das Tag
+   bleibt), die fehlende Datei aus `launcher/dist/` nachladen, mit
    `gh api -X PATCH …/releases/<id> -f make_latest=true` als "Latest" markieren.
+
+   Fester Download-Link für Leute (immer die neueste Version):
+   `https://github.com/clenz-debug/TNTsAllIn1Client/releases/latest/download/tntsallin1client-setup.exe`
 5. Mod-Jars mit `gh release upload v<version> …` an **dasselbe** Release hängen (Abschnitt B, Schritt 3).
 6. Erst jetzt `mod-bundle-manifest.json` committen und pushen - vorher zeigten seine Links ins Leere.
 
