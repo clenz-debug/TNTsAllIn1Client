@@ -26,6 +26,9 @@ große Brüche haben, nicht nur bei einem seltenen Vollversions-Sprung wie früh
 3. Isolierter Commit nur dieser einen Datei, pushen. **Kein Launcher-Rebuild nötig** - jeder
    bereits installierte Launcher prüft das Manifest selbst und lädt die neue Version beim nächsten
    Start/Klick auf "Aktualisieren".
+   Launcher ab 0.1.3 entfernen dabei die ersetzte alte Jar aus den Instanzen (`bundleSync.ts`, Merkliste
+   `config/tntsallin1client-synced-mods.json`). Ältere Launcher ließen sie liegen - Fabric startet dann
+   wegen der doppelten Mod nicht, bis der Launcher selbst aktualisiert ist.
 
 ## B) Neue Minecraft-Version freischalten
 
