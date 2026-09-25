@@ -1,8 +1,8 @@
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
-import { SEED_BUNDLE_MINECRAFT_VERSION, type ModBundleManifest } from '../../shared/types'
-import { bundledModsDir, bundledResourcesRoot } from './resourcePaths'
+import { SEED_BUNDLE_MINECRAFT_VERSIONS, type ModBundleManifest } from '../../shared/types'
+import { bundledModsDir, bundledResourcesRoot, downloadedBundlesRoot } from './resourcePaths'
 
 /** Repo root, not `launcher/` - `mod-bundle-manifest.json` is a cross-cutting artifact (references
  * both `mod/`'s own jar and the third-party jars `launcher/mods-bundle/` holds), same reasoning
@@ -32,17 +32,23 @@ function getCachedManifest(): Promise<ModBundleManifest | null> {
   return cachedManifest
 }
 
-async function listLocalBundleVersions(): Promise<string[]> {
+async function listBundleVersionsIn(root: string): Promise<string[]> {
   try {
-    const entries = await readdir(join(bundledResourcesRoot(), 'mods-bundle'), { withFileTypes: true })
+    const entries = await readdir(join(root, 'mods-bundle'), { withFileTypes: true })
     return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name)
   } catch {
     return []
   }
 }
 
+/** Versions with a bundle on disk - baked into the installer or downloaded since (`resourcePaths.ts`). */
+async function listLocalBundleVersions(): Promise<string[]> {
+  const [baked, downloaded] = await Promise.all([listBundleVersionsIn(bundledResourcesRoot()), listBundleVersionsIn(downloadedBundlesRoot())])
+  return [...new Set([...baked, ...downloaded])]
+}
+
 /**
- * Union of: the baked-in seed version (always available, even fully offline), every version id
+ * Union of: the baked-in seed versions (always available, even fully offline), every version id
  * that already has a `mods-bundle/<id>/` folder on disk (a previous download - or the seed itself -
  * stays usable offline even if a later manifest edit ever drops that entry), and every key of the
  * last successfully fetched manifest's `versions` map. A fetch failure only ever shrinks this back
@@ -52,7 +58,7 @@ async function listLocalBundleVersions(): Promise<string[]> {
 export async function getBundleCompatibleVersions(): Promise<Set<string>> {
   const manifest = await getCachedManifest()
   const localVersions = await listLocalBundleVersions()
-  return new Set([SEED_BUNDLE_MINECRAFT_VERSION, ...localVersions, ...Object.keys(manifest?.versions ?? {})])
+  return new Set([...SEED_BUNDLE_MINECRAFT_VERSIONS, ...localVersions, ...Object.keys(manifest?.versions ?? {})])
 }
 
 export async function isVersionBundleCompatible(versionId: string): Promise<boolean> {

@@ -3,7 +3,6 @@ import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import {
   DEFAULT_LAUNCHER_SETTINGS,
-  SEED_BUNDLE_MINECRAFT_VERSION,
   type AppliedModBundleEntry,
   type Instance,
   type LauncherSettings
@@ -11,6 +10,9 @@ import {
 
 /** Same hand-rolled JSON-in-userData pattern as `auth/tokenCache.ts` rather than pulling in
  * electron-store for two small fields (selected version, snapshot-visibility toggle). */
+/** The one version launchers before multi-version support ever handled - see the settings migration below. */
+const LEGACY_SINGLE_BUNDLE_VERSION = '1.21.11'
+
 function settingsPath(): string {
   return join(app.getPath('userData'), 'launcher-settings.json')
 }
@@ -106,14 +108,13 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
     // mean re-downloading everything), ending in exactly one save either way.
     const instances = needsInstanceMigration ? await migrateLegacyInstances(parsed.enabledBundledMods ?? []) : (parsed.instances ?? [])
 
-    // Pre-multi-version files only ever tracked bundle content for one implicit version (whatever
-    // this launcher build targeted at the time) - nest their flat data under today's seed version,
-    // the only one that could ever have been applied before this migration existed.
+    // Pre-multi-version files only ever tracked bundle content for one implicit version - 1.21.11,
+    // the only one this launcher supported before this migration existed.
     const appliedModBundleVersions = needsBundleVersionMigration
-      ? { [SEED_BUNDLE_MINECRAFT_VERSION]: (parsed.appliedModBundleVersions as Record<string, AppliedModBundleEntry> | undefined) ?? {} }
+      ? { [LEGACY_SINGLE_BUNDLE_VERSION]: (parsed.appliedModBundleVersions as Record<string, AppliedModBundleEntry> | undefined) ?? {} }
       : ((parsed.appliedModBundleVersions as LauncherSettings['appliedModBundleVersions'] | undefined) ?? {})
     const appliedOwnModVersions = needsBundleVersionMigration
-      ? (parsed.appliedOwnModVersion ? { [SEED_BUNDLE_MINECRAFT_VERSION]: parsed.appliedOwnModVersion } : {})
+      ? (parsed.appliedOwnModVersion ? { [LEGACY_SINGLE_BUNDLE_VERSION]: parsed.appliedOwnModVersion } : {})
       : (parsed.appliedOwnModVersions ?? {})
 
     const settings: LauncherSettings = {

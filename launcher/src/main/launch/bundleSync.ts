@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { isBundledModEnabled } from '../../shared/bundledMods'
 import type { LaunchStage } from '../../shared/types'
 import { isAlwaysEnabledBundledMod } from './modsManager'
-import { bundledModsDir, bundledResourcepacksDir, bundledResourcesRoot, ownModDir } from './resourcePaths'
+import { bakedOwnModDir, bundledModsDir, bundledResourcepacksDir, bundledResourcesRoot, ownModDir } from './resourcePaths'
 
 export type InstallProgressCallback = (
   stage: LaunchStage,
@@ -112,7 +112,7 @@ async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<void
  * reasoning `syncOwnModJar`'s own doc comment gives for why dev mode reads live in the first place).
  */
 async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string): Promise<string> {
-  const snapshotDir = ownModDir(versionId)
+  const snapshotDir = bakedOwnModDir(versionId)
   const hasSnapshot = await readdir(snapshotDir)
     .then((entries) => entries.some((name) => name.endsWith('.jar')))
     .catch(() => false)
@@ -184,9 +184,9 @@ export async function syncBundledContent(
     )
   )
 
-  // Packaged builds ship a frozen own-mod-jar snapshot under resources/own-mod/<versionId>/ (see
-  // electron-builder.yml) instead of a live sibling mod/<versionId>/build/libs/ - there is no mod/
-  // project at all once the launcher is actually installed on someone else's machine.
+  // Packaged builds have no mod/ project - their own mod jar comes from the version's active bundle
+  // (downloaded copy, else the installer's baked snapshot, see resourcePaths.ts). Dev mode reads the
+  // live build instead, see resolveDevOwnModLibsDir.
   const ownModLibsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(resourcesRoot, versionId)
 
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)

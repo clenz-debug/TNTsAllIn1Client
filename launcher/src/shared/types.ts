@@ -89,14 +89,14 @@ export interface GameLogEvent {
   message: string
 }
 
-/** The one Minecraft version this specific launcher build bakes directly into `extraResources`
- * (see `electron-builder.yml`) - default pre-selection for the version picker (Phase 6a) when
- * nothing else is bundle-compatible yet. This is no longer "the only bundle-compatible version":
- * any other version can become bundle-compatible purely via a `mod-bundle-manifest.json` entry
- * (see `main/launch/bundleCompat.ts#getBundleCompatibleVersions`), downloaded on demand on first
- * "Play" - no new launcher build/release needed for that. Only bumping *this* constant (and the
- * matching `extraResources` paths) changes what a fresh install bakes in up front. */
-export const SEED_BUNDLE_MINECRAFT_VERSION = '1.21.11'
+/** The Minecraft versions this launcher build bakes directly into `extraResources` (see
+ * `electron-builder.yml`, which lists the same versions by hand) - bundle-compatible even fully
+ * offline on a fresh install. Not "the only bundle-compatible versions": any other version becomes
+ * bundle-compatible purely via a `mod-bundle-manifest.json` entry (see
+ * `main/launch/bundleCompat.ts#getBundleCompatibleVersions`), downloaded on demand on first "Play" -
+ * no new launcher build/release needed for that. 26.1.2 was added as a second one (own user
+ * decision: a second full version to test extensively next to 1.21.11). */
+export const SEED_BUNDLE_MINECRAFT_VERSIONS: readonly string[] = ['1.21.11', '26.1.2']
 
 export function isBundleCompatibleVersion(versionId: string, bundleCompatibleVersions: readonly string[]): boolean {
   return bundleCompatibleVersions.includes(versionId)

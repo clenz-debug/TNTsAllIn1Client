@@ -6,6 +6,13 @@ copyright: Copyright © 2026 clenz-debug
 directories:
   output: dist
 
+# The installed launcher's app name - and with it its data folder, %APPDATA%\tntsallin1client (login,
+# settings, instances, downloaded bundles). Deliberately not package.json's `tntsallin1client-launcher`,
+# which the dev launcher uses: an installed copy on the developer's own PC must not share (and
+# overwrite) the dev launcher's settings, and needs its own clean state to test a real install.
+extraMetadata:
+  name: tntsallin1client
+
 # out/ (electron-vite's build output), resources/ (own branding - main/index.ts's BrowserWindow
 # icon, generated from designs/branding/N-Logo.svg) and package.json are needed at runtime -
 # everything else (src/, the bundle folders, dev configs) is either irrelevant to a packaged app or
@@ -27,12 +34,20 @@ files:
 # Loom's sources/dev jar variants - run that build fresh right before packaging so the newest mod
 # code ships, not a stale one.
 #
-# Multi-version support follow-up: only the one "seed" version this launcher build bakes in
-# directly is listed here (must match `SEED_BUNDLE_MINECRAFT_VERSION` in shared/types.ts - a plain
-# literal, since this YAML can't import a TS constant; kept in sync by hand, see
+# Multi-version support: the versions baked in directly are listed here by hand and must match
+# `SEED_BUNDLE_MINECRAFT_VERSIONS` in shared/types.ts (this YAML can't import a TS constant - see
 # mod-bundle-release-runbook.md). Any other bundle-compatible version is downloaded on demand on
 # first "Play" instead of being baked into every installer - keeps installer size from growing with
-# every historical Minecraft version ever supported.
+# every historical Minecraft version ever supported. seed-manifest.json records which manifest
+# state the baked bundles correspond to, so a fresh install doesn't call them all outdated
+# (modBundleUpdater.ts#appliedState). Downloads never go in here: resources/ sits inside the
+# install folder (maybe under "Program Files") and is replaced by every update - they go to
+# userData/bundles/ instead (resourcePaths.ts).
+#
+# Vanilla Tweaks is left out of what we distribute: its terms (vanillatweaks.net/terms) forbid
+# passing its packs on "as they are, without proper modification and/or additions" - our selection
+# is taken unchanged from their site. The flat inventory icons add-on only works on top of it, so it
+# goes too. Both stay in the local dev folders; see Projekt_Roadmap.md's license section.
 extraResources:
   - from: mods-bundle/1.21.11
     to: mods-bundle/1.21.11
@@ -42,12 +57,32 @@ extraResources:
     to: resourcepacks-bundle/1.21.11
     filter:
       - '**/*'
+      - '!VanillaTweaks_*'
+      - '!TNT-Flat-Inventory-Icons-*'
   - from: ../mod/1.21.11/build/libs
     to: own-mod/1.21.11
     filter:
       - '*.jar'
       - '!*-sources.jar'
       - '!*-dev.jar'
+  - from: mods-bundle/26.1.2
+    to: mods-bundle/26.1.2
+    filter:
+      - '**/*'
+  - from: resourcepacks-bundle/26.1.2
+    to: resourcepacks-bundle/26.1.2
+    filter:
+      - '**/*'
+      - '!VanillaTweaks_*'
+      - '!TNT-Flat-Inventory-Icons-*'
+  - from: ../mod/26.1.2/build/libs
+    to: own-mod/26.1.2
+    filter:
+      - '*.jar'
+      - '!*-sources.jar'
+      - '!*-dev.jar'
+  - from: ../mod-bundle-manifest.json
+    to: seed-manifest.json
 
 win:
   target: nsis
@@ -67,3 +102,6 @@ publish:
   provider: github
   owner: clenz-debug
   repo: TNTsAllIn1Client
+  # A published release, not a draft: electron-updater never sees drafts (or pre-releases), so a
+  # draft would silently mean "no update" for everyone.
+  releaseType: release
