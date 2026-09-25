@@ -114,7 +114,16 @@ nicht beim Sprung auf 1.0.
    $env:GH_TOKEN = gh auth token
    npm run release:win
    ```
-   Legt das Release `v<version>` mit Installer, `.blockmap` und `latest.yml` an.
+   Legt das Release `v<version>` mit Installer, `.blockmap` und `latest.yml` an. Vorher das Tag
+   auf den getesteten Commit setzen und nur das Tag pushen (`git tag -a v<version> …`,
+   `git push origin v<version>`), damit das Release auf genau diesen Code zeigt.
+   **Danach prüfen:** `gh release list` - electron-builder lädt die Dateien parallel hoch und legt
+   dabei manchmal **zwei** Releases zum selben Tag an (passiert bei v0.1.0). Dann per
+   `gh api repos/clenz-debug/TNTsAllIn1Client/releases` das Release **mit** `latest.yml` und
+   Installer behalten, das andere löschen (`gh api -X DELETE …/releases/<id>`, das Tag bleibt), die
+   fehlende Datei nachladen (lokal heißt sie `TNT's All-In-1 Client Setup <version>.exe.blockmap`,
+   auf GitHub `tntsallin1client-setup-<version>.exe.blockmap`) und das verbliebene Release mit
+   `gh api -X PATCH …/releases/<id> -f make_latest=true` als "Latest" markieren.
 5. Mod-Jars mit `gh release upload v<version> …` an **dasselbe** Release hängen (Abschnitt B, Schritt 3).
 6. Erst jetzt `mod-bundle-manifest.json` committen und pushen - vorher zeigten seine Links ins Leere.
 
