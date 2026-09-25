@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { DEFAULT_THEME_COLORS } from '../shared/types'
 import { registerAutoUpdater } from './autoUpdate'
+import { announceOffline } from './friends/friendsService'
 import { initDataRoot } from './dataRoot'
 import { registerIpcHandlers } from './ipc/handlers'
 import { consolidateInstanceStorage } from './launch/storageConsolidation'
@@ -69,4 +70,14 @@ void app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+/** Friends see the player go offline right away instead of after the backend's presence timeout.
+ * Quitting waits for that one request (at most 2 s) - only the first time round. */
+let announcedOffline = false
+app.on('before-quit', (event) => {
+  if (announcedOffline) return
+  announcedOffline = true
+  event.preventDefault()
+  void announceOffline().finally(() => app.quit())
 })

@@ -67,5 +67,15 @@ export const IpcChannel = {
   ModBundleApplyUpdate: 'mod-bundle:apply-update',
   ModBundleListCompatibleVersions: 'mod-bundle:list-compatible-versions',
   SystemMemoryInfo: 'system:memory-info',
-  ConsoleWindowOpen: 'console-window:open'
+  ConsoleWindowOpen: 'console-window:open',
+  FriendsStart: 'friends:start',
+  FriendsStop: 'friends:stop',
+  FriendsGetState: 'friends:get-state',
+  FriendsState: 'friends:state',
+  FriendsSetPrefs: 'friends:set-prefs',
+  FriendsSendRequest: 'friends:send-request',
+  FriendsAcceptRequest: 'friends:accept-request',
+  FriendsRemoveRequest: 'friends:remove-request',
+  FriendsRemoveFriend: 'friends:remove-friend',
+  FriendsHead: 'friends:head'
 } as const

@@ -7,6 +7,8 @@ import type {
   ClientImportResult,
   CustomCapeStatus,
   CustomModEntry,
+  FriendsPrefs,
+  FriendsState,
   ResourcepackEntry,
   GameLogEvent,
   GameVersionSummary,
@@ -124,6 +126,15 @@ const api = {
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
   getSystemMemoryInfo: (): Promise<SystemMemoryInfo> => ipcRenderer.invoke(IpcChannel.SystemMemoryInfo),
   openConsoleWindow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.ConsoleWindowOpen),
+  startFriends: (): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsStart),
+  stopFriends: (): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsStop),
+  getFriendsState: (): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsGetState),
+  setFriendsPrefs: (prefs: FriendsPrefs): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsSetPrefs, prefs),
+  sendFriendRequest: (name: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsSendRequest, name),
+  acceptFriendRequest: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsAcceptRequest, uuid),
+  removeFriendRequest: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveRequest, uuid),
+  removeFriend: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveFriend, uuid),
+  getFriendSkin: (uuid: string): Promise<string | null> => ipcRenderer.invoke(IpcChannel.FriendsHead, uuid),
 
   onAuthProgress: (callback: (event: AuthProgressEvent) => void): (() => void) =>
     subscribe(IpcChannel.AuthProgress, callback),
@@ -134,7 +145,8 @@ const api = {
   onGameLog: (callback: (event: GameLogEvent) => void): (() => void) => subscribe(IpcChannel.GameLog, callback),
   onUpdateStatus: (callback: (event: UpdateStatus) => void): (() => void) => subscribe(IpcChannel.UpdateStatus, callback),
   onStorageMoveProgress: (callback: (event: StorageMoveProgressEvent) => void): (() => void) =>
-    subscribe(IpcChannel.StorageMoveProgress, callback)
+    subscribe(IpcChannel.StorageMoveProgress, callback),
+  onFriendsState: (callback: (state: FriendsState) => void): (() => void) => subscribe(IpcChannel.FriendsState, callback)
 }
 
 contextBridge.exposeInMainWorld('api', api)

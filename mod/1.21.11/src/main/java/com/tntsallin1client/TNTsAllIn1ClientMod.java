@@ -23,6 +23,7 @@ import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.discord.DiscordPresenceManager;
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.friends.ActivityReporter;
 import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.ArmorStatusBundledHud;
 import com.tntsallin1client.hud.ArmorStatusSlot;
@@ -126,6 +127,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Freecam: keybind-toggled detached camera, see FreecamHandler.
 		ClientTickEvents.END_CLIENT_TICK.register(FreecamHandler::tick);
+
+		// Phase 8: where in the game the player is, for the launcher's friends presence.
+		ClientTickEvents.END_CLIENT_TICK.register(ActivityReporter::tick);
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "freecam_hud"), new FreecamHud());
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			FreecamHandler.exit(client);

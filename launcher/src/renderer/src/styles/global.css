@@ -523,6 +523,49 @@ select option {
   opacity: 0.85;
 }
 
+.friends-prefs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+}
+
+.friend-activity {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.friend-offline {
+  opacity: 0.6;
+}
+
+/* Fixed, not themed - these are the same status colors everywhere (Discord convention). */
+.friend-status-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.friend-status-online {
+  background: #3ba55d;
+}
+
+.friend-status-away {
+  background: #faa81a;
+}
+
+.friend-status-dnd {
+  background: #ed4245;
+}
+
+.friend-status-offline {
+  background: #747f8d;
+}
+
 .mods-empty {
   color: var(--text);
   font-size: 0.9rem;

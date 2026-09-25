@@ -169,6 +169,38 @@ export const de = {
     uploadedStatus: (worlds: string[]) =>
       worlds.length === 1 ? `Welt "${worlds[0]}" hochgeladen.` : `${worlds.length} Welten hochgeladen: ${worlds.join(', ')}.`
   },
+  friends: {
+    title: 'Freunde',
+    headerButton: (incoming: number) => (incoming > 0 ? `Freunde (${incoming})` : 'Freunde'),
+    ownHeading: 'Dein Status',
+    statusLabel: 'Status:',
+    ownStatus: { online: 'Online', away: 'Abwesend', dnd: 'Nicht stören', invisible: 'Unsichtbar' },
+    visibleStatus: { online: 'Online', away: 'Abwesend', dnd: 'Nicht stören', offline: 'Offline' },
+    hideServer: 'Server vor Freunden verbergen',
+    addHeading: 'Freund hinzufügen',
+    addInfo: 'Gib den Minecraft-Namen ein. Hinzufügen kannst du nur Spieler, die den Client schon einmal benutzt haben.',
+    addPlaceholder: 'Minecraft-Name',
+    addButton: 'Anfrage senden',
+    requestSent: (name: string) => `Anfrage an ${name} gesendet.`,
+    nowFriends: (name: string) => `Du und ${name} seid jetzt befreundet.`,
+    requestsHeading: 'Anfragen',
+    incoming: 'Möchte mit dir befreundet sein',
+    outgoing: 'Anfrage gesendet, wartet auf Antwort',
+    accept: 'Annehmen',
+    decline: 'Ablehnen',
+    withdraw: 'Zurückziehen',
+    friendsHeading: (count: number) => `Freunde (${count})`,
+    empty: 'Noch keine Freunde - schick oben eine Anfrage.',
+    confirmRemove: (name: string) => `${name} aus deiner Freundesliste entfernen?`,
+    activity: {
+      launcher: 'Im Launcher',
+      menu: 'Im Hauptmenü',
+      singleplayer: 'Spielt Einzelspieler',
+      multiplayer: 'Spielt Mehrspieler',
+      playing: 'Spielt Minecraft',
+      server: (server: string) => `Spielt auf ${server}`
+    }
+  },
   resourcepacks: {
     title: 'Texturepacks',
     heading: (instance: string) => `Externe Texturepacks in "${instance}"`,
@@ -441,6 +473,22 @@ export const de = {
     instance: {
       unknown: (p: { instanceId: string }) => `Unbekannte Instanz: ${p.instanceId}`,
       notFound: (p: { instanceId: string }) => `Instanz ${p.instanceId} nicht gefunden.`
+    },
+    friends: {
+      not_logged_in: 'Nicht angemeldet.',
+      unauthorized: 'Deine Anmeldung ist abgelaufen - bitte ab- und wieder anmelden.',
+      unreachable: 'Freunde-Server nicht erreichbar. Es wird automatisch weiter versucht.',
+      auth_unavailable: 'Die Anmeldung konnte gerade nicht geprüft werden (Mojang nicht erreichbar). Versuch es gleich nochmal.',
+      rate_limited: 'Zu viele Anfragen - warte kurz und versuch es dann nochmal.',
+      invalid_name: 'Das ist kein gültiger Minecraft-Name.',
+      player_not_found: 'Kein Spieler mit diesem Namen hat den Client bisher benutzt.',
+      cannot_add_self: 'Du kannst dich nicht selbst hinzufügen.',
+      already_friends: 'Ihr seid bereits befreundet.',
+      already_requested: 'Du hast diesem Spieler schon eine Anfrage geschickt.',
+      too_many_friends: 'Die Freundesliste ist voll (höchstens 200 Freunde).',
+      too_many_requests: 'Zu viele offene Anfragen (höchstens 50) - warte, bis einige beantwortet sind.',
+      request_not_found: 'Diese Anfrage gibt es nicht mehr.',
+      unknown: 'Unbekannter Fehler beim Freunde-Server.'
     },
     worlds: {
       noWorldFound: 'In der Auswahl wurde keine Minecraft-Welt gefunden (eine Welt ist ein Ordner mit einer level.dat darin).',

@@ -10,6 +10,7 @@ import {
   type CapeUploadResult,
   type ClientImportResult,
   type CustomCapeStatus,
+  type FriendsPrefs,
   type GameLogEvent,
   type LaunchStage,
   type LauncherSettings,
@@ -36,6 +37,18 @@ import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
 import { installFabricLoader } from '../launch/fabricInstaller'
+import {
+  acceptFriendRequest,
+  getFriendsState,
+  removeFriend,
+  removeFriendRequest,
+  sendFriendRequest,
+  setFriendsPrefs,
+  startFriends,
+  stopFriends
+} from '../friends/friendsService'
+import { getPlayerSkin } from '../friends/playerHeads'
+import { setGameRunning, setGameStopped } from '../launch/gameActivity'
 import { launchGame } from '../launch/gameProcess'
 import { installVersion } from '../launch/installer'
 import {
@@ -534,6 +547,8 @@ export function registerIpcHandlers(): void {
           message: `Starte Minecraft ${installed.detail.id}…`
         })
 
+        // Friends presence: from here on the launcher reports where in the game the player is.
+        await setGameRunning(gameDir)
         await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)
         await saveSharedOptions(gameDir)
         await saveSharedServers(gameDir)
@@ -560,6 +575,7 @@ export function registerIpcHandlers(): void {
         }
         throw err
       } finally {
+        setGameStopped()
         setPreferCache(false)
         currentLaunchController = null
         broadcastLaunchBusy(event, false)
@@ -578,4 +594,16 @@ export function registerIpcHandlers(): void {
   // simply lost, not queued. This lets that window ask once on mount instead of only ever reacting
   // to a broadcast it may have missed.
   ipcMain.handle(IpcChannel.LaunchIsBusy, () => currentLaunchController !== null)
+
+  // Friends (Phase 8) - see friends/friendsService.ts. Start/stop follow PlayScreen: started with an
+  // online profile, stopped on logout or in offline mode.
+  ipcMain.handle(IpcChannel.FriendsStart, async () => startFriends())
+  ipcMain.handle(IpcChannel.FriendsStop, async () => stopFriends(true))
+  ipcMain.handle(IpcChannel.FriendsGetState, () => getFriendsState())
+  ipcMain.handle(IpcChannel.FriendsSetPrefs, async (_event: IpcMainInvokeEvent, prefs: FriendsPrefs) => setFriendsPrefs(prefs))
+  ipcMain.handle(IpcChannel.FriendsSendRequest, async (_event: IpcMainInvokeEvent, name: string) => sendFriendRequest(name))
+  ipcMain.handle(IpcChannel.FriendsAcceptRequest, async (_event: IpcMainInvokeEvent, uuid: string) => acceptFriendRequest(uuid))
+  ipcMain.handle(IpcChannel.FriendsRemoveRequest, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriendRequest(uuid))
+  ipcMain.handle(IpcChannel.FriendsRemoveFriend, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriend(uuid))
+  ipcMain.handle(IpcChannel.FriendsHead, async (_event: IpcMainInvokeEvent, uuid: string) => getPlayerSkin(uuid))
 }

@@ -2,7 +2,7 @@
 # lingering for this user, so it runs without an open login and starts on boot).
 # Installed to ~/.config/systemd/user/ by deploy.sh.
 [Unit]
-Description=TNT's All-In-1 Client - custom cape upload service
+Description=TNT's All-In-1 Client - custom capes and friends service
 After=network-online.target
 
 [Service]

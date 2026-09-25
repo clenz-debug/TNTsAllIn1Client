@@ -6,6 +6,7 @@ import { useTranslations } from '../i18n/LanguageContext'
 import { Logo } from '../Logo'
 import { PlayerMenuButton } from '../PlayerMenuButton'
 import type {
+  FriendsState,
   ClientDesign,
   GameLogEvent,
   GameVersionSummary,
@@ -21,6 +22,7 @@ import type {
 } from '../../../shared/types'
 import { isBundleCompatibleVersion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
+import { FriendsScreen } from './FriendsScreen'
 import { InstancesScreen } from './InstancesScreen'
 import { ModsScreen } from './ModsScreen'
 import { SettingsScreen } from './SettingsScreen'
@@ -52,6 +54,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [progress, setProgress] = useState<LaunchProgressEvent | null>(null)
   const [logs, setLogs] = useState<GameLogEvent[]>([])
   const [showCredits, setShowCredits] = useState(false)
+  const [showFriends, setShowFriends] = useState(false)
+  const [friendsState, setFriendsState] = useState<FriendsState | null>(null)
   const [showMods, setShowMods] = useState(false)
   const [showWorlds, setShowWorlds] = useState(false)
   const [showResourcepacks, setShowResourcepacks] = useState(false)
@@ -230,6 +234,20 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [modBundleUpdate, setModBundleUpdate] = useState<ModBundleUpdateInfo | null>(null)
   const [modBundleUpdateError, setModBundleUpdateError] = useState<string | null>(null)
   const [applyingModBundleUpdate, setApplyingModBundleUpdate] = useState(false)
+  // Friends (Phase 8): the main process pings the backend while this screen is shown with an
+  // online profile and pushes every update here; offline mode has no friends at all.
+  useEffect(() => {
+    if (profile.offline) return
+    const unsubscribe = window.api.onFriendsState(setFriendsState)
+    void window.api.startFriends()
+    void window.api.getFriendsState().then(setFriendsState)
+    return () => {
+      unsubscribe()
+      setFriendsState(null)
+      void window.api.stopFriends()
+    }
+  }, [profile.offline])
+
   const [reconnecting, setReconnecting] = useState(false)
   const [reconnectFailed, setReconnectFailed] = useState(false)
 
@@ -336,6 +354,10 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     return <CreditsScreen onClose={() => setShowCredits(false)} />
   }
 
+  if (showFriends && friendsState && !profile.offline) {
+    return <FriendsScreen state={friendsState} onClose={() => setShowFriends(false)} />
+  }
+
   if (showSettings) {
     return (
       <SettingsScreen
@@ -439,6 +461,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           />
         </div>
         <div className="header-actions">
+          {!profile.offline && (
+            <button className="link-button" onClick={() => setShowFriends(true)} disabled={!friendsState}>
+              {t.friends.headerButton(friendsState?.overview?.incoming.length ?? 0)}
+            </button>
+          )}
           <button className="link-button" onClick={() => setShowSkin(true)}>
             {t.play.headerSkin}
           </button>

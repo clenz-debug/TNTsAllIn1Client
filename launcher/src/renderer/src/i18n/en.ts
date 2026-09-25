@@ -163,6 +163,38 @@ export const en: typeof de = {
     uploadedStatus: (worlds: string[]) =>
       worlds.length === 1 ? `World "${worlds[0]}" uploaded.` : `${worlds.length} worlds uploaded: ${worlds.join(', ')}.`
   },
+  friends: {
+    title: 'Friends',
+    headerButton: (incoming: number) => (incoming > 0 ? `Friends (${incoming})` : 'Friends'),
+    ownHeading: 'Your status',
+    statusLabel: 'Status:',
+    ownStatus: { online: 'Online', away: 'Away', dnd: 'Do not disturb', invisible: 'Invisible' },
+    visibleStatus: { online: 'Online', away: 'Away', dnd: 'Do not disturb', offline: 'Offline' },
+    hideServer: 'Hide server from friends',
+    addHeading: 'Add friend',
+    addInfo: 'Enter their Minecraft name. You can only add players who have used the client before.',
+    addPlaceholder: 'Minecraft name',
+    addButton: 'Send request',
+    requestSent: (name: string) => `Request sent to ${name}.`,
+    nowFriends: (name: string) => `You and ${name} are now friends.`,
+    requestsHeading: 'Requests',
+    incoming: 'Wants to be your friend',
+    outgoing: 'Request sent, waiting for an answer',
+    accept: 'Accept',
+    decline: 'Decline',
+    withdraw: 'Withdraw',
+    friendsHeading: (count: number) => `Friends (${count})`,
+    empty: 'No friends yet - send a request above.',
+    confirmRemove: (name: string) => `Remove ${name} from your friends list?`,
+    activity: {
+      launcher: 'In the launcher',
+      menu: 'In the main menu',
+      singleplayer: 'Playing singleplayer',
+      multiplayer: 'Playing multiplayer',
+      playing: 'Playing Minecraft',
+      server: (server: string) => `Playing on ${server}`
+    }
+  },
   resourcepacks: {
     title: 'Resource Packs',
     heading: (instance: string) => `External resource packs in "${instance}"`,
@@ -423,6 +455,22 @@ export const en: typeof de = {
     instance: {
       unknown: (p: { instanceId: string }) => `Unknown instance: ${p.instanceId}`,
       notFound: (p: { instanceId: string }) => `Instance ${p.instanceId} not found.`
+    },
+    friends: {
+      not_logged_in: 'Not logged in.',
+      unauthorized: 'Your login has expired - please log out and in again.',
+      unreachable: "Can't reach the friends server. It keeps retrying automatically.",
+      auth_unavailable: "Your login couldn't be checked right now (Mojang unreachable). Try again in a moment.",
+      rate_limited: 'Too many requests - wait a moment and try again.',
+      invalid_name: "That's not a valid Minecraft name.",
+      player_not_found: 'No player with that name has used the client yet.',
+      cannot_add_self: "You can't add yourself.",
+      already_friends: "You're already friends.",
+      already_requested: 'You already sent this player a request.',
+      too_many_friends: 'Your friends list is full (200 friends at most).',
+      too_many_requests: 'Too many open requests (50 at most) - wait until some are answered.',
+      request_not_found: 'This request no longer exists.',
+      unknown: 'Unknown error from the friends server.'
     },
     worlds: {
       noWorldFound: 'No Minecraft world found in your selection (a world is a folder with a level.dat inside).',

@@ -290,6 +290,51 @@ export interface LauncherSettings {
 
 export type Language = 'de' | 'en'
 
+/** Friends (Phase 8) - mirrors `backend/src/friends.ts`. What the player picks, Discord-style;
+ * `invisible` looks exactly like offline to friends. */
+export type FriendsStatus = 'online' | 'away' | 'dnd' | 'invisible'
+/** What a friend shows as - `invisible` never leaves the server. */
+export type FriendVisibleStatus = 'online' | 'away' | 'dnd' | 'offline'
+export type FriendActivityKind = 'launcher' | 'menu' | 'singleplayer' | 'multiplayer' | 'playing'
+
+export interface FriendActivity {
+  kind: FriendActivityKind
+  /** Multiplayer only, and only if that friend doesn't hide it. */
+  server?: string
+}
+
+export interface FriendPlayer {
+  uuid: string
+  name: string
+}
+
+export interface FriendEntry extends FriendPlayer {
+  status: FriendVisibleStatus
+  activity: FriendActivity | null
+}
+
+export interface FriendsOverview {
+  friends: FriendEntry[]
+  incoming: FriendPlayer[]
+  outgoing: FriendPlayer[]
+}
+
+/** The player's own friends settings - own file (`main/friends/friendsService.ts`), not part of
+ * `LauncherSettings`, which PlayScreen always writes back whole. */
+export interface FriendsPrefs {
+  status: FriendsStatus
+  /** "Server verbergen": friends see "Mehrspieler" without the server address. */
+  hideServer: boolean
+}
+
+/** Everything the Friends screen shows, pushed from main after every presence ping or action.
+ * `error` is a backend/launcher error code (see `i18n` `friends.errors`), `null` when fine. */
+export interface FriendsState {
+  overview: FriendsOverview | null
+  prefs: FriendsPrefs
+  error: string | null
+}
+
 export type ClientDesign = 'minecraft' | 'client'
 
 /** The full themeable palette (Settings screen's "Erscheinungsbild" section) - `background1`/
