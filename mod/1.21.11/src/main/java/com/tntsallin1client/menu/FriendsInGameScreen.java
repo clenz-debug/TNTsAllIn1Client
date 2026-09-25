@@ -5,13 +5,18 @@ import com.tntsallin1client.friends.FriendsBridge;
 import com.tntsallin1client.friends.WorldInvites;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * The pause menu's "Friends" screen (Phase 8b): world invitations to accept or decline, and - in
@@ -25,12 +30,24 @@ public class FriendsInGameScreen extends Screen {
 	private static final int ROW_SPACING = 24;
 	private static final int BUTTON_WIDTH = 80;
 	private static final int REBUILD_TICKS = 20;
+	private static final int HEAD_SIZE = 16;
+	/** Name text starts right of the head. */
+	private static final int HEAD_TEXT_OFFSET = HEAD_SIZE + 4;
 
 	private record Label(Component text, int x, int y, int color) {
 	}
 
+	/** A friend's face next to their name (own user request: see at a glance who's inviting). */
+	private record Head(String uuid, int x, int y) {
+	}
+
+	/** One profile per player, so the skin cache recognizes it again every frame. Resolved by the
+	 * game itself - the same lookup player head blocks use. */
+	private static final Map<String, ResolvableProfile> PROFILES = new HashMap<>();
+
 	private final Screen parent;
 	private final List<Label> labels = new ArrayList<>();
+	private final List<Head> heads = new ArrayList<>();
 	private int ticks;
 
 	public FriendsInGameScreen(@Nullable Screen parent) {
@@ -41,6 +58,7 @@ public class FriendsInGameScreen extends Screen {
 	@Override
 	protected void init() {
 		labels.clear();
+		heads.clear();
 		int x = (this.width - ROW_WIDTH) / 2;
 		int buttonsX = x + ROW_WIDTH - BUTTON_WIDTH;
 		int y = 34;
@@ -52,7 +70,8 @@ public class FriendsInGameScreen extends Screen {
 			y += 14;
 			for (FriendsBridge.Invite invite : invites) {
 				if (y > lastRowY) break;
-				label(Component.translatable("gui.tntsallin1client.friends.invite_row", invite.fromName(), invite.version()), x, y + 6, 0xFFE0E0E0);
+				heads.add(new Head(invite.fromUuid(), x, y + 2));
+				label(Component.translatable("gui.tntsallin1client.friends.invite_row", invite.fromName(), invite.version()), x + HEAD_TEXT_OFFSET, y + 6, 0xFFE0E0E0);
 				this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.friends.join"),
 								button -> FriendsBridge.acceptInvite(this.minecraft, invite))
 						.bounds(buttonsX - BUTTON_WIDTH - 4, y, BUTTON_WIDTH, ROW_HEIGHT).build());
@@ -83,8 +102,9 @@ public class FriendsInGameScreen extends Screen {
 			}
 			for (FriendsBridge.Friend friend : friends) {
 				if (y > lastRowY) break;
+				heads.add(new Head(friend.uuid(), x, y + 2));
 				label(Component.translatable("gui.tntsallin1client.friends.friend_row", friend.name(),
-						Component.translatable("gui.tntsallin1client.friends.status." + friend.status())), x, y + 6, 0xFFE0E0E0);
+						Component.translatable("gui.tntsallin1client.friends.status." + friend.status())), x + HEAD_TEXT_OFFSET, y + 6, 0xFFE0E0E0);
 				if (WorldInvites.isInvited(friend.uuid())) {
 					label(resultText(WorldInvites.inviteResult(friend.uuid())), buttonsX - BUTTON_WIDTH - 4, y + 6, 0xFFAAAAAA);
 					this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.friends.revoke"), button -> {
@@ -151,6 +171,18 @@ public class FriendsInGameScreen extends Screen {
 		for (Label label : labels) {
 			MenuText.text(guiGraphics, this.font, label.text(), label.x(), label.y(), label.color());
 		}
+		for (Head head : heads) {
+			PlayerFaceRenderer.draw(guiGraphics,
+					this.minecraft.playerSkinRenderCache().getOrDefault(profile(head.uuid())).playerSkin(), head.x(), head.y(), HEAD_SIZE);
+		}
+	}
+
+	private static ResolvableProfile profile(String undashedUuid) {
+		return PROFILES.computeIfAbsent(undashedUuid, key -> {
+			String hex = key.replace("-", "");
+			return ResolvableProfile.createUnresolved(UUID.fromString(hex.substring(0, 8) + "-" + hex.substring(8, 12) + "-"
+					+ hex.substring(12, 16) + "-" + hex.substring(16, 20) + "-" + hex.substring(20)));
+		});
 	}
 
 	@Override

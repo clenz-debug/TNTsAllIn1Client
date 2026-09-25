@@ -523,6 +523,12 @@ select option {
   opacity: 0.85;
 }
 
+.invite-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .friends-prefs {
   display: flex;
   flex-wrap: wrap;

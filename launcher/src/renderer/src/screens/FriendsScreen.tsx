@@ -25,6 +25,18 @@ export function InviteBanner({ invite, onJoin }: { invite: WorldInvite; onJoin: 
   const t = useTranslations()
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // The inviter's face next to their name (own user request: see at a glance who's inviting).
+  const [skin, setSkin] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void window.api.getFriendSkin(invite.from.uuid).then((dataUri) => {
+      if (!cancelled) setSkin(dataUri)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [invite.from.uuid])
 
   async function join(): Promise<void> {
     setBusy(true)
@@ -45,9 +57,12 @@ export function InviteBanner({ invite, onJoin }: { invite: WorldInvite; onJoin: 
 
   return (
     <div className="update-banner">
-      <span>
-        {t.friends.inviteText(invite.from.name, invite.version)}
-        {error && <span className="error"> {error}</span>}
+      <span className="invite-banner-text">
+        <PlayerHeadIcon textureDataUri={skin} size={24} />
+        <span>
+          {t.friends.inviteText(invite.from.name, invite.version)}
+          {error && <span className="error"> {error}</span>}
+        </span>
       </span>
       <div className="header-actions">
         <button className="link-button" disabled={busy} onClick={() => void join()}>
