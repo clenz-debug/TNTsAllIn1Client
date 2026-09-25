@@ -14,9 +14,8 @@ import net.minecraft.network.chat.Component;
  * of the available details ("Singleplayer"/"Multiplayer", world name, Minecraft version, elapsed
  * time) actually get shown, plus the one privacy-sensitive one (server name) kept off by default
  * even with everything else on. Same "each toggle independently on/off" shape as every other
- * multi-field options screen here, see {@link ItemCounterOptionsScreen}. The actual Discord
- * Application client id has no control here on purpose - see
- * {@code ClientConfig#discordApplicationClientId}'s own doc comment.
+ * multi-field options screen here, see {@link ItemCounterOptionsScreen}. The Discord Application
+ * itself is fixed, see {@code DiscordPresenceManager#APPLICATION_ID}.
  */
 public class DiscordPresenceOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;

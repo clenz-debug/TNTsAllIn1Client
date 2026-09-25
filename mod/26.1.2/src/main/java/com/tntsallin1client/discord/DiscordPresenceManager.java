@@ -37,6 +37,14 @@ import java.util.concurrent.Executors;
  * what to send and hands it over; while a job is still {@link #busy}, it simply skips.
  */
 public final class DiscordPresenceManager {
+	/**
+	 * Our own Discord Application (discord.com/developers/applications, the client's logo uploaded
+	 * there as "logo") - Discord shows its name and logo for the presence. Public by nature: Discord
+	 * hands it to everyone who sees the presence. It used to be a config field defaulting to a
+	 * placeholder and was only ever filled in by hand in one dev instance, so every instance the
+	 * installed launcher created quietly never connected (own user report after 0.1.0).
+	 */
+	private static final long APPLICATION_ID = 1551954462359429140L;
 	private static final long RECONNECT_INTERVAL_MILLIS = 15_000;
 	private static final int TICKS_BETWEEN_UPDATES = 20;
 
@@ -72,7 +80,7 @@ public final class DiscordPresenceManager {
 		tickCounter = 0;
 
 		if (client == null) {
-			maybeReconnect(config);
+			maybeReconnect();
 			return;
 		}
 
@@ -106,19 +114,16 @@ public final class DiscordPresenceManager {
 		}
 	}
 
-	private static void maybeReconnect(ClientConfig config) {
+	private static void maybeReconnect() {
 		long now = System.currentTimeMillis();
 		if (now - lastConnectAttemptMillis < RECONNECT_INTERVAL_MILLIS) return;
 		lastConnectAttemptMillis = now;
-		String clientId = config.discordApplicationClientId;
 		runOnIpc(() -> {
 			try {
-				client = DiscordIpcClient.connect(Long.parseLong(clientId));
-			} catch (IOException | NumberFormatException e) {
-				// Discord not running (IOException - every candidate pipe/socket connect failed), or the
-				// placeholder client id in ClientConfig was never replaced with a real one
-				// (NumberFormatException) - neither is worth logging every 15s, both are simply "not
-				// ready yet" until they're not.
+				client = DiscordIpcClient.connect(APPLICATION_ID);
+			} catch (IOException e) {
+				// Discord not running (every candidate pipe/socket connect failed) - not worth logging
+				// every 15s, simply "not ready yet" until it is.
 				client = null;
 			}
 		});

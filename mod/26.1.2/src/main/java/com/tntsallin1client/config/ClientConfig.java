@@ -319,13 +319,7 @@ public class ClientConfig {
 	public boolean discordPresenceShowWorldName = true;
 	public boolean discordPresenceShowServerName = false;
 	public boolean discordPresenceShowElapsedTime = true;
-	// No UI control (same "hand-edit this file" precedent as containerClickPacketsPerTick above) -
-	// a Discord Application's client ID is a one-time, technical piece of setup (create the
-	// Application at discord.com/developers/applications, paste its id here), not something to
-	// expose a whole settings-screen text field for. "0" is a deliberately invalid placeholder:
-	// DiscordPresenceManager's connect attempt fails fast on it (Discord rejects any unknown
-	// client_id) and just quietly retries, same as when Discord itself isn't running at all.
-	public String discordApplicationClientId = "0";
+	// The Discord Application's id is fixed in DiscordPresenceManager#APPLICATION_ID, not a setting.
 
 	public static ClientConfig get() {
 		if (instance == null) {
