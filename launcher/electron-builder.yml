@@ -45,9 +45,10 @@ files:
 # userData/bundles/ instead (resourcePaths.ts).
 #
 # Vanilla Tweaks is left out of what we distribute: its terms (vanillatweaks.net/terms) forbid
-# passing its packs on "as they are, without proper modification and/or additions" - our selection
-# is taken unchanged from their site. The flat inventory icons add-on only works on top of it, so it
-# goes too. Both stay in the local dev folders; see Projekt_Roadmap.md's license section.
+# passing its packs on "as they are, without proper modification and/or additions". It's replaced by
+# our own TNT 3D Blocks pack (resourcepacks/3d-blocks), which the flat inventory icons add-on now
+# builds on - so that one ships again. The exclusion only guards against a leftover local copy; see
+# Projekt_Roadmap.md's license section.
 extraResources:
   - from: mods-bundle/1.21.11
     to: mods-bundle/1.21.11
@@ -58,7 +59,6 @@ extraResources:
     filter:
       - '**/*'
       - '!VanillaTweaks_*'
-      - '!TNT-Flat-Inventory-Icons-*'
   - from: ../mod/1.21.11/build/libs
     to: own-mod/1.21.11
     filter:
@@ -74,7 +74,6 @@ extraResources:
     filter:
       - '**/*'
       - '!VanillaTweaks_*'
-      - '!TNT-Flat-Inventory-Icons-*'
   - from: ../mod/26.1.2/build/libs
     to: own-mod/26.1.2
     filter:

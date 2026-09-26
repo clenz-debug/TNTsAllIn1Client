@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.blocks3d.Blocks3d;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import dev.tr7zw.skinlayers.SkinLayersModBase;
@@ -10,7 +11,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackRepository;
 
-import java.util.List;
 
 /**
  * Every feature the Client Mods menu offers (on/off switch, optional options screen) plus its extra
@@ -20,21 +20,10 @@ import java.util.List;
  */
 public final class ClientMenuFeatures {
 	/**
-	 * Exact filenames of the 5p 3D-block-model resource packs bundled in
-	 * {@code launcher/resourcepacks-bundle/} (pack IDs are "file/" + the file
-	 * name on disk, see vanilla's {@code FolderRepositorySource}) - excludes
-	 * the unrelated Default Dark Mode pack. Update this list if any of those
-	 * files are ever renamed or upgraded to a new version number, same
-	 * upkeep requirement as {@link CreditsScreen}'s own hardcoded entry list.
+	 * The 5r dark-inventory resource pack bundled in {@code launcher/resourcepacks-bundle/} - pack IDs
+	 * are "file/" + the file name on disk (vanilla's {@code FolderRepositorySource}); update it when
+	 * the file is renamed. The 3D block model packs are listed in {@link Blocks3d}.
 	 */
-	private static final List<String> BLOCK_MODEL_PACK_IDS = List.of(
-			"file/Bushy-Vegetation-3.5.2.zip",
-			"file/3D-Bushy-Bushie-1.0.zip",
-			"file/Mushrooms-Plus-26.1_v1.4.zip",
-			"file/Vanilla-Spinning-Stonecutter-3D-1.0.0.zip",
-			"file/VanillaTweaks_r346678_MC1.21.x.zip");
-
-	/** Same "file/" + filename scheme as {@link #BLOCK_MODEL_PACK_IDS}, see there - the 5r dark-inventory resource pack. */
 	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-1.21.11-2026.4.0.zip";
 
 	private ClientMenuFeatures() {
@@ -191,14 +180,9 @@ public final class ClientMenuFeatures {
 				});
 
 		PackRepository packRepository = minecraft.getResourcePackRepository();
-		boolean blockModels3dEnabled = BLOCK_MODEL_PACK_IDS.stream().anyMatch(packRepository.getSelectedIds()::contains);
-		sink.addToggleRow(blockModels3dEnabled, Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
+		sink.addToggleRow(Blocks3d.anySelected(packRepository), Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
 				value -> {
-					if (value) {
-						BLOCK_MODEL_PACK_IDS.forEach(packRepository::addPack);
-					} else {
-						BLOCK_MODEL_PACK_IDS.forEach(packRepository::removePack);
-					}
+					Blocks3d.setEnabled(packRepository, value);
 					minecraft.options.updateResourcePacks(packRepository);
 				},
 				() -> new BlockModels3dOptionsScreen(parent));

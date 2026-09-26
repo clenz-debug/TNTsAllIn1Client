@@ -33,22 +33,6 @@ const ENTRIES: CreditEntry[] = [
     name: 'Bushy Vegetation (resource pack)',
     license: 'BSD-3-Clause',
     url: 'https://modrinth.com/resourcepack/bushy-vegetation'
-  },
-  {
-    name: '3D Bushy Bushie (resource pack)',
-    license: 'Apache-2.0',
-    url: 'https://modrinth.com/resourcepack/3d-bushy-bushie'
-  },
-  { name: 'Mushrooms Plus (resource pack)', license: 'MIT', url: 'https://modrinth.com/resourcepack/mushrooms-plus' },
-  {
-    name: 'Vanilla Spinning Stonecutter (3D) (resource pack)',
-    license: 'MIT',
-    url: 'https://modrinth.com/resourcepack/vanilla-spinning-stonecutter-3d'
-  },
-  {
-    name: 'Vanilla Tweaks (resource pack selection)',
-    license: 'vanillatweaks.net Terms',
-    url: 'https://vanillatweaks.net/terms/'
   }
 ]
 

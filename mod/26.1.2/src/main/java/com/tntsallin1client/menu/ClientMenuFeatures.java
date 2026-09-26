@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.blocks3d.Blocks3d;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import dev.tr7zw.skinlayers.SkinLayersModBase;
@@ -21,9 +22,8 @@ public final class ClientMenuFeatures {
 	 * (see vanilla's {@code FolderRepositorySource}) - the 5r dark-inventory resource pack. */
 	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-26.2-2026.6.0.zip";
 
-	/** Same "file/" + filename scheme as {@link #DARK_MODE_PACK_ID} - the Vanilla Tweaks 3D block
-	 * models selection. */
-	private static final String BLOCK_MODELS_3D_PACK_ID = "file/VanillaTweaks_r714399_MC26.2.x.zip";
+	/** Same "file/" + filename scheme as {@link #DARK_MODE_PACK_ID} - our own TNT 3D Blocks pack
+	 * (resourcepacks/3d-blocks), which replaced the Vanilla Tweaks selection. */
 
 	private ClientMenuFeatures() {
 	}
@@ -180,14 +180,9 @@ public final class ClientMenuFeatures {
 
 		PackRepository packRepository = minecraft.getResourcePackRepository();
 
-		boolean blockModels3dEnabled = packRepository.getSelectedIds().contains(BLOCK_MODELS_3D_PACK_ID);
-		sink.addToggleRow(blockModels3dEnabled, Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
+		sink.addToggleRow(Blocks3d.anySelected(packRepository), Component.translatable("gui.tntsallin1client.menu.block_models_3d"),
 				value -> {
-					if (value) {
-						packRepository.addPack(BLOCK_MODELS_3D_PACK_ID);
-					} else {
-						packRepository.removePack(BLOCK_MODELS_3D_PACK_ID);
-					}
+					Blocks3d.setEnabled(packRepository, value);
 					minecraft.options.updateResourcePacks(packRepository);
 				},
 				() -> new BlockModels3dOptionsScreen(parent));

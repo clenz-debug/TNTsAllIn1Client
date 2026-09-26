@@ -1,21 +1,22 @@
 """
 Generates the "TNT Flat Inventory Icons" resource pack for one Minecraft version (own user request:
-3D item models from the bundled Vanilla Tweaks pack look wrong in the inventory, but should stay 3D
-everywhere else).
+3D item models from the bundled 3D pack look wrong in the inventory, but should stay 3D everywhere
+else). The 3D pack is our own TNT 3D Blocks (resourcepacks/3d-blocks), which replaced Vanilla Tweaks.
 
 Since 1.21.4 an item definition (assets/minecraft/items/<id>.json) can pick its model per display
-context. For every item whose look Vanilla Tweaks changes - directly via its item definition, or
+context. For every item whose look the 3D pack changes - directly via its item definition, or
 indirectly through any item/block model in the item's model chain - this pack overrides the item
 definition with:
     display_context == "gui"  ->  the untouched vanilla model (copied into our own namespace, so
-                                  Vanilla Tweaks' overrides of the same model paths can't reach it)
-    anything else             ->  exactly what Vanilla Tweaks would have used (3D in hand, on the
+                                  the 3D pack's overrides of the same model paths can't reach it)
+    anything else             ->  exactly what the 3D pack would have used (3D in hand, on the
                                   ground, in item frames)
-The pack sits directly above Vanilla Tweaks (pinned by the mod), below the user's own packs, and is
+The pack sits directly above the 3D pack (pinned by the mod), below the user's own packs, and is
 switched by the mod menu's "3D items in inventory" toggle.
 
-Usage (re-run whenever the bundled Vanilla Tweaks zip changes):
-    python generate_flat_icons_pack.py <vanilla client jar> <vanilla tweaks zip> <pack format> <out zip>
+Usage (re-run whenever the bundled 3D packs change; several 3D packs comma-separated, lowest first -
+the bushes have a pack of their own):
+    python generate_flat_icons_pack.py <vanilla client jar> <3D pack zip>[,<zip>...] <pack format> <out zip>
 """
 import json
 import sys
@@ -59,9 +60,10 @@ def format_applies(entry, pack_format):
 
 
 def effective_pack_files(pack, pack_format):
-    """Vanilla Tweaks' files as the game sees them: base, then every applicable overlay on top, in order."""
+    """The 3D pack's files as the game sees them: base, then every applicable overlay on top, in order
+    - as (zip, name inside it)."""
     names = pack.namelist()
-    files = {name: name for name in names if name.startswith(PREFIX) and not name.endswith("/")}
+    files = {name: (pack, name) for name in names if name.startswith(PREFIX) and not name.endswith("/")}
     mcmeta = json.loads(pack.read("pack.mcmeta"))
     for entry in mcmeta.get("overlays", {}).get("entries", []):
         if not format_applies(entry, pack_format):
@@ -69,7 +71,7 @@ def effective_pack_files(pack, pack_format):
         directory = entry["directory"].rstrip("/") + "/"
         for name in names:
             if name.startswith(directory + PREFIX) and not name.endswith("/"):
-                files[name[len(directory):]] = name
+                files[name[len(directory):]] = (pack, name)
     return files
 
 
@@ -112,16 +114,19 @@ def model_closure(jar, model_id, seen):
 
 
 def main():
-    jar_path, pack_path, pack_format, out_path = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
-    with zipfile.ZipFile(jar_path) as jar, zipfile.ZipFile(pack_path) as pack:
-        pack_files = effective_pack_files(pack, pack_format)
+    jar_path, pack_paths, pack_format, out_path = sys.argv[1], sys.argv[2].split(","), int(sys.argv[3]), sys.argv[4]
+    packs = [zipfile.ZipFile(path) for path in pack_paths]
+    with zipfile.ZipFile(jar_path) as jar:
+        pack_files = {}
+        for pack in packs:  # a higher pack's files win, like in the game
+            pack_files.update(effective_pack_files(pack, pack_format))
         overridden_models = {
             "minecraft:" + name[len(PREFIX + "models/"):-len(".json")]
             for name in pack_files
             if name.startswith(PREFIX + "models/") and name.endswith(".json")
         }
         pack_items = {
-            name[len(PREFIX + "items/"):-len(".json")]: json.loads(pack.read(pack_files[name]))
+            name[len(PREFIX + "items/"):-len(".json")]: json.loads(pack_files[name][0].read(pack_files[name][1]))
             for name in pack_files
             if name.startswith(PREFIX + "items/") and name.endswith(".json")
         }
@@ -155,8 +160,8 @@ def main():
             }
             out_items[f"{PREFIX}items/{item_id}.json"] = definition
 
-    # min/max_format is the current scheme; the old single pack_format only for pre-26.x clients,
-    # the same way Vanilla Tweaks' own pack.mcmeta does it.
+    # min/max_format is the current scheme; the old single pack_format only for pre-26.x clients
+    # (the same split as resourcepacks/3d-blocks/build.py).
     mcmeta = {
         "pack": {
             "min_format": pack_format,

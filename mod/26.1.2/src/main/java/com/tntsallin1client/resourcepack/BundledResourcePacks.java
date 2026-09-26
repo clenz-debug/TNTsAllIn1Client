@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,8 @@ public final class BundledResourcePacks {
 
 	/** "file/" + the generated pack's file name, which ends in the Minecraft version. */
 	private static final String FLAT_ICONS_PACK_PREFIX = "file/TNT-Flat-Inventory-Icons-";
+	/** Our own packs' file names (the 3D blocks, the 3D bushes, the flat icons). */
+	private static final String OWN_PACK_PREFIX = "file/TNT-";
 
 	private static Set<String> bundledFileNames;
 
@@ -101,9 +104,13 @@ public final class BundledResourcePacks {
 			}
 		}
 		foundation.addAll(continuity);
+		// Our own packs above the third-party ones, each group in its order: Bushy Vegetation has models
+		// of its own for bushes, vines and sugar cane - switching it off and on again (it's switchable on
+		// its own) put it on top, and its models won over ours. The sort is stable.
+		ours.sort(Comparator.comparing(pack -> pack.getId().startsWith(OWN_PACK_PREFIX)));
 		foundation.addAll(ours);
-		// Directly above the other bundled packs (Vanilla Tweaks), so its GUI-only overrides win
-		// over Vanilla Tweaks' item models - but still below the user's own packs.
+		// Directly above the other bundled packs (the 3D block models), so its GUI-only overrides win
+		// over their item models - but still below the user's own packs.
 		foundation.addAll(flatIcons);
 		foundation.addAll(darkMode);
 		foundation.addAll(user);

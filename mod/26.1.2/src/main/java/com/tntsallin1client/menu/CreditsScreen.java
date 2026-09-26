@@ -54,10 +54,6 @@ public class CreditsScreen extends Screen {
 			new CreditEntry("e4mc", "MIT", "https://github.com/vgskye/e4mc-minecraft-architectury"),
 			new CreditEntry("Default Dark Mode (resource pack)", "CC-BY-NC-SA-4.0", "https://github.com/nebuIr/Default-Dark-Mode"),
 			new CreditEntry("Bushy Vegetation (resource pack)", "BSD-3-Clause", "https://modrinth.com/resourcepack/bushy-vegetation"),
-			new CreditEntry("3D Bushy Bushie (resource pack)", "Apache-2.0", "https://modrinth.com/resourcepack/3d-bushy-bushie"),
-			new CreditEntry("Mushrooms Plus (resource pack)", "MIT", "https://modrinth.com/resourcepack/mushrooms-plus"),
-			new CreditEntry("Vanilla Spinning Stonecutter (3D) (resource pack)", "MIT", "https://modrinth.com/resourcepack/vanilla-spinning-stonecutter-3d"),
-			new CreditEntry("Vanilla Tweaks (resource pack selection)", "vanillatweaks.net Terms", "https://vanillatweaks.net/terms/"),
 			new CreditEntry("Inter (font)", "SIL OFL 1.1", "https://github.com/rsms/inter"));
 
 	private final Screen parent;

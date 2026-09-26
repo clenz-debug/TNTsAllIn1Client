@@ -305,6 +305,10 @@ public class ClientConfig {
 		return this.armorStatusSlotHudLayout.computeIfAbsent(slot.name(), key -> new HudLayout());
 	}
 
+	// 3D block models: the optional packs the client menu's row switches on along with ours (own user
+	// request: each switchable on its own in the row's options) - see Blocks3d.
+	public boolean blockModels3dBushes = true;
+
 	// Discord Rich Presence (own user request, see Ideen_für_den_client.md) - shows what this
 	// launcher's mod is doing in the player's Discord status, entirely opt-in. Master toggle off by
 	// default (never suddenly visible to others after an update); every sub-toggle below defaults on
