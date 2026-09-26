@@ -169,7 +169,7 @@ export function CapeScreen({ profile, onClose }: Props) {
 
       {capeError && <span className="error">{capeError}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="capes-main">
         <p className="version-warning">{t.skin.capeDescription}</p>
         <p className="version-warning">{t.skin.capeRequirements}</p>
 
@@ -240,7 +240,7 @@ export function CapeScreen({ profile, onClose }: Props) {
         )}
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="capes-collection">
         <h3>{t.skin.capeCollectionHeading}</h3>
         {capeLibrary.length === 0 ? (
           <p className="mods-empty">{t.skin.capeCollectionEmpty}</p>

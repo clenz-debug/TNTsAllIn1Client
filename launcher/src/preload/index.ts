@@ -36,9 +36,10 @@ function subscribe<T>(channel: string, callback: (event: T) => void): () => void
 const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
-  /** `joinAddress`: start straight into that server (friends "join", Phase 8). */
-  play: (profile: MinecraftProfile, instanceId: string, joinAddress?: string): Promise<void> =>
-    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId, joinAddress),
+  /** `joinAddress`: start straight into that server (friends "join", Phase 8). `inGameTour`: the
+   * guided tour continues in the game's own menus (launcher tour's last step). */
+  play: (profile: MinecraftProfile, instanceId: string, joinAddress?: string, inGameTour?: boolean): Promise<void> =>
+    ipcRenderer.invoke(IpcChannel.LaunchPlay, profile, instanceId, joinAddress, inGameTour),
   cancelLaunch: (): Promise<void> => ipcRenderer.invoke(IpcChannel.LaunchCancel),
   isLaunchBusy: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.LaunchIsBusy),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke(IpcChannel.ShellOpenExternal, url),

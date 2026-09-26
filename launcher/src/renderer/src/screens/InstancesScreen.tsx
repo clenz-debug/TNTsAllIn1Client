@@ -196,7 +196,7 @@ export function InstancesScreen({
 
       {error && <span className="error">{error}</span>}
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="instances-create">
         <h3>{t.instances.newInstanceHeading}</h3>
         <div className="instance-create-form">
           {/* Explicit label + autoFocus so this reads as "type here", not decoration - the
@@ -237,7 +237,7 @@ export function InstancesScreen({
         {versionsError && <span className="error">{t.instances.versionListError(versionsError)}</span>}
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="instances-list">
         <h3>{t.instances.existingHeading}</h3>
         <ul className="instances-list">
           {instances.map((instance) =>

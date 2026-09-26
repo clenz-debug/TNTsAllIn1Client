@@ -13,6 +13,9 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import com.tntsallin1client.tour.TourRect;
+import com.tntsallin1client.tour.TourTargets;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ import java.util.function.Supplier;
  * scale, so it needed real scrolling rather than the fixed absolute Y
  * positions this screen used up through 5o.
  */
-public class ClientMenuScreen extends Screen {
+public class ClientMenuScreen extends Screen implements TourTargets {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ITEM_HEIGHT = 24;
@@ -59,6 +62,10 @@ public class ClientMenuScreen extends Screen {
 	 * options-screen visit - not just annoying, actively defeats the point of Phase 5v's search.
 	 */
 	private String searchQuery = "";
+
+	/** For the in-game tour's highlights ({@link #tourTarget}). */
+	private @Nullable FeatureList list;
+	private @Nullable EditBox searchBox;
 
 	public ClientMenuScreen(@Nullable Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.menu.title"));
@@ -86,6 +93,8 @@ public class ClientMenuScreen extends Screen {
 		this.addRenderableWidget(searchBox);
 
 		this.addRenderableWidget(list);
+		this.list = list;
+		this.searchBox = searchBox;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> this.onClose())
 				.bounds((this.width - ROW_WIDTH) / 2, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH, ROW_HEIGHT)
@@ -101,6 +110,22 @@ public class ClientMenuScreen extends Screen {
 	@Override
 	public void onClose() {
 		this.minecraft.setScreen(this.parent);
+	}
+
+	@Override
+	public @Nullable TourRect tourTarget(String name) {
+		if (this.list == null) return null;
+		if (name.equals(SEARCH)) return this.searchBox != null ? TourRect.of(this.searchBox) : null;
+		if (name.equals(HUD_EDITOR)) return this.list.rowBounds("gui.tntsallin1client.menu.hud_editor_button", FeatureList.Part.WHOLE);
+		if (name.startsWith(FEATURE_OPTIONS)) return this.list.rowBounds(name.substring(FEATURE_OPTIONS.length()), FeatureList.Part.OPTIONS);
+		if (name.startsWith(FEATURE_SWITCH)) return this.list.rowBounds(name.substring(FEATURE_SWITCH.length()), FeatureList.Part.SWITCH);
+		if (name.startsWith(FEATURE)) return this.list.rowBounds(name.substring(FEATURE.length()), FeatureList.Part.WHOLE);
+		return null;
+	}
+
+	/** The translation key behind a menu label - identifies rows for the tour. */
+	private static String keyOf(Component label) {
+		return label.getContents() instanceof TranslatableContents translatable ? translatable.getKey() : "";
 	}
 
 	/**
@@ -145,13 +170,13 @@ public class ClientMenuScreen extends Screen {
 							.bounds(0, 0, OPTIONS_BUTTON_WIDTH, ROW_HEIGHT)
 							.build()
 					: null;
-			this.currentSection.rows.add(new Row(toggle, options, label.getString()));
+			this.currentSection.rows.add(new Row(toggle, options, label.getString(), keyOf(label)));
 		}
 
 		@Override
 		public void addButtonRow(ButtonRole role, Component label, Runnable onPress) {
 			Button button = Button.builder(label, b -> onPress.run()).bounds(0, 0, ROW_WIDTH, ROW_HEIGHT).build();
-			this.currentSection.rows.add(new Row(button, null, label.getString()));
+			this.currentSection.rows.add(new Row(button, null, label.getString(), keyOf(label)));
 		}
 
 		/** Populates the list for the first time - call once after the last {@code add*Row}/{@code beginSection}. */
@@ -175,6 +200,35 @@ public class ClientMenuScreen extends Screen {
 			this.replaceEntries(visible);
 		}
 
+		enum Part {
+			WHOLE,
+			SWITCH,
+			OPTIONS
+		}
+
+		/**
+		 * Where a visible row (by its label's translation key) is, for the in-game tour. A row outside
+		 * the list's viewport gets scrolled into view instead - it's there from the next frame on.
+		 */
+		@Nullable TourRect rowBounds(String key, Part part) {
+			for (Row row : this.children()) {
+				if (row.header || !row.key.equals(key)) continue;
+				int top = row.getContentY();
+				if (top < this.getY() || top + ROW_HEIGHT > this.getY() + this.getHeight()) {
+					this.scrollToEntry(row);
+					return null;
+				}
+				int left = row.getContentX();
+				return switch (part) {
+					case WHOLE -> new TourRect(left, top, ROW_WIDTH, ROW_HEIGHT);
+					case SWITCH -> new TourRect(left, top, row.primary.getWidth(), ROW_HEIGHT);
+					case OPTIONS -> row.secondary == null ? null
+							: new TourRect(left + row.primary.getWidth() + TOGGLE_GAP, top, row.secondary.getWidth(), ROW_HEIGHT);
+				};
+			}
+			return null;
+		}
+
 		/** A section header plus the rows added while it was the current section. */
 		private static final class Section {
 			final Row header;
@@ -189,12 +243,15 @@ public class ClientMenuScreen extends Screen {
 			private final AbstractWidget primary;
 			private final @Nullable AbstractWidget secondary;
 			private final String searchKey;
+			/** The label's translation key - how the in-game tour finds a row. */
+			private final String key;
 			private final boolean header;
 
-			Row(AbstractWidget primary, @Nullable AbstractWidget secondary, String label) {
+			Row(AbstractWidget primary, @Nullable AbstractWidget secondary, String label, String key) {
 				this.primary = primary;
 				this.secondary = secondary;
 				this.searchKey = label.toLowerCase(Locale.ROOT);
+				this.key = key;
 				this.header = false;
 			}
 
@@ -202,6 +259,7 @@ public class ClientMenuScreen extends Screen {
 				this.primary = primary;
 				this.secondary = null;
 				this.searchKey = label.toLowerCase(Locale.ROOT);
+				this.key = "";
 				this.header = true;
 			}
 

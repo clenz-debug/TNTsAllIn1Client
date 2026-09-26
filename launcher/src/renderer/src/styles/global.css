@@ -1509,3 +1509,110 @@ select option {
   width: 100%;
   margin-bottom: 0.5rem;
 }
+
+/* Guided tour (own user request, tour/TourOverlay.tsx): the spotlight is a hole whose huge shadow
+   dims everything around it; transparent blockers catch clicks outside it (and over it, except in
+   the one interactive step). Above every modal/dropdown of the app itself. */
+.tour-hole {
+  position: fixed;
+  z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+  outline: 2px solid var(--green-4);
+  pointer-events: none;
+  transition:
+    top 0.2s ease,
+    left 0.2s ease,
+    width 0.2s ease,
+    height 0.2s ease;
+}
+
+.tour-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}
+
+.tour-blocker {
+  position: fixed;
+  z-index: 1001;
+}
+
+/* The interactive step's version picker opens its menu below the spotlight - keep it usable. */
+body.tour-active .dropdown-menu {
+  z-index: 1002;
+}
+
+.tour-bubble {
+  position: fixed;
+  z-index: 1003;
+  width: min(360px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-panel);
+  color: var(--text);
+  border: 1px solid var(--green-3);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.tour-bubble p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.tour-counter {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.tour-title {
+  font-size: 1.05rem;
+}
+
+.tour-hint {
+  color: var(--warning);
+}
+
+.tour-hint-done {
+  color: var(--success);
+}
+
+.tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.tour-actions .primary-button {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.95rem;
+}
+
+.tour-inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tour-end {
+  margin-right: auto;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.tour-offer {
+  font-weight: 600;
+}

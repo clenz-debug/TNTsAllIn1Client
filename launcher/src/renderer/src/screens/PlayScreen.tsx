@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { ReactElement } from 'react'
 import { defaultOnPrefix } from '../../../shared/bundledMods'
 import { Dropdown } from '../Dropdown'
 import { errorCode, formatError } from '../formatError'
@@ -32,6 +33,9 @@ import { CapeScreen } from './CapeScreen'
 import { SkinScreen } from './SkinScreen'
 import { ResourcepacksScreen } from './ResourcepacksScreen'
 import { WorldsScreen } from './WorldsScreen'
+import { TourOverlay } from '../tour/TourOverlay'
+import { TOUR_STEPS, isTourStepAvailable, neighborTourStep } from '../tour/tourSteps'
+import type { TourContext, TourScreen, TourStep, TourStepId } from '../tour/tourSteps'
 
 /** `'new'` opens the editor blank (template/own-PNG chooser); a `SkinLibraryEntry` opens it
  * pre-loaded via that entry's "Bearbeiten" button; `null` means the editor isn't open. */
@@ -88,6 +92,13 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [consoleInSeparateWindow, setConsoleInSeparateWindow] = useState(false)
   const [clientDesign, setClientDesign] = useState<ClientDesign>('minecraft')
   const [themeColors, setThemeColors] = useState<ThemeColors | null>(null)
+  // `true` until the settings are loaded, so the "Einführungstour?" question never flashes up for
+  // someone who already answered it.
+  const [tourOffered, setTourOffered] = useState(true)
+  const [tourStepId, setTourStepId] = useState<TourStepId | null>(null)
+  // Instance count when the "create an instance" step was first reached in this tour - it's done once
+  // there are more. Kept when going back to that step, so it doesn't ask for a second instance.
+  const [tourBaselineInstanceCount, setTourBaselineInstanceCount] = useState<number | null>(null)
   // Gates the save-effect below until the persisted settings have actually been applied - without
   // this, that effect's first run (on mount, still holding the plain useState defaults above)
   // would immediately overwrite whatever was saved from a previous session with those defaults.
@@ -149,6 +160,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         setConsoleInSeparateWindow(settings.consoleInSeparateWindow)
         setClientDesign(settings.clientDesign)
         setThemeColors(settings.themeColors)
+        setTourOffered(settings.tourOffered)
         onLanguageChange(settings.language)
         setSettingsLoaded(true)
       })
@@ -173,7 +185,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       // Always true here, never a field this screen itself tracks - PlayScreen only ever mounts
       // once App.tsx's own onboarding gate has already passed (see OnboardingScreen.tsx), so there's
       // no scenario where a save from here could still be pre-onboarding.
-      onboardingCompleted: true
+      onboardingCompleted: true,
+      tourOffered
     })
   }, [
     settingsLoaded,
@@ -188,8 +201,60 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     consoleInSeparateWindow,
     themeColors,
     language,
-    clientDesign
+    clientDesign,
+    tourOffered
   ])
+
+  // --- Guided tour (own user request) - see tour/tourSteps.ts for the steps and their order. ---
+  const tourContext: TourContext = { online: !profile.offline, friendsReady: friendsState !== null, hasInstance: selectedInstance !== null }
+  const tourStep = TOUR_STEPS.find((step) => step.id === tourStepId) ?? null
+  const availableTourSteps = TOUR_STEPS.filter((step) => isTourStepAvailable(step, tourContext))
+
+  /** Shows exactly the screen a tour step explains (or the play screen itself). */
+  function openTourScreen(screen: TourScreen): void {
+    setShowCredits(false)
+    setShowFriends(screen === 'friends')
+    setShowSettings(screen === 'settings')
+    setShowInstances(screen === 'instances')
+    setShowMods(screen === 'mods')
+    setShowWorlds(screen === 'worlds')
+    setShowResourcepacks(screen === 'resourcepacks')
+    setSkinEditorRequest(null)
+    setShowCapes(screen === 'capes')
+    setShowSkin(screen === 'skin')
+  }
+
+  function goToTourStep(step: TourStep | null): void {
+    if (!step) {
+      endTour()
+      return
+    }
+    setTourStepId(step.id)
+    if (step.waitFor === 'instanceCreated') setTourBaselineInstanceCount((baseline) => baseline ?? instances.length)
+    openTourScreen(step.screen)
+  }
+
+  function startTour(): void {
+    setTourOffered(true)
+    setTourBaselineInstanceCount(null)
+    goToTourStep(availableTourSteps[0] ?? null)
+  }
+
+  function endTour(): void {
+    setTourStepId(null)
+    openTourScreen('play')
+  }
+
+  // The tour's last step offers to go on in the game's own menus (own user request) - only where our
+  // mod runs, i.e. an instance whose version has the client bundle.
+  const canContinueTourInGame =
+    !busy && selectedInstance !== null && isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions)
+
+  function continueTourInGame(): void {
+    const instance = selectedInstance
+    endTour()
+    if (instance) void handlePlay(instance, undefined, true)
+  }
 
   function handleInstancesChange(newInstances: Instance[], newSelectedId: string | null): void {
     setInstances(newInstances)
@@ -312,8 +377,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   }
 
   /** `instance`/`joinAddress`: friends "join" (Phase 8) - a specific instance, started straight
-   * into that server. Plain "Play" uses the selected instance and the normal title screen. */
-  async function handlePlay(instance: Instance | null = selectedInstance, joinAddress?: string): Promise<void> {
+   * into that server. Plain "Play" uses the selected instance and the normal title screen.
+   * `inGameTour`: the guided tour continues in the game's menus (the launcher tour's last step). */
+  async function handlePlay(instance: Instance | null = selectedInstance, joinAddress?: string, inGameTour = false): Promise<void> {
     if (!instance) return
     setBusy(true)
     setLogs([])
@@ -326,7 +392,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     const unsubscribeProgress = window.api.onLaunchProgress(setProgress)
     const unsubscribeLog = window.api.onGameLog((event) => setLogs((prev) => [...prev.slice(-499), event]))
     try {
-      await window.api.play(profile, instance.id, joinAddress)
+      await window.api.play(profile, instance.id, joinAddress, inGameTour)
     } catch (err) {
       // main already sent a "Start abgebrochen."/"Launch cancelled." info-level log line to both
       // windows (see handlers.ts's LaunchPlay) before throwing this - showing it again here, in red,
@@ -377,275 +443,330 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     await window.api.cancelLaunch()
   }
 
-  if (showCredits) {
-    return <CreditsScreen onClose={() => setShowCredits(false)} />
-  }
+  /** Which screen is showing - its own function so the tour and its question can sit on top of any of them. */
+  function renderScreen(): ReactElement {
+    if (showCredits) {
+      return <CreditsScreen onClose={() => setShowCredits(false)} />
+    }
 
-  if (showFriends && friendsState && !profile.offline) {
-    return <FriendsScreen state={friendsState} gameRunning={busy} onJoin={handleJoin} onClose={() => setShowFriends(false)} />
-  }
+    if (showFriends && friendsState && !profile.offline) {
+      return <FriendsScreen state={friendsState} gameRunning={busy} onJoin={handleJoin} onClose={() => setShowFriends(false)} />
+    }
 
-  if (showSettings) {
+    if (showSettings) {
+      return (
+        <SettingsScreen
+          showSnapshots={showSnapshots}
+          onShowSnapshotsChange={setShowSnapshots}
+          maxMemoryMb={maxMemoryMb}
+          onMaxMemoryMbChange={setMaxMemoryMb}
+          consoleInSeparateWindow={consoleInSeparateWindow}
+          onConsoleInSeparateWindowChange={setConsoleInSeparateWindow}
+          themeColors={themeColors}
+          onThemeColorsChange={setThemeColors}
+          language={language}
+          onLanguageChange={onLanguageChange}
+          clientDesign={clientDesign}
+          onClientDesignChange={setClientDesign}
+          onDataRootOverrideChange={setDataRootOverride}
+          onStartTour={startTour}
+          onClose={() => setShowSettings(false)}
+        />
+      )
+    }
+
+    if (showInstances) {
+      return (
+        <InstancesScreen
+          instances={instances}
+          selectedInstanceId={selectedInstanceId}
+          versions={versions}
+          versionsError={versionsError}
+          showSnapshots={showSnapshots}
+          bundleCompatibleVersions={bundleCompatibleVersions}
+          onInstancesChange={handleInstancesChange}
+          onSelect={setSelectedInstanceId}
+          onClose={() => setShowInstances(false)}
+        />
+      )
+    }
+
+    if (showMods && selectedInstance) {
+      return (
+        <ModsScreen
+          instanceId={selectedInstance.id}
+          versionId={selectedInstance.versionId}
+          enabledBundledMods={selectedInstance.enabledBundledMods}
+          disabledBundledMods={selectedInstance.disabledBundledMods}
+          bundleCompatibleVersions={bundleCompatibleVersions}
+          onToggleBundledMod={handleToggleBundledMod}
+          onClose={() => setShowMods(false)}
+        />
+      )
+    }
+
+    if (showWorlds && selectedInstance) {
+      return <WorldsScreen instanceId={selectedInstance.id} instances={instances} onClose={() => setShowWorlds(false)} />
+    }
+
+    if (showResourcepacks && selectedInstance) {
+      return (
+        <ResourcepacksScreen
+          instanceId={selectedInstance.id}
+          instanceName={selectedInstance.name}
+          onClose={() => setShowResourcepacks(false)}
+        />
+      )
+    }
+
+    if (skinEditorRequest !== null) {
+      return (
+        <SkinEditorScreen
+          editingLibraryEntry={skinEditorRequest === 'new' ? undefined : skinEditorRequest}
+          onClose={() => setSkinEditorRequest(null)}
+        />
+      )
+    }
+
+    if (showCapes) {
+      return <CapeScreen profile={profile} onClose={() => setShowCapes(false)} />
+    }
+
+    if (showSkin) {
+      return (
+        <SkinScreen
+          profile={profile}
+          onProfileUpdate={onProfileUpdate}
+          onClose={() => setShowSkin(false)}
+          onOpenEditor={(entry) => setSkinEditorRequest(entry ?? 'new')}
+        />
+      )
+    }
+
     return (
-      <SettingsScreen
-        showSnapshots={showSnapshots}
-        onShowSnapshotsChange={setShowSnapshots}
-        maxMemoryMb={maxMemoryMb}
-        onMaxMemoryMbChange={setMaxMemoryMb}
-        consoleInSeparateWindow={consoleInSeparateWindow}
-        onConsoleInSeparateWindowChange={setConsoleInSeparateWindow}
-        themeColors={themeColors}
-        onThemeColorsChange={setThemeColors}
-        language={language}
-        onLanguageChange={onLanguageChange}
-        clientDesign={clientDesign}
-        onClientDesignChange={setClientDesign}
-        onDataRootOverrideChange={setDataRootOverride}
-        onClose={() => setShowSettings(false)}
-      />
-    )
-  }
+      <div className="play-screen">
+        <header>
+          <div className="identity-row">
+            <Logo className="app-logo" />
+            <PlayerMenuButton
+              name={profile.name}
+              headTextureDataUri={headTextureDataUri}
+              logoutLabel={t.play.headerLogout}
+              menuLabel={t.play.playerMenuLabel}
+              onLogout={onLogout}
+            />
+          </div>
+          <div className="header-actions">
+            {!profile.offline && (
+              <button className="link-button" data-tour="header-friends" onClick={() => setShowFriends(true)} disabled={!friendsState}>
+                {t.friends.headerButton(friendsState?.overview?.incoming.length ?? 0)}
+              </button>
+            )}
+            <button className="link-button" data-tour="header-skin" onClick={() => setShowSkin(true)}>
+              {t.play.headerSkin}
+            </button>
+            <button className="link-button" data-tour="header-capes" onClick={() => setShowCapes(true)}>
+              {t.play.headerCapes}
+            </button>
+            <button className="link-button" data-tour="header-credits" onClick={() => setShowCredits(true)}>
+              {t.play.headerCredits}
+            </button>
+            <button className="link-button" data-tour="header-settings" onClick={() => setShowSettings(true)}>
+              {t.play.headerSettings}
+            </button>
+          </div>
+        </header>
 
-  if (showInstances) {
-    return (
-      <InstancesScreen
-        instances={instances}
-        selectedInstanceId={selectedInstanceId}
-        versions={versions}
-        versionsError={versionsError}
-        showSnapshots={showSnapshots}
-        bundleCompatibleVersions={bundleCompatibleVersions}
-        onInstancesChange={handleInstancesChange}
-        onSelect={setSelectedInstanceId}
-        onClose={() => setShowInstances(false)}
-      />
-    )
-  }
+        {profile.offline && (
+          <div className="update-banner">
+            <span>
+              {t.play.offline.banner}
+              {reconnectFailed && <span className="error"> {t.play.offline.stillOffline}</span>}
+            </span>
+            <div className="header-actions">
+              <button className="link-button" disabled={reconnecting} onClick={() => void handleReconnect()}>
+                {reconnecting ? t.play.offline.reconnecting : t.play.offline.reconnect}
+              </button>
+            </div>
+          </div>
+        )}
 
-  if (showMods && selectedInstance) {
-    return (
-      <ModsScreen
-        instanceId={selectedInstance.id}
-        versionId={selectedInstance.versionId}
-        enabledBundledMods={selectedInstance.enabledBundledMods}
-        disabledBundledMods={selectedInstance.disabledBundledMods}
-        bundleCompatibleVersions={bundleCompatibleVersions}
-        onToggleBundledMod={handleToggleBundledMod}
-        onClose={() => setShowMods(false)}
-      />
-    )
-  }
+        {(friendsState?.overview?.invites ?? []).map((invite) => (
+          <InviteBanner key={invite.from.uuid} invite={invite} onJoin={handleJoin} />
+        ))}
 
-  if (showWorlds && selectedInstance) {
-    return <WorldsScreen instanceId={selectedInstance.id} instances={instances} onClose={() => setShowWorlds(false)} />
-  }
+        {/* 'checking'/'not-available'/'error' deliberately show no banner - same "purely informational,
+            a failed check is never worth surfacing" reasoning the old Phase 6d check already had.
+            That matters concretely right now: this repo has no GitHub Release yet, so every real
+            check errors out until the first one is published - showing that as a visible error every
+            single launch would just be noise, not a genuine problem to react to. */}
+        {updateStatus && !updateDismissed && (updateStatus.state === 'available' || updateStatus.state === 'downloading' || updateStatus.state === 'downloaded') && (
+          <div className="update-banner">
+            <span>
+              {updateStatus.state === 'available' && t.play.update.available(updateStatus.version ?? '')}
+              {updateStatus.state === 'downloading' && t.play.update.downloading(updateStatus.percent ?? 0)}
+              {updateStatus.state === 'downloaded' && t.play.update.downloaded(updateStatus.version ?? '')}
+            </span>
+            <div className="header-actions">
+              {updateStatus.state === 'downloaded' && (
+                <button className="link-button" onClick={() => void window.api.installUpdateNow()}>
+                  {t.play.update.restartNow}
+                </button>
+              )}
+              <button className="link-button" onClick={() => setUpdateDismissed(true)}>
+                {t.common.hide}
+              </button>
+            </div>
+          </div>
+        )}
 
-  if (showResourcepacks && selectedInstance) {
-    return (
-      <ResourcepacksScreen
-        instanceId={selectedInstance.id}
-        instanceName={selectedInstance.name}
-        onClose={() => setShowResourcepacks(false)}
-      />
-    )
-  }
+        {modBundleUpdate && (
+          <div className="update-banner">
+            <span>
+              {t.play.modBundleUpdate.available(
+                [
+                  ...modBundleUpdate.outdatedMods.map((entry) => entry.name),
+                  ...modBundleUpdate.outdatedResourcepacks.map((entry) => entry.name),
+                  ...(modBundleUpdate.ownModUpdateAvailable ? [t.play.modBundleUpdate.ownMod] : [])
+                ].join(', ')
+              )}
+              {modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
+            </span>
+            <div className="header-actions">
+              <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => void handleApplyModBundleUpdate()}>
+                {applyingModBundleUpdate ? t.play.modBundleUpdate.applying : t.play.modBundleUpdate.apply}
+              </button>
+              <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => setModBundleUpdate(null)}>
+                {t.common.hide}
+              </button>
+            </div>
+          </div>
+        )}
 
-  if (skinEditorRequest !== null) {
-    return (
-      <SkinEditorScreen
-        editingLibraryEntry={skinEditorRequest === 'new' ? undefined : skinEditorRequest}
-        onClose={() => setSkinEditorRequest(null)}
-      />
-    )
-  }
+        <div className="version-picker">
+          <label htmlFor="instance-select">{t.play.instanceLabel}</label>
+          <Dropdown
+            id="instance-select"
+            value={selectedInstanceId ?? ''}
+            onChange={setSelectedInstanceId}
+            disabled={busy || instances.length === 0}
+            options={
+              instances.length === 0
+                ? [{ value: '', label: t.play.noInstance }]
+                : instances.map((instance) => ({ value: instance.id, label: `${instance.name} (${instance.versionId})` }))
+            }
+          />
+          <button className="secondary-button" data-tour="manage-instances" onClick={() => setShowInstances(true)} disabled={busy}>
+            {t.play.manageInstances}
+          </button>
+          <button className="secondary-button" data-tour="mods-button" onClick={() => setShowMods(true)} disabled={busy || !selectedInstance}>
+            {t.play.mods}
+          </button>
+          <button className="secondary-button" data-tour="worlds-button" onClick={() => setShowWorlds(true)} disabled={busy || !selectedInstance}>
+            {t.play.worlds}
+          </button>
+          <button className="secondary-button" data-tour="resourcepacks-button" onClick={() => setShowResourcepacks(true)} disabled={busy || !selectedInstance}>
+            {t.play.resourcepacks}
+          </button>
+          {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
+          {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}
+          {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
+            <span className="version-warning">{t.play.bundleIncompatibleWarning(selectedInstance.versionId)}</span>
+          )}
+        </div>
 
-  if (showCapes) {
-    return <CapeScreen profile={profile} onClose={() => setShowCapes(false)} />
-  }
+        <div className="play-button-row">
+          <button className="primary-button play-button" data-tour="play-button" onClick={() => void handlePlay()} disabled={busy || !selectedInstance}>
+            {busy ? t.play.playing : t.play.play}
+          </button>
+          {/* Own user request: a Cancel button "wie bei anderen Clients üblich" that aborts an
+              in-progress launch (still downloading/installing, or already-running Minecraft alike -
+              see handlers.ts's LaunchPlay/gameProcess.ts). Shown here only when the console isn't in
+              its own separate window - that window gets the identical button instead
+              (ConsoleWindowView.tsx), so there's never a second one competing for the same click. */}
+          {busy && !consoleInSeparateWindow && (
+            <button className="secondary-button" onClick={() => void handleCancel()}>
+              {t.play.cancel}
+            </button>
+          )}
+        </div>
 
-  if (showSkin) {
-    return (
-      <SkinScreen
-        profile={profile}
-        onProfileUpdate={onProfileUpdate}
-        onClose={() => setShowSkin(false)}
-        onOpenEditor={(entry) => setSkinEditorRequest(entry ?? 'new')}
-      />
+        {/* When the Settings screen's "Konsole in separatem Fenster" toggle is on, handlePlay opens
+            a second BrowserWindow (main/consoleWindow.ts) that receives the exact same log/progress
+            events instead - showing both here too would just be a confusing duplicate. */}
+        {!consoleInSeparateWindow && (
+          <>
+            {progress && (
+              <div className="progress">
+                <span>
+                  {progress.stage}
+                  {progress.label ? ` — ${progress.label}` : ''} ({progress.completed}/{progress.total})
+                </span>
+                <progress value={progress.completed} max={Math.max(progress.total, 1)} />
+              </div>
+            )}
+
+            <pre className="log-panel">
+              {logs.map((log, index) => (
+                <div key={index} className={log.level === 'error' ? 'log-error' : 'log-info'}>
+                  {log.message}
+                </div>
+              ))}
+            </pre>
+          </>
+        )}
+      </div>
     )
   }
 
   return (
-    <div className="play-screen">
-      <header>
-        <div className="identity-row">
-          <Logo className="app-logo" />
-          <PlayerMenuButton
-            name={profile.name}
-            headTextureDataUri={headTextureDataUri}
-            logoutLabel={t.play.headerLogout}
-            menuLabel={t.play.playerMenuLabel}
-            onLogout={onLogout}
-          />
-        </div>
-        <div className="header-actions">
-          {!profile.offline && (
-            <button className="link-button" onClick={() => setShowFriends(true)} disabled={!friendsState}>
-              {t.friends.headerButton(friendsState?.overview?.incoming.length ?? 0)}
-            </button>
-          )}
-          <button className="link-button" onClick={() => setShowSkin(true)}>
-            {t.play.headerSkin}
-          </button>
-          <button className="link-button" onClick={() => setShowCapes(true)}>
-            {t.play.headerCapes}
-          </button>
-          <button className="link-button" onClick={() => setShowCredits(true)}>
-            {t.play.headerCredits}
-          </button>
-          <button className="link-button" onClick={() => setShowSettings(true)}>
-            {t.play.headerSettings}
-          </button>
-        </div>
-      </header>
+    <>
+      {renderScreen()}
 
-      {profile.offline && (
-        <div className="update-banner">
-          <span>
-            {t.play.offline.banner}
-            {reconnectFailed && <span className="error"> {t.play.offline.stillOffline}</span>}
-          </span>
-          <div className="header-actions">
-            <button className="link-button" disabled={reconnecting} onClick={() => void handleReconnect()}>
-              {reconnecting ? t.play.offline.reconnecting : t.play.offline.reconnect}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {(friendsState?.overview?.invites ?? []).map((invite) => (
-        <InviteBanner key={invite.from.uuid} invite={invite} onJoin={handleJoin} />
-      ))}
-
-      {/* 'checking'/'not-available'/'error' deliberately show no banner - same "purely informational,
-          a failed check is never worth surfacing" reasoning the old Phase 6d check already had.
-          That matters concretely right now: this repo has no GitHub Release yet, so every real
-          check errors out until the first one is published - showing that as a visible error every
-          single launch would just be noise, not a genuine problem to react to. */}
-      {updateStatus && !updateDismissed && (updateStatus.state === 'available' || updateStatus.state === 'downloading' || updateStatus.state === 'downloaded') && (
-        <div className="update-banner">
-          <span>
-            {updateStatus.state === 'available' && t.play.update.available(updateStatus.version ?? '')}
-            {updateStatus.state === 'downloading' && t.play.update.downloading(updateStatus.percent ?? 0)}
-            {updateStatus.state === 'downloaded' && t.play.update.downloaded(updateStatus.version ?? '')}
-          </span>
-          <div className="header-actions">
-            {updateStatus.state === 'downloaded' && (
-              <button className="link-button" onClick={() => void window.api.installUpdateNow()}>
-                {t.play.update.restartNow}
-              </button>
-            )}
-            <button className="link-button" onClick={() => setUpdateDismissed(true)}>
-              {t.common.hide}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {modBundleUpdate && (
-        <div className="update-banner">
-          <span>
-            {t.play.modBundleUpdate.available(
-              [
-                ...modBundleUpdate.outdatedMods.map((entry) => entry.name),
-                ...modBundleUpdate.outdatedResourcepacks.map((entry) => entry.name),
-                ...(modBundleUpdate.ownModUpdateAvailable ? [t.play.modBundleUpdate.ownMod] : [])
-              ].join(', ')
-            )}
-            {modBundleUpdateError && <span className="error"> {modBundleUpdateError}</span>}
-          </span>
-          <div className="header-actions">
-            <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => void handleApplyModBundleUpdate()}>
-              {applyingModBundleUpdate ? t.play.modBundleUpdate.applying : t.play.modBundleUpdate.apply}
-            </button>
-            <button className="link-button" disabled={applyingModBundleUpdate} onClick={() => setModBundleUpdate(null)}>
-              {t.common.hide}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="version-picker">
-        <label htmlFor="instance-select">{t.play.instanceLabel}</label>
-        <Dropdown
-          id="instance-select"
-          value={selectedInstanceId ?? ''}
-          onChange={setSelectedInstanceId}
-          disabled={busy || instances.length === 0}
-          options={
-            instances.length === 0
-              ? [{ value: '', label: t.play.noInstance }]
-              : instances.map((instance) => ({ value: instance.id, label: `${instance.name} (${instance.versionId})` }))
+      {tourStep && (
+        <TourOverlay
+          step={tourStep}
+          stepNumber={Math.max(availableTourSteps.findIndex((step) => step.id === tourStep.id) + 1, 1)}
+          stepCount={availableTourSteps.length}
+          canGoBack={neighborTourStep(tourStep.id, -1, tourContext) !== null}
+          isLast={neighborTourStep(tourStep.id, 1, tourContext) === null}
+          waitState={
+            tourStep.waitFor === 'instanceCreated'
+              ? tourBaselineInstanceCount !== null && instances.length > tourBaselineInstanceCount
+                ? 'done'
+                : 'waiting'
+              : null
           }
+          finishOffer={
+            canContinueTourInGame
+              ? { text: t.tour.inGameQuestion, yesLabel: t.tour.inGameYes, noLabel: t.tour.inGameNo, onYes: continueTourInGame }
+              : null
+          }
+          onBack={() => goToTourStep(neighborTourStep(tourStep.id, -1, tourContext))}
+          onNext={() => goToTourStep(neighborTourStep(tourStep.id, 1, tourContext))}
+          onEnd={endTour}
         />
-        <button className="secondary-button" onClick={() => setShowInstances(true)} disabled={busy}>
-          {t.play.manageInstances}
-        </button>
-        <button className="secondary-button" onClick={() => setShowMods(true)} disabled={busy || !selectedInstance}>
-          {t.play.mods}
-        </button>
-        <button className="secondary-button" onClick={() => setShowWorlds(true)} disabled={busy || !selectedInstance}>
-          {t.play.worlds}
-        </button>
-        <button className="secondary-button" onClick={() => setShowResourcepacks(true)} disabled={busy || !selectedInstance}>
-          {t.play.resourcepacks}
-        </button>
-        {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
-        {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}
-        {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
-          <span className="version-warning">{t.play.bundleIncompatibleWarning(selectedInstance.versionId)}</span>
-        )}
-      </div>
-
-      <div className="play-button-row">
-        <button className="primary-button play-button" onClick={() => void handlePlay()} disabled={busy || !selectedInstance}>
-          {busy ? t.play.playing : t.play.play}
-        </button>
-        {/* Own user request: a Cancel button "wie bei anderen Clients üblich" that aborts an
-            in-progress launch (still downloading/installing, or already-running Minecraft alike -
-            see handlers.ts's LaunchPlay/gameProcess.ts). Shown here only when the console isn't in
-            its own separate window - that window gets the identical button instead
-            (ConsoleWindowView.tsx), so there's never a second one competing for the same click. */}
-        {busy && !consoleInSeparateWindow && (
-          <button className="secondary-button" onClick={() => void handleCancel()}>
-            {t.play.cancel}
-          </button>
-        )}
-      </div>
-
-      {/* When the Settings screen's "Konsole in separatem Fenster" toggle is on, handlePlay opens
-          a second BrowserWindow (main/consoleWindow.ts) that receives the exact same log/progress
-          events instead - showing both here too would just be a confusing duplicate. */}
-      {!consoleInSeparateWindow && (
-        <>
-          {progress && (
-            <div className="progress">
-              <span>
-                {progress.stage}
-                {progress.label ? ` — ${progress.label}` : ''} ({progress.completed}/{progress.total})
-              </span>
-              <progress value={progress.completed} max={Math.max(progress.total, 1)} />
-            </div>
-          )}
-
-          <pre className="log-panel">
-            {logs.map((log, index) => (
-              <div key={index} className={log.level === 'error' ? 'log-error' : 'log-info'}>
-                {log.message}
-              </div>
-            ))}
-          </pre>
-        </>
       )}
-    </div>
+
+      {/* Asked once, right after the onboarding settings and the first login (own user request) -
+          the tour explains the play screen and everything it opens, which only exists from here on. */}
+      {settingsLoaded && !tourOffered && !tourStep && (
+        <div className="modal-overlay">
+          <div className="modal-box" role="dialog" aria-modal="true" aria-labelledby="tour-question-title">
+            <strong id="tour-question-title">{t.tour.questionTitle}</strong>
+            <p>{t.tour.questionText}</p>
+            <p className="version-warning">{t.tour.questionLater}</p>
+            <div className="modal-actions">
+              <button className="secondary-button" onClick={() => setTourOffered(true)}>
+                {t.tour.no}
+              </button>
+              <button className="primary-button" onClick={startTour} autoFocus>
+                {t.tour.yes}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

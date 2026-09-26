@@ -4,6 +4,8 @@ import com.tntsallin1client.design.ClientFont;
 import com.tntsallin1client.design.ClientTheme;
 import com.tntsallin1client.design.FeatureIcons;
 import com.tntsallin1client.design.ThemedButton;
+import com.tntsallin1client.tour.TourRect;
+import com.tntsallin1client.tour.TourTargets;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -31,7 +33,7 @@ import java.util.function.Supplier;
  * <p>The symbols come from {@link FeatureIcons}; features without one show their name large and
  * centered in the image area instead.
  */
-public class ClientModsCardScreen extends Screen implements FeatureSink {
+public class ClientModsCardScreen extends Screen implements FeatureSink, TourTargets {
 	private static final int MARGIN = 10;
 	private static final int TOP_BAR_Y = 8;
 	private static final int TOP_BAR_HEIGHT = 20;
@@ -60,6 +62,11 @@ public class ClientModsCardScreen extends Screen implements FeatureSink {
 	private String searchQuery = "";
 	private int scrollOffset;
 
+	/** The top bar's widgets, for the in-game tour's highlights ({@link #tourTarget}). */
+	private @Nullable AbstractWidget doneButton;
+	private @Nullable AbstractWidget searchBox;
+	private @Nullable AbstractWidget moveResizeButton;
+
 	public ClientModsCardScreen(@Nullable Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.menu.title"));
 		this.parent = parent;
@@ -72,7 +79,7 @@ public class ClientModsCardScreen extends Screen implements FeatureSink {
 		ClientMenuFeatures.populate(this, this);
 
 		int searchWidth = Math.min(200, this.width - 2 * MARGIN - 2 * 80 - 2 * CARD_GAP);
-		this.addRenderableWidget(new ThemedButton(MARGIN, TOP_BAR_Y, 80, TOP_BAR_HEIGHT, CommonComponents.GUI_DONE, this::onClose));
+		this.doneButton = this.addRenderableWidget(new ThemedButton(MARGIN, TOP_BAR_Y, 80, TOP_BAR_HEIGHT, CommonComponents.GUI_DONE, this::onClose));
 
 		EditBox search = new EditBox(this.font, (this.width - searchWidth) / 2, TOP_BAR_Y, searchWidth, TOP_BAR_HEIGHT,
 				Component.translatable("gui.tntsallin1client.menu.search"));
@@ -82,11 +89,12 @@ public class ClientModsCardScreen extends Screen implements FeatureSink {
 			this.searchQuery = value;
 			this.scrollOffset = 0;
 		});
-		this.addRenderableWidget(search);
+		this.searchBox = this.addRenderableWidget(search);
 
+		this.moveResizeButton = null;
 		if (this.hudEditor != null) {
 			Runnable openHudEditor = this.hudEditor;
-			this.addRenderableWidget(new ThemedButton(this.width - MARGIN - 80, TOP_BAR_Y, 80, TOP_BAR_HEIGHT,
+			this.moveResizeButton = this.addRenderableWidget(new ThemedButton(this.width - MARGIN - 80, TOP_BAR_Y, 80, TOP_BAR_HEIGHT,
 					Component.translatable("gui.tntsallin1client.cards.move_resize"), openHudEditor));
 		}
 
@@ -347,6 +355,39 @@ public class ClientModsCardScreen extends Screen implements FeatureSink {
 	@Override
 	public void onClose() {
 		this.minecraft.setScreen(this.parent);
+	}
+
+	// --- In-game tour ------------------------------------------------------------------------
+
+	@Override
+	public @Nullable TourRect tourTarget(String name) {
+		if (name.equals(SEARCH)) return this.searchBox != null ? TourRect.of(this.searchBox) : null;
+		if (name.equals(HUD_EDITOR)) return this.moveResizeButton != null ? TourRect.of(this.moveResizeButton) : null;
+		if (name.equals(TOP_BAR)) {
+			TourRect bar = this.doneButton != null ? TourRect.of(this.doneButton) : null;
+			bar = TourRect.union(bar, tourTarget(SEARCH));
+			return TourRect.union(bar, tourTarget(HUD_EDITOR));
+		}
+		if (name.startsWith(FEATURE_OPTIONS)) return cardBounds(name.substring(FEATURE_OPTIONS.length()), IMAGE_HEIGHT, OPTIONS_HEIGHT);
+		if (name.startsWith(FEATURE_SWITCH)) return cardBounds(name.substring(FEATURE_SWITCH.length()), IMAGE_HEIGHT + OPTIONS_HEIGHT, STATUS_HEIGHT);
+		if (name.startsWith(FEATURE)) return cardBounds(name.substring(FEATURE.length()), 0, CARD_HEIGHT);
+		return null;
+	}
+
+	/** A strip of a visible card (by its feature's translation key) - a card outside the viewport gets scrolled to instead. */
+	private @Nullable TourRect cardBounds(String key, int stripTop, int stripHeight) {
+		List<PlacedCard> placed = new ArrayList<>();
+		layout(visibleSections(), placed, new ArrayList<>());
+		for (PlacedCard card : placed) {
+			if (!card.card.key.equals(key)) continue;
+			int top = CONTENT_TOP - this.scrollOffset + card.y;
+			if (top < CONTENT_TOP || top + CARD_HEIGHT > viewportBottom()) {
+				this.scrollOffset = Mth.clamp(card.y, 0, maxScroll());
+				return null;
+			}
+			return new TourRect(card.x, top + stripTop, CARD_WIDTH, stripHeight);
+		}
+		return null;
 	}
 
 	// --- Data --------------------------------------------------------------------------------

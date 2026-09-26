@@ -281,6 +281,12 @@ export interface LauncherSettings {
    * missing this key as already-completed instead, so upgrading an already-set-up install never
    * replays onboarding on people who never needed it. */
   onboardingCompleted: boolean
+  /** Whether the play screen already asked "Einführungstour starten?" (own user request: a guided
+   * tour through every launcher area, offered once after the onboarding settings and the login).
+   * Missing in an existing file means the install predates the tour - those get asked once too,
+   * unlike `onboardingCompleted`, since the tour is new to them as well. The Settings screen can
+   * start the tour again at any time. */
+  tourOffered: boolean
   /** Settings screen's "Client-Design" picker / last onboarding step (own user request) - how our
    * mod draws the title screen and its mod menu: vanilla Minecraft look, or our own design in the
    * launcher's theme colors. Handed to the game on every launch and read back after it exits (see
@@ -396,6 +402,7 @@ export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   themeColors: null,
   language: 'de',
   onboardingCompleted: false,
+  tourOffered: false,
   clientDesign: 'minecraft'
 }
 

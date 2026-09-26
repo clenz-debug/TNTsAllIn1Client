@@ -131,7 +131,7 @@ export function WorldsScreen({ instanceId, instances, onClose }: Props) {
       {error && <span className="error">{error}</span>}
       {status && <span className="status">{status}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="worlds-main">
         <h3>{t.worlds.heading}</h3>
         <p className="version-warning">{t.worlds.uploadInfo}</p>
         <div className="header-actions">

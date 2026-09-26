@@ -71,7 +71,7 @@ export function ResourcepacksScreen({ instanceId, instanceName, onClose }: Props
 
       {error && <span className="error">{error}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="resourcepacks-main">
         <h3>{t.resourcepacks.heading(instanceName)}</h3>
         <p className="version-warning">{t.resourcepacks.info}</p>
         <div className="header-actions">

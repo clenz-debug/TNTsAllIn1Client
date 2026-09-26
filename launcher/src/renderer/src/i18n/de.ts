@@ -41,6 +41,153 @@ export const de = {
     designExplanation:
       'Der Startbildschirm und das Client-Mods-Menü können wie normales Minecraft aussehen oder im eigenen Client-Design in deinen Farben. Du kannst das jederzeit in den Einstellungen oder direkt im Spiel auf dem Startbildschirm ändern.'
   },
+  // Guided tour through every launcher area (own user request) - see tour/tourSteps.ts for the order.
+  tour: {
+    questionTitle: 'Einführungstour',
+    questionText:
+      'Willst du eine Einführungstour durch den Client machen, um ihn und alle seine Bereiche kennenzulernen? Das dauert nur ein paar Minuten.',
+    questionLater: 'Du kannst die Tour auch später jederzeit in den Einstellungen starten.',
+    yes: 'Ja, Tour starten',
+    no: 'Nein, danke',
+    counter: (current: number, total: number) => `Schritt ${current} von ${total}`,
+    back: 'Zurück',
+    next: 'Weiter',
+    finish: 'Fertig',
+    end: 'Tour beenden',
+    waitingForInstance: 'Erstelle eine Instanz, um weiterzumachen.',
+    instanceCreated: 'Super, deine Instanz ist erstellt!',
+    skipWaiting: 'Ohne Erstellen weiter',
+    inGameQuestion:
+      'Willst du dir auch die Menüs im Spiel zeigen lassen? Dann startet jetzt die gewählte Instanz, und die Tour geht im Spiel weiter.',
+    inGameYes: 'Ja, Spiel starten',
+    inGameNo: 'Nein, fertig',
+    steps: {
+      account: {
+        title: 'Dein Konto',
+        text: 'Oben links siehst du, mit welchem Minecraft-Konto du angemeldet bist - mit deinem Namen und dem Kopf deines Skins. Ein Klick darauf öffnet ein kleines Menü, über das du dich abmelden kannst. Während der Tour ist das gesperrt.'
+      },
+      settingsButton: {
+        title: 'Einstellungen',
+        text: 'Über „Einstellungen“ passt du den Launcher an dich an. Schauen wir kurz hinein.'
+      },
+      settingsMemory: {
+        title: 'Arbeitsspeicher und Speicherort',
+        text: 'Hier legst du fest, wie viel Arbeitsspeicher (RAM) Minecraft bekommen darf - „Automatisch“ passt für die meisten. Darunter siehst du, wo Minecraft, deine Instanzen und deine Welten gespeichert werden, und kannst alles auf eine andere Festplatte verschieben.'
+      },
+      settingsGeneral: {
+        title: 'Snapshots und Konsole',
+        text: '„Snapshots anzeigen“ blendet Test-Versionen von Minecraft in der Versionsauswahl ein. Die Konsole zeigt beim Spielstart, was gerade passiert - auf Wunsch in einem eigenen Fenster statt hier im Launcher.'
+      },
+      settingsAppearance: {
+        title: 'Erscheinungsbild',
+        text: 'Hier änderst du die Farben des Launchers - dieselben, die du am Anfang wählen konntest. Die Vorschau zeigt dir jede Farbe, bevor du sie übernimmst.'
+      },
+      settingsLanguage: {
+        title: 'Sprache, Design und diese Tour',
+        text: 'Hier wechselst du die Sprache und wählst, ob der Startbildschirm und das Client-Mods-Menü im Spiel wie normales Minecraft oder im Client-Design in deinen Farben aussehen. Und hier kannst du diese Tour jederzeit wieder starten.'
+      },
+      credits: {
+        title: 'Credits',
+        text: 'Unter „Credits“ findest du alle Mods, Texturepacks und Schriften, die der Client mitbringt - mit ihrer Lizenz und einem Link zu den Leuten, die sie gemacht haben.'
+      },
+      skinButton: {
+        title: 'Skin',
+        text: 'Unter „Skin“ verwaltest du das Aussehen deiner Spielfigur.'
+      },
+      skinCurrent: {
+        title: 'Dein aktueller Skin',
+        text: 'So sieht deine Figur gerade aus. Mit gedrückter Maustaste drehst du sie, mit dem Mausrad zoomst du.'
+      },
+      skinLibrary: {
+        title: 'Meine Skins',
+        text: 'Hier sammelst du deine Skins. „Neuen Skin erstellen“ öffnet den Skin-Editor - dort malst du direkt auf dem 3D-Modell. Mit „Verwenden“ wird ein Skin zu deinem echten Minecraft-Skin.'
+      },
+      skinUpload: {
+        title: 'Skin vom PC hochladen',
+        text: 'Hast du schon eine Skin-Datei (PNG)? Dann lade sie hier direkt hoch - sie landet dabei auch in deiner Sammlung.'
+      },
+      capesButton: {
+        title: 'Capes',
+        text: 'Unter „Capes“ gestaltest du deinen eigenen Umhang. Den sehen alle anderen Spieler, die ebenfalls diesen Client benutzen.'
+      },
+      capesCreate: {
+        title: 'Cape erstellen',
+        text: 'Füge ein fertiges Cape-Bild hinzu, verwandle ein beliebiges Bild mit „Bild zu Cape umwandeln“ in ein Cape oder male eins mit „Cape zeichnen“. Die Vorschau zeigt es direkt an deiner Figur.'
+      },
+      capesCollection: {
+        title: 'Meine Capes',
+        text: 'Alle deine Capes landen hier. Mit „Aktivieren“ trägst du ein Cape im Spiel - du kannst es jederzeit wieder ablegen oder bearbeiten.'
+      },
+      friendsButton: {
+        title: 'Freunde',
+        text: 'Unter „Freunde“ siehst du, wer von deinen Freunden gerade online ist. Eine Zahl dahinter zeigt offene Freundschaftsanfragen.'
+      },
+      friendsOwn: {
+        title: 'Dein Status',
+        text: 'Wähle, wie andere dich sehen: Online, Abwesend, Nicht stören oder Unsichtbar. Du kannst auch verbergen, auf welchem Server du gerade spielst.'
+      },
+      friendsAdd: {
+        title: 'Freund hinzufügen',
+        text: 'Gib den Minecraft-Namen eines Freundes ein und schick ihm eine Anfrage. Das geht bei allen, die den Client schon einmal benutzt haben.'
+      },
+      friendsList: {
+        title: 'Deine Freunde',
+        text: 'Hier siehst du deine Freunde und was sie gerade spielen. Ist jemand auf einem Server, kommst du mit „Beitreten“ direkt nach. Lädt dich ein Freund in seine Welt ein, erscheint oben ein Hinweis.'
+      },
+      instancesButton: {
+        title: 'Instanzen',
+        text: 'Eine Instanz ist eine eigene Minecraft-Installation mit eigener Version, eigenen Mods und eigenen Welten. So kannst du z. B. dieselbe Version einmal mit und einmal ohne bestimmte Mods haben.'
+      },
+      instancesCreate: {
+        title: 'Instanz erstellen',
+        text: 'Probier es gleich aus: Gib einen Namen ein, wähle eine Minecraft-Version und klicke auf „Erstellen“.'
+      },
+      instancesList: {
+        title: 'Deine Instanzen',
+        text: 'Hier stehen alle deine Instanzen. Du kannst sie auswählen, umbenennen, duplizieren oder löschen. Mit „Von anderem Client übernehmen…“ oben holst du Mods und Einstellungen aus einem anderen Launcher.'
+      },
+      instancePicker: {
+        title: 'Instanz auswählen',
+        text: 'Hier wählst du, welche Instanz startet, wenn du auf „Spielen“ klickst. Mods, Welten und Texturepacks gehören immer zur hier gewählten Instanz.'
+      },
+      modsButton: {
+        title: 'Mods',
+        text: 'Unter „Mods“ verwaltest du die Mods der gewählten Instanz.'
+      },
+      modsBundled: {
+        title: 'Gebündelte Mods',
+        text: 'Diese Mods bringt der Client selbst mit, zum Beispiel Sodium und Lithium für mehr FPS. Die meisten laufen immer mit - was sich abschalten lässt, schaltest du hier um.'
+      },
+      modsSearch: {
+        title: 'Mods durchsuchen',
+        text: 'Hier stöberst du durch tausende Mods von Modrinth. „Installieren“ lädt automatisch die passende Version für deine Instanz herunter.'
+      },
+      modsOwn: {
+        title: 'Eigene Mods',
+        text: 'Hast du eine Mod-Datei (.jar) schon auf dem PC, fügst du sie hier hinzu. Jede Mod kannst du einzeln aus- und einschalten oder entfernen.'
+      },
+      worldsButton: {
+        title: 'Welten',
+        text: 'Unter „Welten“ findest du die Einzelspielerwelten der gewählten Instanz.'
+      },
+      worlds: {
+        title: 'Welten verwalten',
+        text: 'Lade Welten von deinem PC hoch - als Ordner oder ZIP, zum Beispiel aus dem normalen Minecraft-Launcher. Welten kannst du in eine andere Instanz kopieren oder verschieben und entfernen (sie landen dann im Papierkorb).'
+      },
+      resourcepacksButton: {
+        title: 'Texturepacks',
+        text: 'Unter „Texturepacks“ verwaltest du die Texturepacks der gewählten Instanz.'
+      },
+      resourcepacks: {
+        title: 'Texturepacks verwalten',
+        text: 'Lade eigene Texturepacks hoch oder entferne sie. Aktivieren kannst du sie danach im Spiel unter Optionen → Ressourcenpakete. Die Packs, die der Client mitbringt, verwaltet er selbst - die stehen hier nicht.'
+      },
+      play: {
+        title: 'Los geht’s!',
+        text: 'Mit „Spielen“ startest du die gewählte Instanz. Beim ersten Start lädt der Launcher Minecraft herunter, das kann ein paar Minuten dauern. Viel Spaß!'
+      }
+    }
+  },
   play: {
     headerSkin: 'Skin',
     headerCapes: 'Capes',
@@ -426,6 +573,11 @@ export const de = {
         'Wie der Startbildschirm und das Client-Mods-Menü im Spiel aussehen. Umschalten geht auch im Spiel: im Minecraft-Design über den Button „Client-Design“, im Client-Design über das Logo.',
       minecraft: 'Minecraft-Design',
       client: 'Client-Design (deine Farben)'
+    },
+    tour: {
+      heading: 'Einführungstour',
+      description: 'Zeigt dir Schritt für Schritt alle Bereiche des Launchers.',
+      start: 'Tour starten'
     },
     about: {
       heading: 'Über',

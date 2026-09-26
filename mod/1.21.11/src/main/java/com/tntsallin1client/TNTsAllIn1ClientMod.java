@@ -47,6 +47,7 @@ import com.tntsallin1client.recipe.PinnedRecipeManager;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
+import com.tntsallin1client.tour.InGameTour;
 import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 
@@ -175,5 +176,8 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// check) whenever the feature's own toggle is off. See DiscordPresenceManager's own doc
 		// comment for why this needs to be tick-driven rather than hung off specific events.
 		ClientTickEvents.END_CLIENT_TICK.register(DiscordPresenceManager::tick);
+
+		// Guided tour, in-game part: started by the launcher's tour (own user request), see InGameTour.
+		InGameTour.register();
 	}
 }

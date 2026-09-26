@@ -161,7 +161,7 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
       {actionError && <span className="error">{actionError}</span>}
       {status && <span className="status">{status}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="friends-own">
         <h3>{t.friends.ownHeading}</h3>
         <div className="friends-prefs">
           <label className="checkbox-label">
@@ -184,7 +184,7 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
         </div>
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="friends-add">
         <h3>{t.friends.addHeading}</h3>
         <p className="version-warning">{t.friends.addInfo}</p>
         <div className="mods-search-row">
@@ -247,7 +247,7 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
         </section>
       )}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="friends-list">
         <h3>{t.friends.friendsHeading(friends.length)}</h3>
         <ul className="mods-list">
           {!overview && !state.error && <li className="mods-empty">{t.common.loading}</li>}

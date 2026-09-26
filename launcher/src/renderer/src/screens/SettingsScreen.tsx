@@ -33,6 +33,8 @@ interface Props {
   clientDesign: ClientDesign
   onClientDesignChange: (value: ClientDesign) => void
   onDataRootOverrideChange: (path: string) => void
+  /** Starts the guided tour again (it closes this screen itself). */
+  onStartTour: () => void
   onClose: () => void
 }
 
@@ -60,6 +62,7 @@ export function SettingsScreen({
   clientDesign,
   onClientDesignChange,
   onDataRootOverrideChange,
+  onStartTour,
   onClose
 }: Props) {
   const t = useTranslations()
@@ -136,7 +139,7 @@ export function SettingsScreen({
 
       {error && <span className="error">{error}</span>}
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-memory">
         <h3>{t.settings.memory.heading}</h3>
         <label className="checkbox-label">
           <input type="checkbox" className="toggle-switch" checked={memoryAuto} onChange={(e) => handleMemoryAutoChange(e.target.checked)} />
@@ -171,7 +174,7 @@ export function SettingsScreen({
         )}
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-storage">
         <h3>{t.settings.storage.heading}</h3>
         <div className="instance-info">
           <span>{storageInfo?.path ?? t.settings.storage.loading}</span>
@@ -197,7 +200,7 @@ export function SettingsScreen({
         )}
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-snapshots">
         <h3>{t.settings.instances.heading}</h3>
         <label className="checkbox-label">
           <input type="checkbox" className="toggle-switch" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
@@ -205,7 +208,7 @@ export function SettingsScreen({
         </label>
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-console">
         <h3>{t.settings.console.heading}</h3>
         <label className="checkbox-label">
           <input
@@ -218,13 +221,13 @@ export function SettingsScreen({
         </label>
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-appearance">
         <h3>{t.settings.appearance.heading}</h3>
         <p className="version-warning">{t.settings.appearance.description}</p>
         <AppearanceEditor themeColors={themeColors} onThemeColorsChange={onThemeColorsChange} />
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-language">
         <h3>{t.settings.language.heading}</h3>
         <Dropdown
           value={language}
@@ -236,7 +239,7 @@ export function SettingsScreen({
         />
       </section>
 
-      <section className="instances-section">
+      <section className="instances-section" data-tour="settings-design">
         <h3>{t.settings.clientDesign.heading}</h3>
         <p className="version-warning">{t.settings.clientDesign.description}</p>
         <Dropdown
@@ -247,6 +250,16 @@ export function SettingsScreen({
             { value: 'client', label: t.settings.clientDesign.client }
           ]}
         />
+      </section>
+
+      <section className="instances-section" data-tour="settings-tour">
+        <h3>{t.settings.tour.heading}</h3>
+        <p className="version-warning">{t.settings.tour.description}</p>
+        <div>
+          <button className="secondary-button" onClick={onStartTour}>
+            {t.settings.tour.start}
+          </button>
+        </div>
       </section>
 
       <section className="instances-section">

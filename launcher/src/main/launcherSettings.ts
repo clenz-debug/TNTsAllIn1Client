@@ -135,6 +135,7 @@ export async function loadLauncherSettings(): Promise<LauncherSettings> {
       // Same grandfathering as the fast path above - this branch only runs for a file that already
       // existed (needed instance/bundle-version migration), never a genuinely fresh install.
       onboardingCompleted: parsed.onboardingCompleted ?? true,
+      tourOffered: parsed.tourOffered ?? DEFAULT_LAUNCHER_SETTINGS.tourOffered,
       clientDesign: parsed.clientDesign ?? DEFAULT_LAUNCHER_SETTINGS.clientDesign
     }
     await saveLauncherSettings(settings)

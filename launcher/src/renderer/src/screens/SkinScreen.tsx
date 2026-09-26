@@ -266,7 +266,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
 
       {error && <span className="error">{error}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="skin-current">
         <h3>{t.skin.currentHeading}</h3>
         {activeSkin && skinPreview ? (
           <SkinModelPreview
@@ -290,7 +290,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         )}
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="skin-library">
         <h3>{t.skin.libraryHeading}</h3>
         <div>
           <button className="primary-button" onClick={() => onOpenEditor()}>
@@ -354,7 +354,7 @@ export function SkinScreen({ profile, onProfileUpdate, onClose, onOpenEditor }: 
         )}
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="skin-upload">
         <h3>{t.skin.uploadHeading}</h3>
         <div>
           <button className="secondary-button" onClick={() => void handleSelectSkinFile()} disabled={busy}>

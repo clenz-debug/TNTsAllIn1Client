@@ -71,6 +71,7 @@ import { importWorlds } from '../launch/worldImport'
 import { getBundledModProjectIds, getCustomModProjectIds, installModrinthMod, searchModrinthMods } from '../launch/modrinthApi'
 import { applySharedOptions, applySharedServers, saveSharedOptions, saveSharedServers } from '../launch/sharedSettings'
 import { readBackClientDesign, writeClientDesignFiles } from '../launch/clientDesignSync'
+import { writeInGameTourRequest } from '../launch/inGameTour'
 import { refreshOfflineProfileCache, writeOfflineProfileFiles } from '../launch/offlineProfile'
 import { changeStorageLocation, getStorageInfo } from '../launch/storageManager'
 import { fetchAvailableVersions } from '../launch/versionList'
@@ -437,7 +438,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IpcChannel.LaunchPlay,
-    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string, joinAddress?: string) => {
+    async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string, joinAddress?: string, inGameTour?: boolean) => {
       assertStorageNotBusy()
       const controller = new AbortController()
       currentLaunchController = controller
@@ -540,6 +541,7 @@ export function registerIpcHandlers(): void {
         await applySharedOptions(gameDir)
         await applySharedServers(gameDir)
         await writeClientDesignFiles(gameDir, settings)
+        await writeInGameTourRequest(gameDir, inGameTour === true)
         await offlineProfileRefresh
         await writeOfflineProfileFiles(gameDir, profile)
 

@@ -37,6 +37,151 @@ export const en: typeof de = {
     designExplanation:
       'The title screen and the Client Mods menu can look like regular Minecraft or use the client design in your colors. You can change this anytime in the settings or right on the in-game title screen.'
   },
+  tour: {
+    questionTitle: 'Guided tour',
+    questionText: 'Would you like a guided tour through the client to get to know it and all of its areas? It only takes a few minutes.',
+    questionLater: 'You can also start the tour anytime later in the settings.',
+    yes: 'Yes, start the tour',
+    no: 'No, thanks',
+    counter: (current: number, total: number) => `Step ${current} of ${total}`,
+    back: 'Back',
+    next: 'Next',
+    finish: 'Done',
+    end: 'End tour',
+    waitingForInstance: 'Create an instance to continue.',
+    instanceCreated: 'Great, your instance has been created!',
+    skipWaiting: 'Continue without creating',
+    inGameQuestion:
+      'Would you like to see the menus in the game too? Then the selected instance starts now and the tour continues in the game.',
+    inGameYes: 'Yes, start the game',
+    inGameNo: 'No, done',
+    steps: {
+      account: {
+        title: 'Your account',
+        text: 'Top left you can see which Minecraft account you are signed in with - your name and your skin’s head. Clicking it opens a small menu where you can sign out. That’s locked during the tour.'
+      },
+      settingsButton: {
+        title: 'Settings',
+        text: '“Settings” is where you adjust the launcher to your liking. Let’s take a quick look inside.'
+      },
+      settingsMemory: {
+        title: 'Memory and storage location',
+        text: 'Here you set how much memory (RAM) Minecraft may use - “Automatic” suits most people. Below it you can see where Minecraft, your instances and your worlds are stored, and move all of it to another drive.'
+      },
+      settingsGeneral: {
+        title: 'Snapshots and console',
+        text: '“Show snapshots” adds Minecraft’s test versions to the version picker. The console shows what’s happening while the game starts - in its own window if you like, instead of here in the launcher.'
+      },
+      settingsAppearance: {
+        title: 'Appearance',
+        text: 'Here you change the launcher’s colors - the same ones you could pick at the start. The preview shows each color before you apply it.'
+      },
+      settingsLanguage: {
+        title: 'Language, design and this tour',
+        text: 'Here you switch the language and choose whether the in-game title screen and Client Mods menu look like regular Minecraft or use the client design in your colors. And this is where you can restart this tour anytime.'
+      },
+      credits: {
+        title: 'Credits',
+        text: '“Credits” lists every mod, resource pack and font the client ships with - with its license and a link to the people who made it.'
+      },
+      skinButton: {
+        title: 'Skin',
+        text: '“Skin” is where you manage how your character looks.'
+      },
+      skinCurrent: {
+        title: 'Your current skin',
+        text: 'This is how your character looks right now. Drag with the mouse to rotate it, use the mouse wheel to zoom.'
+      },
+      skinLibrary: {
+        title: 'My skins',
+        text: 'This is your skin collection. “Create new skin” opens the skin editor, where you paint right on the 3D model. “Use” turns a skin into your actual Minecraft skin.'
+      },
+      skinUpload: {
+        title: 'Upload a skin from your PC',
+        text: 'Already have a skin file (PNG)? Upload it right here - it gets added to your collection too.'
+      },
+      capesButton: {
+        title: 'Capes',
+        text: '“Capes” is where you design your own cape. Every other player who uses this client can see it.'
+      },
+      capesCreate: {
+        title: 'Create a cape',
+        text: 'Add a finished cape image, turn any picture into a cape with “Convert image to cape”, or paint one with “Draw cape”. The preview shows it on your character right away.'
+      },
+      capesCollection: {
+        title: 'My capes',
+        text: 'All your capes end up here. “Activate” wears a cape in the game - you can take it off or edit it anytime.'
+      },
+      friendsButton: {
+        title: 'Friends',
+        text: '“Friends” shows which of your friends are online right now. A number next to it means open friend requests.'
+      },
+      friendsOwn: {
+        title: 'Your status',
+        text: 'Choose how others see you: online, away, do not disturb or invisible. You can also hide which server you’re playing on.'
+      },
+      friendsAdd: {
+        title: 'Add a friend',
+        text: 'Enter a friend’s Minecraft name and send them a request. This works for everyone who has used the client at least once.'
+      },
+      friendsList: {
+        title: 'Your friends',
+        text: 'Here you see your friends and what they’re playing. If someone is on a server, “Join” takes you straight there. When a friend invites you into their world, a notice shows up at the top.'
+      },
+      instancesButton: {
+        title: 'Instances',
+        text: 'An instance is a Minecraft installation of its own, with its own version, mods and worlds. That way you can have the same version once with and once without certain mods, for example.'
+      },
+      instancesCreate: {
+        title: 'Create an instance',
+        text: 'Try it right away: enter a name, pick a Minecraft version and click “Create”.'
+      },
+      instancesList: {
+        title: 'Your instances',
+        text: 'All your instances are listed here. You can select, rename, duplicate or delete them. “Import from another client…” above brings over mods and settings from another launcher.'
+      },
+      instancePicker: {
+        title: 'Pick an instance',
+        text: 'This is where you choose which instance starts when you click “Play”. Mods, worlds and resource packs always belong to the instance picked here.'
+      },
+      modsButton: {
+        title: 'Mods',
+        text: '“Mods” is where you manage the mods of the selected instance.'
+      },
+      modsBundled: {
+        title: 'Bundled mods',
+        text: 'The client brings these mods along itself, for example Sodium and Lithium for more FPS. Most of them always run - the ones that can be turned off are switched here.'
+      },
+      modsSearch: {
+        title: 'Browse mods',
+        text: 'Browse thousands of mods from Modrinth here. “Install” automatically downloads the right version for your instance.'
+      },
+      modsOwn: {
+        title: 'Your mods',
+        text: 'Already have a mod file (.jar) on your PC? Add it here. Every mod can be switched off and on or removed on its own.'
+      },
+      worldsButton: {
+        title: 'Worlds',
+        text: '“Worlds” shows the singleplayer worlds of the selected instance.'
+      },
+      worlds: {
+        title: 'Manage worlds',
+        text: 'Upload worlds from your PC - as a folder or ZIP, for example from the regular Minecraft launcher. You can copy or move worlds to another instance and remove them (they go to the recycle bin).'
+      },
+      resourcepacksButton: {
+        title: 'Resource packs',
+        text: '“Resource Packs” is where you manage the resource packs of the selected instance.'
+      },
+      resourcepacks: {
+        title: 'Manage resource packs',
+        text: 'Upload your own resource packs or remove them. You turn them on in the game under Options → Resource Packs. The packs the client brings along are managed by the client itself and aren’t listed here.'
+      },
+      play: {
+        title: 'Let’s go!',
+        text: '“Play” starts the selected instance. On the first start the launcher downloads Minecraft, which can take a few minutes. Have fun!'
+      }
+    }
+  },
   play: {
     headerSkin: 'Skin',
     headerCapes: 'Capes',
@@ -418,6 +563,11 @@ export const en: typeof de = {
         'How the title screen and the Client Mods menu look in-game. You can also switch in-game: via the "Client Design" button in the Minecraft design, via the logo in the client design.',
       minecraft: 'Minecraft design',
       client: 'Client design (your colors)'
+    },
+    tour: {
+      heading: 'Guided tour',
+      description: 'Shows you every area of the launcher, step by step.',
+      start: 'Start tour'
     },
     about: {
       heading: 'About',

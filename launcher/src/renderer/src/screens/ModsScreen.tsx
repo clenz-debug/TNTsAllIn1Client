@@ -210,7 +210,7 @@ export function ModsScreen({
 
       {error && <span className="error">{error}</span>}
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="mods-bundled">
         <h3>{t.mods.bundledHeading}</h3>
         <p className="version-warning">{t.mods.bundledInfo}</p>
         {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) && (
@@ -234,7 +234,7 @@ export function ModsScreen({
         </ul>
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="mods-search">
         <h3>{t.mods.searchHeading}</h3>
         {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) ? (
           <p className="version-warning">{t.mods.searchUnavailable}</p>
@@ -327,7 +327,7 @@ export function ModsScreen({
         )}
       </section>
 
-      <section className="mods-section">
+      <section className="mods-section" data-tour="mods-own">
         <h3>{t.mods.ownHeading}</h3>
         <button className="secondary-button" onClick={() => void handleAdd()} disabled={busy}>
           {t.mods.addMod}
