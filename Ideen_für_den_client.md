@@ -107,3 +107,5 @@
 
 - skin editor: zurück taste um den letzten strich / pixel rückgängig zu machen. Grid einblenden sonst fällt das malen schwer. Skins und Capes vll voneinander trennen oder sdie anordnung im bereich skins ändern sodass alle skinn sachen zusammen sind und alle cape sachen zusammen, dann aber den bereich in skin und capes umbennen [check] (Rückgängig + Pixel-Raster im Editor umgesetzt, Bereich heißt jetzt "Skin & Capes"; zusätzlich auf Rückfrage: alle Skins inkl. Bibliothek als drehbare 3D-Modelle statt flacher Bilder, ein gemeinsamer Cape-Anzeigen-Schalter für alle, Bibliothek paginiert wegen WebGL-Kontext-Limit; gebaut, noch nicht live getestet)
 - skin editor layer-sichtbarkeit "wie bei skinmc.net" statt Checkboxen [check] (zwei klickbare 2D-Figur-Diagramme nebeneinander, eines für Basis-Schicht, eines für Overlay - Klick auf Kopf/Körper/Arm/Bein blendet genau dieses Körperteil auf der jeweiligen Schicht ein/aus, statt einer Checkbox-Liste; gebaut, noch nicht live getestet)
+
+Logo um Client user am nametag zu erkennen
