@@ -15,10 +15,12 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 /**
- * Waypoint idea: edit a single waypoint (name, position, color, visibility) or delete it.
+ * Waypoint idea: edit a single waypoint (name, position, color, visibility, beam/marker/distance/fade)
+ * or delete it.
  * {@link #waypoint} is the live object inside {@link ClientConfig#waypoints}, not a copy - every
  * field responder writes straight back into it and saves immediately, same pattern as every other
  * settings screen in this mod. Dimension is shown but not editable (always set from where the
@@ -89,6 +91,20 @@ public class WaypointEditScreen extends Screen {
 						}));
 		y += ROW_HEIGHT + FIELD_GAP;
 
+		// Per-waypoint display settings, two per row so the screen doesn't grow by four full rows.
+		int halfWidth = (ROW_WIDTH - FIELD_GAP) / 2;
+		int rightX = x + ROW_WIDTH - halfWidth;
+		this.addRenderableWidget(displayToggle(x, y, halfWidth, "show_beam", this.waypoint.showBeam,
+				value -> this.waypoint.showBeam = value));
+		this.addRenderableWidget(displayToggle(rightX, y, halfWidth, "show_marker", this.waypoint.showMarker,
+				value -> this.waypoint.showMarker = value));
+		y += ROW_HEIGHT + FIELD_GAP;
+		this.addRenderableWidget(displayToggle(x, y, halfWidth, "show_distance", this.waypoint.showDistance,
+				value -> this.waypoint.showDistance = value));
+		this.addRenderableWidget(displayToggle(rightX, y, halfWidth, "fade_nearby", this.waypoint.fadeNearby,
+				value -> this.waypoint.fadeNearby = value));
+		y += ROW_HEIGHT + FIELD_GAP;
+
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_edit.delete_button"),
 						button -> {
 							if (config.waypointConfirmDelete) {
@@ -97,13 +113,21 @@ public class WaypointEditScreen extends Screen {
 								this.deleteWaypoint();
 							}
 						})
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.bounds(x, y, halfWidth, ROW_HEIGHT)
 				.build());
-		y += ROW_HEIGHT + FIELD_GAP;
 
 		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
+				.bounds(rightX, y, halfWidth, ROW_HEIGHT)
 				.build());
+	}
+
+	private CycleButton<Boolean> displayToggle(int x, int y, int width, String key, boolean initial, Consumer<Boolean> setter) {
+		return CycleButton.onOffBuilder(initial)
+				.create(x, y, width, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_edit." + key),
+						(button, value) -> {
+							setter.accept(value);
+							ClientConfig.get().save();
+						});
 	}
 
 	private EditBox coordField(int x, int y, int width, Component hint, int initial, IntConsumer onValid) {

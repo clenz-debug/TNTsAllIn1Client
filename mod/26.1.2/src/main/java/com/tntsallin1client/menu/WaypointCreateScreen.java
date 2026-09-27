@@ -103,6 +103,7 @@ public class WaypointCreateScreen extends Screen {
 		String typed = typedName == null ? "" : typedName.trim();
 		waypoint.name = typed.isEmpty() ? defaultName(worldKey) : typed;
 		waypoint.color = color;
+		waypoint.applyDisplayDefaults(config);
 		BlockPos pos = player.blockPosition();
 		waypoint.x = pos.getX();
 		waypoint.y = pos.getY();

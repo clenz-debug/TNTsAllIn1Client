@@ -239,6 +239,8 @@ public class ClientConfig {
 	// Keyed by WaypointScope#currentKey (per singleplayer save / per multiplayer server address) -
 	// waypoints from one world never show up in another. See #waypointsFor below.
 	public Map<String, List<Waypoint>> waypointsByWorld = new HashMap<>();
+	// The four display settings below are only the defaults a newly created waypoint starts with -
+	// each waypoint carries its own copy (Waypoint#showBeam etc.), editable in WaypointEditScreen.
 	public boolean waypointShowBeam = true;
 	public boolean waypointShowMarker = true;
 	public boolean waypointShowDistance = true;
@@ -249,6 +251,9 @@ public class ClientConfig {
 	// Whether deleting a single waypoint asks for confirmation first - the "delete all" button
 	// always confirms regardless of this setting (see WaypointListScreen).
 	public boolean waypointConfirmDelete = true;
+	// One-time migration marker: waypoints saved before the display settings became per waypoint
+	// have no values of their own yet and take over the global ones once (see #migrateWaypointDisplay).
+	public boolean waypointDisplayPerWaypoint = false;
 
 	/** The live, mutable waypoint list for one world/server key - callers add/remove/save directly on it. */
 	public List<Waypoint> waypointsFor(String worldKey) {
@@ -337,6 +342,7 @@ public class ClientConfig {
 			try (BufferedReader reader = Files.newBufferedReader(FILE)) {
 				ClientConfig loaded = GSON.fromJson(reader, ClientConfig.class);
 				if (loaded != null) {
+					loaded.migrateWaypointDisplay();
 					return loaded;
 				}
 			} catch (IOException | JsonParseException e) {
@@ -352,8 +358,22 @@ public class ClientConfig {
 		}
 
 		ClientConfig defaults = new ClientConfig();
+		defaults.waypointDisplayPerWaypoint = true;
 		defaults.save();
 		return defaults;
+	}
+
+	private void migrateWaypointDisplay() {
+		if (this.waypointDisplayPerWaypoint) {
+			return;
+		}
+		for (List<Waypoint> waypoints : this.waypointsByWorld.values()) {
+			for (Waypoint waypoint : waypoints) {
+				waypoint.applyDisplayDefaults(this);
+			}
+		}
+		this.waypointDisplayPerWaypoint = true;
+		this.save();
 	}
 
 	public void save() {

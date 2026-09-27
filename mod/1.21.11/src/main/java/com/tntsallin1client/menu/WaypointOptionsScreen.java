@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * "Waypoints" toggle row - two key rebinds (same "click, then press a key; Escape unbinds"
  * pattern as {@link ZoomOptionsScreen}/{@link SpawnOverlayOptionsScreen}: one for
  * {@link ModKeyBindings#OPEN_WAYPOINTS}, one for the quick-create follow-up
- * {@link ModKeyBindings#CREATE_WAYPOINT}) plus the display toggles and a button into
+ * {@link ModKeyBindings#CREATE_WAYPOINT}) plus the display defaults for new waypoints and a button into
  * {@link WaypointListScreen} (see {@link WaypointMenuIntegration} for both keys' gameplay hookup).
  */
 public class WaypointOptionsScreen extends Screen {
@@ -32,6 +32,7 @@ public class WaypointOptionsScreen extends Screen {
 	private @Nullable Button rebindButton;
 	private @Nullable Button createRebindButton;
 	private @Nullable KeyMapping awaitingKeyMapping;
+	private int defaultsLabelY;
 
 	public WaypointOptionsScreen(Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.waypoint_options.title"));
@@ -69,6 +70,18 @@ public class WaypointOptionsScreen extends Screen {
 		this.updateRebindButtonLabels();
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointConfirmDelete)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.confirm_delete"),
+						(button, value) -> {
+							config.waypointConfirmDelete = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
+		// The four toggles below only seed newly created waypoints - each waypoint has its own copy.
+		this.defaultsLabelY = y + 2;
+		y += this.font.lineHeight + 6;
+
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointShowBeam)
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.show_beam"),
 						(button, value) -> {
@@ -97,14 +110,6 @@ public class WaypointOptionsScreen extends Screen {
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.fade_nearby"),
 						(button, value) -> {
 							config.waypointFadeNearby = value;
-							config.save();
-						}));
-		y += ROW_SPACING;
-
-		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointConfirmDelete)
-				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.confirm_delete"),
-						(button, value) -> {
-							config.waypointConfirmDelete = value;
 							config.save();
 						}));
 		y += ROW_SPACING + 6;
@@ -172,6 +177,8 @@ public class WaypointOptionsScreen extends Screen {
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
+		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_options.defaults_label"),
+				this.width / 2, this.defaultsLabelY, 0xFFAAAAAA);
 	}
 
 	@Override
