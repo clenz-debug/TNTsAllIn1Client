@@ -108,7 +108,7 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
     """Block-model elements for one entity model part:
     {"offset": (x, y, z), "rotation": (x, y, z radians, quarter turns only), "cubes": [(uv, origin,
     size, mirror), ...]}. Optional: "scale" (the game's PartPose scale - the box shrinks, its picture
-    layout stays), "turn_y" (degrees, 22.5 steps: the element's own rotation about the part's origin)."""
+    layout stays)."""
     offset = part.get("offset", (0, 0, 0))
     rotation = part.get("rotation", (0, 0, 0))
     scale = part.get("scale", 1)
@@ -143,10 +143,7 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
             front, back = part["both_sides"]
             u1, v1, u2, v2 = faces[front]["uv"]
             faces[back] = {**faces[front], "uv": [u2, v1, u1, v2]}
-        element = {"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces}
-        if "turn_y" in part:
-            element["rotation"] = {"origin": [round(v, 4) for v in to_block(offset, flip)], "axis": "y", "angle": part["turn_y"]}
-        elements.append(element)
+        elements.append({"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces})
     return elements
 
 
@@ -238,14 +235,14 @@ BELL = [
     {"offset": (8, 12, 8), "cubes": [((0, 0), (-3, -6, -3), (6, 7, 6), False)]},   # body
     {"cubes": [((0, 13), (4, 4, 4), (8, 2, 8), False)]},                           # rim
 ]
-# The end crystal, not flipped either: its base, and the glass cube with a smaller glass cube and the
-# core inside (in the game they tumble; here the inner glass is turned by 45 degrees). The game floats
-# the crystal 20 pixels up; the item has it just above its base, or it came out tiny in the slot.
+# The end crystal, not flipped either: its base, one glass cube and the core in it. In the game two
+# glass cubes and the core tumble inside each other; standing still, the turned inner glass came out a
+# jumble of frames (own user feedback), so the item leaves it out. The game floats the crystal 20
+# pixels up; the item has it just above its base, or it came out tiny in the slot.
 CRYSTAL_HEIGHT = 11
 END_CRYSTAL = [
     {"cubes": [((0, 16), (-6, 0, -6), (12, 4, 12), False)]},                                                           # base
-    {"offset": (0, CRYSTAL_HEIGHT, 0), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},                          # outer glass
-    {"offset": (0, CRYSTAL_HEIGHT, 0), "scale": 0.875, "turn_y": 45, "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},  # inner glass
+    {"offset": (0, CRYSTAL_HEIGHT, 0), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},                          # glass
     {"offset": (0, CRYSTAL_HEIGHT, 0), "scale": 0.875 * 0.765625, "cubes": [((32, 0), (-4, -4, -4), (8, 8, 8), False)]},    # core
 ]
 END_CRYSTAL_TEXTURE = "minecraft:entity/end_crystal/end_crystal"
