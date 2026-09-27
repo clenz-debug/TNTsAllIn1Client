@@ -1467,12 +1467,14 @@ VANILLA_3D_ITEMS = {
     "sea_pickle": ("block/sea_pickle", (6, 0, 6), (10, 8.7, 10)),
     "turtle_egg": ("block/turtle_egg", (5, 0, 4), (9, 7, 8)),
     "sniffer_egg": ("block/sniffer_egg_not_cracked", (1, 0, 2), (15, 16, 14)),
+    "item_frame": ("block/item_frame", (2, 2, 15), (14, 14, 16)),
+    "glow_item_frame": ("block/glow_item_frame", (2, 2, 15), (14, 14, 16)),
     **{f"{color}candle": (f"block/{color}candle_one_candle", (7, 0, 7), (9, 7, 9)) for color in [""] + [f"{c}_" for c in (
         "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple",
         "blue", "brown", "green", "red", "black")]},
 }
-# The tripwire hook hangs on a wall facing north: turned round so its front faces the slot
-VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0]}
+# The tripwire hook and the item frames hang on a wall facing north: turned round so their front faces the slot
+VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0], "item_frame": [20, 160, 0], "glow_item_frame": [20, 160, 0]}
 # Lit from the front in the inventory, like flat items (own user feedback: the campfires' upright
 # fire got little of the inventory's side light and looked dark there; gui_light only acts there)
 VANILLA_3D_FRONT_LIT = {"campfire", "soul_campfire"}
@@ -1546,6 +1548,18 @@ def items_3d() -> None:
         MODELS[f"item/{item}"] = vanilla_3d_item(parent, low, high, VANILLA_3D_GUI_TURN.get(item, BLOCK_DISPLAY["gui"]["rotation"]))
         if item in VANILLA_3D_FRONT_LIT:
             MODELS[f"item/{item}"]["gui_light"] = "front"
+    # Glass panes: a straight piece of pane, glass on its faces, the pane's edge picture around it -
+    # see-through like vanilla's panes (26.1 marks their pictures translucent, older versions ignore it)
+    for color in [""] + [f"{c}_stained_" for c in (
+            "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan",
+            "purple", "blue", "brown", "green", "red", "black")]:
+        glass = "glass" if not color else f"{color}glass"
+        pane = {"sprite": f"minecraft:block/{glass}", "force_translucent": True}
+        edge = {"sprite": f"minecraft:block/{glass}_pane_top", "force_translucent": True}
+        edge_face = face([7, 0, 9, 16], "#edge")
+        elements = [box([7, 0, 0], [9, 16, 16], {"east": face([0, 0, 16, 16], "#pane"), "west": face([0, 0, 16, 16], "#pane"),
+                                                  "north": edge_face, "south": edge_face, "up": edge_face, "down": edge_face})]
+        MODELS[f"item/{glass}_pane"] = item_model(elements, {"particle": pane, "pane": pane, "edge": edge}, BLOCK_DISPLAY)
     for item, tints in ITEM_TINTS.items():
         ITEMS[item] = {"model": {"type": "minecraft:model", "model": f"minecraft:item/{item}", "tints": tints}}
 
@@ -1630,6 +1644,10 @@ def entity_items_3d() -> None:
                                                  {"texture": f"minecraft:entity/signs/{wood}", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
         MODELS[f"item/{wood}_hanging_sign"] = item_model(e.model_elements(e.HANGING_SIGN, "#texture", (64, 32)),
                                                          {"texture": f"minecraft:entity/signs/hanging/{wood}", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
+    MODELS["item/bell"] = item_model(e.model_elements(e.BELL, "#texture", (32, 32), flip=False),
+                                     {"texture": "minecraft:entity/bell/bell_body", "particle": "minecraft:block/gold_block"}, BLOCK_DISPLAY)
+    MODELS["item/end_crystal"] = item_model(e.model_elements(e.END_CRYSTAL, "#texture", (64, 32), flip=False),
+                                            {"texture": e.END_CRYSTAL_TEXTURE, "particle": "minecraft:block/obsidian"}, BLOCK_DISPLAY)
     MODELS["item/armor_stand"] = item_model(e.model_elements(e.ARMOR_STAND, "#texture", (64, 64)),
                                             {"texture": e.ARMOR_STAND_TEXTURE, "particle": "minecraft:block/oak_planks"}, FLAT_DISPLAY, ARMOR_STAND_GUI_FILL)
     # Minecarts: the cart, and on its floor the load

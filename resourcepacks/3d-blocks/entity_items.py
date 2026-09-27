@@ -107,9 +107,11 @@ def face_uv(pairs, face: str, frm, to, texture_size):
 def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> list:
     """Block-model elements for one entity model part:
     {"offset": (x, y, z), "rotation": (x, y, z radians, quarter turns only), "cubes": [(uv, origin,
-    size, mirror), ...]}."""
+    size, mirror), ...]}. Optional: "scale" (the game's PartPose scale - the box shrinks, its picture
+    layout stays), "turn_y" (degrees, 22.5 steps: the element's own rotation about the part's origin)."""
     offset = part.get("offset", (0, 0, 0))
     rotation = part.get("rotation", (0, 0, 0))
+    scale = part.get("scale", 1)
     elements = []
     inset = part.get("inset", 0)
     for uv, origin, size, mirror in part["cubes"]:
@@ -118,7 +120,7 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
             block_pairs = []
             for position, picture_uv in pairs:
                 turned = rotated(position, rotation)
-                entity = tuple(a + b for a, b in zip(turned, offset))
+                entity = tuple(scale * a + b for a, b in zip(turned, offset))
                 block_pairs.append((tuple(round(c, 4) for c in to_block(entity, flip)), picture_uv))
             placed[direction] = block_pairs
         points = [p for pairs in placed.values() for p, _ in pairs]
@@ -141,7 +143,10 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
             front, back = part["both_sides"]
             u1, v1, u2, v2 = faces[front]["uv"]
             faces[back] = {**faces[front], "uv": [u2, v1, u1, v2]}
-        elements.append({"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces})
+        element = {"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces}
+        if "turn_y" in part:
+            element["rotation"] = {"origin": [round(v, 4) for v in to_block(offset, flip)], "axis": "y", "angle": part["turn_y"]}
+        elements.append(element)
     return elements
 
 
@@ -228,6 +233,23 @@ CHEST = [
 ]
 CHEST_FLIP = False
 
+# The bell (block entity; its picture is in the block atlas already) - drawn the right way up like the chest
+BELL = [
+    {"offset": (8, 12, 8), "cubes": [((0, 0), (-3, -6, -3), (6, 7, 6), False)]},   # body
+    {"cubes": [((0, 13), (4, 4, 4), (8, 2, 8), False)]},                           # rim
+]
+# The end crystal, not flipped either: its base, and the glass cube with a smaller glass cube and the
+# core inside (in the game they tumble; here the inner glass is turned by 45 degrees). The game floats
+# the crystal 20 pixels up; the item has it just above its base, or it came out tiny in the slot.
+CRYSTAL_HEIGHT = 11
+END_CRYSTAL = [
+    {"cubes": [((0, 16), (-6, 0, -6), (12, 4, 12), False)]},                                                           # base
+    {"offset": (0, CRYSTAL_HEIGHT, 0), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},                          # outer glass
+    {"offset": (0, CRYSTAL_HEIGHT, 0), "scale": 0.875, "turn_y": 45, "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},  # inner glass
+    {"offset": (0, CRYSTAL_HEIGHT, 0), "scale": 0.875 * 0.765625, "cubes": [((32, 0), (-4, -4, -4), (8, 8, 8), False)]},    # core
+]
+END_CRYSTAL_TEXTURE = "minecraft:entity/end_crystal/end_crystal"
+
 WOODS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak"]
 SIGN_WOODS = WOODS + ["bamboo", "crimson", "warped"]
 MINECART_TEXTURE = "minecraft:entity/minecart"
@@ -245,5 +267,5 @@ def atlas_sources(pack_format: int) -> dict:
         {"type": "minecraft:directory", "source": "entity/boat", "prefix": "entity/boat/"},
         {"type": "minecraft:directory", "source": "entity/chest_boat", "prefix": "entity/chest_boat/"},
         {"type": "minecraft:directory", "source": "entity/signs", "prefix": "entity/signs/"},
-        *({"type": "minecraft:single", "resource": name} for name in singles + ["minecraft:entity/chest/normal"]),
+        *({"type": "minecraft:single", "resource": name} for name in singles + ["minecraft:entity/chest/normal", END_CRYSTAL_TEXTURE]),
     ]}
