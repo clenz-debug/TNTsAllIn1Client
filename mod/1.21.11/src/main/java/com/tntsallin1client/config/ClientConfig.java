@@ -247,6 +247,9 @@ public class ClientConfig {
 	// Whether deleting a single waypoint asks for confirmation first - the "delete all" button
 	// always confirms regardless of this setting (see WaypointListScreen).
 	public boolean waypointConfirmDelete = true;
+	// Small arrowhead at the screen edge pointing towards each waypoint outside the field of view
+	// (see WaypointArrowHud) - global, not per waypoint.
+	public boolean waypointOffscreenArrows = true;
 	// One-time migration marker: waypoints saved before the display settings became per waypoint
 	// have no values of their own yet and take over the global ones once (see #migrateWaypointDisplay).
 	public boolean waypointDisplayPerWaypoint = false;

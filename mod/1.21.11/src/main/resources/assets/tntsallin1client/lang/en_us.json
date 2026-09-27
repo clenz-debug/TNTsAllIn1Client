@@ -141,6 +141,7 @@
   "gui.tntsallin1client.waypoint_options.show_distance": "Show Distance",
   "gui.tntsallin1client.waypoint_options.fade_nearby": "Fade Out When Nearby",
   "gui.tntsallin1client.waypoint_options.confirm_delete": "Confirm Before Delete",
+  "gui.tntsallin1client.waypoint_options.offscreen_arrows": "Off-Screen Arrows",
   "gui.tntsallin1client.waypoint_options.defaults_label": "Defaults for new waypoints:",
   "gui.tntsallin1client.waypoint_options.manage_button": "Manage Waypoints...",
   "gui.tntsallin1client.waypoint_list.title": "Waypoints",

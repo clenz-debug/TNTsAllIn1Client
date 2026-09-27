@@ -78,6 +78,14 @@ public class WaypointOptionsScreen extends Screen {
 						}));
 		y += ROW_SPACING;
 
+		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointOffscreenArrows)
+				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.offscreen_arrows"),
+						(button, value) -> {
+							config.waypointOffscreenArrows = value;
+							config.save();
+						}));
+		y += ROW_SPACING;
+
 		// The four toggles below only seed newly created waypoints - each waypoint has its own copy.
 		this.defaultsLabelY = y + 2;
 		y += this.font.lineHeight + 6;

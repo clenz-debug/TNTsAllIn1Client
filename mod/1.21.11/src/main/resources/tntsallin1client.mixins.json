@@ -18,6 +18,7 @@
 		"EditBoxThemeMixin",
 		"EntityHitboxDebugRendererMixin",
 		"EntityTurnMixin",
+		"GameRendererInvoker",
 		"GuiMixin",
 		"HangingSignRendererMixin",
 		"InviteOnlyLoginMixin",

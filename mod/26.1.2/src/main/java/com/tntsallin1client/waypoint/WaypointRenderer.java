@@ -57,7 +57,8 @@ public final class WaypointRenderer {
 	private static final float LABEL_OUTLINE_WIDTH = 2.0F;
 	// Backdrop padding around the text, in font pixels.
 	private static final int LABEL_PADDING = 2;
-	private static final float LABEL_HEIGHT_ABOVE_BLOCK = 1.5F;
+	// Also the point WaypointArrowHud tests against the field of view.
+	static final float LABEL_HEIGHT_ABOVE_BLOCK = 1.5F;
 	// Only used when Waypoint#fadeNearby is on: fully visible at/beyond FADE_START,
 	// linearly fades between the two, fully invisible at/within FADE_END.
 	private static final float FADE_START_DISTANCE = 10F;
@@ -161,7 +162,7 @@ public final class WaypointRenderer {
 	}
 
 	/** 1 at/beyond {@link #FADE_START_DISTANCE}, 0 at/within {@link #FADE_END_DISTANCE}, linear between. */
-	private static float fadeAlpha(double distance) {
+	static float fadeAlpha(double distance) {
 		if (distance >= FADE_START_DISTANCE) {
 			return 1F;
 		}

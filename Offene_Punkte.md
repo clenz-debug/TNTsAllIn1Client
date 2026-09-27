@@ -8,9 +8,8 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 - [ ] Versionen vor 1.14 (z.B. 1.8.9 für PvP): der Launcher startet alles über Fabric, das geht erst ab 1.14 – bräuchte Start ohne Mod-Loader oder Legacy Fabric plus das alte Startformat
 - [ ] Linux und macOS
 - [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt (letzte Zeile der Ideen-Datei)
-- [ ] Wegpunkte: Richtungspfeil am Bildschirmrand für Wegpunkte außerhalb des Sichtfelds; Scrollen im Bearbeiten-Screen (nur nötig, falls er bei kleinem Fenster abgeschnitten wird)
-- [ ] Finales Launcher-Redesign (bewusst ans Ende geschoben, bis alle Launcher-Features stehen)
-- [ ] Optional: eigenes e4mc-Relay auf nxlc.de statt e4mcs Servern (nur mit OK des Server-Besitzers, dann läuft der Spielverkehr über seine Leitung)
+- [x] Wegpunkte: Richtungspfeil am Bildschirmrand für Wegpunkte außerhalb des Sichtfelds – live bestätigt (beide Versionen), kommt ins nächste Update
+- [ ] Wegpunkte: Scrollen im Bearbeiten-Screen (nur nötig, falls er bei kleinem Fenster abgeschnitten wird)
 
 ## 2. Vor einer öffentlichen Veröffentlichung
 - [ ] Launcher beendet sich beim Schließen komplett – prüfen, ob ein laufendes Spiel das überlebt

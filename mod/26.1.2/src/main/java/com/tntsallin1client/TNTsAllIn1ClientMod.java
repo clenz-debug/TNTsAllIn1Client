@@ -48,6 +48,7 @@ import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.shulker.ShulkerPreviewRenderer;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import com.tntsallin1client.tour.InGameTour;
+import com.tntsallin1client.waypoint.WaypointArrowHud;
 import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 
@@ -162,6 +163,7 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 		// reachable from the mod menu or directly via their own keybind.
 		WaypointRenderer.register();
 		WaypointMenuIntegration.register();
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "waypoint_arrow_hud"), new WaypointArrowHud());
 
 		// Armor & Tool Status: durability/stack-count of worn armor + mainhand/offhand, either as
 		// six individually draggable elements or bundled into one (see ArmorStatusLayoutMode) -
