@@ -493,6 +493,13 @@ def nether_vines() -> None:
               stalk(mask_of(name), "#cross", strand_offset))
 
 
+def bamboo_sapling() -> None:
+    """A freshly planted bamboo as a real little shoot, built like the nether vines' stalks (own user
+    request: the flat crossed picture looked broken next to our 3D blocks)."""
+    model("block/bamboo_sapling", {"particle": "minecraft:block/bamboo_stage0", "cross": "minecraft:block/bamboo_stage0"},
+          stalk(mask_of("bamboo_stage0"), "#cross", 0))
+
+
 def moved(elements: list, dx: float = 0, dy: float = 0, dz: float = 0) -> list:
     """The same elements shifted, turning points included."""
     shift = (dx, dy, dz)
@@ -1294,6 +1301,7 @@ dripstone()
 wall_growths()
 vine()
 nether_vines()
+bamboo_sapling()
 bushes()
 stonecutter()
 calibrated_sculk_sensor()
@@ -1459,7 +1467,6 @@ VANILLA_3D_ITEMS = {
     "sea_pickle": ("block/sea_pickle", (6, 0, 6), (10, 8.7, 10)),
     "turtle_egg": ("block/turtle_egg", (5, 0, 4), (9, 7, 8)),
     "sniffer_egg": ("block/sniffer_egg_not_cracked", (1, 0, 2), (15, 16, 14)),
-    "bamboo": ("block/bamboo1_age0", (7, 0, 7), (9, 16, 9)),
     **{f"{color}candle": (f"block/{color}candle_one_candle", (7, 0, 7), (9, 7, 9)) for color in [""] + [f"{c}_" for c in (
         "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple",
         "blue", "brown", "green", "red", "black")]},
@@ -1524,6 +1531,17 @@ def items_3d() -> None:
         texture = f"minecraft:block/{bars}_bars"
         elements = [e for part in ("post_ends", "side", "side_alt") for e in MODELS[f"block/template_bars_{part}"]["elements"]]
         MODELS[f"item/{bars}_bars"] = item_model(elements, {"particle": texture, "bars": texture, "edge": texture}, BLOCK_DISPLAY)
+    # Bamboo: the stalk with a few leaves, as if it had grown (own user feedback: a bare thin stick
+    # didn't look good) - the stalk's faces cut from its picture like vanilla's, the leaves crossed
+    side = face([0, 0, 2, 16], "#stalk")
+    elements = [
+        box([7, 0, 7], [9, 16, 9], {"north": side, "south": side, "east": side, "west": side,
+                                    "up": face([13, 0, 15, 2], "#stalk"), "down": face([13, 4, 15, 6], "#stalk")}),
+        box([0.8, 0, 8], [15.2, 16, 8], {"north": face([0, 0, 16, 16], "#leaves"), "south": face([0, 0, 16, 16], "#leaves")}),
+        box([8, 0, 0.8], [8, 16, 15.2], {"east": face([0, 0, 16, 16], "#leaves"), "west": face([0, 0, 16, 16], "#leaves")}),
+    ]
+    MODELS["item/bamboo"] = item_model(elements, {"particle": "minecraft:block/bamboo_stalk", "stalk": "minecraft:block/bamboo_stalk",
+                                                  "leaves": "minecraft:block/bamboo_small_leaves"}, BLOCK_DISPLAY)
     for item, (parent, low, high) in VANILLA_3D_ITEMS.items():
         MODELS[f"item/{item}"] = vanilla_3d_item(parent, low, high, VANILLA_3D_GUI_TURN.get(item, BLOCK_DISPLAY["gui"]["rotation"]))
         if item in VANILLA_3D_FRONT_LIT:
