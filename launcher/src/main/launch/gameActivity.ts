@@ -50,8 +50,18 @@ export async function setGameRunning(gameDir: string): Promise<void> {
   runningGameDir = gameDir
 }
 
-export function setGameStopped(): void {
+const gameStoppedListeners = new Set<(endedCleanly: boolean) => void>()
+
+/** `endedCleanly`: the game ran and exited with code 0 - false after a crash, a failed or a
+ * cancelled launch. */
+export function setGameStopped(endedCleanly: boolean): void {
   runningGameDir = null
+  for (const listener of gameStoppedListeners) listener(endedCleanly)
+}
+
+/** Called every time a game this launcher started has ended (or its launch failed/was cancelled). */
+export function onGameStopped(listener: (endedCleanly: boolean) => void): void {
+  gameStoppedListeners.add(listener)
 }
 
 export function isGameRunning(): boolean {

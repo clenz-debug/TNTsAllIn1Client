@@ -26,10 +26,11 @@ export async function launchGame(
   gameDirectory: string,
   onLog: (event: GameLogEvent) => void,
   signal?: AbortSignal
-): Promise<void> {
+): Promise<number | null> {
   await mkdir(gameDirectory, { recursive: true })
 
-  await new Promise<void>((resolve, reject) => {
+  // Resolves with the game's exit code (null if it was killed by a signal).
+  return new Promise<number | null>((resolve, reject) => {
     // `signal` lets `main/ipc/handlers.ts`'s Cancel button kill an already-running game the same
     // way it aborts an in-flight download - Node's own `spawn` support for this (since v15.14) means
     // no separate "keep the ChildProcess handle around to kill it later" bookkeeping is needed here.
@@ -75,7 +76,7 @@ export async function launchGame(
         level: code === 0 ? 'info' : 'error',
         message: `Minecraft-Prozess beendet mit Code ${code}.`
       })
-      resolve()
+      resolve(code)
     })
   })
 }

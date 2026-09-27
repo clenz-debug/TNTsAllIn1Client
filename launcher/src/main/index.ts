@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { DEFAULT_THEME_COLORS } from '../shared/types'
 import { registerAutoUpdater } from './autoUpdate'
+import { registerBackgroundMode } from './backgroundMode'
 import { announceOffline } from './friends/friendsService'
 import { initDataRoot } from './dataRoot'
 import { registerIpcHandlers } from './ipc/handlers'
@@ -49,7 +50,15 @@ function createWindow(backgroundColor: string): BrowserWindow {
   return window
 }
 
+// Only one launcher at a time: starting it again - e.g. while it runs hidden in the background during
+// a game (backgroundMode.ts) - brings the existing window back instead of opening a second one. The
+// installed and the dev launcher have different app names and data folders, so they don't block
+// each other.
+const isFirstInstance = app.requestSingleInstanceLock()
+if (!isFirstInstance) app.quit()
+
 void app.whenReady().then(async () => {
+  if (!isFirstInstance) return
   // Must resolve dataRoot() (and, in the same pass, consolidate any pre-shared-storage per-instance
   // duplicates into it - see storageConsolidation.ts) before anything else touches the filesystem:
   // registerIpcHandlers()'s LaunchPlay/StorageChangeLocation handlers and createWindow() itself
@@ -61,6 +70,7 @@ void app.whenReady().then(async () => {
 
   registerIpcHandlers()
   const window = createWindow(backgroundColor)
+  registerBackgroundMode(window)
   registerAutoUpdater(window)
 
   app.on('activate', () => {

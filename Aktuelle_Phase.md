@@ -1136,3 +1136,15 @@ Letzte Zeile aus `Ideen_für_den_client.md`: Spieler, die auch unseren Client be
 **Damit es live geht:** Das Backend auf nxlc.de muss mit der neuen Route aktualisiert werden (`backend/deploy/deploy.sh`, nur mit OK). Bis dahin schlägt die Abfrage fehl und es gibt einfach keine Logos. Und die anderen Spieler brauchen den neuen Launcher samt Mod, also das nächste Update.
 
 **Geprüft:** beide Mods `./gradlew build` grün, Mixin-Ziel im 1.21.11-Jar korrekt auf `method_62426` (= `getNameTag`) gemappt, Font-Dateien in beiden Jars. Launcher `npm run typecheck` und `npm run build` grün. Backend `npm run build` grün, die neue Abfrage lokal gegen eine Wegwerf-Datenbank getestet (registrierte Spieler inklusive "unsichtbarer" werden gefunden, unbekannte nicht, gemeldete Farben kommen mit, ohne gemeldete Farben `null`), dabei auch die Spalten-Migration einer Datenbank mit altem Schema. Die Zusammensetzung der Ebenen in Standard-, Grün- und Rot-Theme per Vorschaubild geprüft.
+
+## Launcher schließen, während Minecraft läuft: Hintergrund statt Absturz (2026-09-27, live getestet und bestätigt - "ja klappt") — `launcher/`
+
+Punkt aus "Vor einer öffentlichen Veröffentlichung". **Live geprüft (Nutzer, 2026-09-27):** Launcher-Fenster geschlossen, das Minecraft-Fenster verschwand sofort. Grund: Das Spiel ist ein normaler Kindprozess (`gameProcess.ts`, `spawn` ohne `detached`), und Node hängt solche Prozesse unter Windows an ein Job Object, das sie beim Beenden des Launchers hart mitbeendet, also ohne Speichern.
+
+**Nutzerentscheidung: im Hintergrund weiterlaufen.** Neues Modul `main/backgroundMode.ts`. Schließt man das Fenster, während ein Spiel läuft, wird es nur versteckt, und ein Tray-Symbol erscheint (Linksklick oder "Launcher öffnen" holt das Fenster zurück, "Launcher und Minecraft beenden" beendet wirklich beides). Endet das Spiel normal (Exit-Code 0), beendet sich der versteckte Launcher von selbst. Nach einem Absturz zeigt er sein Fenster wieder, damit man sieht, was passiert ist. Freunde, Welt-Einladungen und die Nametag-Logos laufen so im Spiel weiter. Dafür liefert `launchGame` jetzt den Exit-Code, und `setGameStopped` meldet an Listener (`onGameStopped`), ob das Spiel sauber beendet wurde. Tray-Texte kommen je nach eingestellter Sprache aus dem Main-Prozess (wie `authCallbackPage.ts`).
+
+**Dazu eine Einzelinstanz-Sperre** (`app.requestSingleInstanceLock` in `index.ts`): Startet man den Launcher erneut, während er versteckt läuft, kommt das vorhandene Fenster zurück statt eines zweiten Launchers. Installierter und Dev-Launcher haben verschiedene App-Namen und Datenordner und blockieren sich deshalb nicht gegenseitig.
+
+**Bewusst nicht abgefangen:** "Update installieren" (`quitAndInstall`) beendet ein laufendes Spiel weiterhin mit, das klickt man aber ausdrücklich selbst.
+
+**Geprüft:** `npm run typecheck` und `npm run build` grün.

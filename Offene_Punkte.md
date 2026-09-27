@@ -12,7 +12,7 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 - [x] Wegpunkte: Scrollen im Bearbeiten-, Erstellen- und Optionen-Screen – live bestätigt, kommt ins nächste Update
 
 ## 2. Vor einer öffentlichen Veröffentlichung
-- [ ] Launcher beendet sich beim Schließen komplett – prüfen, ob ein laufendes Spiel das überlebt
+- [x] Launcher beendet sich beim Schließen komplett – das Spiel wurde hart mitbeendet; jetzt läuft der Launcher im Hintergrund weiter (Tray), live bestätigt, kommt ins nächste Update
 - [ ] Lizenzen gegenlesen: Sodium (PolyForm Shield), Default Dark Mode und 3D Skin Layers (beide nicht-kommerziell)
 - [ ] Code-Signing: der Installer ist unsigniert und zeigt deshalb die SmartScreen-Warnung „Unbekannter Herausgeber“ (Zertifikat kostet Geld – Entscheidungsfrage)
 

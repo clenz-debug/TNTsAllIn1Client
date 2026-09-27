@@ -447,6 +447,9 @@ export function registerIpcHandlers(): void {
       currentLaunchController = controller
       const { signal } = controller
       broadcastLaunchBusy(event, true)
+      // Stays false unless the game ran and exited with code 0 - a launcher hidden in the background
+      // shows itself again after a crash instead of quitting (see backgroundMode.ts).
+      let gameEndedCleanly = false
       // Offline mode: read launch metadata straight from its cache instead of waiting for every
       // request to fail first (see offline.ts). Game files are skipped by the downloader anyway.
       setPreferCache(profile.offline === true)
@@ -557,7 +560,7 @@ export function registerIpcHandlers(): void {
 
         // Friends presence: from here on the launcher reports where in the game the player is.
         await setGameRunning(gameDir)
-        await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)
+        gameEndedCleanly = (await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)) === 0
         await saveSharedOptions(gameDir)
         await saveSharedServers(gameDir)
         await readBackClientDesign(gameDir)
@@ -583,7 +586,7 @@ export function registerIpcHandlers(): void {
         }
         throw err
       } finally {
-        setGameStopped()
+        setGameStopped(gameEndedCleanly)
         setPreferCache(false)
         currentLaunchController = null
         broadcastLaunchBusy(event, false)
