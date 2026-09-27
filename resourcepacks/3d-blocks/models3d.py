@@ -1453,6 +1453,9 @@ VANILLA_3D_ITEMS = {
 }
 # The tripwire hook hangs on a wall facing north: turned round so its front faces the slot
 VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0]}
+# Lit from the front in the inventory, like flat items (own user feedback: the campfires' upright
+# fire got little of the inventory's side light and looked dark there; gui_light only acts there)
+VANILLA_3D_FRONT_LIT = {"campfire", "soul_campfire"}
 
 
 def turned(rotation: list, vector: list) -> list:
@@ -1510,6 +1513,8 @@ def items_3d() -> None:
         MODELS[f"item/{bars}_bars"] = item_model(elements, {"particle": texture, "bars": texture, "edge": texture}, BLOCK_DISPLAY)
     for item, (parent, low, high) in VANILLA_3D_ITEMS.items():
         MODELS[f"item/{item}"] = vanilla_3d_item(parent, low, high, VANILLA_3D_GUI_TURN.get(item, BLOCK_DISPLAY["gui"]["rotation"]))
+        if item in VANILLA_3D_FRONT_LIT:
+            MODELS[f"item/{item}"]["gui_light"] = "front"
     for item, tints in ITEM_TINTS.items():
         ITEMS[item] = {"model": {"type": "minecraft:model", "model": f"minecraft:item/{item}", "tints": tints}}
 
