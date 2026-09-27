@@ -49,10 +49,25 @@ async function syncBundleDir(bundleDir: string, destinationDir: string, excluded
  * the mod's `BundledResourcePacks`). Rewritten on every launch so it always matches the current
  * bundle; lives in Fabric's config dir (`game/config/`) next to the mod's own config file.
  */
+function bundledResourcepackListFile(gameDir: string): string {
+  return join(gameDir, 'config', 'tntsallin1client-bundled-resourcepacks.json')
+}
+
 async function writeBundledResourcepackList(gameDir: string, fileNames: string[]): Promise<void> {
-  const configDir = join(gameDir, 'config')
-  await mkdir(configDir, { recursive: true })
-  await writeFile(join(configDir, 'tntsallin1client-bundled-resourcepacks.json'), JSON.stringify(fileNames, null, 2))
+  await mkdir(join(gameDir, 'config'), { recursive: true })
+  await writeFile(bundledResourcepackListFile(gameDir), JSON.stringify(fileNames, null, 2))
+}
+
+/** The previous sync's list above - which doubles as the record of which packs the launcher itself
+ * put into the instance, so a pack dropped from the bundle can leave the instance again (see
+ * `syncBundledContent`), same idea as {@link readSyncedMods} for jars. */
+async function readBundledResourcepackList(gameDir: string): Promise<string[]> {
+  try {
+    const parsed: unknown = JSON.parse(await readFile(bundledResourcepackListFile(gameDir), 'utf8'))
+    return Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === 'string') : []
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -226,8 +241,20 @@ export async function syncBundledContent(
   const previouslySynced = await readSyncedMods(gameDir)
   await syncBundleDir(modsBundleDir, destModsDir, disabledMods)
   const resourcepacksBundleDir = bundledResourcepacksDir(versionId)
-  await syncBundleDir(resourcepacksBundleDir, join(gameDir, 'resourcepacks'))
-  await writeBundledResourcepackList(gameDir, await listBundleFiles(resourcepacksBundleDir))
+  const destResourcepacksDir = join(gameDir, 'resourcepacks')
+  const previousPacks = await readBundledResourcepackList(gameDir)
+  const currentPacks = await listBundleFiles(resourcepacksBundleDir)
+  await syncBundleDir(resourcepacksBundleDir, destResourcepacksDir)
+  // A pack dropped from the bundle (e.g. 3D Bushy Bushies, replaced by our own 3D pack, whose
+  // bushes it broke) would otherwise stay in the instance and stay active. Only packs the previous
+  // sync listed as bundled are removed, never one the user added; an empty listing means the bundle
+  // folder is missing, not that every pack was dropped.
+  if (currentPacks.length > 0) {
+    const current = new Set(currentPacks)
+    const superseded = previousPacks.filter((name) => !current.has(name))
+    await Promise.all(superseded.map((name) => rm(join(destResourcepacksDir, name), { recursive: true, force: true })))
+    await writeBundledResourcepackList(gameDir, currentPacks)
+  }
   const ownModJar = await syncOwnModJar(ownModLibsDir, destModsDir)
 
   // An empty bundle listing means the folder is missing, not that every mod was dropped - keep the

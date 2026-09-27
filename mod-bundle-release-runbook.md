@@ -29,6 +29,9 @@ große Brüche haben, nicht nur bei einem seltenen Vollversions-Sprung wie früh
    Launcher ab 0.1.3 entfernen dabei die ersetzte alte Jar aus den Instanzen (`bundleSync.ts`, Merkliste
    `config/tntsallin1client-synced-mods.json`). Ältere Launcher ließen sie liegen - Fabric startet dann
    wegen der doppelten Mod nicht, bis der Launcher selbst aktualisiert ist.
+   Launcher ab 0.1.4 machen dasselbe mit Resourcepacks: ein aus dem Bundle gestrichenes Pack
+   verschwindet aus den Instanzen (Merkliste `config/tntsallin1client-bundled-resourcepacks.json`),
+   selbst hinzugefügte Packs bleiben.
 
 ## B) Neue Minecraft-Version freischalten
 
@@ -68,7 +71,10 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
    Liegt das Pack auf Modrinth, im Manifest **direkt dessen Modrinth-Download** eintragen statt es
    selbst hochzuladen (URL + SHA-1 per `GET https://api.modrinth.com/v2/version_file/<sha1>` aus
    der lokalen Datei ermitteln) - dann verbreiten nicht wir die Datei weiter. Nur eigene Packs
-   selbst als Release-Asset hochladen. Vanilla Tweaks darf nicht unverändert weitergegeben werden
+   selbst als Release-Asset hochladen. **Jedes** Pack im lokalen Bundle muss im Manifest stehen, auch
+   die eigenen (TNT-3D-Blocks/-Bushes/-Flat-Inventory-Icons): ein Launcher, der einmal ein Update
+   übers Manifest geladen hat, nutzt nur noch diese Download-Kopie, und die enthält ausschließlich
+   Manifest-Einträge - ein fehlendes Pack käme bei ihm nie an (seit 0.1.4 so gepflegt). Vanilla Tweaks darf nicht unverändert weitergegeben werden
    und ist deshalb nicht im Release (siehe `electron-builder.yml`).
 5. **SHA-1 je Datei berechnen** (eigener Mod-Jar + jedes neu hochgeladene Resourcepack):
    ```powershell
