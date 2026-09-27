@@ -49,6 +49,27 @@ async function streamToString(stream: Readable): Promise<string> {
   return Buffer.concat(chunks).toString('utf8')
 }
 
+/** A jar's Fabric mod id from its `fabric.mod.json`, or `null` for anything that isn't a readable
+ * Fabric mod (no `fabric.mod.json`, broken JSON, not a zip at all). */
+export async function readFabricModId(jarPath: string): Promise<string | null> {
+  try {
+    const zipfile = await openPromise(jarPath, { lazyEntries: true, autoClose: true })
+    try {
+      for await (const entry of zipfile.eachEntry()) {
+        if (entry.fileName === 'fabric.mod.json') {
+          const json = JSON.parse(await streamToString(await zipfile.openReadStreamPromise(entry))) as { id?: unknown }
+          return typeof json.id === 'string' ? json.id : null
+        }
+      }
+    } finally {
+      zipfile.close()
+    }
+  } catch {
+    // Not a readable jar.
+  }
+  return null
+}
+
 /** Which {@link ModNotice} a jar deserves, if any - by its `fabric.mod.json` id, or for a plain
  * OptiFine jar (no `fabric.mod.json` at all) by its `net/optifine/` classes. Unreadable jars and
  * broken JSON just get no notice; this is only a hint, never a reason to fail listing the mods. */

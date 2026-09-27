@@ -35,7 +35,7 @@ import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
 import { getBundleCompatibleVersions, hasLocalBundleContent, isVersionBundleCompatible } from '../launch/bundleCompat'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
-import { importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
+import { assertInstanceNotImporting, importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
 import { installFabricLoader } from '../launch/fabricInstaller'
 import {
   acceptFriendRequest,
@@ -202,13 +202,15 @@ export function registerIpcHandlers(): void {
       installModrinthMod(instanceId, projectId, gameVersion)
   )
 
-  ipcMain.handle(IpcChannel.InstancesDelete, async (_event: IpcMainInvokeEvent, instanceId: string) =>
-    deleteInstance(instanceId)
-  )
+  ipcMain.handle(IpcChannel.InstancesDelete, async (_event: IpcMainInvokeEvent, instanceId: string) => {
+    assertInstanceNotImporting(instanceId)
+    return deleteInstance(instanceId)
+  })
 
-  ipcMain.handle(IpcChannel.InstancesClone, async (_event: IpcMainInvokeEvent, instanceId: string, newName: string) =>
-    cloneInstance(instanceId, newName)
-  )
+  ipcMain.handle(IpcChannel.InstancesClone, async (_event: IpcMainInvokeEvent, instanceId: string, newName: string) => {
+    assertInstanceNotImporting(instanceId)
+    return cloneInstance(instanceId, newName)
+  })
 
   ipcMain.handle(IpcChannel.InstancesListWorlds, async (_event: IpcMainInvokeEvent, instanceId: string) =>
     listInstanceWorlds(instanceId)
@@ -440,6 +442,7 @@ export function registerIpcHandlers(): void {
     IpcChannel.LaunchPlay,
     async (event: IpcMainInvokeEvent, profile: MinecraftProfile, instanceId: string, joinAddress?: string, inGameTour?: boolean) => {
       assertStorageNotBusy()
+      assertInstanceNotImporting(instanceId)
       const controller = new AbortController()
       currentLaunchController = controller
       const { signal } = controller

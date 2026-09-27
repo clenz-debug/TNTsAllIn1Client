@@ -233,8 +233,11 @@ export const en: typeof de = {
     importedSettingsWarning:
       'Imported settings (options.txt) apply to all your instances, not just the new one - this launcher deliberately shares these settings across all instances.',
     importResultMods: (count: number) => `${count} mod(s) imported`,
+    importResultSkipped: (count: number) => `${count} skipped (already included in the client or not compatible)`,
+    importResultResourcepacks: (count: number) => `${count} resource pack(s) imported`,
+    importResultWorlds: (count: number) => `${count} world(s) imported`,
     importResultOptions: 'Settings imported',
-    importResultNone: 'No options.txt/mods found in the selected folder.',
+    importResultNone: 'No settings, mods, resource packs or worlds found in the selected folder.',
     versionListError: (error: string) => `Couldn't load the version list: ${error}`,
     existingHeading: 'Existing instances',
     active: 'Active',
@@ -617,7 +620,8 @@ export const en: typeof de = {
     },
     instance: {
       unknown: (p: { instanceId: string }) => `Unknown instance: ${p.instanceId}`,
-      notFound: (p: { instanceId: string }) => `Instance ${p.instanceId} not found.`
+      notFound: (p: { instanceId: string }) => `Instance ${p.instanceId} not found.`,
+      importing: 'This instance is still being imported from another client - please wait until copying has finished.'
     },
     friends: {
       not_logged_in: 'Not logged in.',

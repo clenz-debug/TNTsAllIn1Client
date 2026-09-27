@@ -7,6 +7,7 @@ import type {
   ClientImportResult,
   CustomCapeStatus,
   CustomModEntry,
+  ExternalClientFolder,
   FriendsPrefs,
   FriendsState,
   ResourcepackEntry,
@@ -83,7 +84,7 @@ const api = {
     ipcRenderer.invoke(IpcChannel.ResourcepacksRemove, instanceId, name),
   removeAllResourcepacks: (instanceId: string): Promise<ResourcepackEntry[]> =>
     ipcRenderer.invoke(IpcChannel.ResourcepacksRemoveAll, instanceId),
-  pickExternalClientFolder: (): Promise<string | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
+  pickExternalClientFolder: (): Promise<ExternalClientFolder | null> => ipcRenderer.invoke(IpcChannel.ClientImportPickFolder),
   importFromExternalClient: (sourceFolder: string, instanceId: string, versionId: string): Promise<ClientImportResult> =>
     ipcRenderer.invoke(IpcChannel.ClientImportApply, sourceFolder, instanceId, versionId),
   installUpdateNow: (): Promise<void> => ipcRenderer.invoke(IpcChannel.UpdateInstallNow),

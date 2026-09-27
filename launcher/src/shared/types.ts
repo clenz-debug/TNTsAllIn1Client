@@ -193,9 +193,21 @@ export interface ResourcepackEntry {
 
 /** Result of importing settings/mods from another client's folder (`main/launch/clientImport.ts`)
  * - reported back to the renderer so it can show a short summary ("3 Mods übernommen", ...). */
+/** The folder picked for "import from another client", plus a name for the new instance read from
+ * that client's own profile metadata (`null` if there's nothing meaningful). */
+export interface ExternalClientFolder {
+  folder: string
+  suggestedName: string | null
+}
+
 export interface ClientImportResult {
   importedOptions: boolean
   copiedMods: string[]
+  /** Jars left out: already bundled with this client (by mod id), our own mod, another client's
+   * core mod, or not a Fabric mod at all. */
+  skippedMods: string[]
+  resourcepacks: string[]
+  worlds: string[]
 }
 
 /** A single named instance (own user request: "statt einem Wechsel der Version ein System... das

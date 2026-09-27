@@ -133,6 +133,17 @@ async function unpackZipWorlds(zipPath: string, destinations: Map<string, string
   }
 }
 
+/** Copies every world inside another client's `saves` folder into an instance - used by the
+ * "import from another client" feature (`clientImport.ts`). Returns the new world names. */
+export async function importWorldsFromSavesFolder(instanceId: string, sourceSavesFolder: string): Promise<string[]> {
+  await mkdir(savesDir(instanceId), { recursive: true })
+  const imported: string[] = []
+  for (const worldFolder of await findWorldFolders(sourceSavesFolder)) {
+    imported.push(await importWorldFolder(instanceId, worldFolder))
+  }
+  return imported
+}
+
 /**
  * "Upload world" in the Worlds screen (own user request): copies worlds from anywhere on the PC
  * into an instance's `saves/`, either as folders or as zips (Windows' dialog can't offer both at

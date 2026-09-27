@@ -239,8 +239,11 @@ export const de = {
     importedSettingsWarning:
       'Übernommene Einstellungen (options.txt) gelten für alle deine Instanzen, nicht nur die neue - diese Einstellungen sind in diesem Launcher bewusst über alle Instanzen hinweg geteilt.',
     importResultMods: (count: number) => `${count} Mod(s) übernommen`,
+    importResultSkipped: (count: number) => `${count} übersprungen (schon im Client enthalten oder nicht kompatibel)`,
+    importResultResourcepacks: (count: number) => `${count} Texturpaket(e) übernommen`,
+    importResultWorlds: (count: number) => `${count} Welt(en) übernommen`,
     importResultOptions: 'Einstellungen importiert',
-    importResultNone: 'Keine options.txt/Mods im gewählten Ordner gefunden.',
+    importResultNone: 'Keine Einstellungen, Mods, Texturpakete oder Welten im gewählten Ordner gefunden.',
     versionListError: (error: string) => `Versionsliste konnte nicht geladen werden: ${error}`,
     existingHeading: 'Vorhandene Instanzen',
     active: 'Aktiv',
@@ -637,7 +640,8 @@ export const de = {
     },
     instance: {
       unknown: (p: { instanceId: string }) => `Unbekannte Instanz: ${p.instanceId}`,
-      notFound: (p: { instanceId: string }) => `Instanz ${p.instanceId} nicht gefunden.`
+      notFound: (p: { instanceId: string }) => `Instanz ${p.instanceId} nicht gefunden.`,
+      importing: 'Diese Instanz wird noch von einem anderen Client übernommen - bitte warten, bis das Kopieren fertig ist.'
     },
     friends: {
       not_logged_in: 'Nicht angemeldet.',

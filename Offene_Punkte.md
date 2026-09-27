@@ -20,7 +20,7 @@ vielleicht längst benutzt, dann einfach abhaken.
 - [check] 26.1.2: Die Mod läuft (beim ersten Release getestet), ein Durchgang Feature für Feature ist aber nicht dokumentiert. Der 3D-Skin-Layers-Schalter im Mod-Menü ist dort ungeprüft; sein Optionen-Button ist absichtlich aus, bis es einen echten 26.x-Build von 3D Skin Layers gibt
 
 ### Launcher
-- [ ] „Von anderem Client übernehmen…“ im Instanzen-Screen (Einstellungen und eigene Mods aus einem anderen Minecraft-Ordner)
+- [check] „Von anderem Client übernehmen…“ im Instanzen-Screen: Einstellungen, eigene Mods (nach Mod-ID gefiltert), Texturpakete, Welten und Profilname; findet den Spielordner auch eine Ebene tiefer (Feather, Prism) und Lunars Mods pro Version; Instanz bis zum Ende des Kopierens gesperrt
 - [check] Instanzen: Umbenennen direkt in der Zeile, und Auswählen schließt den Screen nicht mehr – nach dem Fix nicht erneut bestätigt
 
 ## 2. Noch nicht umgesetzt

@@ -109,16 +109,19 @@ export function InstancesScreen({
     setError(null)
     setImportResult(null)
     try {
-      const folder = await window.api.pickExternalClientFolder()
-      if (!folder) return
-      const name = newName.trim() || t.instances.defaultName(instances.length + 1)
+      const picked = await window.api.pickExternalClientFolder()
+      if (!picked) return
+      const name = newName.trim() || picked.suggestedName || t.instances.defaultName(instances.length + 1)
       const instance: Instance = { id: crypto.randomUUID(), name, versionId: newVersion, enabledBundledMods: [] }
       onInstancesChange([...instances, instance], instance.id)
       setNewName('')
 
-      const result = await window.api.importFromExternalClient(folder, instance.id, instance.versionId)
+      const result = await window.api.importFromExternalClient(picked.folder, instance.id, instance.versionId)
       const parts: string[] = []
       if (result.copiedMods.length > 0) parts.push(t.instances.importResultMods(result.copiedMods.length))
+      if (result.skippedMods.length > 0) parts.push(t.instances.importResultSkipped(result.skippedMods.length))
+      if (result.resourcepacks.length > 0) parts.push(t.instances.importResultResourcepacks(result.resourcepacks.length))
+      if (result.worlds.length > 0) parts.push(t.instances.importResultWorlds(result.worlds.length))
       if (result.importedOptions) parts.push(t.instances.importResultOptions)
       setImportResult(parts.length > 0 ? parts.join(', ') : t.instances.importResultNone)
     } catch (err) {
