@@ -1450,6 +1450,19 @@ VANILLA_3D_ITEMS = {
     "redstone_torch": ("block/redstone_torch", (6.5, 0, 6.5), (9.5, 10.5, 9.5)),
     "campfire": ("block/campfire", (0, 0, 0), (16, 17, 16)),
     "soul_campfire": ("block/soul_campfire", (0, 0, 0), (16, 17, 16)),
+    # Second round (own user request): what Vanilla Tweaks' "3D Tiles" had
+    "cauldron": ("block/cauldron", (0, 0, 0), (16, 16, 16)),
+    "hopper": ("block/hopper", (0, 0, 0), (16, 16, 16)),
+    "brewing_stand": ("block/brewing_stand", (1, 0, 1), (15, 14, 15)),
+    "flower_pot": ("block/flower_pot", (5, 0, 5), (11, 6, 11)),
+    "cake": ("block/cake", (1, 0, 1), (15, 8, 15)),
+    "sea_pickle": ("block/sea_pickle", (6, 0, 6), (10, 8.7, 10)),
+    "turtle_egg": ("block/turtle_egg", (5, 0, 4), (9, 7, 8)),
+    "sniffer_egg": ("block/sniffer_egg_not_cracked", (1, 0, 2), (15, 16, 14)),
+    "bamboo": ("block/bamboo1_age0", (7, 0, 7), (9, 16, 9)),
+    **{f"{color}candle": (f"block/{color}candle_one_candle", (7, 0, 7), (9, 7, 9)) for color in [""] + [f"{c}_" for c in (
+        "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple",
+        "blue", "brown", "green", "red", "black")]},
 }
 # The tripwire hook hangs on a wall facing north: turned round so its front faces the slot
 VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0]}
