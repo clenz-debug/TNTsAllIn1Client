@@ -39,8 +39,8 @@ public class ArmorStatusBundledHud implements HudElement {
 		}
 
 		HudLayout layout = config.armorStatusBundledHudLayout;
-		float x = layout.customPosition ? layout.x : defaultX();
-		float y = layout.customPosition ? layout.y : defaultY();
+		float x = ArmorStatusHud.bundledAnchorX(client.font, config, entries);
+		float y = ArmorStatusHud.bundledAnchorY(client.font, config, entries);
 		ArmorStatusHud.drawBundled(guiGraphics, client.font, config, entries, x, y, layout.scale);
 	}
 

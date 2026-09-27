@@ -240,11 +240,12 @@ public final class ArmorStatusHud {
 	 */
 	public static void adjustBundledPositionForReversedToggle(ClientConfig config, Font font, boolean newReversed) {
 		List<Entry> entries = buildMaxEntries(config);
-		if (entries.isEmpty()) {
+		HudLayout layout = config.armorStatusBundledHudLayout;
+		// The default position is always the top-left (see bundledAnchorX/Y), reversed or not.
+		if (entries.isEmpty() || !layout.customPosition) {
 			return;
 		}
 
-		HudLayout layout = config.armorStatusBundledHudLayout;
 		if (config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL) {
 			float delta = bundledHeight(font, config, entries) * layout.scale;
 			layout.y += newReversed ? delta : -delta;
@@ -252,6 +253,46 @@ public final class ArmorStatusHud {
 			float delta = bundledWidth(font, config, entries) * layout.scale;
 			layout.x += newReversed ? delta : -delta;
 		}
+	}
+
+	/**
+	 * Resets the bundled block (keeping its scale) to its default start position - called when
+	 * its layout mode or direction changes: the block's shape changes with those, so a spot that
+	 * fit before could now push it (partly) off-screen, out of reach of the HUD editor.
+	 */
+	public static void resetBundledPosition(ClientConfig config) {
+		config.armorStatusBundledHudLayout.customPosition = false;
+	}
+
+	/** Same as {@link #resetBundledPosition} for every per-slot layout of INDIVIDUAL mode. */
+	public static void resetSlotPositions(ClientConfig config) {
+		for (HudLayout layout : config.armorStatusSlotHudLayout.values()) {
+			layout.customPosition = false;
+		}
+	}
+
+	/**
+	 * The x {@link #drawBundled} expects: the stored custom position, or - not customized - the
+	 * default top-left, moved to the growth edge when reversed so the block still starts in the
+	 * default corner instead of growing off the top/left of the screen.
+	 */
+	public static float bundledAnchorX(Font font, ClientConfig config, List<Entry> entries) {
+		HudLayout layout = config.armorStatusBundledHudLayout;
+		if (layout.customPosition) {
+			return layout.x;
+		}
+		boolean fromRightEdge = config.armorStatusBundledReversed && config.armorStatusBundledDirection == ArmorStatusDirection.HORIZONTAL;
+		return ArmorStatusBundledHud.defaultX() + (fromRightEdge ? bundledWidth(font, config, entries) * layout.scale : 0);
+	}
+
+	/** Y counterpart of {@link #bundledAnchorX}. */
+	public static float bundledAnchorY(Font font, ClientConfig config, List<Entry> entries) {
+		HudLayout layout = config.armorStatusBundledHudLayout;
+		if (layout.customPosition) {
+			return layout.y;
+		}
+		boolean fromBottomEdge = config.armorStatusBundledReversed && config.armorStatusBundledDirection == ArmorStatusDirection.VERTICAL;
+		return ArmorStatusBundledHud.defaultY() + (fromBottomEdge ? bundledHeight(font, config, entries) * layout.scale : 0);
 	}
 
 	/**

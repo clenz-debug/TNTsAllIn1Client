@@ -1,7 +1,6 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
-import com.tntsallin1client.hud.ArmorStatusBundledHud;
 import com.tntsallin1client.hud.ArmorStatusDirection;
 import com.tntsallin1client.hud.ArmorStatusHud;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
@@ -365,8 +364,8 @@ public class HudEditorScreen extends Screen {
 		}
 
 		HudLayout layout = config.armorStatusBundledHudLayout;
-		float x = layout.customPosition ? layout.x : ArmorStatusBundledHud.defaultX();
-		float y = layout.customPosition ? layout.y : ArmorStatusBundledHud.defaultY();
+		float x = ArmorStatusHud.bundledAnchorX(this.font, config, entries);
+		float y = ArmorStatusHud.bundledAnchorY(this.font, config, entries);
 
 		int scaledWidth = Math.round(ArmorStatusHud.bundledWidth(this.font, config, entries) * layout.scale);
 		int scaledHeight = Math.round(ArmorStatusHud.bundledHeight(this.font, config, entries) * layout.scale);

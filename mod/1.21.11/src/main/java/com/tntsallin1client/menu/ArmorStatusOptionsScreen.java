@@ -163,6 +163,13 @@ public class ArmorStatusOptionsScreen extends Screen {
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.armor_status_options.layout_mode"),
 						(button, mode) -> {
 							config.armorStatusLayoutMode = mode;
+							// Back to the start position - a spot near the edge could leave the new
+							// layout's elements off-screen and impossible to grab in the HUD editor.
+							if (mode == ArmorStatusLayoutMode.BUNDLED) {
+								ArmorStatusHud.resetBundledPosition(config);
+							} else {
+								ArmorStatusHud.resetSlotPositions(config);
+							}
 							config.save();
 							this.rebuild();
 						}));
@@ -176,6 +183,7 @@ public class ArmorStatusOptionsScreen extends Screen {
 					.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.armor_status_options.direction"),
 							(button, direction) -> {
 								config.armorStatusBundledDirection = direction;
+								ArmorStatusHud.resetBundledPosition(config);
 								config.save();
 							}));
 			y += ROW_SPACING;
