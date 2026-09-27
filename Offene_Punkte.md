@@ -7,8 +7,8 @@ vielleicht längst benutzt, dann einfach abhaken.
 ## 1. Gebaut, aber noch nicht live bestätigt
 
 ### Mod
-- [ ] Ein/Aus-Schalter als erste Zeile in allen 16 Feature-Optionsmenüs (Koordinaten, Item Counter, FPS, Keystrokes, Zoom, Fadenkreuz, Wegpunkte, …)
-- [ ] Shulkerbox-Vorschau im Lunar-Stil: Rahmen, Titelleiste und Raster komplett in der Box-Farbe (drei Helligkeitsstufen)
+- [check] Ein/Aus-Schalter als erste Zeile in allen 16 Feature-Optionsmenüs (Koordinaten, Item Counter, FPS, Keystrokes, Zoom, Fadenkreuz, Wegpunkte, …)
+- [check] Shulkerbox-Vorschau im Lunar-Stil: Rahmen, Titelleiste und Raster komplett in der Box-Farbe (drei Helligkeitsstufen; Weiß, Schwarz, Orange, Gelb, Lime, Grün und Hellblau mit eigenen Farben aus der Box-Textur)
 - [ ] Wegpunkte: Liste nach Dimension in Abschnitte gegliedert (Oberwelt, Nether, Ende)
 - [ ] Wegpunkte: Marker-Würfel einzeln abschaltbar und „in der Nähe ausblenden“ (verblasst zwischen 10 und 3 Blöcken)
 - [ ] Wegpunkte: Farbe schon beim Erstellen wählbar

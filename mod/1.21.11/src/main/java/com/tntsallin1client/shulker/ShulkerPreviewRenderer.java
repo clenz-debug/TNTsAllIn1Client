@@ -93,10 +93,16 @@ import org.jspecify.annotations.Nullable;
  * neutral color, not tintable - it only ever looked "themed" because the grid
  * next to it happened to be colored. Dropped it in favor of a fully
  * hand-drawn, three-tier panel where *every* layer is a shade of the same
- * {@link #boxColor(ItemStack)}: a dark outer border, a slightly lighter header bar
+ * {@link #palette(ItemStack)}: a dark outer border, a slightly lighter header bar
  * behind the title text, and the (already-existing) mid-tone grid fill -
  * matching the reference screenshot's actual "whole GUI reskinned per
  * shulker color" look instead of "neutral GUI, colored grid".
+ *
+ * <p><b>Per-color tuning:</b> the uniform shading of {@code getTextColor()} misses
+ * for a few boxes - that color is tuned for sign text, not for the box itself
+ * (black stays pitch black so the slots vanish, yellow is olive, green/lime are neon, light blue
+ * is a gray-blue). Those boxes get a hand-picked {@link Palette} sampled from their
+ * actual shulker texture instead; white gets near-white slots in a light gray frame.
  */
 public final class ShulkerPreviewRenderer {
 	private static boolean keyHeldInScreen = false;
@@ -112,6 +118,9 @@ public final class ShulkerPreviewRenderer {
 	private static final float HEADER_SHADE = 0.35F;
 	private static final float GRID_FILL_SHADE = 0.55F;
 	private static final float GRID_LINE_SHADE = 0.4F;
+
+	private record Palette(int border, int header, int gridFill, int gridLine) {
+	}
 
 	private static @Nullable ItemStack pendingStack;
 	private static int pendingMouseX;
@@ -183,11 +192,7 @@ public final class ShulkerPreviewRenderer {
 			contents.copyInto(slots);
 		}
 
-		int color = boxColor(pendingStack);
-		int borderColor = ARGB.scaleRGB(color, BORDER_SHADE);
-		int headerColor = ARGB.scaleRGB(color, HEADER_SHADE);
-		int gridFillColor = ARGB.scaleRGB(color, GRID_FILL_SHADE);
-		int gridLineColor = ARGB.scaleRGB(color, GRID_LINE_SHADE);
+		Palette palette = palette(pendingStack);
 		int gridWidth = COLUMNS * SLOT_SIZE;
 		int gridHeight = ROWS * SLOT_SIZE;
 		Font font = Minecraft.getInstance().font;
@@ -202,23 +207,23 @@ public final class ShulkerPreviewRenderer {
 		// lighter header, mid-tone grid) rather than a neutral vanilla tooltip frame
 		// with only the grid colored - matches the reference's "whole GUI reskinned"
 		// look instead of "neutral GUI, colored grid".
-		guiGraphics.fill(x, y, x + gridWidth + 2 * BORDER_THICKNESS, y + headerHeight + gridHeight + 2 * BORDER_THICKNESS, borderColor);
-		guiGraphics.fill(contentX, contentY, contentX + gridWidth, contentY + headerHeight, headerColor);
+		guiGraphics.fill(x, y, x + gridWidth + 2 * BORDER_THICKNESS, y + headerHeight + gridHeight + 2 * BORDER_THICKNESS, palette.border());
+		guiGraphics.fill(contentX, contentY, contentX + gridWidth, contentY + headerHeight, palette.header());
 		guiGraphics.drawString(font, title, contentX + 2, contentY + HEADER_PADDING / 2, 0xFFFFFFFF);
 
 		int gridY = contentY + headerHeight;
-		guiGraphics.fill(contentX, gridY, contentX + gridWidth, gridY + gridHeight, gridFillColor);
+		guiGraphics.fill(contentX, gridY, contentX + gridWidth, gridY + gridHeight, palette.gridFill());
 
 		// Slot separator lines, a darker shade of the box's own color rather than a fixed gray -
 		// the fill above is now the box color itself (not a constant dark background), so a fixed
 		// line color would read fine against light boxes but vanish against dark ones.
 		for (int col = 0; col <= COLUMNS; col++) {
 			int lineX = contentX + col * SLOT_SIZE;
-			guiGraphics.fill(lineX, gridY, lineX + 1, gridY + gridHeight, gridLineColor);
+			guiGraphics.fill(lineX, gridY, lineX + 1, gridY + gridHeight, palette.gridLine());
 		}
 		for (int row = 0; row <= ROWS; row++) {
 			int lineY = gridY + row * SLOT_SIZE;
-			guiGraphics.fill(contentX, lineY, contentX + gridWidth, lineY + 1, gridLineColor);
+			guiGraphics.fill(contentX, lineY, contentX + gridWidth, lineY + 1, palette.gridLine());
 		}
 		for (int index = 0; index < slots.size(); index++) {
 			ItemStack slotStack = slots.get(index);
@@ -244,13 +249,31 @@ public final class ShulkerPreviewRenderer {
 		return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock;
 	}
 
-	private static int boxColor(ItemStack stack) {
+	private static Palette palette(ItemStack stack) {
 		if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock shulkerBoxBlock) {
 			DyeColor dyeColor = shulkerBoxBlock.getColor();
 			if (dyeColor != null) {
-				return dyeColor.getTextColor();
+				// Hand-picked tones sampled from the shulker textures, see the class doc.
+				return switch (dyeColor) {
+					case WHITE -> new Palette(0xFFA5AAAB, 0xFFBEC4C5, 0xFFE6EAEA, 0xFFA5AAAB);
+					case BLACK -> new Palette(0xFF0A0C10, 0xFF17171B, 0xFF38383C, 0xFF1F1F23);
+					case ORANGE -> new Palette(0xFF9E4300, 0xFFAE4A00, 0xFFEB6804, 0xFFAE4A00);
+					case YELLOW -> new Palette(0xFFCC920E, 0xFFD89B0F, 0xFFF8B91A, 0xFFCC920E);
+					case LIME -> new Palette(0xFF3B6D0E, 0xFF4D8D13, 0xFF61AD19, 0xFF40760F);
+					case GREEN -> new Palette(0xFF2C3816, 0xFF3B4A1D, 0xFF546D1C, 0xFF3F4E20);
+					case LIGHT_BLUE -> new Palette(0xFF1B6DA0, 0xFF1D76AF, 0xFF2C9DD3, 0xFF1D76AF);
+					default -> shaded(dyeColor.getTextColor());
+				};
 			}
 		}
-		return DEFAULT_COLOR;
+		return shaded(DEFAULT_COLOR);
+	}
+
+	private static Palette shaded(int color) {
+		return new Palette(
+				ARGB.scaleRGB(color, BORDER_SHADE),
+				ARGB.scaleRGB(color, HEADER_SHADE),
+				ARGB.scaleRGB(color, GRID_FILL_SHADE),
+				ARGB.scaleRGB(color, GRID_LINE_SHADE));
 	}
 }
