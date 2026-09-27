@@ -1644,8 +1644,17 @@ def entity_items_3d() -> None:
                                                  {"texture": f"minecraft:entity/signs/{wood}", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
         MODELS[f"item/{wood}_hanging_sign"] = item_model(e.model_elements(e.HANGING_SIGN, "#texture", (64, 32)),
                                                          {"texture": f"minecraft:entity/signs/hanging/{wood}", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
-    MODELS["item/bell"] = item_model(e.model_elements(e.BELL, "#texture", (32, 32), flip=False),
-                                     {"texture": "minecraft:entity/bell/bell_body", "particle": "minecraft:block/gold_block"}, BLOCK_DISPLAY)
+    # The bell as it stands on the floor, between its two stone posts under the wooden bar (own user
+    # request) - posts and bar where the placed bell's block model has them
+    stand = [box([x1, 0, 6], [x2, 16, 10], {**{side: face([0, 1, 2 if side in ("north", "south") else 4, 16], "#post")
+                                              for side in ("north", "east", "south", "west")},
+                                           "up": face([0, 0, 2, 4], "#post"), "down": face([0, 0, 2, 4], "#post", cullface="down")})
+             for x1, x2 in ((0, 2), (14, 16))]
+    stand.append(box([2, 13, 7], [14, 15, 9], {side: face([2, 3, 14, 5], "#bar") for side in ("north", "south", "up", "down")}))
+    MODELS["item/bell"] = item_model(stand + e.model_elements(e.BELL, "#texture", (32, 32), flip=False),
+                                     {"texture": "minecraft:entity/bell/bell_body", "post": "minecraft:block/stone",
+                                      "bar": "minecraft:block/dark_oak_planks", "particle": "minecraft:block/gold_block"},
+                                     {**BLOCK_DISPLAY, "gui": {**BLOCK_DISPLAY["gui"], "rotation": [20, 30, 0]}})  # the stand's front towards the slot
     MODELS["item/end_crystal"] = item_model(e.model_elements(e.END_CRYSTAL, "#texture", (64, 32), flip=False),
                                             {"texture": e.END_CRYSTAL_TEXTURE, "particle": "minecraft:block/obsidian"}, BLOCK_DISPLAY)
     MODELS["item/armor_stand"] = item_model(e.model_elements(e.ARMOR_STAND, "#texture", (64, 64)),
