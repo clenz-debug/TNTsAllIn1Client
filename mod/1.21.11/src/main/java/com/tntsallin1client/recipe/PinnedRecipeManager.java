@@ -208,13 +208,12 @@ public final class PinnedRecipeManager {
 			return null;
 		}
 
-		ClientRecipeBook recipeBook = client.player.getRecipeBook();
 		PinnedRecipe recipe = new PinnedRecipe();
 		tally.forEach((itemId, count) -> {
 			PinnedIngredient ingredient = new PinnedIngredient();
 			ingredient.itemId = itemId;
 			ingredient.count = count;
-			ingredient.subIngredients = findSubIngredients(itemId, count, recipeBook, context);
+			ingredient.subIngredients = findSubIngredients(itemId, count, client, context);
 			recipe.ingredients.add(ingredient);
 		});
 		recipe.resultItemId = idOf(resultStack.getItem());
@@ -239,8 +238,13 @@ public final class PinnedRecipeManager {
 	 * *crafts* of the sub-recipe are needed to cover {@code neededCount} (rounded up - you can only
 	 * ever craft whole batches, so needing 4 slabs still means doing one full 3-planks-for-6-slabs
 	 * craft, not a fractional one) and scales every sub-ingredient by that many crafts.
+	 *
+	 * <p>Bugfix (user report: pinned concrete powder showed no dye recipe): the recipe book only holds
+	 * the player's *unlocked* recipes, and dye recipes unlock late (only once the matching flower was
+	 * held). When it has none for this item, {@link AllRecipeDisplays} - every recipe in the game - is
+	 * searched as a fallback.
 	 */
-	private static List<PinnedIngredient> findSubIngredients(String itemId, int neededCount, ClientRecipeBook recipeBook, ContextMap context) {
+	private static List<PinnedIngredient> findSubIngredients(String itemId, int neededCount, Minecraft client, ContextMap context) {
 		Identifier id = Identifier.tryParse(itemId);
 		if (id == null) {
 			return List.of();
@@ -250,43 +254,60 @@ public final class PinnedRecipeManager {
 			return List.of();
 		}
 
-		for (RecipeCollection collection : recipeBook.getCollections()) {
-			for (RecipeDisplayEntry entry : collection.getRecipes()) {
-				List<SlotDisplay> subSlots = ingredientsOf(entry.display());
-				if (subSlots.isEmpty()) {
-					continue;
-				}
-				ItemStack result = firstStack(entry.display().result(), context);
-				if (result.isEmpty() || result.getItem() != item) {
-					continue;
-				}
-
-				int yieldPerCraft = Math.max(1, result.getCount());
-				int craftsNeeded = (neededCount + yieldPerCraft - 1) / yieldPerCraft;
-
-				Map<String, Integer> subTally = new LinkedHashMap<>();
-				for (SlotDisplay slot : subSlots) {
-					ItemStack stack = firstStack(slot, context);
-					if (stack.isEmpty()) {
-						continue;
+		ClientRecipeBook recipeBook = client.player == null ? null : client.player.getRecipeBook();
+		if (recipeBook != null) {
+			for (RecipeCollection collection : recipeBook.getCollections()) {
+				for (RecipeDisplayEntry entry : collection.getRecipes()) {
+					List<PinnedIngredient> subIngredients = subIngredientsFrom(entry.display(), item, neededCount, context);
+					if (subIngredients != null) {
+						return subIngredients;
 					}
-					subTally.merge(idOf(stack.getItem()), stack.getCount() * craftsNeeded, Integer::sum);
 				}
-				if (subTally.isEmpty()) {
-					continue;
-				}
-
-				List<PinnedIngredient> subIngredients = new ArrayList<>();
-				subTally.forEach((subItemId, subCount) -> {
-					PinnedIngredient sub = new PinnedIngredient();
-					sub.itemId = subItemId;
-					sub.count = subCount;
-					subIngredients.add(sub);
-				});
+			}
+		}
+		for (RecipeDisplay display : AllRecipeDisplays.get(client)) {
+			List<PinnedIngredient> subIngredients = subIngredientsFrom(display, item, neededCount, context);
+			if (subIngredients != null) {
 				return subIngredients;
 			}
 		}
 		return List.of();
+	}
+
+	/** The scaled ingredients of {@code display} if it's a crafting recipe producing {@code item}, else {@code null}. */
+	private static @Nullable List<PinnedIngredient> subIngredientsFrom(RecipeDisplay display, Item item, int neededCount, ContextMap context) {
+		List<SlotDisplay> subSlots = ingredientsOf(display);
+		if (subSlots.isEmpty()) {
+			return null;
+		}
+		ItemStack result = firstStack(display.result(), context);
+		if (result.isEmpty() || result.getItem() != item) {
+			return null;
+		}
+
+		int yieldPerCraft = Math.max(1, result.getCount());
+		int craftsNeeded = (neededCount + yieldPerCraft - 1) / yieldPerCraft;
+
+		Map<String, Integer> subTally = new LinkedHashMap<>();
+		for (SlotDisplay slot : subSlots) {
+			ItemStack stack = firstStack(slot, context);
+			if (stack.isEmpty()) {
+				continue;
+			}
+			subTally.merge(idOf(stack.getItem()), stack.getCount() * craftsNeeded, Integer::sum);
+		}
+		if (subTally.isEmpty()) {
+			return null;
+		}
+
+		List<PinnedIngredient> subIngredients = new ArrayList<>();
+		subTally.forEach((subItemId, subCount) -> {
+			PinnedIngredient sub = new PinnedIngredient();
+			sub.itemId = subItemId;
+			sub.count = subCount;
+			subIngredients.add(sub);
+		});
+		return subIngredients;
 	}
 
 	private static List<SlotDisplay> ingredientsOf(RecipeDisplay display) {

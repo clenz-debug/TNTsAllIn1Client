@@ -12,6 +12,8 @@ vielleicht längst benutzt, dann einfach abhaken.
 - [check] Wegpunkte: Liste nach Dimension in Abschnitte gegliedert (Oberwelt, Nether, Ende)
 - [check] Wegpunkte: Leuchtsäule, Marker-Würfel, Entfernung und „in der Nähe ausblenden“ (verblasst zwischen 10 und 3 Blöcken) pro Wegpunkt im Bearbeiten-Screen umschaltbar; die Schalter im Mod-Menü sind nur noch der Standard für neue Wegpunkte
 - [check] Wegpunkte: Beschriftung (Name + Entfernung) weiß auf dunklem Kasten mit Rand in Wegpunkt-Farbe, bleibt aus jeder Entfernung gleich groß lesbar
+- [check] Angepinnte Rezepte: Unterrezept auch für noch nicht freigeschaltete Rezepte (z. B. Farbstoff bei Trockenbeton), per Rückgriff auf alle Rezepte des Spiels
+- [check] Sort-Button sitzt auch bei mehr als 5 aktiven Effekten unter den Effekt-Kästen statt darauf
 - [check] Wegpunkte: Farbe schon beim Erstellen wählbar
 - [check] Wegpunkte pro Welt getrennt – nach dem Fix (vorher teilten sich alle Einzelspielerwelten eine Liste) nicht erneut geprüft
 - [ ] 26.1.2: Die Mod läuft (beim ersten Release getestet), ein Durchgang Feature für Feature ist aber nicht dokumentiert. Der 3D-Skin-Layers-Schalter im Mod-Menü ist dort ungeprüft; sein Optionen-Button ist absichtlich aus, bis es einen echten 26.x-Build von 3D Skin Layers gibt

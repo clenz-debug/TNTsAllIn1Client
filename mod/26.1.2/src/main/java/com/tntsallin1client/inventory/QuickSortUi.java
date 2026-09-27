@@ -56,6 +56,8 @@ public final class QuickSortUi {
 	// Matches EffectsInInventory's own "is there enough room to draw effect
 	// icons at all" check, so the two agree on whether effects show up here.
 	private static final int MIN_EFFECTS_ROOM = 32;
+	// Height of one effect box (EffectsInInventory's background sprite).
+	private static final int EFFECT_BOX_HEIGHT = 32;
 
 	private QuickSortUi() {
 	}
@@ -109,7 +111,11 @@ public final class QuickSortUi {
 
 		Collection<MobEffectInstance> activeEffects = client.player.getActiveEffects();
 		if (!activeEffects.isEmpty() && screen.width - (left + imageWidth + 2) >= MIN_EFFECTS_ROOM) {
-			buttonY = top + effectsRowHeight(activeEffects.size()) * activeEffects.size() + OUTSIDE_MARGIN;
+			// Bottom edge of the last box: rows are spaced effectsRowHeight apart, but each box is
+			// EFFECT_BOX_HEIGHT tall - with more than 5 effects the rows overlap (spacing < 32), so
+			// "rows * spacing" fell short of the last box and the button covered it.
+			int count = activeEffects.size();
+			buttonY = top + (count - 1) * effectsRowHeight(count) + EFFECT_BOX_HEIGHT + OUTSIDE_MARGIN;
 		}
 
 		sortButton.setX(left + imageWidth + OUTSIDE_MARGIN);
