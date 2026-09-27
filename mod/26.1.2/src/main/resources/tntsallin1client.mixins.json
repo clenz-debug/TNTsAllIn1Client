@@ -17,6 +17,7 @@
 		"E4mcChatMixin",
 		"EditBoxThemeMixin",
 		"EntityHitboxDebugRendererMixin",
+		"EntityRendererNameTagMixin",
 		"EntityTurnMixin",
 		"GuiMixin",
 		"HangingSignRendererMixin",

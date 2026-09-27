@@ -85,6 +85,7 @@ public final class FriendsBridge {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			tick(mc);
 			WorldInvites.tick();
+			ClientUserBadges.tick(mc);
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> WorldInvites.onServerStopped());
 		// A small "Friends" button in the pause menu's top left corner - the button rows themselves
@@ -132,6 +133,7 @@ public final class FriendsBridge {
 		inboxModified = modified;
 		if (modified < 0) {
 			active = false;
+			ClientUserBadges.setClientUsers(Map.of());
 			return;
 		}
 		try {
@@ -168,6 +170,14 @@ public final class FriendsBridge {
 			}
 		}
 		results = Map.copyOf(nextResults);
+
+		Map<String, int[]> nextClientUsers = new HashMap<>();
+		for (JsonElement element : array(json, "clientUsers")) {
+			JsonObject user = element.getAsJsonObject();
+			JsonObject colors = user.has("colors") && user.get("colors").isJsonObject() ? user.getAsJsonObject("colors") : null;
+			nextClientUsers.put(user.get("uuid").getAsString(), ClientUserBadges.parseColors(colors));
+		}
+		ClientUserBadges.setClientUsers(nextClientUsers);
 
 		for (Invite invite : invites) {
 			if (seenInvites.add(invite.key())) {

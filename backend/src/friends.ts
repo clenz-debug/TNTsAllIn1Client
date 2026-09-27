@@ -32,6 +32,16 @@ export interface Activity {
   server?: string
 }
 
+/** The launcher theme colors the nametag logo is drawn in - same names as the launcher's `ThemeColors`. */
+export const LOGO_COLOR_KEYS = ['background1', 'background2', 'accent1', 'accent2', 'accent3', 'accent4'] as const
+export type LogoColors = Record<(typeof LOGO_COLOR_KEYS)[number], string>
+
+export interface ClientUser {
+  uuid: string
+  /** `null` until that player's launcher has reported its colors once. */
+  colors: LogoColors | null
+}
+
 export interface PlayerSummary {
   uuid: string
   name: string
@@ -107,6 +117,12 @@ db.exec(`
     PRIMARY KEY (from_uuid, to_uuid)
   );
 `)
+
+// Added after the first deploy - databases created before get the column on startup.
+const playerColumns = db.prepare('PRAGMA table_info(players)').all() as unknown as Array<{ name: string }>
+if (!playerColumns.some((column) => column.name === 'logo_colors')) {
+  db.exec('ALTER TABLE players ADD COLUMN logo_colors TEXT')
+}
 
 function pair(x: string, y: string): [string, string] {
   return x < y ? [x, y] : [y, x]
@@ -307,4 +323,26 @@ export function revokeInvites(fromUuid: string, toUuid: string | null): FriendsO
 export function dismissInvite(uuid: string, fromUuid: string): FriendsOverview {
   deleteInvite.run(fromUuid, uuid)
   return overview(uuid)
+}
+
+const updateLogoColors = db.prepare('UPDATE players SET logo_colors = ? WHERE uuid = ?')
+
+/** The caller's current launcher theme, sent along with every presence ping. */
+export function setLogoColors(uuid: string, colors: LogoColors): void {
+  updateLogoColors.run(JSON.stringify(colors), uuid)
+}
+
+/**
+ * Nametag logo: which of these players use our client, i.e. were ever registered by an authenticated
+ * call from our launcher, each with their logo colors. Deliberately says nothing about presence -
+ * otherwise anyone could look up whether an "invisible" player is online right now.
+ */
+export function clientUsers(uuids: readonly string[]): ClientUser[] {
+  if (uuids.length === 0) return []
+  const placeholders = uuids.map(() => '?').join(', ')
+  const rows = db.prepare(`SELECT uuid, logo_colors FROM players WHERE uuid IN (${placeholders})`).all(...uuids) as unknown as Array<{
+    uuid: string
+    logo_colors: string | null
+  }>
+  return rows.map((row) => ({ uuid: row.uuid, colors: row.logo_colors ? (JSON.parse(row.logo_colors) as LogoColors) : null }))
 }

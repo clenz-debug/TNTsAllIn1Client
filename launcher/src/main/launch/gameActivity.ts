@@ -12,6 +12,9 @@ import type { FriendActivity } from '../../shared/types'
  *    a pending "join this server" request, results of the mod's commands (`FriendsBridge.java`)
  *  - `tntsallin1client-outbox/<id>.json` (mod → launcher): one file per command (invite a friend,
  *    withdraw invitations), read and deleted by the launcher
+ *  - `tntsallin1client-players.json` (mod → launcher): UUIDs of the players in the current tab
+ *    list, answered with which of them use our client and their logo colors (nametag logo,
+ *    `ClientUserBadges.java`)
  */
 
 let runningGameDir: string | null = null
@@ -32,12 +35,17 @@ function outboxDir(gameDir: string): string {
   return join(configDir(gameDir), 'tntsallin1client-outbox')
 }
 
+function playersFile(gameDir: string): string {
+  return join(configDir(gameDir), 'tntsallin1client-players.json')
+}
+
 /** Called right before the game starts - drops whatever a previous run left behind. */
 export async function setGameRunning(gameDir: string): Promise<void> {
   await Promise.all([
     rm(activityFile(gameDir), { force: true }),
     rm(inboxFile(gameDir), { force: true }),
-    rm(outboxDir(gameDir), { recursive: true, force: true })
+    rm(outboxDir(gameDir), { recursive: true, force: true }),
+    rm(playersFile(gameDir), { force: true })
   ])
   runningGameDir = gameDir
 }
@@ -65,6 +73,22 @@ export async function currentGameActivity(): Promise<FriendActivity | null> {
     // not written (yet)
   }
   return { kind: 'playing' }
+}
+
+const PLAYER_UUID_PATTERN = /^[0-9a-f]{32}$/
+
+/** UUIDs (32 hex digits, no dashes) of the players in the game's tab list right now - empty when
+ * no game runs, the mod hasn't written the file yet or it is unreadable. */
+export async function currentGamePlayers(): Promise<string[]> {
+  const gameDir = runningGameDir
+  if (!gameDir) return []
+  try {
+    const parsed = JSON.parse(await readFile(playersFile(gameDir), 'utf8')) as { uuids?: unknown }
+    if (!Array.isArray(parsed.uuids)) return []
+    return parsed.uuids.filter((uuid): uuid is string => typeof uuid === 'string' && PLAYER_UUID_PATTERN.test(uuid))
+  } catch {
+    return []
+  }
 }
 
 let lastInbox: string | null = null

@@ -4,8 +4,10 @@ import { CAPE_MAX_BYTES, config } from './config.js'
 import {
   ACTIVITY_KINDS,
   FriendsError,
+  LOGO_COLOR_KEYS,
   STATUSES,
   acceptRequest,
+  clientUsers,
   dismissInvite,
   goOffline,
   overview,
@@ -16,9 +18,11 @@ import {
   revokeInvites,
   sendInvite,
   sendRequest,
+  setLogoColors,
   setPresence,
   type Activity,
   type ActivityKind,
+  type LogoColors,
   type Status
 } from './friends.js'
 import { pruneTokenCache, verifyAccessToken, type VerifiedProfile } from './mojang.js'
@@ -33,7 +37,7 @@ import { RateLimiter } from './rateLimit.js'
  *   GET    /health                        - liveness check
  *   PUT    /capes                         - body: PNG; sets the caller's active cape
  *   DELETE /capes                         - removes the caller's active cape
- *   POST   /presence                      - body: { status, hideServer, activity }; returns the friends overview
+ *   POST   /presence                      - body: { status, hideServer, activity, logoColors? }; returns the friends overview
  *   POST   /presence/offline              - launcher closing
  *   GET    /friends                       - friends overview (friends with presence, incoming/outgoing requests)
  *   POST   /friends/requests              - body: { name }; send (or, if they asked first, accept) a request
@@ -44,6 +48,7 @@ import { RateLimiter } from './rateLimit.js'
  *   DELETE /invites                       - withdraw all of the caller's invitations (world closed)
  *   DELETE /invites/<uuid>                - withdraw the invitation to one friend
  *   POST   /invites/<uuid>/dismiss        - invited player declines (or used) the invitation from <uuid>
+ *   POST   /players/lookup                - body: { uuids }; which of these players use our client (nametag logo)
  * Errors are JSON `{ error: <code> }` so the launcher can map them to its own de/en messages.
  */
 
@@ -57,6 +62,9 @@ const friendsLimiter = new RateLimiter(300, 10 * 60 * 1000)
 const friendsIpLimiter = new RateLimiter(1000, 10 * 60 * 1000)
 const JSON_MAX_BYTES = 4 * 1024
 const UUID_PATTERN = /^[0-9a-f]{32}$/
+/** Players per nametag-logo lookup - 100 UUIDs still fit into {@link JSON_MAX_BYTES}. */
+const LOOKUP_MAX_UUIDS = 100
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 /** e4mc hands out host names like `abc-def.eu.e4mc.link`, optionally with a port. */
 const ADDRESS_PATTERN = /^[a-zA-Z0-9.-]{1,253}(:\d{1,5})?$/
 const VERSION_PATTERN = /^[\w.+-]{1,32}$/
@@ -169,11 +177,25 @@ function parseActivity(value: unknown): Activity | null {
   return { kind: kind as ActivityKind }
 }
 
+/** Optional - launchers before the nametag logo don't send it, and a malformed one is just ignored. */
+function parseLogoColors(value: unknown): LogoColors | null {
+  if (!value || typeof value !== 'object') return null
+  const colors = value as Record<string, unknown>
+  const valid = LOGO_COLOR_KEYS.every((key) => {
+    const color = colors[key]
+    return typeof color === 'string' && HEX_COLOR_PATTERN.test(color)
+  })
+  if (!valid) return null
+  return Object.fromEntries(LOGO_COLOR_KEYS.map((key) => [key, (colors[key] as string).toLowerCase()])) as LogoColors
+}
+
 async function handlePresence(req: IncomingMessage, res: ServerResponse, uuid: string): Promise<void> {
   const body = await readJson(req)
   const status = body['status']
   if (typeof status !== 'string' || !(STATUSES as readonly string[]).includes(status)) throw new HttpError(400, 'invalid_body')
   setPresence(uuid, status as Status, body['hideServer'] === true, parseActivity(body['activity']))
+  const logoColors = parseLogoColors(body['logoColors'])
+  if (logoColors) setLogoColors(uuid, logoColors)
   sendJson(res, 200, { ...overview(uuid) })
 }
 
@@ -218,6 +240,13 @@ async function routeFriends(req: IncomingMessage, res: ServerResponse, path: str
       if (segments.length === 2 && req.method === 'DELETE') return sendJson(res, 200, { ...revokeInvites(me, segments[1]) })
       if (segments.length === 3 && segments[2] === 'dismiss' && req.method === 'POST') return sendJson(res, 200, { ...dismissInvite(me, segments[1]) })
     }
+    if (path === '/players/lookup' && req.method === 'POST') {
+      const uuids = (await readJson(req))['uuids']
+      if (!Array.isArray(uuids) || uuids.length > LOOKUP_MAX_UUIDS || !uuids.every((uuid) => typeof uuid === 'string' && UUID_PATTERN.test(uuid))) {
+        throw new HttpError(400, 'invalid_body')
+      }
+      return sendJson(res, 200, { clientUsers: clientUsers(uuids as string[]) })
+    }
   } catch (error) {
     if (error instanceof FriendsError) throw new HttpError(error.status, error.code)
     throw error
@@ -238,7 +267,7 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
     if (req.method === 'DELETE') return handleDelete(req, res)
     throw new HttpError(405, 'method_not_allowed')
   }
-  if (['/friends', '/presence', '/invites'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+  if (['/friends', '/presence', '/invites', '/players'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
     return routeFriends(req, res, path)
   }
   throw new HttpError(404, 'not_found')

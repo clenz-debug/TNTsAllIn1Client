@@ -4,10 +4,19 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
-import type { FriendsOverview, FriendsPrefs, FriendsState, FriendsStatus } from '../../shared/types'
+import { DEFAULT_THEME_COLORS } from '../../shared/types'
+import type { FriendsOverview, FriendsPrefs, FriendsState, FriendsStatus, ThemeColors } from '../../shared/types'
 import { tryRestoreSession } from '../auth'
 import { loadCachedAuth } from '../auth/tokenCache'
-import { currentGameActivity, isGameRunning, resetGameInbox, takeOutboxCommands, writeGameInbox } from '../launch/gameActivity'
+import {
+  currentGameActivity,
+  currentGamePlayers,
+  isGameRunning,
+  resetGameInbox,
+  takeOutboxCommands,
+  writeGameInbox
+} from '../launch/gameActivity'
+import { loadLauncherSettings } from '../launcherSettings'
 import { isNetworkError } from '../offline'
 
 /**
@@ -121,10 +130,20 @@ function errorCode(err: unknown): string {
   return 'unknown'
 }
 
+/** The theme colors other players' games draw our nametag logo in - the same ones `Logo.tsx` uses. */
+type LogoColors = Pick<ThemeColors, 'background1' | 'background2' | 'accent1' | 'accent2' | 'accent3' | 'accent4'>
+
+async function currentLogoColors(): Promise<LogoColors> {
+  const { background1, background2, accent1, accent2, accent3, accent4 } =
+    (await loadLauncherSettings()).themeColors ?? DEFAULT_THEME_COLORS
+  return { background1, background2, accent1, accent2, accent3, accent4 }
+}
+
 async function ping(): Promise<void> {
   try {
     const activity = (await currentGameActivity()) ?? { kind: 'launcher' }
-    overview = await call<FriendsOverview>('POST', '/presence', { status: prefs.status, hideServer: prefs.hideServer, activity })
+    const logoColors = await currentLogoColors()
+    overview = await call<FriendsOverview>('POST', '/presence', { status: prefs.status, hideServer: prefs.hideServer, activity, logoColors })
     error = null
   } catch (err) {
     error = errorCode(err)
@@ -148,6 +167,49 @@ let invitedThisGame = false
 let pendingJoin: { id: string; address: string; expires: number } | null = null
 const results = new Map<string, string>()
 
+// Nametag logo: the mod lists the players in its tab list, we ask the backend which of them use our
+// client (and in which colors) and hand the answer back in the inbox. Due players are looked up at
+// most every LOOKUP_INTERVAL_MS, batched, so even a busy server stays far below the backend's
+// per-player rate limit. Every answer is asked again after RECHECK_MS - picks up someone who installed
+// the client meanwhile, and changed theme colors.
+const LOOKUP_INTERVAL_MS = 10_000
+const LOOKUP_MAX_UUIDS = 100
+const RECHECK_MS = 10 * 60_000
+
+interface ClientUser {
+  uuid: string
+  /** `null` when that player's launcher hasn't reported colors yet - the mod uses the default theme. */
+  colors: LogoColors | null
+}
+
+/** Per UUID: the backend's answer (`null` = not a client user) and when it was asked. */
+const clientUserCache = new Map<string, { user: ClientUser | null; checked: number }>()
+let lastLookup = 0
+
+async function clientUsersAmong(players: string[]): Promise<ClientUser[]> {
+  const now = Date.now()
+  const due = players.filter((uuid) => {
+    const entry = clientUserCache.get(uuid)
+    return !entry || now - entry.checked > RECHECK_MS
+  })
+  if (due.length > 0 && now - lastLookup >= LOOKUP_INTERVAL_MS) {
+    lastLookup = now
+    const batch = due.slice(0, LOOKUP_MAX_UUIDS)
+    try {
+      const { clientUsers } = await call<{ clientUsers: ClientUser[] }>('POST', '/players/lookup', { uuids: batch })
+      const found = new Map(clientUsers.map((user) => [user.uuid, user]))
+      for (const uuid of batch) clientUserCache.set(uuid, { user: found.get(uuid) ?? null, checked: now })
+    } catch (err) {
+      // Unreachable, or a backend without the lookup yet - no logos for now, asked again next interval.
+      console.warn('[friends] Client user lookup failed:', err instanceof FriendsApiError ? err.code : err)
+    }
+  }
+  return players.flatMap((uuid) => {
+    const user = clientUserCache.get(uuid)?.user
+    return user ? [user] : []
+  })
+}
+
 async function bridgeTick(): Promise<void> {
   if (bridgeBusy) return
   bridgeBusy = true
@@ -155,6 +217,8 @@ async function bridgeTick(): Promise<void> {
     if (!isGameRunning()) {
       pendingJoin = null
       results.clear()
+      clientUserCache.clear()
+      lastLookup = 0
       resetGameInbox()
       if (invitedThisGame) {
         invitedThisGame = false
@@ -193,7 +257,8 @@ async function bridgeTick(): Promise<void> {
         .map((friend) => ({ uuid: friend.uuid, name: friend.name, status: friend.status })),
       invites: overview?.invites ?? [],
       join: pendingJoin ? { id: pendingJoin.id, address: pendingJoin.address } : null,
-      results: Object.fromEntries(results)
+      results: Object.fromEntries(results),
+      clientUsers: await clientUsersAmong(await currentGamePlayers())
     })
   } catch (err) {
     console.warn('[friends] Game bridge failed:', err)

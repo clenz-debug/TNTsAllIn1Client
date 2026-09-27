@@ -7,7 +7,7 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 - [ ] Eigene Mod auf weitere Minecraft-Versionen portieren (vor allem Vollversionen)
 - [ ] Versionen vor 1.14 (z.B. 1.8.9 für PvP): der Launcher startet alles über Fabric, das geht erst ab 1.14 – bräuchte Start ohne Mod-Loader oder Legacy Fabric plus das alte Startformat
 - [ ] Linux und macOS
-- [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt (letzte Zeile der Ideen-Datei)
+- [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt – gebaut; offen: Backend-Update auf nxlc.de (nur mit deinem OK) und Test mit anderen Client-Nutzern
 - [x] Wegpunkte: Richtungspfeil am Bildschirmrand für Wegpunkte außerhalb des Sichtfelds – live bestätigt (beide Versionen), kommt ins nächste Update
 - [x] Wegpunkte: Scrollen im Bearbeiten-, Erstellen- und Optionen-Screen – live bestätigt, kommt ins nächste Update
 
