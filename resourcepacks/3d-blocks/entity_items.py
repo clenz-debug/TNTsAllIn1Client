@@ -108,7 +108,7 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
     """Block-model elements for one entity model part:
     {"offset": (x, y, z), "rotation": (x, y, z radians, quarter turns only), "cubes": [(uv, origin,
     size, mirror), ...]}. Optional: "scale" (the game's PartPose scale - the box shrinks, its picture
-    layout stays)."""
+    layout stays), "tilt": (axis, degrees in 22.5 steps) - the element's own rotation about the part's origin."""
     offset = part.get("offset", (0, 0, 0))
     rotation = part.get("rotation", (0, 0, 0))
     scale = part.get("scale", 1)
@@ -143,7 +143,11 @@ def part_elements(part: dict, texture: str, texture_size, flip: bool = True) -> 
             front, back = part["both_sides"]
             u1, v1, u2, v2 = faces[front]["uv"]
             faces[back] = {**faces[front], "uv": [u2, v1, u1, v2]}
-        elements.append({"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces})
+        element = {"from": [round(v + inset, 4) for v in frm], "to": [round(v - inset, 4) for v in to], "faces": faces}
+        if "tilt" in part:
+            axis, angle = part["tilt"]
+            element["rotation"] = {"origin": [round(v, 4) for v in to_block(offset, flip)], "axis": axis, "angle": angle}
+        elements.append(element)
     return elements
 
 
@@ -235,15 +239,14 @@ BELL = [
     {"offset": (8, 12, 8), "cubes": [((0, 0), (-3, -6, -3), (6, 7, 6), False)]},   # body
     {"cubes": [((0, 13), (4, 4, 4), (8, 2, 8), False)]},                           # rim
 ]
-# The end crystal, not flipped either: its base, one glass cube and the core in it. In the game two
-# glass cubes and the core tumble inside each other; standing still, the turned inner glass came out a
-# jumble of frames (own user feedback), so the item leaves it out. The game floats the crystal 20
-# pixels up; the item has it just above its base, or it came out tiny in the slot.
-CRYSTAL_HEIGHT = 11
+# The end crystal as caught mid-tumble (own user request, after Vanilla Tweaks' crystal): no base,
+# the core and two glass cubes around it, each tilted about a different axis - standing still and
+# straight, nested cubes came out a jumble of frames. Sizes via the game's PartPose scale, so every
+# cube keeps the picture layout of the game's 8 pixel cubes.
 END_CRYSTAL = [
-    {"cubes": [((0, 16), (-6, 0, -6), (12, 4, 12), False)]},                                                           # base
-    {"offset": (0, CRYSTAL_HEIGHT, 0), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},                          # glass
-    {"offset": (0, CRYSTAL_HEIGHT, 0), "scale": 0.875 * 0.765625, "cubes": [((32, 0), (-4, -4, -4), (8, 8, 8), False)]},    # core
+    {"offset": (0, 0, 0), "scale": 1.25, "tilt": ("x", 22.5), "cubes": [((32, 0), (-4, -4, -4), (8, 8, 8), False)]},   # core
+    {"offset": (0, 0, 0), "scale": 1.75, "tilt": ("z", 22.5), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},    # glass
+    {"offset": (0, 0, 0), "scale": 2.25, "tilt": ("y", 45), "cubes": [((0, 0), (-4, -4, -4), (8, 8, 8), False)]},      # outer glass
 ]
 END_CRYSTAL_TEXTURE = "minecraft:entity/end_crystal/end_crystal"
 
