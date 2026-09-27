@@ -1059,6 +1059,8 @@ Direkter Nachtrag, ausgelöst durch die Nutzerfrage "wird 1.21.11 auch noch unte
 
 ## Eigenes 3D-Block-Pack "TNT 3D Blocks" statt Vanilla Tweaks — `resourcepacks/3d-blocks/`, `mod/`, `launcher/`
 
+**Stand 2026-09-27: Bereich vom Nutzer abgeschlossen** ("dann sind wir durch, weiteres werde ich in dem Bereich nicht machen"). Alles lokal committet, nicht gepusht - geht mit dem nächsten gebündelten Update raus (siehe "Offen" am Ende dieses Abschnitts). Nicht einzeln bestätigt, aber vom Nutzer ohne Einwände durchgesehen: Glasscheiben, Rahmen, zuletzt Glocke mit Ständer und Endkristall "im Taumeln". Bewusst nicht gemacht: 3D-Gras (Leistung, später vielleicht), animierter Endkristall (ginge nur per Mod-Code), 3D-Sonne/-Mond.
+
 Auslöser: Vanilla Tweaks darf laut vanillatweaks.net/terms nicht unverändert weitergegeben werden (siehe Lizenzabschnitt in `Projekt_Roadmap.md`). Nutzerentscheidung: selbst bauen, von Vanilla Tweaks nur inspirieren lassen; 3D-Sonne/-Mond ausdrücklich nicht gewünscht. Keine Datei von Vanilla Tweaks übernommen, alle Modelle selbst geschrieben, Texturen sind Minecrafts eigene und werden nur per Namen referenziert.
 
 **Aufbau (`resourcepacks/3d-blocks/`):**
