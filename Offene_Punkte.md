@@ -9,7 +9,7 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 - [ ] Linux und macOS
 - [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt (letzte Zeile der Ideen-Datei)
 - [x] Wegpunkte: Richtungspfeil am Bildschirmrand für Wegpunkte außerhalb des Sichtfelds – live bestätigt (beide Versionen), kommt ins nächste Update
-- [ ] Wegpunkte: Scrollen im Bearbeiten-Screen (nur nötig, falls er bei kleinem Fenster abgeschnitten wird)
+- [x] Wegpunkte: Scrollen im Bearbeiten-, Erstellen- und Optionen-Screen – live bestätigt, kommt ins nächste Update
 
 ## 2. Vor einer öffentlichen Veröffentlichung
 - [ ] Launcher beendet sich beim Schließen komplett – prüfen, ob ein laufendes Spiel das überlebt

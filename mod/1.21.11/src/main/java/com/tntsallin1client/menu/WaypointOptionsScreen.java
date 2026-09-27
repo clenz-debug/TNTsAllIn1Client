@@ -13,6 +13,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,17 +23,27 @@ import org.jspecify.annotations.Nullable;
  * {@link ModKeyBindings#OPEN_WAYPOINTS}, one for the quick-create follow-up
  * {@link ModKeyBindings#CREATE_WAYPOINT}) plus the display defaults for new waypoints and a button into
  * {@link WaypointListScreen} (see {@link WaypointMenuIntegration} for both keys' gameplay hookup).
+ *
+ * <p>Scrolls like {@link WaypointEditScreen} when the window is too small (see its class doc) - here
+ * too nearly every row is an on/off {@code CycleButton}, so the wheel scrolls the page, never a toggle.
  */
 public class WaypointOptionsScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
+	private static final int TOP_MARGIN = 40;
+	private static final int BOTTOM_MARGIN = 10;
+	private static final int SCROLL_STEP = 16;
+	private static final int SCROLLBAR_GAP = 8;
 
 	private final Screen parent;
 	private @Nullable Button rebindButton;
 	private @Nullable Button createRebindButton;
 	private @Nullable KeyMapping awaitingKeyMapping;
+	private @Nullable ScrollBarHelper scrollBar;
 	private int defaultsLabelY;
+	private int scrollOffset;
+	private int maxScroll;
 
 	public WaypointOptionsScreen(Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.waypoint_options.title"));
@@ -42,8 +53,23 @@ public class WaypointOptionsScreen extends Screen {
 	@Override
 	protected void init() {
 		ClientConfig config = ClientConfig.get();
+		int viewportHeight = this.height - TOP_MARGIN - BOTTOM_MARGIN;
+		this.maxScroll = Math.max(0, computeContentHeight(this.font.lineHeight) - viewportHeight);
+		this.scrollOffset = Mth.clamp(this.scrollOffset, 0, this.maxScroll);
+
 		int x = (this.width - ROW_WIDTH) / 2;
-		int y = 40;
+		int y = TOP_MARGIN - this.scrollOffset;
+
+		if (this.scrollBar == null) {
+			this.scrollBar = new ScrollBarHelper(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight,
+					() -> this.scrollOffset, () -> this.maxScroll,
+					newOffset -> {
+						this.scrollOffset = newOffset;
+						this.rebuild();
+					});
+		} else {
+			this.scrollBar.reposition(x + ROW_WIDTH + SCROLLBAR_GAP, TOP_MARGIN, viewportHeight);
+		}
 
 		this.addRenderableWidget(CycleButton.onOffBuilder(config.waypointsEnabled)
 				.create(x, y, ROW_WIDTH, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_options.enabled"),
@@ -133,6 +159,37 @@ public class WaypointOptionsScreen extends Screen {
 				.build());
 	}
 
+	/** Unscrolled content height from {@link #TOP_MARGIN} - mirrors {@link #init}, keep the two in sync. */
+	private static int computeContentHeight(int fontLineHeight) {
+		// Enabled, both keys, confirm delete, off-screen arrows.
+		int height = 5 * ROW_SPACING;
+		height += fontLineHeight + 6;
+		// Beam, marker, distance, fade.
+		height += 4 * ROW_SPACING + 6;
+		height += ROW_SPACING;
+		height += ROW_HEIGHT;
+		return height;
+	}
+
+	/**
+	 * Full re-layout after the scroll offset changes - see the class doc. {@code clearWidgets} leaves the
+	 * removed widget focused, so keystrokes would keep going to an invisible old text field; {@link #init}
+	 * adds the same widgets in the same order every time, so focus moves to the new one at the same index.
+	 */
+	private void rebuild() {
+		int focusedIndex = this.children().indexOf(this.getFocused());
+		this.clearWidgets();
+		this.setFocused(null);
+		this.init();
+		if (focusedIndex >= 0 && focusedIndex < this.children().size()) {
+			this.setFocused(this.children().get(focusedIndex));
+		}
+	}
+
+	private boolean isInViewport(double mouseY) {
+		return mouseY >= TOP_MARGIN && mouseY < this.height - BOTTOM_MARGIN;
+	}
+
 	private void updateRebindButtonLabels() {
 		updateRebindButtonLabel(this.rebindButton, ModKeyBindings.OPEN_WAYPOINTS, "gui.tntsallin1client.waypoint_options.key");
 		updateRebindButtonLabel(this.createRebindButton, ModKeyBindings.CREATE_WAYPOINT, "gui.tntsallin1client.waypoint_options.create_key");
@@ -160,7 +217,44 @@ public class WaypointOptionsScreen extends Screen {
 			finishRebind();
 			return true;
 		}
+		if (this.scrollBar != null && this.scrollBar.mouseClicked(event)) {
+			return true;
+		}
+		// Widgets scrolled out of view are only clipped, not removed - don't let a click on the title
+		// or the bottom margin hit one of them.
+		if (!this.isInViewport(event.y())) {
+			return false;
+		}
 		return super.mouseClicked(event, doubleClick);
+	}
+
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (this.scrollBar != null && this.scrollBar.mouseDragged(dragY)) {
+			return true;
+		}
+		return super.mouseDragged(event, dragX, dragY);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		if (this.scrollBar != null && this.scrollBar.mouseReleased()) {
+			return true;
+		}
+		return super.mouseReleased(event);
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollDeltaX, double scrollDeltaY) {
+		if (this.maxScroll <= 0) {
+			return super.mouseScrolled(mouseX, mouseY, scrollDeltaX, scrollDeltaY);
+		}
+		int newOffset = Mth.clamp(this.scrollOffset - (int) Math.round(scrollDeltaY * SCROLL_STEP), 0, this.maxScroll);
+		if (newOffset != this.scrollOffset) {
+			this.scrollOffset = newOffset;
+			this.rebuild();
+		}
+		return true;
 	}
 
 	@Override
@@ -183,10 +277,16 @@ public class WaypointOptionsScreen extends Screen {
 
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		guiGraphics.enableScissor(0, TOP_MARGIN, this.width, this.height - BOTTOM_MARGIN);
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
-		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 		guiGraphics.drawCenteredString(this.font, Component.translatable("gui.tntsallin1client.waypoint_options.defaults_label"),
 				this.width / 2, this.defaultsLabelY, 0xFFAAAAAA);
+		guiGraphics.disableScissor();
+
+		if (this.scrollBar != null) {
+			this.scrollBar.render(guiGraphics);
+		}
+		MenuText.centered(guiGraphics, this.font, this.title, this.width / 2, 12, 0xFFFFFFFF);
 	}
 
 	@Override

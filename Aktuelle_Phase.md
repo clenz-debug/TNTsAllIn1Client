@@ -1110,3 +1110,15 @@ Nachtrag zum früher bewusst ausgelassenen Punkt: Für jeden sichtbaren Wegpunkt
 **Wann ein Pfeil erscheint:** Geprüft wird der Ankerpunkt des Namensschilds (1,5 Blöcke über dem Wegpunkt). Der Pfeil erscheint also genau dann, wenn das Schild aus dem Bild ist. Dafür wird mit dem echten vertikalen FOV projiziert, mit dem die Welt gerendert wird (inklusive Zoom, Sprinten und FOV-Effekten, per `javap` bis in `Matrix4f.perspective` verfolgt): in 1.21.11 über den privaten `GameRenderer#getFov`, dafür gibt es den neuen Invoker `mixin/GameRendererInvoker.java`; in 26.1.2 über das öffentliche `Camera#getFov`. Ausgeblendete Wegpunkte, andere Dimensionen und per "In der Nähe ausblenden" unsichtbare Wegpunkte bekommen keinen Pfeil.
 
 **Geprüft:** beide Mods `./gradlew build` grün, der Invoker ist im 1.21.11-Jar korrekt auf `method_3196` gemappt.
+
+## Wegpunkte: Bearbeiten-, Erstellen- und Optionen-Screen scrollbar (2026-09-27, live getestet und bestätigt - "alles hat gepasst") — `mod/`
+
+Der Bearbeiten-Screen ist rund 420 GUI-Pixel hoch (der Farbwähler allein etwa 200) und wurde damit schon bei GUI-Maßstab 3 auf einem 1080p-Bildschirm (360 Pixel Höhe) unten abgeschnitten. Er scrollt jetzt genauso wie der Fadenkreuz-Optionen-Screen: Mausrad oder Scrollbalken rechts neben den Feldern, der Inhalt wird unter dem Titel abgeschnitten. Passt alles ins Fenster, gibt es keinen Scrollbalken und nichts ändert sich (`WaypointEditScreen`, beide Versionen).
+
+**Bewusst anders als beim Fadenkreuz-Screen:** Dort bekommen Schalter unter der Maus das Mausrad zuerst. Vanillas An/Aus-Schalter (`CycleButton`) wechseln beim Scrollen aber ihren Wert (per `javap` in beiden Versionen geprüft), und die untere Hälfte dieses Screens besteht fast nur aus solchen Schaltern. Scrollen hätte also unbemerkt Einstellungen des Wegpunkts umgeschaltet. Solange es etwas zu scrollen gibt, scrollt das Mausrad hier deshalb immer die Seite. Außerdem ignoriert der Screen Klicks auf Titel und unteren Rand, damit dort keine weggescrollten (nur abgeschnittenen) Felder ausgelöst werden.
+
+**Auf Nutzerwunsch auch Erstellen-Screen (etwa 330 Pixel) und Wegpunkte-Optionen (etwa 320 Pixel)** nach demselben Muster (`WaypointCreateScreen`, `WaypointOptionsScreen`). Beim Erstellen-Screen liegt der eingetippte Name jetzt in einem eigenen Feld (`typedName`), weil Scrollen alle Felder neu anlegt. In den Optionen zählt ein Klick beim Warten auf eine neue Taste weiterhin als Maustasten-Belegung, noch vor dem Scrollbalken.
+
+**Fokus-Fehler gleich mit behoben (alle drei Screens):** `Screen#clearWidgets` leert nur die Widget-Listen und lässt das entfernte Widget fokussiert (per `javap` geprüft). Nach dem Scrollen wären Tastendrücke also an ein unsichtbares altes Textfeld gegangen. `rebuild()` setzt den Fokus jetzt auf das neue Widget an derselben Stelle. Den gleichen Fehler hat vermutlich auch der Fadenkreuz-Screen, dort ist er bisher nicht angefasst.
+
+**Geprüft:** beide Mods `./gradlew build` grün, `mouseScrolled` im 1.21.11-Jar korrekt auf `method_25401` gemappt.
