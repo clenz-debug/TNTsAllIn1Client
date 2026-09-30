@@ -51,4 +51,17 @@ public class AbstractContainerScreenMixin {
 				this.hoveredSlot != null && this.hoveredSlot.hasItem() ? this.hoveredSlot.getItem() : null,
 				mouseX, mouseY);
 	}
+
+	/**
+	 * While the preview grid is shown, the vanilla tooltip is skipped entirely - it would
+	 * otherwise sit right behind the grid, and the grid's header already shows the box's name.
+	 * Every container screen (recipe book screens and the creative inventory included) goes
+	 * through this method for the hovered-slot tooltip.
+	 */
+	@Inject(method = "extractTooltip", at = @At("HEAD"), cancellable = true)
+	private void tntsallin1client$onRenderTooltip(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, CallbackInfo ci) {
+		if (this.hoveredSlot != null && this.hoveredSlot.hasItem() && ShulkerPreviewRenderer.isPreviewable(this.hoveredSlot.getItem())) {
+			ci.cancel();
+		}
+	}
 }

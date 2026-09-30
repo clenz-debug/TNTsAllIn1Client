@@ -240,8 +240,18 @@ public final class ShulkerPreviewRenderer {
 		pendingStack = null;
 	}
 
-	private static boolean isPreviewable(ItemStack stack) {
+	/** Also used by {@link com.tntsallin1client.mixin.AbstractContainerScreenMixin} to skip the vanilla tooltip while the grid is shown. */
+	public static boolean isPreviewable(ItemStack stack) {
 		return ClientConfig.get().shulkerPreviewEnabled && keyHeldInScreen && isShulkerBox(stack);
+	}
+
+	/**
+	 * Whether the vanilla "Diamond x5 / and 3 more..." content lines should be left out of a
+	 * shulker box's tooltip - always while the feature is on, not only while the key is held,
+	 * since the grid replaces them. Used by {@link com.tntsallin1client.mixin.ItemStackMixin}.
+	 */
+	public static boolean hidesVanillaContents(ItemStack stack) {
+		return ClientConfig.get().shulkerPreviewEnabled && isShulkerBox(stack);
 	}
 
 	/** Deliberately doesn't require a present CONTAINER component - an empty/never-filled shulker box is still a valid (empty) box to preview. */

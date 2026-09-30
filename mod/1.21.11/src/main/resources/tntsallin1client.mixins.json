@@ -26,6 +26,7 @@
 		"ItemEntityRenderStateMixin",
 		"ItemEntityRendererMixin",
 		"ItemInHandRendererMixin",
+		"ItemStackMixin",
 		"LevelRendererMixin",
 		"LocalPlayerMixin",
 		"MouseHandlerMixin",
