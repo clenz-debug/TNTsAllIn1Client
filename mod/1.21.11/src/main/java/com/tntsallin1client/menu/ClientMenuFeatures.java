@@ -122,6 +122,13 @@ public final class ClientMenuFeatures {
 					config.save();
 				});
 
+		sink.addToggleRow(config.noFogEnabled, Component.translatable("gui.tntsallin1client.menu.no_fog"),
+				value -> {
+					config.noFogEnabled = value;
+					config.save();
+				},
+				() -> new NoFogOptionsScreen(parent));
+
 		// Sodium's own Video-Einstellungen screen replaces vanilla's entirely and doesn't carry this
 		// option over (checked directly against the bundled Sodium jar - no "View Bobbing"/"bobView"
 		// string anywhere in it), so with Sodium active there's no menu left to reach it from at all.

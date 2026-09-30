@@ -20,7 +20,7 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 
 - [x] Freecam: Items droppen und in die Offhand nehmen gesperrt (Q/F in der Welt, Q/F/Rausklicken/Offhand-Slot/Schild-Shiftklick im Inventar, Wegwerfen im Kreativ-Inventar) – live bestätigt (beide Versionen), kommt ins nächste Update
 
-- [ ] fog wegmachbar über ein mod feature
+- [x] Neues Feature „Kein Nebel“ mit Optionen (Sichtweite/Wetter, Wasser, Lava, Pulverschnee; Blindheit/Dunkelheit bleiben) – live bestätigt (beide Versionen), kommt ins nächste Update
 
 ## 3. Doku aufräumen
 Veraltete Vermerke, die woanders schon als erledigt stehen:

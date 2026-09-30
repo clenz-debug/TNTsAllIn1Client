@@ -19,6 +19,8 @@
 		"EntityHitboxDebugRendererMixin",
 		"EntityRendererNameTagMixin",
 		"EntityTurnMixin",
+		"FogEnvironmentMixin",
+		"FogRendererMixin",
 		"GameRendererInvoker",
 		"GuiMixin",
 		"HangingSignRendererMixin",

@@ -44,6 +44,7 @@ public final class FeatureIcons {
 		ICONS.put(MENU + "freecam", FeatureIcons::figureWithCamera);
 		ICONS.put(MENU + "crosshair", FeatureIcons::crosshair);
 		ICONS.put(MENU + "fullbright", FeatureIcons::lightBulb);
+		ICONS.put(MENU + "no_fog", FeatureIcons::fogCrossedOut);
 		ICONS.put(MENU + "spawn_overlay", FeatureIcons::lightLevelGrid);
 		ICONS.put(MENU + "hitbox_color", FeatureIcons::hitbox);
 		ICONS.put(MENU + "block_outline_color", FeatureIcons::blockOutline);
@@ -322,6 +323,21 @@ public final class FeatureIcons {
 		s.stroke(rect(38, 74, 62, 90), w, t.text);
 		s.line(38, 82, 62, 82, 4 * s.unit, t.text);
 		s.fill(rect(45, 90, 55, 96), t.text);
+	}
+
+	/** No fog (own design): three wavy fog bands, struck through diagonally. */
+	private static void fogCrossedOut(Shapes s, ClientTheme t) {
+		float w = 6 * s.unit;
+		for (float centerY : new float[] {28, 50, 72}) {
+			float[] wave = new float[25 * 2];
+			for (int i = 0; i <= 24; i++) {
+				float x = 10 + i * (80 / 24.0f);
+				wave[i * 2] = x;
+				wave[i * 2 + 1] = centerY + 6 * (float) Math.sin(Math.toRadians(i * 30));
+			}
+			s.polyline(wave, w, t.text);
+		}
+		s.line(14, 90, 86, 10, 8 * s.unit, t.accent4);
 	}
 
 	/**

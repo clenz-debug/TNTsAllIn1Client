@@ -132,6 +132,15 @@ public class ClientConfig {
 	// 5j: fullbright (forced gamma override).
 	public boolean fullbrightEnabled = false;
 
+	// No fog: removes the chosen fog types (see FogEnvironmentMixin/FogRendererMixin). Render
+	// distance fog (incl. weather, Nether/End and boss fog) is the one people usually mean, so
+	// it's the only one on by default. Blindness/Darkness fog is never touched.
+	public boolean noFogEnabled = false;
+	public boolean noFogDistance = true;
+	public boolean noFogWater = false;
+	public boolean noFogLava = false;
+	public boolean noFogPowderSnow = false;
+
 	// 5j redesigned: was a plain "Light: N" text HUD line; replaced by a
 	// key-triggered in-world overlay marking nearby mob-spawnable positions
 	// with colored X marks (see SpawnOverlayRenderer). Hold-vs-toggle is a
