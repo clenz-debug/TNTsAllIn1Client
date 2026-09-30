@@ -11,8 +11,9 @@ import {
   type ModBundleVersionEntry
 } from '../../shared/types'
 import { downloadAndVerifySha1 } from '../downloadVerify'
+import { modrinthHeaders } from '../userAgent'
 import { loadLauncherSettings, saveLauncherSettings } from '../launcherSettings'
-import { fetchManifest } from './bundleCompat'
+import { fetchManifest, hasLocalBundleContent, isVersionBundleCompatible } from './bundleCompat'
 import { bakedOwnModDir, downloadedBundlesRoot, hasDownloadedBundle, seedManifestPath, usesDownloadedBundles } from './resourcePaths'
 
 interface ModrinthVersionFile {
@@ -27,7 +28,7 @@ interface ModrinthVersionResponse {
 }
 
 async function resolveModrinthFile(versionId: string, signal?: AbortSignal): Promise<ModrinthVersionFile> {
-  const response = await fetch(`https://api.modrinth.com/v2/version/${versionId}`, { signal })
+  const response = await fetch(`https://api.modrinth.com/v2/version/${versionId}`, { signal, headers: modrinthHeaders() })
   if (!response.ok) {
     throw localizedError('mods.modrinthVersionLoadFailed', { versionId, status: response.status })
   }
@@ -249,7 +250,45 @@ async function downloadCompleteBundle(
  * (see `ipc/handlers.ts`'s `LaunchPlay` handler). An installed launcher's first update of a version
  * goes through {@link downloadCompleteBundle} instead.
  */
-export async function applyModBundleUpdate(versionId: string, signal?: AbortSignal): Promise<LauncherSettings> {
+export function applyModBundleUpdate(versionId: string, signal?: AbortSignal): Promise<LauncherSettings> {
+  return exclusivePerVersion(versionId, () => applyModBundleUpdateUnlocked(versionId, signal))
+}
+
+/**
+ * Downloads a version's bundle if none is on disk yet - the installer ships no third-party mods
+ * (JellySquid's OK for Sodium covers the launcher downloading it from Modrinth, not the installer
+ * redistributing it; 3D Skin Layers' license grants no redistribution at all - see
+ * Projekt_Roadmap.md's license section). So the first "Play", the Mods screen and a client import
+ * all call this before relying on `mods-bundle/<versionId>/`. `onDownloadStart` fires only when a
+ * download actually happens. Resolves to whether one did. A version without a bundle is a no-op.
+ */
+export function ensureLocalBundle(versionId: string, signal?: AbortSignal, onDownloadStart?: () => void): Promise<boolean> {
+  return exclusivePerVersion(versionId, async () => {
+    if (!(await isVersionBundleCompatible(versionId)) || (await hasLocalBundleContent(versionId))) {
+      return false
+    }
+    onDownloadStart?.()
+    await applyModBundleUpdateUnlocked(versionId, signal)
+    return true
+  })
+}
+
+/** Bundle work per version, one task after the other: the Mods screen, a launch and the update
+ * banner can all start a download at once, and two of them in the same staging folder would wreck
+ * each other's files. A queued task re-checks the state itself, so it finds the finished download. */
+const bundleQueues = new Map<string, Promise<unknown>>()
+
+async function exclusivePerVersion<T>(versionId: string, task: () => Promise<T>): Promise<T> {
+  const run = (bundleQueues.get(versionId) ?? Promise.resolve()).catch(() => undefined).then(task)
+  bundleQueues.set(versionId, run)
+  try {
+    return await run
+  } finally {
+    if (bundleQueues.get(versionId) === run) bundleQueues.delete(versionId)
+  }
+}
+
+async function applyModBundleUpdateUnlocked(versionId: string, signal?: AbortSignal): Promise<LauncherSettings> {
   const manifest = await fetchManifest()
   let settings = await loadLauncherSettings()
   const entry = manifest.versions[versionId]

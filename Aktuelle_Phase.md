@@ -1148,3 +1148,24 @@ Punkt aus "Vor einer öffentlichen Veröffentlichung". **Live geprüft (Nutzer, 
 **Bewusst nicht abgefangen:** "Update installieren" (`quitAndInstall`) beendet ein laufendes Spiel weiterhin mit, das klickt man aber ausdrücklich selbst.
 
 **Geprüft:** `npm run typecheck` und `npm run build` grün.
+
+## Shulkerbox-Vorschau: Vanilla-Tooltip aus (2026-09-30, live bestätigt in 1.21.11 und 26.1.2 - "ist super und klappt") — `mod/`
+
+Solange das Feature an ist, fehlen die Vanilla-Inhaltszeilen ("Diamant x5 … und 3 weitere …") im Tooltip einer Shulkerbox (`ItemStackMixin`, bricht `ItemStack#addToTooltip` für `DataComponents.CONTAINER` ab, nur bei Shulkerboxen). Solange die Vorschau-Taste gehalten wird, zeichnet `AbstractContainerScreenMixin` den Vanilla-Tooltip gar nicht (`renderTooltip` bzw. in 26.1.2 `extractTooltip`), das Panel zeigt den Namen ja schon.
+
+## Freecam: kein Droppen und keine Offhand (2026-09-30, live bestätigt in 1.21.11 und 26.1.2 - "passt und funktioniert") — `mod/`
+
+In der Welt: Q über `LocalPlayer#drop` (gibt false zurück, kein Armschwung), F über `MinecraftMixin` (`@WrapWithCondition` auf das einzige `send` in `Minecraft#handleKeybinds`, das `SWAP_ITEM_WITH_OFFHAND`-Paket). Im Inventar (`MultiPlayerGameModeMixin`, vor der Client-Vorhersage): THROW-Klicks, Rausklicken mit Item am Cursor, SWAP auf die Offhand, jeder Klick auf den Offhand-Slot und Shift-Klick auf Offhand-Items wie Schilde im Spielerinventar; dazu Wegwerfen im Kreativ-Inventar. Bewusst offen: im Kreativ-Inventar ein Item direkt auf den Offhand-Slot legen.
+
+## Neues Feature "Kein Nebel" (2026-09-30, live bestätigt in 1.21.11 und 26.1.2 - "passt") — `mod/`
+
+Schalter im Client-Mods-Menü (Rendering, nach Fullbright) mit Options-Screen: Sichtweiten-Nebel (Standard an, inkl. Wetter-, Nether-/End- und Boss-Nebel), Unterwasser, Lava, Pulverschnee (Standard aus). Blindheit/Dunkelheit bleiben immer. `FogEnvironmentMixin` setzt am Ende der jeweiligen `FogEnvironment#setupFog` die Umgebungsnebel-Distanzen auf `Float.MAX_VALUE` (wie Vanillas eigener "Nebel aus"-Puffer), `FogRendererMixin` den Sichtweiten-Nebel direkt nach dem Schreiben von `renderDistanceEnd`. Sodium liest dieselben `FogData`-Werte erst danach aus und folgt ohne eigenen Mixin. Eigenes Kartensymbol in `FeatureIcons`.
+
+## Lizenzen: eigene GPL, Lizenztexte, fremde Mods nur noch über Modrinth (2026-09-30/10-01, gebaut, noch nicht getestet) — `launcher/`, `mod/`, `backend/`
+
+- **Eigene Lizenz GPL-3.0-only** (Nutzerentscheidung): `LICENSE` im Repo-Root, `license` in beiden `fabric.mod.json` (vorher `ARR`) und in `launcher/`/`backend/package.json`.
+- **Lizenztexte** in `launcher/third-party-licenses/` (Übersicht `README.txt`, ein Text pro Mod/Pack/Schrift, `sodium-third-party.txt` für den Code, den Sodium selbst von anderen enthält, `npm-packages.txt` per `scripts/collect_npm_licenses.py`); der Installer legt sie und die eigene Lizenz als `LICENSE.txt` bei.
+- **Fremde Mods und Resourcepacks nicht mehr im Installer.** Grund: JellySquid (Sodium-Rechteinhaber) hat auf Nachfrage des Nutzers geantwortet, dass es in Ordnung ist, wenn der Launcher Sodium von Modrinth lädt und Modrinths Bedingungen einhält; 3D Skin Layers erlaubt gar keine Weitergabe. Neu `modBundleUpdater.ts#ensureLocalBundle`: lädt das Bundle einer Version über das Manifest, wenn noch keines auf der Platte liegt - beim ersten "Play", beim Öffnen des Mods-Screens, vor einer Modrinth-Installation und beim Client-Import. Alle Bundle-Arbeiten einer Version laufen nacheinander (`exclusivePerVersion`), damit nie zwei Downloads in denselben Staging-Ordner schreiben. `electron-builder.yml` packt nur noch unsere eigene Mod.
+- **Modrinth-Bedingungen:** alle Anfragen an Modrinth (API, CDN, Icons) schicken jetzt einen eindeutigen User-Agent (`main/userAgent.ts`).
+- **Hinweis für Spieler** im Mods-Screen (de/en): die gebündelten Mods kommen von Modrinth, der erste Start braucht Internet, Probleme bitte bei uns melden statt bei den Mod-Entwicklern. Während des ersten Downloads steht dort "Gebündelte Mods werden von Modrinth geladen…", im Start-Log eine eigene Meldung.
+- **Geprüft:** `npm run typecheck`/`npm run build` grün, beide Mods `gradlew build` grün, Modrinth antwortet mit dem User-Agent normal (HTTP 200). Einen Installer-Build und eine Frischinstallation hat noch niemand getestet.

@@ -6,6 +6,7 @@ import { localizedError } from '../../shared/errorMessages'
 import type { ClientImportResult, ExternalClientFolder } from '../../shared/types'
 import { instanceDir } from './installer'
 import { bundledModsDir } from './resourcePaths'
+import { ensureLocalBundle } from './modBundleUpdater'
 import { listBundledMods, readFabricModId } from './modsManager'
 import { importWorldsFromSavesFolder } from './worldImport'
 import { sharedOptionsPath } from './sharedSettings'
@@ -139,6 +140,9 @@ const OWN_MOD_ID = 'tntsallin1client'
  * since another client usually ships a different version of e.g. Fabric API under another
  * filename, and two copies of one mod id make Fabric Loader refuse to start. */
 async function bundledModIds(versionId: string): Promise<Set<string>> {
+  // The installer ships no third-party mods - without the downloaded bundle, a Fabric API copied
+  // over from the other client would clash with ours on the first launch.
+  await ensureLocalBundle(versionId).catch(() => undefined)
   const dir = bundledModsDir(versionId)
   const ids = await Promise.all((await listBundledMods(versionId)).map((name) => readFabricModId(join(dir, name))))
   return new Set(ids.filter((id): id is string => id !== null))

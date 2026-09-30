@@ -64,6 +64,9 @@ export function ModsScreen({
   ]
 
   const [bundledMods, setBundledMods] = useState<string[]>([])
+  // On a fresh install the first listing downloads the bundle from Modrinth (ensureLocalBundle) -
+  // "nothing to toggle" would be misleading until it's back.
+  const [bundledLoading, setBundledLoading] = useState(true)
   const [customMods, setCustomMods] = useState<CustomModEntry[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -99,7 +102,12 @@ export function ModsScreen({
   const [bundledProjectIds, setBundledProjectIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    window.api.listBundledMods(versionId).then(setBundledMods).catch((err) => setError(formatError(err, t)))
+    setBundledLoading(true)
+    window.api
+      .listBundledMods(versionId)
+      .then(setBundledMods)
+      .catch((err) => setError(formatError(err, t)))
+      .finally(() => setBundledLoading(false))
     window.api
       .listBundledModProjectIds(versionId)
       .then((ids) => setBundledProjectIds(new Set(ids)))
@@ -213,6 +221,7 @@ export function ModsScreen({
       <section className="mods-section" data-tour="mods-bundled">
         <h3>{t.mods.bundledHeading}</h3>
         <p className="version-warning">{t.mods.bundledInfo}</p>
+        <p className="version-warning">{t.mods.bundledSource}</p>
         {!isBundleCompatibleVersion(versionId, bundleCompatibleVersions) && (
           <p className="version-warning">{t.mods.bundleIncompatible(versionId)}</p>
         )}
@@ -230,7 +239,9 @@ export function ModsScreen({
               </label>
             </li>
           ))}
-          {bundledMods.length === 0 && <li className="mods-empty">{t.mods.noToggleable}</li>}
+          {bundledMods.length === 0 && (
+            <li className="mods-empty">{bundledLoading ? t.mods.bundledLoading : t.mods.noToggleable}</li>
+          )}
         </ul>
       </section>
 

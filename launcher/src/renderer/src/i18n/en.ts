@@ -256,6 +256,9 @@ export const en: typeof de = {
     bundledInfo:
       'Off by default - enable individually here. Fabric API and Sodium/Lithium (performance, for good framerates even on weaker hardware) as well as Continuity/3D Skin Layers (have their own in-game on/off in the mod menu) always run and therefore don\'t show up as their own toggles.',
     bundleIncompatible: (versionId: string) => `Has no effect right now - ${versionId} has no mod bundle, so it launches without bundled mods anyway.`,
+    bundledSource:
+      'The launcher downloads the bundled mods straight from Modrinth - the first launch of a version needs an internet connection for that. Please report problems with these mods (e.g. Sodium) to us, not to their developers: they don\'t give support for clients like this one.',
+    bundledLoading: 'Downloading the bundled mods from Modrinth…',
     noToggleable: 'Nothing to toggle right now - every currently bundled mod always runs (see the note above).',
     searchHeading: 'Browse & discover mods',
     searchUnavailable: 'Modrinth search is only available for mod-bundle-compatible versions.',

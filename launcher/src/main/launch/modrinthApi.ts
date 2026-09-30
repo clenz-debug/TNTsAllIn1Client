@@ -5,6 +5,7 @@ import { localizedError } from '../../shared/errorMessages'
 import { MODRINTH_SEARCH_PAGE_SIZE, type CustomModEntry, type ModrinthSearchPage, type ModrinthSortIndex } from '../../shared/types'
 import { fetchTextureDataUri } from '../auth/skinApi'
 import { downloadAndVerifySha1 } from '../downloadVerify'
+import { modrinthHeaders } from '../userAgent'
 import { instanceDir } from './installer'
 import { listCustomMods } from './modsManager'
 import { bundledModsDir } from './resourcePaths'
@@ -62,7 +63,7 @@ export async function searchModrinthMods(
   const url =
     `${MODRINTH_API_BASE}/search?query=${encodeURIComponent(query)}&facets=${encodeURIComponent(facets)}` +
     `&index=${encodeURIComponent(sortIndex)}&offset=${offset}&limit=${MODRINTH_SEARCH_PAGE_SIZE}`
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: modrinthHeaders() })
   if (!response.ok) {
     throw localizedError('mods.searchFailed', { status: response.status })
   }
@@ -78,7 +79,7 @@ export async function searchModrinthMods(
       title: hit.title,
       description: hit.description,
       downloads: hit.downloads,
-      iconDataUri: hit.icon_url ? await fetchTextureDataUri(hit.icon_url).catch(() => null) : null
+      iconDataUri: hit.icon_url ? await fetchTextureDataUri(hit.icon_url, modrinthHeaders()).catch(() => null) : null
     }))
   )
   return { results, totalHits }
@@ -92,7 +93,7 @@ async function resolveNewestCompatibleVersion(projectId: string, gameVersion: st
   const versionsUrl = `${MODRINTH_API_BASE}/project/${projectId}/version?loaders=${encodeURIComponent(
     JSON.stringify(['fabric'])
   )}&game_versions=${encodeURIComponent(JSON.stringify([gameVersion]))}`
-  const versionsResponse = await fetch(versionsUrl)
+  const versionsResponse = await fetch(versionsUrl, { headers: modrinthHeaders() })
   if (!versionsResponse.ok) {
     throw localizedError('mods.versionsLoadFailed', { status: versionsResponse.status })
   }
@@ -105,7 +106,7 @@ async function resolveNewestCompatibleVersion(projectId: string, gameVersion: st
  * error). */
 async function projectTitle(projectId: string): Promise<string> {
   try {
-    const response = await fetch(`${MODRINTH_API_BASE}/project/${projectId}`)
+    const response = await fetch(`${MODRINTH_API_BASE}/project/${projectId}`, { headers: modrinthHeaders() })
     if (!response.ok) return projectId
     const project = (await response.json()) as { title?: string }
     return project.title ?? projectId
@@ -143,7 +144,7 @@ async function resolveProjectVersionsInDir(dir: string): Promise<Map<string, Mod
 
   const response = await fetch(`${MODRINTH_API_BASE}/version_files`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...modrinthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ hashes, algorithm: 'sha1' })
   })
   if (!response.ok) {

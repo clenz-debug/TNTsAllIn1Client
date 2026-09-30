@@ -13,7 +13,7 @@ Alles Gebaute ist live bestätigt und mit 0.1.4 veröffentlicht.
 
 ## 2. Vor einer öffentlichen Veröffentlichung
 - [x] Launcher beendet sich beim Schließen komplett – das Spiel wurde hart mitbeendet; jetzt läuft der Launcher im Hintergrund weiter (Tray), live bestätigt, kommt ins nächste Update
-- [ ] Lizenzen gegenlesen: Sodium (PolyForm Shield), Default Dark Mode und 3D Skin Layers (beide nicht-kommerziell)
+- [ ] Lizenzen gegenlesen: Sodium (PolyForm Shield), Default Dark Mode und 3D Skin Layers (beide nicht-kommerziell) – Stand 2026-09-30: eigene Lizenz GPL-3.0 gesetzt, Lizenztexte liegen im Installer (`launcher/third-party-licenses/`). Sodium: JellySquid hat es erlaubt, wenn der Launcher es von Modrinth lädt → seit 2026-10-01 enthält der Installer keine fremden Mods/Packs mehr, der Launcher lädt sie von Modrinth (mit Hinweis im Mods-Screen) – gebaut, Installer-Test steht noch aus. Offen: vor Spenden die NC-Klauseln (Default Dark Mode, 3D Skin Layers) klären; ggf. eigene 3D-Skin-Layers-Umsetzung
 - [ ] Code-Signing: der Installer ist unsigniert und zeigt deshalb die SmartScreen-Warnung „Unbekannter Herausgeber“ (Zertifikat kostet Geld – Entscheidungsfrage)
 
 - [x] Shulkerbox-Anzeige: Vanilla-Inhaltsliste immer weg, solange das Feature an ist; während die Vorschau offen ist, kein Vanilla-Tooltip – live bestätigt (beide Versionen), kommt ins nächste Update

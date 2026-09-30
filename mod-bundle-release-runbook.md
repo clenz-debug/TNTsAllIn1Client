@@ -68,6 +68,10 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
    Den Jar zwischen SHA-1-Berechnung (Schritt 5), Installer-Bau und Upload **nicht neu bauen** -
    ein neuer Build ändert die Prüfsumme.
 4. **Resourcepacks:** zuerst die Lizenz prüfen (`Projekt_Roadmap.md`, "Lizenz/rechtliche Punkte").
+   Kommt eine Mod oder ein Pack neu ins Bundle (oder fällt weg), den Lizenztext in
+   `launcher/third-party-licenses/` ablegen bzw. löschen, die Übersicht in dessen `README.txt`
+   anpassen und beide Credits-Screens (Mod + Launcher) nachziehen. Nach npm-Abhängigkeitsänderungen
+   `python scripts/collect_npm_licenses.py` in `launcher/` laufen lassen.
    Liegt das Pack auf Modrinth, im Manifest **direkt dessen Modrinth-Download** eintragen statt es
    selbst hochzuladen (URL + SHA-1 per `GET https://api.modrinth.com/v2/version_file/<sha1>` aus
    der lokalen Datei ermitteln) - dann verbreiten nicht wir die Datei weiter. Nur eigene Packs
@@ -89,14 +93,13 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
    lokal gebündelten Jars am zuverlässigsten per SHA-1 nachschlagen
    (`GET https://api.modrinth.com/v2/version_file/<sha1>`). e4mc **nur zusammen mit `ownMod`**
    eintragen - ohne unsere Mod wäre bei anderen jedes "Im LAN öffnen" öffentlich.
-7. **Optional, nur falls diese Version fest in den Installer soll** (künftige Installer bündeln
-   sie direkt statt sie erst bei Bedarf nachzuladen): sie zu `SEED_BUNDLE_MINECRAFT_VERSIONS`
-   in `launcher/src/shared/types.ts` hinzufügen **und** die drei `extraResources`-Einträge in
-   `launcher/electron-builder.yml` für sie ergänzen, dabei den lokalen
-   `launcher/mods-bundle/<version>/`/`resourcepacks-bundle/<version>/`/`mod/<version>/build/libs/`-Inhalt vor
-   dem nächsten `electron-builder`-Lauf sicherstellen. Sonst entfällt dieser Schritt komplett -
-   Nutzer laden die neue Version automatisch beim ersten "Play" nach, ganz ohne neuen
-   Launcher-Installer.
+7. **Optional, nur falls unsere Mod für diese Version fest in den Installer soll:** sie zu
+   `SEED_BUNDLE_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts` hinzufügen **und** den
+   `own-mod`-Eintrag in `launcher/electron-builder.yml` für sie ergänzen. Fremde Mods und
+   Resourcepacks kommen seit 2026-09-30 **nie** in den Installer: der Launcher lädt sie beim ersten
+   "Play" (oder beim Öffnen des Mods-Screens) über das Manifest von Modrinth - Bedingung aus
+   JellySquids OK für Sodium, und 3D Skin Layers erlaubt gar keine Weitergabe (siehe
+   `Projekt_Roadmap.md`, Lizenzabschnitt). Sonst entfällt dieser Schritt komplett.
 8. Isolierter Commit (nur `mod-bundle-manifest.json`, ggf. + `types.ts`/`electron-builder.yml` bei
    Schritt 7), pushen.
 

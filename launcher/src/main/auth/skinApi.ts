@@ -21,10 +21,11 @@ class MinecraftApiError extends Error {
  * Fetches a skin/cape texture from Mojang's texture CDN and returns it as a data: URI. The
  * renderer's CSP deliberately only allows `img-src 'self' data:` (not `textures.minecraft.net`
  * directly) - same "renderer never talks to the network itself" split every other API call in
- * this app already follows (auth, version manifest, update check all live in main/).
+ * this app already follows (auth, version manifest, update check all live in main/). Also used for
+ * Modrinth's mod icons, which pass Modrinth's required User-Agent as `headers`.
  */
-export async function fetchTextureDataUri(url: string): Promise<string> {
-  const response = await fetch(url)
+export async function fetchTextureDataUri(url: string, headers?: Record<string, string>): Promise<string> {
+  const response = await fetch(url, { headers })
   if (!response.ok) {
     throw new MinecraftApiError(response.status, await response.text())
   }

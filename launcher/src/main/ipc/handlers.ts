@@ -32,7 +32,7 @@ import { installUpdateNow } from '../autoUpdate'
 import { deleteCapeFromLibrary, listCapeLibrary, readCapeLibraryPng, saveCapeToLibrary, updateCapeInLibrary } from '../cape/capeLibrary'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
 import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
-import { getBundleCompatibleVersions, hasLocalBundleContent, isVersionBundleCompatible } from '../launch/bundleCompat'
+import { getBundleCompatibleVersions, isVersionBundleCompatible } from '../launch/bundleCompat'
 import { syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { assertInstanceNotImporting, importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
@@ -64,7 +64,7 @@ import {
 } from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
-import { applyModBundleUpdate, checkForModBundleUpdate } from '../launch/modBundleUpdater'
+import { applyModBundleUpdate, checkForModBundleUpdate, ensureLocalBundle } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
 import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
 import { importWorlds } from '../launch/worldImport'
@@ -155,13 +155,17 @@ export function registerIpcHandlers(): void {
     saveLauncherSettings(settings)
   )
 
-  ipcMain.handle(IpcChannel.ModsListBundled, async (_event: IpcMainInvokeEvent, versionId: string) =>
-    listToggleableBundledMods(versionId)
-  )
+  // The installer ships no third-party mods, so on a fresh install the Mods screen is what first
+  // needs them - download the bundle then (see ensureLocalBundle). Offline, it just shows nothing yet.
+  ipcMain.handle(IpcChannel.ModsListBundled, async (_event: IpcMainInvokeEvent, versionId: string) => {
+    await ensureLocalBundle(versionId).catch(() => undefined)
+    return listToggleableBundledMods(versionId)
+  })
 
-  ipcMain.handle(IpcChannel.ModsListBundledProjectIds, async (_event: IpcMainInvokeEvent, versionId: string) =>
-    getBundledModProjectIds(versionId)
-  )
+  ipcMain.handle(IpcChannel.ModsListBundledProjectIds, async (_event: IpcMainInvokeEvent, versionId: string) => {
+    await ensureLocalBundle(versionId).catch(() => undefined)
+    return getBundledModProjectIds(versionId)
+  })
 
   ipcMain.handle(IpcChannel.ModsListCustom, async (_event: IpcMainInvokeEvent, instanceId: string) =>
     listCustomMods(instanceId)
@@ -198,8 +202,11 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IpcChannel.ModsInstallModrinthMod,
-    async (_event: IpcMainInvokeEvent, instanceId: string, projectId: string, gameVersion: string) =>
-      installModrinthMod(instanceId, projectId, gameVersion)
+    async (_event: IpcMainInvokeEvent, instanceId: string, projectId: string, gameVersion: string) => {
+      // Dependencies a bundled mod already satisfies must be known before resolving (see installModrinthMod).
+      await ensureLocalBundle(gameVersion).catch(() => undefined)
+      return installModrinthMod(instanceId, projectId, gameVersion)
+    }
   )
 
   ipcMain.handle(IpcChannel.InstancesDelete, async (_event: IpcMainInvokeEvent, instanceId: string) => {
@@ -497,14 +504,20 @@ export function registerIpcHandlers(): void {
             level: 'info',
             message: `${versionId} ist aktuell nicht Mod-Bundle-kompatibel - gebündelte Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, ...) werden übersprungen, es startet reines Fabric+Vanilla.`
           })
-        } else if (!(await hasLocalBundleContent(versionId))) {
-          // First time this version's bundle is actually needed - it was only ever added via the
-          // manifest, never baked into this installer. Same download this version's "Aktualisieren"
-          // banner would trigger later, just run automatically once up front instead of leaving a
-          // freshly-added version's very first launch with nothing to show for it.
-          sendLog({ source: 'launcher', level: 'info', message: `Lade Mod-Bundle für ${versionId} herunter…` })
+        } else {
+          // First time this version's bundle is actually needed - the installer ships no third-party
+          // mods (see ensureLocalBundle). Same download this version's "Aktualisieren" banner would
+          // trigger later, just run automatically once up front instead of leaving the very first
+          // launch with nothing to show for it. A no-op once the bundle is on disk.
           try {
-            await applyModBundleUpdate(versionId, signal)
+            await ensureLocalBundle(versionId, signal, () => {
+              sendProgress('bundles', 0, 1, 'Modrinth')
+              sendLog({
+                source: 'launcher',
+                level: 'info',
+                message: `Lade die gebündelten Mods für ${versionId} von Modrinth herunter (einmalig, braucht Internet)…`
+              })
+            })
           } catch (err) {
             // A deliberate cancel must stop the whole launch, not just this one sub-step - rethrow
             // so the outer catch below turns it into `launch.cancelled` instead of this catch

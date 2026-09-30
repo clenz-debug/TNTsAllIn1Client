@@ -26,54 +26,32 @@ files:
   - '!resourcepacks-bundle/**'
 
 # Copied into <packaged-app>/resources/ at package time - see resourcePaths.ts's bundledResourcesRoot()
-# for how the app finds these at runtime (dev mode reads the same three names directly from the
-# launcher/ folder instead). mods-bundle/resourcepacks-bundle are git-ignored, dev-populated
-# folders (see Aktuelle_Phase.md) - they must actually contain the intended third-party jars/packs
-# on the machine running this build, nothing here downloads them. own-mod grabs whatever
-# `gradlew build` in the seed version's ../mod/<version>/ project most recently produced, excluding
-# Loom's sources/dev jar variants - run that build fresh right before packaging so the newest mod
-# code ships, not a stale one.
+# for how the app finds these at runtime. mods-bundle/resourcepacks-bundle are git-ignored folders
+# only dev mode reads (see Aktuelle_Phase.md). own-mod grabs whatever `gradlew build` in the seed
+# version's ../mod/<version>/ project most recently produced, excluding Loom's sources/dev jar
+# variants - run that build fresh right before packaging so the newest mod code ships, not a stale
+# one.
 #
-# Multi-version support: the versions baked in directly are listed here by hand and must match
+# Multi-version support: the versions with a baked own mod are listed here by hand and must match
 # `SEED_BUNDLE_MINECRAFT_VERSIONS` in shared/types.ts (this YAML can't import a TS constant - see
-# mod-bundle-release-runbook.md). Any other bundle-compatible version is downloaded on demand on
-# first "Play" instead of being baked into every installer - keeps installer size from growing with
-# every historical Minecraft version ever supported. seed-manifest.json records which manifest
-# state the baked bundles correspond to, so a fresh install doesn't call them all outdated
-# (modBundleUpdater.ts#appliedState). Downloads never go in here: resources/ sits inside the
-# install folder (maybe under "Program Files") and is replaced by every update - they go to
-# userData/bundles/ instead (resourcePaths.ts).
+# mod-bundle-release-runbook.md). seed-manifest.json records which manifest state the installer
+# corresponds to (modBundleUpdater.ts#appliedState). Downloads never go in here: resources/ sits
+# inside the install folder (maybe under "Program Files") and is replaced by every update - they go
+# to userData/bundles/ instead (resourcePaths.ts).
 #
-# Vanilla Tweaks is left out of what we distribute: its terms (vanillatweaks.net/terms) forbid
-# passing its packs on "as they are, without proper modification and/or additions". It's replaced by
-# our own TNT 3D Blocks pack (resourcepacks/3d-blocks), which the flat inventory icons add-on now
-# builds on - so that one ships again. The exclusion only guards against a leftover local copy; see
-# Projekt_Roadmap.md's license section.
+# No third-party mods or resource packs in the installer (2026-09-30): JellySquid's OK for Sodium
+# covers the launcher downloading it from Modrinth, not us redistributing the jar, and 3D Skin
+# Layers' license grants no redistribution at all (Projekt_Roadmap.md's license section). With no
+# baked mods-bundle/, the first "Play" (or opening the Mods screen) downloads the whole bundle via
+# the manifest instead - modBundleUpdater.ts#ensureLocalBundle. Only our own mod stays baked, as the
+# fallback downloadCompleteBundle copies when the manifest names no own mod for a version.
 extraResources:
-  - from: mods-bundle/1.21.11
-    to: mods-bundle/1.21.11
-    filter:
-      - '**/*'
-  - from: resourcepacks-bundle/1.21.11
-    to: resourcepacks-bundle/1.21.11
-    filter:
-      - '**/*'
-      - '!VanillaTweaks_*'
   - from: ../mod/1.21.11/build/libs
     to: own-mod/1.21.11
     filter:
       - '*.jar'
       - '!*-sources.jar'
       - '!*-dev.jar'
-  - from: mods-bundle/26.1.2
-    to: mods-bundle/26.1.2
-    filter:
-      - '**/*'
-  - from: resourcepacks-bundle/26.1.2
-    to: resourcepacks-bundle/26.1.2
-    filter:
-      - '**/*'
-      - '!VanillaTweaks_*'
   - from: ../mod/26.1.2/build/libs
     to: own-mod/26.1.2
     filter:
@@ -82,6 +60,14 @@ extraResources:
       - '!*-dev.jar'
   - from: ../mod-bundle-manifest.json
     to: seed-manifest.json
+  # The project's own license plus the license text of every third-party mod, resource pack, font
+  # and npm package the installer ships - most of those licenses require passing their text on
+  # along with the software. Keep third-party-licenses/ in sync with the bundle folders (see its
+  # README.txt and mod-bundle-release-runbook.md).
+  - from: ../LICENSE
+    to: LICENSE.txt
+  - from: third-party-licenses
+    to: third-party-licenses
 
 win:
   target: nsis
