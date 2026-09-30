@@ -29,6 +29,7 @@
 		"ItemStackMixin",
 		"LevelRendererMixin",
 		"LocalPlayerMixin",
+		"MinecraftMixin",
 		"MouseHandlerMixin",
 		"MultiPlayerGameModeMixin",
 		"OptionInstanceAccessor",
