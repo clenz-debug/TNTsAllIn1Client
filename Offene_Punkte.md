@@ -1,13 +1,13 @@
 # Offene Punkte (ohne 3D-Modelle)
 
 Stand 2026-10-01. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
-Alles Gebaute ist live bestätigt und mit 0.1.5 veröffentlicht (Ausnahmen stehen beim jeweiligen Punkt).
+Alles Gebaute ist mit 0.1.6 veröffentlicht (Ausnahmen stehen beim jeweiligen Punkt).
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen portieren (vor allem Vollversionen)
 - [ ] Versionen vor 1.14 (z.B. 1.8.9 für PvP): der Launcher startet alles über Fabric, das geht erst ab 1.14 – bräuchte Start ohne Mod-Loader oder Legacy Fabric plus das alte Startformat
 - [ ] Linux und macOS
-- [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt – mit 0.1.5 ausgeliefert, Backend auf nxlc.de am 2026-10-01 aktualisiert, am eigenen Namensschild live gesehen. Offen: Achteck ohne Füllung (gebaut, noch nicht live gesehen, kommt ins nächste Update) und Test mit anderen Client-Nutzern
+- [ ] Logo am Nametag, damit man andere Client-Nutzer erkennt – mit 0.1.5 ausgeliefert, Backend auf nxlc.de am 2026-10-01 aktualisiert, am eigenen Namensschild live gesehen; Achteck ohne Füllung mit 0.1.6 veröffentlicht. Offen: Test mit anderen Client-Nutzern
 - [ ] Eigenes Dark-Mode-Texturepack statt Default Dark Mode (CC-BY-NC-SA) – später; nötig, bevor es eine Spendenmöglichkeit gibt (NC-Klausel), und damit Ports auf neue Versionen nicht an einem fremden Pack hängen
 
 - [ ] Desktop ion verschiebt sich nach jedem update das müsste gefixt werden
