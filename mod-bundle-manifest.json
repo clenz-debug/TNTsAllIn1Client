@@ -2,9 +2,9 @@
   "versions": {
     "1.21.11": {
       "ownMod": {
-        "version": "0.1.4",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/tntsallin1client-0.1.4-mc1.21.11.jar",
-        "sha1": "bd9bccf4cb9466f24a1da753ef96039c12114836"
+        "version": "0.1.5",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.5/tntsallin1client-0.1.5-mc1.21.11.jar",
+        "sha1": "1e3b86c957657d80f91550081ea89d965f2c8a16"
       },
       "bundledMods": [
         {
@@ -26,11 +26,6 @@
           "name": "continuity",
           "modrinthProjectId": "1IjD5062",
           "modrinthVersionId": "mX1iknM1"
-        },
-        {
-          "name": "3dskinlayers",
-          "modrinthProjectId": "zV5r3pPn",
-          "modrinthVersionId": "3kCdl1bI"
         },
         {
           "name": "cape-provider",
@@ -78,9 +73,9 @@
     },
     "26.1.2": {
       "ownMod": {
-        "version": "0.1.4",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/tntsallin1client-0.1.4-mc26.1.2.jar",
-        "sha1": "66890e2da53f949c041bda16b4ff9fe1d5254525"
+        "version": "0.1.5",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.5/tntsallin1client-0.1.5-mc26.1.2.jar",
+        "sha1": "43df63ca886346ea998c1287cd3d0ee663824519"
       },
       "bundledMods": [
         {
@@ -102,11 +97,6 @@
           "name": "continuity",
           "modrinthProjectId": "1IjD5062",
           "modrinthVersionId": "l1mM6Ov7"
-        },
-        {
-          "name": "3dskinlayers",
-          "modrinthProjectId": "zV5r3pPn",
-          "modrinthVersionId": "yGhuC8Hx"
         },
         {
           "name": "cape-provider",
