@@ -117,20 +117,22 @@ export const OWN_MOD_PREFIX = 'tntsallin1client-'
  *    ingame toggle even becomes reachable.
  *  - `e4mc-`: world invitations to friends (Phase 8b) depend on it. Our mod keeps its public tunnel
  *    switched off except while inviting (`E4mcControl.java`), so a normal "Open to LAN" stays local.
+ *  - `skinlayers3d-fabric-`: 3D Skin Layers left the bundle with 0.1.5 (our mod draws the layers
+ *    itself and steps aside while that mod is loaded), but a bundle downloaded before still holds
+ *    its jar next to our own mod 0.1.4, which declares it as a dependency - leaving the jar out
+ *    stops the game from starting (seen in the 0.1.5 test). So it stays forced for as long as it
+ *    sits in a bundle; `modBundleUpdater.ts` removes it once that bundle has the new own mod.
  *
  * Every other bundled jar (today only Cape Provider) shows up as a switch in the Mods screen -
  * off by default unless listed in `shared/bundledMods.ts`'s default-on prefixes, which Cape
  * Provider is (own user request: on by default, but still the user's choice).
- *
- * 3D Skin Layers (`skinlayers3d-fabric-`) used to be forced on here too. Our mod draws 3D skin
- * layers itself now and steps aside whenever that mod is loaded, so a jar still sitting in a
- * bundle folder from before must not be synced by force - it's an ordinary off-by-default switch.
  */
 const ALWAYS_ENABLED_PREFIXES = [
   'fabric-api-',
   'sodium-fabric-',
   'lithium-fabric-',
   'continuity-',
+  'skinlayers3d-fabric-',
   'e4mc-'
 ]
 

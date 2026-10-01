@@ -33,8 +33,8 @@ große Brüche haben, nicht nur bei einem seltenen Vollversions-Sprung wie früh
    verschwindet aus den Instanzen (Merkliste `config/tntsallin1client-bundled-resourcepacks.json`),
    selbst hinzugefügte Packs bleiben.
    Launcher nach 0.1.4 löschen außerdem eine ganz aus `bundledMods` gestrichene Mod aus dem
-   heruntergeladenen Bundle (`modBundleUpdater.ts`) - aber erst, wenn ein Update angewendet wird,
-   das Streichen allein löst keinen Update-Hinweis aus. Verlangt die veröffentlichte eigene Mod die
+   heruntergeladenen Bundle (`modBundleUpdater.ts`) - aber erst, wenn der Rest des Bundles zum
+   Manifest passt (am Ende von "Aktualisieren" oder beim nächsten Update-Check). Verlangt die veröffentlichte eigene Mod die
    gestrichene Mod noch (`depends` in `fabric.mod.json`), darf das Manifest nur zusammen mit einer
    neuen eigenen Mod live gehen.
 
