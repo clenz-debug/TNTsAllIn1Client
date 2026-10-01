@@ -2,9 +2,9 @@
   "versions": {
     "1.21.11": {
       "ownMod": {
-        "version": "0.1.5",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.5/tntsallin1client-0.1.5-mc1.21.11.jar",
-        "sha1": "1e3b86c957657d80f91550081ea89d965f2c8a16"
+        "version": "0.1.6",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.6/tntsallin1client-0.1.6-mc1.21.11.jar",
+        "sha1": "cc846f95d33701d07e2f909e28dc8b4bb2392584"
       },
       "bundledMods": [
         {
@@ -73,9 +73,9 @@
     },
     "26.1.2": {
       "ownMod": {
-        "version": "0.1.5",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.5/tntsallin1client-0.1.5-mc26.1.2.jar",
-        "sha1": "43df63ca886346ea998c1287cd3d0ee663824519"
+        "version": "0.1.6",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.6/tntsallin1client-0.1.6-mc26.1.2.jar",
+        "sha1": "b32905ec5bf79dd16ff454c109c44ca14070e826"
       },
       "bundledMods": [
         {
