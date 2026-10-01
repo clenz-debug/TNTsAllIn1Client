@@ -3,8 +3,7 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.blocks3d.Blocks3d;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
-import dev.tr7zw.skinlayers.SkinLayersModBase;
-import dev.tr7zw.skinlayers.versionless.ModBase;
+import com.tntsallin1client.skinlayers.SkinLayers3d;
 import me.pepperbell.continuity.client.config.ContinuityConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -205,19 +204,14 @@ public final class ClientMenuFeatures {
 					minecraft.options.updateResourcePacks(packRepository);
 				});
 
-		boolean skinLayers3dEnabled = ModBase.config.enableHat || ModBase.config.enableJacket
-				|| ModBase.config.enableLeftSleeve || ModBase.config.enableRightSleeve
-				|| ModBase.config.enableLeftPants || ModBase.config.enableRightPants;
-		sink.addToggleRow(skinLayers3dEnabled, Component.translatable("gui.tntsallin1client.menu.skin_layers_3d"),
-				value -> {
-					ModBase.config.enableHat = value;
-					ModBase.config.enableJacket = value;
-					ModBase.config.enableLeftSleeve = value;
-					ModBase.config.enableRightSleeve = value;
-					ModBase.config.enableLeftPants = value;
-					ModBase.config.enableRightPants = value;
-					SkinLayersModBase.instance.writeConfig();
-				});
+		if (SkinLayers3d.isAvailable()) {
+			sink.addToggleRow(config.skinLayers3dEnabled, Component.translatable("gui.tntsallin1client.menu.skin_layers_3d"),
+					value -> {
+						config.skinLayers3dEnabled = value;
+						config.save();
+					},
+					() -> new SkinLayers3dOptionsScreen(parent));
+		}
 
 		sink.beginSection(Component.translatable("gui.tntsallin1client.menu.section_inventory"));
 

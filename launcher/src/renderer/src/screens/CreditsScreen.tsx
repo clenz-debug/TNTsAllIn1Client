@@ -21,7 +21,6 @@ const ENTRIES: CreditEntry[] = [
   { name: 'Sodium', license: 'PolyForm Shield License 1.0.0', url: 'https://github.com/CaffeineMC/sodium' },
   { name: 'Lithium', license: 'LGPL-3.0-only', url: 'https://github.com/CaffeineMC/lithium-fabric' },
   { name: 'Continuity', license: 'LGPL-3.0-only', url: 'https://github.com/PepperCode1/Continuity' },
-  { name: '3D Skin Layers', license: 'tr7zw Protective License', url: 'https://github.com/tr7zw/3d-Skin-Layers' },
   { name: 'Cape Provider', license: 'LGPL-2.1-or-later', url: 'https://github.com/litetex-oss/mcm-cape-provider' },
   { name: 'e4mc', license: 'MIT', url: 'https://github.com/vgskye/e4mc-minecraft-architectury' },
   {

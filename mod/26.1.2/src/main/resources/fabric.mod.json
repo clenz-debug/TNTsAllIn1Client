@@ -25,8 +25,7 @@
 		"minecraft": "~${minecraft_version}",
 		"java": ">=${java_version}",
 		"fabric-api": "*",
-		"continuity": ">=3.0.1-beta.1",
-		"skinlayers3d": ">=1.11.2"
+		"continuity": ">=3.0.1-beta.1"
 	},
 	"custom": {
 		"cape": {

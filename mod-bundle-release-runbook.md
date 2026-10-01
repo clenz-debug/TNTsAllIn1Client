@@ -32,6 +32,11 @@ große Brüche haben, nicht nur bei einem seltenen Vollversions-Sprung wie früh
    Launcher ab 0.1.4 machen dasselbe mit Resourcepacks: ein aus dem Bundle gestrichenes Pack
    verschwindet aus den Instanzen (Merkliste `config/tntsallin1client-bundled-resourcepacks.json`),
    selbst hinzugefügte Packs bleiben.
+   Launcher nach 0.1.4 löschen außerdem eine ganz aus `bundledMods` gestrichene Mod aus dem
+   heruntergeladenen Bundle (`modBundleUpdater.ts`) - aber erst, wenn ein Update angewendet wird,
+   das Streichen allein löst keinen Update-Hinweis aus. Verlangt die veröffentlichte eigene Mod die
+   gestrichene Mod noch (`depends` in `fabric.mod.json`), darf das Manifest nur zusammen mit einer
+   neuen eigenen Mod live gehen.
 
 ## B) Neue Minecraft-Version freischalten
 
@@ -42,8 +47,8 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
 1. **Neuen `mod/<version>/`-Ordner anlegen:** vom Ordner der bisher ähnlichsten Version kopieren
    (z.B. `mod/26.1.2/` als Basis für einen weiteren 26.x-Drop) statt bei null anzufangen, dann
    `gradle.properties` (`minecraft_version`, `loader_version`, `java_version`, `fabric_api_version`),
-   `build.gradle.kts` (die drei `implementation`/`compileOnly("maven.modrinth:...")`-Koordinaten für
-   Continuity/3D Skin Layers/Sodium) und bei Bedarf `settings.gradle.kts` (Loom-Plugin-ID -
+   `build.gradle.kts` (die beiden `implementation`/`compileOnly("maven.modrinth:...")`-Koordinaten für
+   Continuity/Sodium) und bei Bedarf `settings.gradle.kts` (Loom-Plugin-ID -
    `net.fabricmc.fabric-loom-remap` für noch obfuskierte Versionen bis 1.21.11,
    `net.fabricmc.fabric-loom` für 26.x+) auf die neue Version anpassen. `fabric.mod.json`s
    `"minecraft"`-Range braucht **keinen** manuellen Schritt - wird automatisch aus
@@ -98,8 +103,7 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
    `own-mod`-Eintrag in `launcher/electron-builder.yml` für sie ergänzen. Fremde Mods und
    Resourcepacks kommen seit 2026-09-30 **nie** in den Installer: der Launcher lädt sie beim ersten
    "Play" (oder beim Öffnen des Mods-Screens) über das Manifest von Modrinth - Bedingung aus
-   JellySquids OK für Sodium, und 3D Skin Layers erlaubt gar keine Weitergabe (siehe
-   `Projekt_Roadmap.md`, Lizenzabschnitt). Sonst entfällt dieser Schritt komplett.
+   JellySquids OK für Sodium (siehe `Projekt_Roadmap.md`, Lizenzabschnitt). Sonst entfällt dieser Schritt komplett.
 8. Isolierter Commit (nur `mod-bundle-manifest.json`, ggf. + `types.ts`/`electron-builder.yml` bei
    Schritt 7), pushen.
 

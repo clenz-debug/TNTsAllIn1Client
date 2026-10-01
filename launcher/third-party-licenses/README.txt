@@ -15,7 +15,6 @@ Mods (downloaded from Modrinth, installed into the game instance):
   Lithium             LGPL-3.0-only               lithium.txt           https://github.com/CaffeineMC/lithium-fabric
   Continuity          LGPL-3.0-only               continuity.txt        https://github.com/PepperCode1/Continuity
   Cape Provider       LGPL-2.1-or-later           cape-provider.txt     https://github.com/litetex-oss/mcm-cape-provider
-  3D Skin Layers      tr7zw Protective License    3d-skin-layers.txt    https://github.com/tr7zw/3d-Skin-Layers
   e4mc                MIT                         e4mc.txt              https://github.com/vgskye/e4mc-minecraft-architectury
 
 Resource packs (downloaded by the launcher, installed into the game instance):

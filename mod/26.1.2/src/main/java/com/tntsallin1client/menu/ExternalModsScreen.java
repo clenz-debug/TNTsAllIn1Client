@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * mixed into {@link ClientMenuScreen}'s own feature list) - Dawn Client's version instead
  * shows one picture per external mod, the same way vanilla's resourcepack screen shows a
  * pack's icon, except nothing here can be activated/deactivated. The mods that actually
- * have a togglable feature (Continuity's connected textures, 3D Skin Layers) keep
+ * have a togglable feature (Continuity's connected textures) keep
  * their toggle rows in {@link ClientMenuScreen} itself - this screen exists purely so a
  * mod's own settings screen, where one exists, has one obvious, uncluttered place to reach
  * instead of an "Options" button sitting next to its toggle in the main feature list.
@@ -65,14 +65,7 @@ public class ExternalModsScreen extends Screen {
 				new ModEntry("fabric-api", "Fabric API", null),
 				new ModEntry("sodium", "Sodium", () -> VideoSettingsScreen.createScreen(this)),
 				new ModEntry("lithium", "Lithium", null),
-				new ModEntry("continuity", "Continuity", null),
-				// 3D Skin Layers 1.11.2's ConfigScreenProvider is still compiled against the old
-				// obfuscated/Yarn-intermediary Minecraft (a compile *and* runtime dead end on 26.x,
-				// same underlying issue as its access-widener failing Loom's jar setup - see
-				// ../gradle.properties and Aktuelle_Phase.md) - drop its settings-screen shortcut
-				// here until upstream ships a real 26.x build, same "no shortcut" state as
-				// fabric-api/lithium/continuity above.
-				new ModEntry("skinlayers3d", "3D Skin Layers", null));
+				new ModEntry("continuity", "Continuity", null));
 
 		int listHeight = this.height - LIST_TOP - FOOTER_HEIGHT;
 		ModList list = new ModList(this.minecraft, this.width, listHeight, LIST_TOP);

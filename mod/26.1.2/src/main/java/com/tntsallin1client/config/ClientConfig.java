@@ -141,6 +141,18 @@ public class ClientConfig {
 	public boolean noFogLava = false;
 	public boolean noFogPowderSnow = false;
 
+	// Own 3D skin layers (see SkinLayers3d), which replaced the bundled 3D Skin Layers mod. On by
+	// default, unlike the other own features: that mod was always on, so an update shouldn't
+	// silently flatten everyone's skins. Depth is how far the layer stands off the body, in
+	// percent of a model pixel; distance is in blocks, beyond it players keep the flat layers.
+	public boolean skinLayers3dEnabled = true;
+	public boolean skinLayers3dHead = true;
+	public boolean skinLayers3dJacket = true;
+	public boolean skinLayers3dSleeves = true;
+	public boolean skinLayers3dPants = true;
+	public int skinLayers3dDepthPercent = 30;
+	public int skinLayers3dDistance = 16;
+
 	// 5j redesigned: was a plain "Light: N" text HUD line; replaced by a
 	// key-triggered in-world overlay marking nearby mob-spawnable positions
 	// with colored X marks (see SpawnOverlayRenderer). Hold-vs-toggle is a

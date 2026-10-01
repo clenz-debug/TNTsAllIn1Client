@@ -36,15 +36,10 @@ dependencies {
 	// see https://github.com/PepperCode1/Continuity. Beta build - matches launcher/mods-bundle/26.1.2/.
 	compileOnly("maven.modrinth:continuity:3.0.1-beta.2+26.1")
 
-	// 3D skin layers - bundled rather than reimplemented, see https://github.com/tr7zw/3d-skin-layers.
-	// Compile-time only, for the mod menu toggle/options integration; the mod itself ships as its
-	// own jar via launcher/mods-bundle, same as Continuity above.
-	compileOnly("maven.modrinth:3dskinlayers:1.11.2")
-
 	// Sodium - bundled rather than reimplemented, see https://github.com/CaffeineMC/sodium.
 	// Compile-time only, for the "External Mods" mod-menu shortcut into Sodium's own settings
 	// screen; the mod itself ships as its own jar via launcher/mods-bundle, same as Continuity
-	// and 3D Skin Layers above. Version pinned to exactly the jar in mods-bundle (mc26.1.2-0.9.2).
+	// above. Version pinned to exactly the jar in mods-bundle (mc26.1.2-0.9.2).
 	compileOnly("maven.modrinth:sodium:mc26.1.2-0.9.2-fabric")
 }
 

@@ -257,8 +257,8 @@ export function applyModBundleUpdate(versionId: string, signal?: AbortSignal): P
 /**
  * Downloads a version's bundle if none is on disk yet - the installer ships no third-party mods
  * (JellySquid's OK for Sodium covers the launcher downloading it from Modrinth, not the installer
- * redistributing it; 3D Skin Layers' license grants no redistribution at all - see
- * Projekt_Roadmap.md's license section). So the first "Play", the Mods screen and a client import
+ * redistributing it - see Projekt_Roadmap.md's license section). So the first "Play", the Mods
+ * screen and a client import
  * all call this before relying on `mods-bundle/<versionId>/`. `onDownloadStart` fires only when a
  * download actually happens. Resolves to whether one did. A version without a bundle is a no-op.
  */
@@ -311,6 +311,24 @@ async function applyModBundleUpdateUnlocked(versionId: string, signal?: AbortSig
       appliedModBundleVersions: {
         ...settings.appliedModBundleVersions,
         [versionId]: { ...versionMods, [pin.name]: applied }
+      }
+    }
+    await saveLauncherSettings(settings)
+  }
+
+  // A mod dropped from the manifest leaves the bundle too - otherwise its jar would stay behind as a
+  // switch in the Mods screen. `bundleSync.ts` then takes it out of the instances like any other jar
+  // that's no longer bundled.
+  const pinnedNames = new Set(entry.bundledMods.map((pin) => pin.name))
+  const appliedMods = settings.appliedModBundleVersions[versionId] ?? {}
+  const dropped = Object.keys(appliedMods).filter((name) => !pinnedNames.has(name))
+  if (dropped.length > 0) {
+    await Promise.all(dropped.map((name) => rm(join(dirs.mods, appliedMods[name].fileName), { force: true })))
+    settings = {
+      ...settings,
+      appliedModBundleVersions: {
+        ...settings.appliedModBundleVersions,
+        [versionId]: Object.fromEntries(Object.entries(appliedMods).filter(([name]) => pinnedNames.has(name)))
       }
     }
     await saveLauncherSettings(settings)

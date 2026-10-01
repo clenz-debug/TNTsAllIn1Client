@@ -25,9 +25,9 @@ import java.util.List;
  * than a bespoke clickable-text implementation - one click target per row,
  * no manual text hit-testing needed.
  *
- * <p>Scoped to what this project actually bundles as of Phase 5s: the five
+ * <p>Scoped to what this project actually bundles: the
  * {@code build.gradle.kts}/launcher {@code mods-bundle/} dependencies
- * (Fabric Loader, Fabric API, Sodium, Lithium, Continuity, 3D Skin Layers)
+ * (Fabric Loader, Fabric API, Sodium, Lithium, Continuity, ...)
  * plus every resourcepack currently in {@code launcher/resourcepacks-bundle/}.
  * Update this list alongside any future bundle addition/removal - there's no
  * automated way to keep it in sync, same as the Roadmap's own license
@@ -49,7 +49,6 @@ public class CreditsScreen extends Screen {
 			new CreditEntry("Sodium", "PolyForm Shield License 1.0.0", "https://github.com/CaffeineMC/sodium"),
 			new CreditEntry("Lithium", "LGPL-3.0-only", "https://github.com/CaffeineMC/lithium-fabric"),
 			new CreditEntry("Continuity", "LGPL-3.0-only", "https://github.com/PepperCode1/Continuity"),
-			new CreditEntry("3D Skin Layers", "tr7zw Protective License", "https://github.com/tr7zw/3d-Skin-Layers"),
 			new CreditEntry("Cape Provider", "LGPL-2.1-or-later", "https://github.com/litetex-oss/mcm-cape-provider"),
 			new CreditEntry("e4mc", "MIT", "https://github.com/vgskye/e4mc-minecraft-architectury"),
 			new CreditEntry("Default Dark Mode (resource pack)", "CC-BY-NC-SA-4.0", "https://github.com/nebuIr/Default-Dark-Mode"),

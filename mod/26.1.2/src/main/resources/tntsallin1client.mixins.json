@@ -12,6 +12,8 @@
 		"AbstractSelectionListThemeMixin",
 		"AbstractSignRendererMixin",
 		"AbstractSliderButtonThemeMixin",
+		"AvatarRenderStateMixin",
+		"AvatarRendererMixin",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
 		"E4mcChatMixin",

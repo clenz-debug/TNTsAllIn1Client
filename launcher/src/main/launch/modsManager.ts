@@ -110,24 +110,27 @@ export const OWN_MOD_PREFIX = 'tntsallin1client-'
  *  - `sodium-fabric-`/`lithium-fabric-`: explicit user request - pure performance, no visible
  *    behavior change, and losing "good performance even on weak hardware" by default would work
  *    against this project's whole point (see Projekt_Roadmap.md's stated goal).
- *  - `continuity-`/`skinlayers3d-fabric-`: also explicit user request, different reasoning - both
- *    already have their own dedicated on/off switch in the ingame mod menu (`ClientMenuScreen`'s
- *    "Connected Textures"/"3D Skin Layers" rows), which is the actually meaningful control surface
- *    for them. Gating them a second time behind the launcher's toggle first would just be a
- *    redundant, easy-to-forget extra step before the ingame toggle even becomes reachable.
+ *  - `continuity-`: also explicit user request, different reasoning - it already has its own
+ *    dedicated on/off switch in the ingame mod menu (`ClientMenuScreen`'s "Connected Textures"
+ *    row), which is the actually meaningful control surface for it. Gating it a second time behind
+ *    the launcher's toggle first would just be a redundant, easy-to-forget extra step before the
+ *    ingame toggle even becomes reachable.
  *  - `e4mc-`: world invitations to friends (Phase 8b) depend on it. Our mod keeps its public tunnel
  *    switched off except while inviting (`E4mcControl.java`), so a normal "Open to LAN" stays local.
  *
  * Every other bundled jar (today only Cape Provider) shows up as a switch in the Mods screen -
  * off by default unless listed in `shared/bundledMods.ts`'s default-on prefixes, which Cape
  * Provider is (own user request: on by default, but still the user's choice).
+ *
+ * 3D Skin Layers (`skinlayers3d-fabric-`) used to be forced on here too. Our mod draws 3D skin
+ * layers itself now and steps aside whenever that mod is loaded, so a jar still sitting in a
+ * bundle folder from before must not be synced by force - it's an ordinary off-by-default switch.
  */
 const ALWAYS_ENABLED_PREFIXES = [
   'fabric-api-',
   'sodium-fabric-',
   'lithium-fabric-',
   'continuity-',
-  'skinlayers3d-fabric-',
   'e4mc-'
 ]
 
