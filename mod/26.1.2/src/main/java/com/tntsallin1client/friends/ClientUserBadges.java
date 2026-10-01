@@ -38,9 +38,11 @@ import java.util.UUID;
  * (or offline) there is no inbox, and nobody gets a logo.
  *
  * <p>The logo is text in our own font ({@code assets/tntsallin1client/font/client_badge.json}, made by
- * {@code designs/branding/make_client_badge.py}): six white glyphs - octagon fill, octagon outline and
- * the four beams - each followed by a negative space so they all land on the same spot, each tinted in
- * one theme color. {@code EntityRendererNameTagMixin} puts it in front of the name, so vanilla's
+ * {@code designs/branding/make_client_badge.py}): white glyphs - octagon outline and the four beams - each
+ * followed by a negative space so they all land on the same spot, each tinted in one theme color. The
+ * font also has a glyph for the octagon's fill, but it isn't drawn (own user request after seeing it in
+ * the game: the octagon stays hollow, the nametag's own background shows through).
+ * {@code EntityRendererNameTagMixin} puts it in front of the name, so vanilla's
  * nametag rendering draws it like the name itself; a style color only replaces the RGB and keeps the
  * nametag's alpha, so it is still dimmed while sneaking and see-through behind walls.
  */
@@ -55,6 +57,8 @@ public final class ClientUserBadges {
 	private static final String[] LAYER_COLOR_KEYS = {"background1", "background2", "accent1", "accent2", "accent3", "accent4"};
 	private static final int BACK_CHAR = FIRST_LAYER_CHAR + LAYER_COLOR_KEYS.length;
 	private static final int GAP_CHAR = BACK_CHAR + 1;
+	/** Layer 0 is the octagon's fill, which is left out - drawing starts with its outline. */
+	private static final int FIRST_DRAWN_LAYER = 1;
 	/** The launcher's {@code DEFAULT_THEME_COLORS}, for players whose launcher hasn't reported colors yet. */
 	private static final int[] DEFAULT_COLORS = {0x000000, 0x1A1A1A, 0x3D3D3D, 0x4D4D4D, 0x5D5D5D, 0x6D6D6D};
 
@@ -123,7 +127,7 @@ public final class ClientUserBadges {
 		if (colors == null) return name;
 
 		MutableComponent badge = Component.empty().withStyle(style -> style.withFont(FONT));
-		for (int layer = 0; layer < colors.length; layer++) {
+		for (int layer = FIRST_DRAWN_LAYER; layer < colors.length; layer++) {
 			badge.append(Component.literal(Character.toString(FIRST_LAYER_CHAR + layer)).withColor(colors[layer]));
 			if (layer < colors.length - 1) {
 				badge.append(Character.toString(BACK_CHAR));
