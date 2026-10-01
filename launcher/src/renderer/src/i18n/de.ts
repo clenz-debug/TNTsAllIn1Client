@@ -260,7 +260,7 @@ export const de = {
     title: 'Mods',
     bundledHeading: 'Gebündelte Mods',
     bundledInfo:
-      'Standardmäßig aus - hier gezielt aktivieren. Fabric API und Sodium/Lithium (Performance, für gute Leistung auch auf schwächeren Geräten) sowie Continuity/3D Skin Layers (haben ihr eigenes An/Aus im Mod-Menü ingame) laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.',
+      'Standardmäßig aus - hier gezielt aktivieren. Fabric API und Sodium/Lithium (Performance, für gute Leistung auch auf schwächeren Geräten) sowie Continuity (hat sein eigenes An/Aus im Mod-Menü ingame) laufen immer mit und tauchen deshalb nicht als eigene Schalter auf.',
     bundleIncompatible: (versionId: string) =>
       `Wirkt sich aktuell nicht aus - ${versionId} hat kein Mod-Bundle, startet ohnehin ohne gebündelte Mods.`,
     bundledSource:
@@ -329,6 +329,11 @@ export const de = {
   friends: {
     title: 'Freunde',
     headerButton: (incoming: number) => (incoming > 0 ? `Freunde (${incoming})` : 'Freunde'),
+    enabledLabel: 'Freunde und Online-Status',
+    enabledInfo:
+      'Solange das an ist, meldet der Launcher alle 20 Sekunden deinen Status und was du gerade spielst an den Server des Clients und fragt dort ab, welche Mitspieler den Client nutzen (für das Logo an ihrem Namen). Ausgeschaltet nimmt der Launcher von sich aus keinen Kontakt zu diesem Server auf. Was genau gespeichert wird, steht in PRIVACY.md auf der GitHub-Seite des Projekts.',
+    disabledInfo:
+      'Freunde sind ausgeschaltet: kein Online-Status, keine Freundesliste, keine Einladungen und keine Client-Logos im Spiel. Deine Freunde bleiben gespeichert und sind wieder da, sobald du es einschaltest.',
     ownHeading: 'Dein Status',
     statusLabel: 'Status:',
     ownStatus: { online: 'Online', away: 'Abwesend', dnd: 'Nicht stören', invisible: 'Unsichtbar' },

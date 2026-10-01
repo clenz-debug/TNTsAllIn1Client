@@ -1,0 +1,45 @@
+﻿TNT's All-In-1 Client - Datenschutz-Hinweis / Privacy notice
+
+(English below)
+
+
+DEUTSCH
+
+Dieser Installer richtet nur den Launcher ein. Das Spiel, Fabric und die mitgelieferten Mods lädt der Launcher beim ersten Start einer Minecraft-Version von ihren Originalquellen (Mojang, FabricMC, Modrinth). Updates des Launchers kommen von GitHub.
+
+Es gibt keine Auswertung deiner Nutzung, keine Werbung und keine Absturzberichte.
+
+Freunde und Online-Status (voreingestellt: an)
+Solange du mit deinem Microsoft-Konto angemeldet bist, meldet der Launcher alle 20 Sekunden an den Server des Projekts (nxlc.de): deinen Minecraft-Namen und deine UUID, deinen Status, was du gerade spielst (bei Mehrspieler auch die Server-Adresse) und die Farben deines Launcher-Designs. Zum Nachweis, wer du bist, wird dein Minecraft-Zugangstoken mitgeschickt; der Server prüft es bei Mojang und speichert es nicht. Außerdem fragt der Launcher dort ab, welche Mitspieler den Client nutzen, und schickt dafür deren UUIDs mit.
+
+Abschalten: im Launcher unter "Freunde" den Schalter "Freunde und Online-Status" ausschalten. Dann nimmt der Launcher von sich aus keinen Kontakt zu diesem Server auf. Im Offline-Modus geschieht das ebenfalls nicht.
+
+Eigene Capes
+Ein Cape, das du im Launcher hochlädst, ist öffentlich und wird anderen Spielern mit diesem Client angezeigt.
+
+Die vollständige Übersicht, was an wen gesendet wird:
+https://github.com/clenz-debug/TNTsAllIn1Client/blob/main/PRIVACY.md
+
+Lizenz: GNU General Public License v3.0 (LICENSE.txt im Installationsordner).
+Deinstallieren: über "Apps" in den Windows-Einstellungen.
+
+
+ENGLISH
+
+This installer sets up the launcher only. The game, Fabric and the bundled mods are downloaded by the launcher from their original sources (Mojang, FabricMC, Modrinth) the first time you start a Minecraft version. Launcher updates come from GitHub.
+
+There is no usage tracking, no advertising and no crash reporting.
+
+Friends and online status (on by default)
+While you are signed in with your Microsoft account, the launcher reports to the project's server (nxlc.de) every 20 seconds: your Minecraft name and UUID, your status, what you are playing (for multiplayer including the server address) and the colors of your launcher theme. To prove who you are, your Minecraft access token is sent along; the server checks it with Mojang and does not store it. The launcher also asks that server which of the players around you use the client, and sends their UUIDs for that.
+
+To switch it off: in the launcher, open "Friends" and turn off "Friends and online status". The launcher then never contacts that server on its own. It doesn't in offline mode either.
+
+Custom capes
+A cape you upload in the launcher is public and is shown to other players using this client.
+
+The full list of what is sent to whom:
+https://github.com/clenz-debug/TNTsAllIn1Client/blob/main/PRIVACY.md
+
+License: GNU General Public License v3.0 (LICENSE.txt in the installation folder).
+To uninstall: use "Apps" in the Windows settings.

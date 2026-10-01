@@ -254,7 +254,7 @@ export const en: typeof de = {
     title: 'Mods',
     bundledHeading: 'Bundled mods',
     bundledInfo:
-      'Off by default - enable individually here. Fabric API and Sodium/Lithium (performance, for good framerates even on weaker hardware) as well as Continuity/3D Skin Layers (have their own in-game on/off in the mod menu) always run and therefore don\'t show up as their own toggles.',
+      'Off by default - enable individually here. Fabric API and Sodium/Lithium (performance, for good framerates even on weaker hardware) as well as Continuity (has its own in-game on/off in the mod menu) always run and therefore don\'t show up as their own toggles.',
     bundleIncompatible: (versionId: string) => `Has no effect right now - ${versionId} has no mod bundle, so it launches without bundled mods anyway.`,
     bundledSource:
       'The launcher downloads the bundled mods straight from Modrinth - the first launch of a version needs an internet connection for that. Please report problems with these mods (e.g. Sodium) to us, not to their developers: they don\'t give support for clients like this one.',
@@ -321,6 +321,11 @@ export const en: typeof de = {
   friends: {
     title: 'Friends',
     headerButton: (incoming: number) => (incoming > 0 ? `Friends (${incoming})` : 'Friends'),
+    enabledLabel: 'Friends and online status',
+    enabledInfo:
+      'While this is on, the launcher reports your status and what you are playing to the client\'s server every 20 seconds and asks it which of the players around you use the client (for the logo next to their name). Switched off, the launcher never contacts that server on its own. What exactly is stored is listed in PRIVACY.md on the project\'s GitHub page.',
+    disabledInfo:
+      'Friends are switched off: no online status, no friends list, no invitations and no client logos in the game. Your friends stay saved and are back as soon as you switch it on.',
     ownHeading: 'Your status',
     statusLabel: 'Status:',
     ownStatus: { online: 'Online', away: 'Away', dnd: 'Do not disturb', invisible: 'Invisible' },

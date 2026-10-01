@@ -40,9 +40,8 @@ files:
 # to userData/bundles/ instead (resourcePaths.ts).
 #
 # No third-party mods or resource packs in the installer (2026-09-30): JellySquid's OK for Sodium
-# covers the launcher downloading it from Modrinth, not us redistributing the jar, and 3D Skin
-# Layers' license grants no redistribution at all (Projekt_Roadmap.md's license section). With no
-# baked mods-bundle/, the first "Play" (or opening the Mods screen) downloads the whole bundle via
+# covers the launcher downloading it from Modrinth, not us redistributing the jar
+# (Projekt_Roadmap.md's license section). With no baked mods-bundle/, the first "Play" (or opening the Mods screen) downloads the whole bundle via
 # the manifest instead - modBundleUpdater.ts#ensureLocalBundle. Only our own mod stays baked, as the
 # fallback downloadCompleteBundle copies when the manifest names no own mod for a version.
 extraResources:
@@ -82,6 +81,11 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
+  # Shown as the installer's agreement page: what the launcher sends over the network and how to
+  # switch the friends/presence part off (German and English in one text). Required for code signing
+  # through SignPath Foundation, whose terms want that notice displayed during installation. Silent
+  # auto-updates skip the page. UTF-8 with BOM, or NSIS shows the umlauts wrong.
+  license: installer/privacy-notice.txt
 
 # electron-updater checks this repo's GitHub Releases for newer versions (see main/autoUpdate.ts).
 # `electron-builder --publish` is the only command that actually uploads anything here - a normal

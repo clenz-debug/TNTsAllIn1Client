@@ -206,7 +206,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   ])
 
   // --- Guided tour (own user request) - see tour/tourSteps.ts for the steps and their order. ---
-  const tourContext: TourContext = { online: !profile.offline, friendsReady: friendsState !== null, hasInstance: selectedInstance !== null }
+  const tourContext: TourContext = { online: !profile.offline, friendsReady: friendsState !== null && friendsState.prefs.enabled, hasInstance: selectedInstance !== null }
   const tourStep = TOUR_STEPS.find((step) => step.id === tourStepId) ?? null
   const availableTourSteps = TOUR_STEPS.filter((step) => isTourStepAvailable(step, tourContext))
 

@@ -350,6 +350,9 @@ export interface FriendsOverview {
 /** The player's own friends settings - own file (`main/friends/friendsService.ts`), not part of
  * `LauncherSettings`, which PlayScreen always writes back whole. */
 export interface FriendsPrefs {
+  /** Off: the launcher never contacts the friends server on its own - no presence, no friends list,
+   * no world invitations, no client logos next to player names. On by default. */
+  enabled: boolean
   status: FriendsStatus
   /** "Server verbergen": friends see "Mehrspieler" without the server address. */
   hideServer: boolean

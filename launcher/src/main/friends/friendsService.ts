@@ -33,13 +33,16 @@ const PING_INTERVAL_MS = 20_000
 const REQUEST_TIMEOUT_MS = 10_000
 const STATUSES: readonly FriendsStatus[] = ['online', 'away', 'dnd', 'invisible']
 
-const DEFAULT_PREFS: FriendsPrefs = { status: 'online', hideServer: false }
+const DEFAULT_PREFS: FriendsPrefs = { enabled: true, status: 'online', hideServer: false }
 
 let prefs: FriendsPrefs = DEFAULT_PREFS
 let overview: FriendsOverview | null = null
 let error: string | null = null
 let timer: NodeJS.Timeout | null = null
 let prefsLoaded = false
+/** The play screen asked for friends (online profile shown) - whether they actually run also depends
+ * on {@link FriendsPrefs.enabled}. */
+let wanted = false
 
 function prefsPath(): string {
   return join(app.getPath('userData'), 'friends-settings.json')
@@ -51,6 +54,7 @@ async function loadPrefs(): Promise<void> {
   try {
     const parsed = JSON.parse(await readFile(prefsPath(), 'utf8')) as Partial<FriendsPrefs>
     prefs = {
+      enabled: parsed.enabled !== false,
       status: STATUSES.includes(parsed.status as FriendsStatus) ? (parsed.status as FriendsStatus) : DEFAULT_PREFS.status,
       hideServer: parsed.hideServer === true
     }
@@ -273,18 +277,32 @@ export function joinInGame(address: string): void {
   void bridgeTick()
 }
 
-/** PlayScreen shown with an online profile - start pinging (no-op if already running). */
-export async function startFriends(): Promise<void> {
-  await loadPrefs()
-  if (timer) return
+/** Starts pinging - a no-op if already running, or while the player has friends switched off. */
+async function run(): Promise<void> {
+  if (timer || !prefs.enabled) return
   timer = setInterval(() => void ping(), PING_INTERVAL_MS)
   bridgeTimer = setInterval(() => void bridgeTick(), BRIDGE_INTERVAL_MS)
   await ping()
 }
 
-/** Logout or offline mode - stop pinging and forget what we knew. Friends see us as offline once
- * the backend timeout passes (or right away if `announce` is set). */
+/** PlayScreen shown with an online profile. */
+export async function startFriends(): Promise<void> {
+  await loadPrefs()
+  wanted = true
+  await run()
+  // Switched off: no ping pushes the state, but the screen still has to learn that it is off
+  if (!timer) broadcast()
+}
+
+/** Logout or offline mode. */
 export async function stopFriends(announce: boolean): Promise<void> {
+  wanted = false
+  await halt(announce)
+}
+
+/** Stops pinging and forgets what we knew. Friends see us as offline once the backend timeout
+ * passes (or right away if `announce` is set). */
+async function halt(announce: boolean): Promise<void> {
   if (timer) {
     clearInterval(timer)
     timer = null
@@ -302,11 +320,28 @@ export async function stopFriends(announce: boolean): Promise<void> {
 
 export async function setFriendsPrefs(next: FriendsPrefs): Promise<FriendsState> {
   await loadPrefs()
-  prefs = { status: STATUSES.includes(next.status) ? next.status : prefs.status, hideServer: next.hideServer === true }
+  prefs = {
+    enabled: next.enabled !== false,
+    status: STATUSES.includes(next.status) ? next.status : prefs.status,
+    hideServer: next.hideServer === true
+  }
   await mkdir(app.getPath('userData'), { recursive: true })
   await writeFile(prefsPath(), JSON.stringify(prefs, null, 2), 'utf8')
-  if (timer) await ping()
-  else broadcast()
+  if (!prefs.enabled) {
+    // Switched off: nothing goes to the friends server anymore, and a running game stops showing
+    // friends, invitations and client logos.
+    const wasRunning = timer !== null
+    await halt(true)
+    if (wasRunning && isGameRunning()) {
+      await writeGameInbox({ dnd: false, friends: [], invites: [], join: null, results: {}, clientUsers: [] }).catch(() => undefined)
+    }
+  } else if (timer) {
+    await ping()
+  } else if (wanted) {
+    await run()
+  } else {
+    broadcast()
+  }
   return getFriendsState()
 }
 

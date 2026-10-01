@@ -161,6 +161,21 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
       {actionError && <span className="error">{actionError}</span>}
       {status && <span className="status">{status}</span>}
 
+      <section className="mods-section">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            className="toggle-switch"
+            checked={state.prefs.enabled}
+            onChange={(e) => void window.api.setFriendsPrefs({ ...state.prefs, enabled: e.target.checked })}
+          />
+          {t.friends.enabledLabel}
+        </label>
+        <p className="version-warning">{state.prefs.enabled ? t.friends.enabledInfo : t.friends.disabledInfo}</p>
+      </section>
+
+      {state.prefs.enabled && (
+        <>
       <section className="mods-section" data-tour="friends-own">
         <h3>{t.friends.ownHeading}</h3>
         <div className="friends-prefs">
@@ -288,6 +303,8 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
           })}
         </ul>
       </section>
+        </>
+      )}
 
       {pendingRemoval && (
         <ConfirmDialog
