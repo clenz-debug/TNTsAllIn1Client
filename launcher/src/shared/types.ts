@@ -239,6 +239,9 @@ export interface Instance {
  * file (and any already-downloaded legacy `instances/<versionId>/` folder) into this shape once. */
 export interface LauncherSettings {
   showSnapshots: boolean
+  /** Settings screen's toggle for the client logo in front of every instance/version the client
+   * supports (own user request) - instance list, instance dropdown and version dropdown alike. */
+  showClientSupportMarks: boolean
   instances: Instance[]
   selectedInstanceId: string | null
   /** Custom root for the movable game-data tree (`instances/`, `versions/`, `libraries/`,
@@ -406,6 +409,7 @@ export const DEFAULT_THEME_COLORS: ThemeColors = {
 
 export const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   showSnapshots: false,
+  showClientSupportMarks: true,
   instances: [],
   selectedInstanceId: null,
   dataRootOverride: null,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import { defaultOnPrefix } from '../../../shared/bundledMods'
+import { ClientSupportMark } from '../ClientSupportMark'
 import { Dropdown } from '../Dropdown'
 import { errorCode, formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
@@ -73,6 +74,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [versions, setVersions] = useState<GameVersionSummary[]>([])
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [showSnapshots, setShowSnapshots] = useState(false)
+  const [showClientSupportMarks, setShowClientSupportMarks] = useState(true)
   const [instances, setInstances] = useState<Instance[]>([])
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null)
   // Never read or changed by this screen itself (only `storageManager.ts#changeStorageLocation`
@@ -149,6 +151,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     Promise.all([window.api.loadSettings(), window.api.listBundleCompatibleVersions()])
       .then(([settings, bundleVersions]) => {
         setShowSnapshots(settings.showSnapshots)
+        setShowClientSupportMarks(settings.showClientSupportMarks)
         setInstances(settings.instances)
         setSelectedInstanceId(settings.selectedInstanceId)
         setDataRootOverride(settings.dataRootOverride)
@@ -171,6 +174,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     if (!settingsLoaded) return
     void window.api.saveSettings({
       showSnapshots,
+      showClientSupportMarks,
       instances,
       selectedInstanceId,
       dataRootOverride,
@@ -191,6 +195,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   }, [
     settingsLoaded,
     showSnapshots,
+    showClientSupportMarks,
     instances,
     selectedInstanceId,
     dataRootOverride,
@@ -458,6 +463,8 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
         <SettingsScreen
           showSnapshots={showSnapshots}
           onShowSnapshotsChange={setShowSnapshots}
+          showClientSupportMarks={showClientSupportMarks}
+          onShowClientSupportMarksChange={setShowClientSupportMarks}
           maxMemoryMb={maxMemoryMb}
           onMaxMemoryMbChange={setMaxMemoryMb}
           consoleInSeparateWindow={consoleInSeparateWindow}
@@ -484,6 +491,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           versionsError={versionsError}
           showSnapshots={showSnapshots}
           bundleCompatibleVersions={bundleCompatibleVersions}
+          showClientSupportMarks={showClientSupportMarks}
           onInstancesChange={handleInstancesChange}
           onSelect={setSelectedInstanceId}
           onClose={() => setShowInstances(false)}
@@ -653,7 +661,14 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
             options={
               instances.length === 0
                 ? [{ value: '', label: t.play.noInstance }]
-                : instances.map((instance) => ({ value: instance.id, label: `${instance.name} (${instance.versionId})` }))
+                : instances.map((instance) => ({
+                    value: instance.id,
+                    label: `${instance.name} (${instance.versionId})`,
+                    icon:
+                      showClientSupportMarks && isBundleCompatibleVersion(instance.versionId, bundleCompatibleVersions) ? (
+                        <ClientSupportMark />
+                      ) : undefined
+                  }))
             }
           />
           <button className="secondary-button" data-tour="manage-instances" onClick={() => setShowInstances(true)} disabled={busy}>

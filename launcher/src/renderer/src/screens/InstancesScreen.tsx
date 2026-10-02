@@ -3,7 +3,8 @@ import { ConfirmDialog } from '../ConfirmDialog'
 import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
-import type { GameVersionSummary, Instance } from '../../../shared/types'
+import { ClientSupportMark } from '../ClientSupportMark'
+import { isBundleCompatibleVersion, type GameVersionSummary, type Instance } from '../../../shared/types'
 
 interface Props {
   instances: Instance[]
@@ -15,9 +16,12 @@ interface Props {
    * {@link pickDefaultVersion}'s pre-selection and filter the version dropdown below. */
   showSnapshots: boolean
   /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
-   * see `bundleCompat.ts`) - used only to steer {@link pickDefaultVersion}'s pre-selection, the
-   * dropdown itself still lists every release/snapshot Fabric-supported version regardless. */
+   * see `bundleCompat.ts`) - steers {@link pickDefaultVersion}'s pre-selection and decides which
+   * instances and versions get the client logo; the dropdown itself still lists every
+   * release/snapshot Fabric-supported version regardless. */
   bundleCompatibleVersions: string[]
+  /** Read-only here as well (Settings screen toggle) - off hides every client logo marker. */
+  showClientSupportMarks: boolean
   /** Both instance-list mutations (create/rename) and a delete result (fetched fresh from the
    * main process, see `handleConfirmDelete`) funnel through here - the caller (PlayScreen) just
    * mirrors whatever it's given into its own state and lets its existing save effect persist it. */
@@ -48,12 +52,15 @@ export function InstancesScreen({
   versionsError,
   showSnapshots,
   bundleCompatibleVersions,
+  showClientSupportMarks,
   onInstancesChange,
   onSelect,
   onClose
 }: Props) {
   const t = useTranslations()
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
+  const isMarkedVersion = (versionId: string): boolean =>
+    showClientSupportMarks && isBundleCompatibleVersion(versionId, bundleCompatibleVersions)
 
   const [newName, setNewName] = useState('')
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
@@ -221,7 +228,11 @@ export function InstancesScreen({
             options={
               visibleVersions.length === 0
                 ? [{ value: newVersion, label: newVersion }]
-                : visibleVersions.map((v) => ({ value: v.id, label: v.id }))
+                : visibleVersions.map((v) => ({
+                    value: v.id,
+                    label: v.id,
+                    icon: isMarkedVersion(v.id) ? <ClientSupportMark /> : undefined
+                  }))
             }
           />
           <button className="secondary-button" onClick={handleCreate}>
@@ -269,6 +280,12 @@ export function InstancesScreen({
             ) : (
               <li key={instance.id} className="instances-row">
                 <div className="instance-info">
+                  {/* Own user request: the client logo marks an instance whose Minecraft version
+                      this launcher supports. The slot stays (empty) for every other instance so the
+                      names still line up. */}
+                  {showClientSupportMarks && (
+                    <span className="instance-client-mark">{isMarkedVersion(instance.versionId) && <ClientSupportMark />}</span>
+                  )}
                   <strong>{instance.name}</strong>
                   <span className="instance-version">{instance.versionId}</span>
                   {instance.id === selectedInstanceId && <span className="mock-badge">{t.instances.active}</span>}

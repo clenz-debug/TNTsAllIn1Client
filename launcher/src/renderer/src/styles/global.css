@@ -240,6 +240,34 @@ select option {
   background: var(--green-3);
 }
 
+/* Only on a dropdown whose options carry icons: a flex row centers the icon on the label (an inline
+   icon aligned to the text baseline sat visibly too low), so the ellipsis moves onto the text itself. */
+.dropdown-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dropdown-with-icon .dropdown-option-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-option-icon {
+  display: flex;
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* The logo's beams use the accent colors, the highlighted row is one of them - only there does the
+   mark need the panel color behind it to keep all four beams visible. */
+.dropdown-option.highlighted .client-support-mark,
+.dropdown-option[aria-selected='true'] .client-support-mark {
+  background: var(--bg-panel);
+}
+
 .version-picker .dropdown-trigger {
   /* Fixed width (not min-width) so toggling "Snapshots anzeigen" never resizes the box - sized in
      ch so it scales with font size, wide enough for the longest real version ids Mojang's manifest
@@ -812,6 +840,29 @@ select option {
 .instance-version {
   color: var(--text);
   font-size: 0.85rem;
+}
+
+/* Fixed-size slot rather than sizing the logo itself, so an instance without the logo (version not
+   supported by the client) keeps the same indent and the names stay in one column. */
+.instance-client-mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.client-support-mark {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+  border-radius: 3px;
+}
+
+.client-support-mark svg {
+  width: 100%;
+  height: 100%;
 }
 
 .worlds-screen {

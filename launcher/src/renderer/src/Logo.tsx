@@ -6,6 +6,12 @@ interface Props {
    * `--green-1..4`) just for this one element - e.g. the Settings screen's color editor previewing
    * a not-yet-applied color on a standalone logo, without touching the real page's own theme. */
   style?: CSSProperties
+  /** `mark` crops to just the four "N" beams - for icon-sized uses (the instance list's
+   * "supported by the client" marker), where the octagon and both text lines would be unreadable
+   * and, drawn in `--bg-panel`, invisible on a panel-colored row anyway. */
+  variant?: 'full' | 'mark'
+  /** Overrides the accessible name, for when the logo carries a meaning beyond "this is the client". */
+  label?: string
 }
 
 /**
@@ -22,9 +28,31 @@ interface Props {
  * colors baked in) used for things that can't react live to a theme, e.g. the packaged app's icon
  * - keep both in sync if this shape itself ever changes.
  */
-export function Logo({ className, style }: Props) {
+export function Logo({ className, style, variant = 'full', label = "TNT's All-In-1 Client" }: Props) {
+  const beams = (
+    <g stroke="var(--bg-panel)" strokeWidth={3} strokeLinejoin="round">
+      {/* Top horizontal beam - Akzent 1 */}
+      <rect x={150} y={150} width={300} height={50} fill="var(--green-1)" />
+      {/* Left vertical leg - Akzent 2 */}
+      <rect x={185} y={200} width={45} height={240} fill="var(--green-2)" />
+      {/* Right vertical leg - Akzent 3 */}
+      <rect x={370} y={200} width={45} height={240} fill="var(--green-3)" />
+      {/* Diagonal beam connecting the two legs - Akzent 4 */}
+      <polygon points="185,200 230,200 415,415 415,440 370,440 185,225" fill="var(--green-4)" />
+    </g>
+  )
+
+  if (variant === 'mark') {
+    // The beams' own bounding box (150..450 x 150..440) plus room for their outline stroke.
+    return (
+      <svg viewBox="146 146 308 298" className={className} style={style} role="img" aria-label={label}>
+        {beams}
+      </svg>
+    )
+  }
+
   return (
-    <svg viewBox="0 0 600 660" className={className} style={style} role="img" aria-label="TNT's All-In-1 Client">
+    <svg viewBox="0 0 600 660" className={className} style={style} role="img" aria-label={label}>
       <polygon
         points="200,40 400,40 560,200 560,400 400,560 200,560 40,400 40,200"
         fill="none"
@@ -32,16 +60,7 @@ export function Logo({ className, style }: Props) {
         strokeWidth={4}
       />
 
-      <g stroke="var(--bg-panel)" strokeWidth={3} strokeLinejoin="round">
-        {/* Top horizontal beam - Akzent 1 */}
-        <rect x={150} y={150} width={300} height={50} fill="var(--green-1)" />
-        {/* Left vertical leg - Akzent 2 */}
-        <rect x={185} y={200} width={45} height={240} fill="var(--green-2)" />
-        {/* Right vertical leg - Akzent 3 */}
-        <rect x={370} y={200} width={45} height={240} fill="var(--green-3)" />
-        {/* Diagonal beam connecting the two legs - Akzent 4 */}
-        <polygon points="185,200 230,200 415,415 415,440 370,440 185,225" fill="var(--green-4)" />
-      </g>
+      {beams}
 
       <text
         x={300}

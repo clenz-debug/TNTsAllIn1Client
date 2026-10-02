@@ -22,6 +22,8 @@ const RECOMMENDED_MAX_MEMORY_MB = 4096
 interface Props {
   showSnapshots: boolean
   onShowSnapshotsChange: (value: boolean) => void
+  showClientSupportMarks: boolean
+  onShowClientSupportMarksChange: (value: boolean) => void
   maxMemoryMb: number | null
   onMaxMemoryMbChange: (value: number | null) => void
   consoleInSeparateWindow: boolean
@@ -51,6 +53,8 @@ interface Props {
 export function SettingsScreen({
   showSnapshots,
   onShowSnapshotsChange,
+  showClientSupportMarks,
+  onShowClientSupportMarksChange,
   maxMemoryMb,
   onMaxMemoryMbChange,
   consoleInSeparateWindow,
@@ -205,6 +209,15 @@ export function SettingsScreen({
         <label className="checkbox-label">
           <input type="checkbox" className="toggle-switch" checked={showSnapshots} onChange={(e) => onShowSnapshotsChange(e.target.checked)} />
           {t.settings.instances.showSnapshots}
+        </label>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            className="toggle-switch"
+            checked={showClientSupportMarks}
+            onChange={(e) => onShowClientSupportMarksChange(e.target.checked)}
+          />
+          {t.settings.instances.showClientSupportMarks}
         </label>
       </section>
 

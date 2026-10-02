@@ -247,6 +247,7 @@ export const de = {
     versionListError: (error: string) => `Versionsliste konnte nicht geladen werden: ${error}`,
     existingHeading: 'Vorhandene Instanzen',
     active: 'Aktiv',
+    clientSupported: 'Diese Version wird vom Client unterstützt',
     select: 'Auswählen',
     rename: 'Umbenennen',
     cloning: 'Dupliziert…',
@@ -539,7 +540,8 @@ export const de = {
     },
     instances: {
       heading: 'Instanzen',
-      showSnapshots: 'Snapshots bei der Versionsauswahl anzeigen'
+      showSnapshots: 'Snapshots bei der Versionsauswahl anzeigen',
+      showClientSupportMarks: 'Client-Logo vor Instanzen und Versionen anzeigen, die der Client unterstützt'
     },
     console: {
       heading: 'Konsole',

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 
 export interface DropdownOption {
   value: string
   label: string
+  /** Shown in front of the label. As soon as one option has an icon, every option (and the
+   * trigger) reserves the slot for it, so the labels stay in one column. */
+  icon?: ReactNode
 }
 
 interface Props {
@@ -41,6 +44,7 @@ export function Dropdown({ value, options, onChange, disabled, id, ariaLabel, cl
   const menuRef = useRef<HTMLUListElement>(null)
 
   const selected = options.find((option) => option.value === value)
+  const hasIcons = options.some((option) => option.icon != null)
 
   useEffect(() => {
     if (!open) return
@@ -110,7 +114,10 @@ export function Dropdown({ value, options, onChange, disabled, id, ariaLabel, cl
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={handleTriggerKeyDown}
       >
-        <span className="dropdown-trigger-label">{selected?.label ?? ''}</span>
+        <span className={hasIcons ? 'dropdown-trigger-label dropdown-with-icon' : 'dropdown-trigger-label'}>
+          {hasIcons && <span className="dropdown-option-icon">{selected?.icon}</span>}
+          <span className="dropdown-option-text">{selected?.label ?? ''}</span>
+        </span>
         <span className="dropdown-trigger-arrow" aria-hidden="true" />
       </button>
       {open && (
@@ -120,11 +127,12 @@ export function Dropdown({ value, options, onChange, disabled, id, ariaLabel, cl
               key={option.value}
               role="option"
               aria-selected={option.value === value}
-              className={index === highlightedIndex ? 'dropdown-option highlighted' : 'dropdown-option'}
+              className={`dropdown-option${index === highlightedIndex ? ' highlighted' : ''}${hasIcons ? ' dropdown-with-icon' : ''}`}
               onMouseEnter={() => setHighlightedIndex(index)}
               onClick={() => selectOption(option)}
             >
-              {option.label}
+              {hasIcons && <span className="dropdown-option-icon">{option.icon}</span>}
+              <span className="dropdown-option-text">{option.label}</span>
             </li>
           ))}
         </ul>

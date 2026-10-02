@@ -241,6 +241,7 @@ export const en: typeof de = {
     versionListError: (error: string) => `Couldn't load the version list: ${error}`,
     existingHeading: 'Existing instances',
     active: 'Active',
+    clientSupported: 'This version is supported by the client',
     select: 'Select',
     rename: 'Rename',
     cloning: 'Duplicating…',
@@ -530,7 +531,8 @@ export const en: typeof de = {
     },
     instances: {
       heading: 'Instances',
-      showSnapshots: 'Show snapshots when picking a version'
+      showSnapshots: 'Show snapshots when picking a version',
+      showClientSupportMarks: 'Show the client logo in front of instances and versions the client supports'
     },
     console: {
       heading: 'Console',
