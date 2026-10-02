@@ -6,16 +6,16 @@ Stand der Veröffentlichung: 0.1.7; was danach gebaut wurde, steht unter 2a. Erl
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen portieren (vor allem Vollversionen)
 - [ ] Legacy-Versionen (vor 1.14). Regel seit 2026-10-02: ab 1.14 Fabric, darunter ohne Mod-Loader (kein Forge), keine Loader-Auswahl pro Instanz. Ziel sind langfristig alle Minecraft-Versionen, pro alter Hauptversion nur die letzte Unterversion
-  - [x] 1.7.10, 1.8.9, 1.9.4, 1.10.2, 1.11.2, 1.12.2, 1.13.2 starten als reines Minecraft: gebaut, Launcher von dir bestätigt (2026-10-02, „passt soweit“); noch nicht committet
+  - [x] 1.7.10, 1.8.9, 1.9.4, 1.10.2, 1.11.2, 1.12.2, 1.13.2 starten als reines Minecraft: gebaut, Launcher von dir bestätigt (2026-10-02, „passt soweit“)
   - [ ] 1.6.4 und älter: brauchen noch das alte Asset-Format und das Session-Argument
-  - [x] Eigener Einstieg für unseren Mod, Machbarkeitstest `mod/1.8.9/`: gebaut und von dir bestätigt (2026-10-02, „TNT's All-In-1 Client“ steht im Hauptmenü von 1.8.9); noch nicht committet
+  - [x] Eigener Einstieg für unseren Mod, Machbarkeitstest `mod/1.8.9/`: gebaut und von dir bestätigt (2026-10-02, „TNT's All-In-1 Client“ steht im Hauptmenü von 1.8.9)
   - [x] Namenstabelle: `mod/1.8.9/` nutzt Legacy Yarn (Legacy Fabric, gemeinfrei/CC0, deckt alle sieben Legacy-Versionen ab; Feather von Ornithe wäre die Alternative). Mixin-Zielangaben werden beim Bauen mitübersetzt, und `gradlew build` prüft jedes Mixin ohne Spielfenster gegen das echte Spiel (2026-10-02)
   - [x] 1.8.9: FPS-Anzeige gebaut und von dir bestätigt (2026-10-02)
   - [x] 1.8.9: Mod-Menü gebaut und von dir bestätigt (2026-10-02, „passt so“): Knopf „Client Mods“ im Hauptmenü unter „Optionen“ und im Pausenmenü, Taste „Mod-Menü öffnen“ in der Steuerung, Einstellungen in `config/tntsallin1client.json`, Texte deutsch/englisch
   - [x] 1.8.9: Farbwähler (Farbfeld, Farbton-Regler, Rot/Grün/Blau/Hex) und „Optionen“-Knopf im Mod-Menü gebaut und von dir bestätigt (2026-10-02, „jo passt“), erste Nutzung: Textfarbe der FPS-Anzeige. Farbwähler und Grundlage der Einstellungsseiten (`ClientScreen`) sind für weitere Features wiederverwendbar
   - [x] 1.8.9: HUD-Editor gebaut und von dir bestätigt (2026-10-02, „ok passt“): „HUD verschieben / skalieren“ im Mod-Menü unter „Sonstiges“, Box ziehen zum Verschieben, Ecke ziehen zum Skalieren, „Alle Positionen zurücksetzen“. Jedes HUD-Element (`HudElement`) ist damit automatisch verschieb- und skalierbar
   - [ ] 1.8.9: Koordinaten-HUD, Latenz-Anzeige und Uhrzeit gebaut (2026-10-02), jeweils mit Farbe, Einstellungsseite und im HUD-Editor verschiebbar – Mixins geprüft, dein Test im Spiel steht aus
-  - [x] Fehler in allen Versionen behoben (2026-10-02, 1.21.11, 26.1.2, 26.3 und 1.8.9): War das Koordinaten-HUD an, aber alle seine Teile aus, gab es im HUD-Editor keine Box zum Verschieben – jetzt erscheint eine Box in der Größe des Namens. Von dir getestet und bestätigt (2026-10-02); noch nicht committet
+  - [x] Fehler in allen Versionen behoben (2026-10-02, 1.21.11, 26.1.2, 26.3 und 1.8.9): War das Koordinaten-HUD an, aber alle seine Teile aus, gab es im HUD-Editor keine Box zum Verschieben – jetzt erscheint eine Box in der Größe des Namens. Von dir getestet und bestätigt (2026-10-02)
   - [ ] Offene Frage: Rüstungsstatus (gebündelt) mit allen Slots aus hat in den Fabric-Versionen ebenfalls keine Box im HUD-Editor – genauso beheben?
   - [ ] 1.8.9, noch nicht dabei: Tastenanzeige (Keystrokes), Scrollen und Suche im Menü, weitere Features
   - [ ] Vor einem Release klären: LaunchWrapper hat bei Mojang keine erklärte Lizenz (der Launcher lädt es von Mojangs Server, wir liefern es nicht mit); Mixin ist MIT und steckt in unserer Jar (Lizenztext liegt bei)
