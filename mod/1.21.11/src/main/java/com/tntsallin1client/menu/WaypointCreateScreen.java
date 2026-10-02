@@ -6,6 +6,7 @@ import com.tntsallin1client.waypoint.WaypointScope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -16,6 +17,8 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 /**
  * Waypoint idea follow-up: asks for a name right when creating a waypoint, instead of always
@@ -29,7 +32,9 @@ import org.jspecify.annotations.Nullable;
  * so closing just returns to the game - see {@link WaypointMenuIntegration}). Also lets the color
  * be picked upfront via the same {@link ColorPickerPanel} {@link WaypointEditScreen} uses, per user
  * request - previously only settable afterwards by opening the newly created waypoint's own edit
- * screen.
+ * screen. The same goes for beam, marker, distance and fading nearby (own user request): they start
+ * with the defaults from the waypoint options and can be switched right here, whether the screen was
+ * opened from the list or by the hotkey.
  *
  * <p>Scrolls like {@link WaypointEditScreen} when the window is too small (see its class doc). Scrolling
  * re-creates every widget, so the typed name lives in {@link #typedName} rather than only in the field.
@@ -38,6 +43,7 @@ public class WaypointCreateScreen extends Screen {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
+	private static final int FIELD_GAP = 6;
 	private static final int TOP_MARGIN = 40;
 	private static final int BOTTOM_MARGIN = 10;
 	private static final int SCROLL_STEP = 16;
@@ -52,10 +58,13 @@ public class WaypointCreateScreen extends Screen {
 	private int maxScroll;
 	// Mirrors Waypoint's own default (opaque white) until the picker is touched.
 	private int pendingColor = 0xFFFFFFFF;
+	/** Only its four display switches are used - they start as the options' defaults and end up on the new waypoint. */
+	private final Waypoint pendingDisplay = new Waypoint();
 
 	public WaypointCreateScreen(@Nullable WaypointListScreen parent) {
 		super(Component.translatable("gui.tntsallin1client.waypoint_create.title"));
 		this.parent = parent;
+		this.pendingDisplay.applyDisplayDefaults(ClientConfig.get());
 	}
 
 	@Override
@@ -93,6 +102,20 @@ public class WaypointCreateScreen extends Screen {
 				argb -> this.pendingColor = argb);
 		y += ColorPickerPanel.totalHeight() + 10;
 
+		// Same switches, labels and two-per-row layout as WaypointEditScreen.
+		int halfWidth = (ROW_WIDTH - FIELD_GAP) / 2;
+		int rightX = x + ROW_WIDTH - halfWidth;
+		this.addRenderableWidget(displayToggle(x, y, halfWidth, "show_beam", this.pendingDisplay.showBeam,
+				value -> this.pendingDisplay.showBeam = value));
+		this.addRenderableWidget(displayToggle(rightX, y, halfWidth, "show_marker", this.pendingDisplay.showMarker,
+				value -> this.pendingDisplay.showMarker = value));
+		y += ROW_HEIGHT + FIELD_GAP;
+		this.addRenderableWidget(displayToggle(x, y, halfWidth, "show_distance", this.pendingDisplay.showDistance,
+				value -> this.pendingDisplay.showDistance = value));
+		this.addRenderableWidget(displayToggle(rightX, y, halfWidth, "fade_nearby", this.pendingDisplay.fadeNearby,
+				value -> this.pendingDisplay.fadeNearby = value));
+		y += ROW_HEIGHT + 10;
+
 		this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.waypoint_create.create_button"),
 						button -> this.create())
 				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
@@ -108,6 +131,8 @@ public class WaypointCreateScreen extends Screen {
 	private static int computeContentHeight(int fontLineHeight) {
 		int height = ROW_HEIGHT + 10;
 		height += ColorPickerPanel.totalHeight() + 10;
+		height += ROW_HEIGHT + FIELD_GAP;
+		height += ROW_HEIGHT + 10;
 		height += ROW_SPACING;
 		height += ROW_HEIGHT;
 		return height;
@@ -128,6 +153,12 @@ public class WaypointCreateScreen extends Screen {
 		}
 	}
 
+	private CycleButton<Boolean> displayToggle(int x, int y, int width, String key, boolean initial, Consumer<Boolean> setter) {
+		return CycleButton.onOffBuilder(initial)
+				.create(x, y, width, ROW_HEIGHT, Component.translatable("gui.tntsallin1client.waypoint_edit." + key),
+						(button, value) -> setter.accept(value));
+	}
+
 	private boolean isInViewport(double mouseY) {
 		return mouseY >= TOP_MARGIN && mouseY < this.height - BOTTOM_MARGIN;
 	}
@@ -144,12 +175,12 @@ public class WaypointCreateScreen extends Screen {
 	}
 
 	private void create() {
-		createAtPlayer(this.minecraft, this.typedName, this.pendingColor);
+		createAtPlayer(this.minecraft, this.typedName, this.pendingColor, this.pendingDisplay);
 		this.onClose();
 	}
 
 	/** Builds and saves the waypoint at the player's current position. Returns its final name, or {@code null} if there's no player/level/world to create one against. */
-	private static @Nullable String createAtPlayer(Minecraft minecraft, @Nullable String typedName, int color) {
+	private static @Nullable String createAtPlayer(Minecraft minecraft, @Nullable String typedName, int color, Waypoint display) {
 		LocalPlayer player = minecraft.player;
 		String worldKey = WaypointScope.currentKey(minecraft);
 		if (player == null || minecraft.level == null || worldKey == null) {
@@ -161,7 +192,10 @@ public class WaypointCreateScreen extends Screen {
 		String typed = typedName == null ? "" : typedName.trim();
 		waypoint.name = typed.isEmpty() ? defaultName(worldKey) : typed;
 		waypoint.color = color;
-		waypoint.applyDisplayDefaults(config);
+		waypoint.showBeam = display.showBeam;
+		waypoint.showMarker = display.showMarker;
+		waypoint.showDistance = display.showDistance;
+		waypoint.fadeNearby = display.fadeNearby;
 		BlockPos pos = player.blockPosition();
 		waypoint.x = pos.getX();
 		waypoint.y = pos.getY();

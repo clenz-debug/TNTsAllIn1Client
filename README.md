@@ -37,9 +37,9 @@ yourself.
 - Take over settings, mods, resource packs and worlds from another installed client
 - Color themes, German and English, a guided tour for first-time users
 
-**In-game mod** (currently for Minecraft 1.21.11 and 26.1.2; other versions start without it)
+**In-game mod** (currently for Minecraft 1.21.11, 26.1.2 and 26.3; other versions start without it)
 
-- HUD: coordinates, FPS, ping, keystrokes, armor and tool status, item counter - all movable
+- HUD: coordinates, FPS, ping, clock, keystrokes, armor and tool status, item counter - all movable
 - Zoom, freecam, custom crosshair, fullbright, no fog, mob spawn overlay
 - Waypoints with beams, labels and direction arrows
 - 3D skin layers, 3D block models, connected textures, dark mode
@@ -72,18 +72,19 @@ The repository holds three independent parts:
 |---|---|---|
 | `mod/1.21.11/` | Fabric mod for Minecraft 1.21.11 (Java 21) | `./gradlew build` |
 | `mod/26.1.2/` | Fabric mod for Minecraft 26.1.2 (Java 25) | `./gradlew build` |
+| `mod/26.3/` | Fabric mod for Minecraft 26.3 (Java 25) | `./gradlew build` |
 | `launcher/` | Electron launcher (Node.js) | `npm ci`, then `npm run dev` or `npm run package:win` |
 | `backend/` | Small Node.js service for capes and friends | `npm ci`, then `npm run build` |
 
-`npm run package:win` builds the installer into `launcher/dist/` and expects both mods to be built
-first, because it packs their jars.
+`npm run package:win` builds the installer into `launcher/dist/` and expects the mods for 1.21.11
+and 26.1.2 to be built first, because it packs their jars (the 26.3 mod is downloaded on first use).
 
 ## License
 
 TNT's All-In-1 Client is licensed under the [GNU General Public License v3.0](LICENSE).
 
 The mods and resource packs the launcher downloads (Fabric API, Sodium, Lithium, Continuity, Cape
-Provider, e4mc, Default Dark Mode, Bushy Vegetation) are separate works under their own licenses and
-are not part of this repository or the installer. Their license texts are listed in
+Provider, e4mc, Bushy Vegetation) are separate works under their own licenses and are not part of
+this repository or the installer. Their license texts are listed in
 [launcher/third-party-licenses](launcher/third-party-licenses/README.txt). Please report problems
 with them here, not to their developers.

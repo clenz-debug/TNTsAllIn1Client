@@ -177,6 +177,10 @@ def element_transform(rotation):
     if not rotation:
         return lambda p: np.asarray(p, dtype=np.float64)
     origin = np.asarray(rotation["origin"], dtype=np.float64)
+    if "angle" not in rotation:
+        # 26.3's rotation around several axes: around x, then y, then z
+        matrix = axis_rotation("z", rotation["z"]) @ axis_rotation("y", rotation["y"]) @ axis_rotation("x", rotation["x"])
+        return lambda p: origin + matrix @ (np.asarray(p, dtype=np.float64) - origin)
     matrix = axis_rotation(rotation["axis"], rotation["angle"])
     scale = np.ones(3)
     if rotation.get("rescale"):
@@ -423,17 +427,22 @@ def scene_lanterns():
     return blocks, 25, 15
 
 
-def scene_dripstone():
+def scene_dripstone(spike: str = "pointed_dripstone", ground: str = "dripstone_block"):
     blocks = []
-    floor(blocks, "dripstone_block", range(0, 3), range(0, 2), y=4)
-    floor(blocks, "dripstone_block", range(0, 3), range(0, 2), y=-1)
+    floor(blocks, ground, range(0, 3), range(0, 2), y=4)
+    floor(blocks, ground, range(0, 3), range(0, 2), y=-1)
     down = ["base", "middle", "frustum", "tip"]
     for i, thickness in enumerate(down):
-        blocks.append(("pointed_dripstone", {"thickness": thickness, "vertical_direction": "down", "waterlogged": "false"}, (0, 3 - i, 0)))
+        blocks.append((spike, {"thickness": thickness, "vertical_direction": "down", "waterlogged": "false"}, (0, 3 - i, 0)))
     for i, thickness in enumerate(["base", "frustum", "tip"]):
-        blocks.append(("pointed_dripstone", {"thickness": thickness, "vertical_direction": "up", "waterlogged": "false"}, (2, i, 1)))
-    blocks.append(("pointed_dripstone", {"thickness": "tip_merge", "vertical_direction": "down", "waterlogged": "false"}, (1, 3, 1)))
+        blocks.append((spike, {"thickness": thickness, "vertical_direction": "up", "waterlogged": "false"}, (2, i, 1)))
+    blocks.append((spike, {"thickness": "tip_merge", "vertical_direction": "down", "waterlogged": "false"}, (1, 3, 1)))
     return blocks, 30, 15
+
+
+def scene_sulfur_spike():
+    """26.3 and later only - the block doesn't exist in older jars."""
+    return scene_dripstone("sulfur_spike", "sulfur")
 
 
 def scene_curve():
@@ -616,6 +625,31 @@ def scene_trapdoors():
     return blocks, 25, 40
 
 
+def scene_poplar():
+    """26.3 and later only: the poplar door (closed and open), its trapdoor (lying and open) and the red shrub."""
+    blocks = []
+    floor(blocks, "stone", range(0, 5), range(0, 2), y=-1)
+    door(blocks, "poplar", (0, 0, 0))
+    door(blocks, "poplar", (1, 0, 0), hinge="right", is_open=True)
+    blocks.append(("poplar_trapdoor", trapdoor_state(), (2, 0, 1)))
+    blocks.append(("poplar_trapdoor", trapdoor_state(facing="south", is_open=True), (3, 0, 0)))
+    blocks.append(("red_shrub", {}, (4, 0, 1)))
+    return blocks, 30, 20
+
+
+def scene_hanging_signs():
+    """26.3 and later only: hanging signs under a ceiling (straight, turned, attached in the middle) and on a wall."""
+    blocks = []
+    floor(blocks, "oak_planks", range(0, 4), range(0, 2), y=1)
+    blocks.append(("oak_hanging_sign", {"attached": "false", "rotation": "0", "waterlogged": "false"}, (0, 0, 1)))
+    blocks.append(("spruce_hanging_sign", {"attached": "false", "rotation": "2", "waterlogged": "false"}, (1, 0, 1)))
+    blocks.append(("birch_hanging_sign", {"attached": "true", "rotation": "0", "waterlogged": "false"}, (2, 0, 1)))
+    blocks.append(("cherry_hanging_sign", {"attached": "true", "rotation": "1", "waterlogged": "false"}, (3, 0, 1)))
+    blocks.append(("oak_planks", {}, (5, 0, 0)))
+    blocks.append(("poplar_wall_hanging_sign", {"facing": "south", "waterlogged": "false"}, (5, 0, 1)))
+    return blocks, 25, 10
+
+
 def wire(**sides):
     state = {side: "none" for side in ("north", "south", "east", "west")}
     state.update(sides)
@@ -661,6 +695,9 @@ SCENES = {
     "chains": scene_chains,
     "lanterns": scene_lanterns,
     "dripstone": scene_dripstone,
+    "sulfur_spike": scene_sulfur_spike,
+    "poplar": scene_poplar,
+    "hanging_signs": scene_hanging_signs,
     "amethyst": scene_amethyst,
     "lichen": scene_lichen,
     "lily_pad": scene_lily_pad,
@@ -700,7 +737,11 @@ def main():
     names = sys.argv[3:] or list(SCENES) + ["items"]
     out_dir.mkdir(parents=True, exist_ok=True)
     vanilla = Assets(jar, VANILLA_STAND_INS)
-    ours = Assets(jar, models3d.MODELS, models3d.BLOCKSTATES)
+    # Models only newer games get (models3d.MODELS_SINCE) count when the jar is new enough
+    with zipfile.ZipFile(jar) as archive:
+        pack_format = json.loads(archive.read("version.json")).get("pack_version", {}).get("resource_major", 0)
+    newer = {path: model for since, models in models3d.MODELS_SINCE.items() if pack_format >= since for path, model in models.items()}
+    ours = Assets(jar, {**models3d.MODELS, **newer}, models3d.BLOCKSTATES)
     for name in names:
         if name == "items":
             print(item_sheet(ours, out_dir))

@@ -38,6 +38,7 @@ public final class FeatureIcons {
 		ICONS.put(MENU + "item_counter", FeatureIcons::itemStack);
 		ICONS.put(MENU + "fps_counter", FeatureIcons::gauge);
 		ICONS.put(MENU + "latency_hud", FeatureIcons::signalBars);
+		ICONS.put(MENU + "clock_hud", FeatureIcons::clock);
 		ICONS.put(MENU + "keystrokes", FeatureIcons::arrowKeys);
 		ICONS.put(MENU + "armor_status", FeatureIcons::armorAndTool);
 		ICONS.put(MENU + "zoom", FeatureIcons::binoculars);
@@ -227,6 +228,21 @@ public final class FeatureIcons {
 				s.stroke(rect(x0 + inset, top + inset, x0 + 12 - inset, 84 - inset), stroke * s.unit, t.text);
 			}
 		}
+	}
+
+	/** Clock: a dial with hour marks and two hands at ten past ten, the minute hand in the accent color. */
+	private static void clock(Shapes s, ClientTheme t) {
+		float w = W * s.unit;
+		s.stroke(circle(50, 50, 42), w, t.text);
+		for (int angle = 0; angle < 360; angle += 90) {
+			double radians = Math.toRadians(angle);
+			float cos = (float) Math.cos(radians);
+			float sin = (float) Math.sin(radians);
+			s.line(50 + cos * 30, 50 + sin * 30, 50 + cos * 40, 50 + sin * 40, 5 * s.unit, t.text);
+		}
+		s.line(50, 50, 33, 40, w, t.text);
+		s.line(50, 50, 76, 35, 5 * s.unit, t.accent4);
+		s.fill(circle(50, 50, 5), t.text);
 	}
 
 	/** Keystrokes: arrow-key cluster. */

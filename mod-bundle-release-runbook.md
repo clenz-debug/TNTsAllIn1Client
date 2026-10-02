@@ -37,6 +37,11 @@ große Brüche haben, nicht nur bei einem seltenen Vollversions-Sprung wie früh
    Manifest passt (am Ende von "Aktualisieren" oder beim nächsten Update-Check). Verlangt die veröffentlichte eigene Mod die
    gestrichene Mod noch (`depends` in `fabric.mod.json`), darf das Manifest nur zusammen mit einer
    neuen eigenen Mod live gehen.
+   Launcher nach 0.1.6 löschen auf dieselbe Weise auch ein aus `bundledResourcepacks` gestrichenes
+   Pack aus dem heruntergeladenen Bundle - vorher blieb es dort liegen und wurde weiter in die
+   Instanzen kopiert. Erster Fall: Default Dark Mode, ersetzt durch das eigene TNT Dark Mode. Auch
+   hier gilt: nur zusammen mit der neuen eigenen Mod live schalten, die Mod bis 0.1.6 schaltet den
+   Dark Mode über den Dateinamen des alten Packs.
 
 ## B) Neue Minecraft-Version freischalten
 

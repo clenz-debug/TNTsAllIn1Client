@@ -82,6 +82,12 @@ public class ClientConfig {
 	public boolean latencyHudEnabled = false;
 	public HudLayout latencyHudLayout = new HudLayout();
 
+	// Own wishlist item: always-visible clock - the real time of day, hours and minutes, as "00:00"
+	// (24-hour) or with AM/PM (12-hour). Same shape as the FPS counter above.
+	public boolean clockHudEnabled = false;
+	public boolean clockHud24Hour = true;
+	public HudLayout clockHudLayout = new HudLayout();
+
 	// 5h: hold-to-zoom.
 	public boolean zoomEnabled = false;
 	// Scroll-adjustable while zooming (see ZoomHandler); persists as the
@@ -215,6 +221,7 @@ public class ClientConfig {
 	public int itemCounterTextColor = 0xFFFFFFFF;
 	public int fpsCounterTextColor = 0xFFFFFFFF;
 	public int latencyTextColor = 0xFFFFFFFF;
+	public int clockTextColor = 0xFFFFFFFF;
 	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;
 	public int keystrokesTextColor = 0xFFFFFFFF;

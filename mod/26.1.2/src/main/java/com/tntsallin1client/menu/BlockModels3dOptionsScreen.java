@@ -15,11 +15,11 @@ import java.util.function.Consumer;
 
 /**
  * Options for the "3D block models" row (own user request: the inventory toggle belongs here, not
- * as a feature of its own). "3D items in inventory" switches the generated flat-inventory-icons
+ * as a feature of its own). "3D items in inventory & hand" switches the generated flat-inventory-icons
  * add-on pack (launcher/scripts/generate_flat_icons_pack.py), which BundledResourcePacks pins right
- * above the 3D block model packs: it shows their 3D item models flat in the GUI only - 3D stays in
- * hand, on the ground and in item frames. ON means the add-on pack is off. Greyed out when the pack
- * isn't there (game not started via our launcher).
+ * above the 3D block model packs: it shows the vanilla item instead of their 3D item models in the
+ * GUI and in the hand (own user request) - 3D stays on the ground and in item frames. ON means the
+ * add-on pack is off. Greyed out when the pack isn't there (game not started via our launcher).
  *
  * Below it one row per optional pack the "3D block models" row switches along (own user request):
  * our 3D bushes. The choice is remembered in ClientConfig; while the row

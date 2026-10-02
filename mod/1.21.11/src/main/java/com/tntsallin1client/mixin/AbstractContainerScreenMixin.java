@@ -34,11 +34,12 @@ import org.jspecify.annotations.Nullable;
  * overlay plus a light-text override here - removed again after live testing
  * kept surfacing new rendering-order/shape/contrast edge cases (creative tab
  * sprite shapes, icon legibility, per-screen label overrides, ...). Replaced
- * with bundling an actual dark-themed resource pack ("Default Dark Mode",
- * see {@code launcher/resourcepacks-bundle/} and the license notes in
- * Projekt_Roadmap.md) - the same "let existing assets handle it instead of
- * reinventing rendering" call already made for 5f/5p, and a much better fit
- * here since the problem was fundamentally about texture/color, not logic.
+ * with bundling an actual dark-themed resource pack (first the third-party
+ * "Default Dark Mode", now our own "TNT Dark Mode" from
+ * {@code resourcepacks/dark-mode/}) - the same "let existing assets handle it
+ * instead of reinventing rendering" call already made for 5f/5p, and a much
+ * better fit here since the problem was fundamentally about texture/color,
+ * not logic.
  */
 @Mixin(AbstractContainerScreen.class)
 public class AbstractContainerScreenMixin {

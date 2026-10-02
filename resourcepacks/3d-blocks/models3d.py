@@ -309,6 +309,17 @@ DRIPSTONE_SLICES = {
 }
 
 
+# The sulfur spike (26.3): the same block in sulfur, its outline more jagged - slices after its own pictures.
+SULFUR_SPIKE_SLICES = {
+    "tip": [(0, 4, 9), (4, 5, 7), (5, 8, 5), (8, 11, 4), (11, 12, 2)],
+    "frustum": [(0, 3, 12), (3, 5, 11), (5, 10, 9), (10, 16, 8)],
+    "middle": [(0, 2, 12), (2, 8, 11), (8, 11, 13), (11, 13, 11), (13, 16, 12)],
+    "base": [(0, 3, 16), (3, 4, 14), (4, 7, 12), (7, 11, 14), (11, 13, 11), (13, 16, 12)],
+    "tip_merge": [(0, 4, 9), (4, 5, 7), (5, 8, 5), (8, 11, 4), (11, 14, 5), (14, 16, 3)],
+}
+SPIKES = {"pointed_dripstone": DRIPSTONE_SLICES, "sulfur_spike": SULFUR_SPIKE_SLICES}
+
+
 def solid_columns(mask: list, rows) -> tuple:
     """(first, end) of the columns that are solid in every one of these rows."""
     columns = set.intersection(*({u for u in range(16) if mask[v][u] == "#"} for v in rows))
@@ -340,12 +351,13 @@ def dripstone_slices(texture: str, mask: list, slices: list, pointing_up: bool) 
 
 
 def dripstone() -> None:
-    for thickness, slices in DRIPSTONE_SLICES.items():
-        for direction in ("down", "up"):
-            texture = f"minecraft:block/pointed_dripstone_{direction}_{thickness}"
-            model(f"block/pointed_dripstone_{direction}_{thickness}", {"particle": texture, "cross": texture},
-                  dripstone_slices("#cross", mask_of(f"pointed_dripstone_{direction}_{thickness}"), slices, direction == "up"),
-                  ambient_occlusion=True)
+    for spike, slice_table in SPIKES.items():
+        for thickness, slices in slice_table.items():
+            for direction in ("down", "up"):
+                texture = f"minecraft:block/{spike}_{direction}_{thickness}"
+                model(f"block/{spike}_{direction}_{thickness}", {"particle": texture, "cross": texture},
+                      dripstone_slices("#cross", mask_of(f"{spike}_{direction}_{thickness}"), slices, direction == "up"),
+                      ambient_occlusion=True)
 
 
 # --- Pixel extrusion ------------------------------------------------------------------------------
@@ -527,13 +539,14 @@ BUSHES = {
     # peek a little over the body (own user feedback: rising the full height they stuck out too far)
     "firefly_bush": {"emissive": "firefly_bush_emissive", "body_top_row": 4, "cross_top_row": 2},
     **{f"sweet_berry_bush_stage{stage}": {"top_lower": 2} for stage in range(4)},
+    "red_shrub": {"top_lower": 2},  # 26.3
 }
 BUSH_MAX_HALF = 7  # a pixel in from the block's sides, so neighbouring bushes don't merge into a hedge
 BUSH_TIERS = ((0.3, 2), (0.75, 0), (1.0, 2))  # (top as share of the height, pixels in from the widest)
 GLOW_OUT = 0.05    # the fireflies' layer in front of the leaves (on them, both would flicker)
 # The bushes and their items go into a pack of their own (build.py), so the mod menu can switch them
 # on their own (own user request)
-BUSH_MODELS = {f"block/{name}" for name in BUSHES} | {"item/bush", "item/firefly_bush"}
+BUSH_MODELS = {f"block/{name}" for name in BUSHES} | {"item/bush", "item/firefly_bush", "item/red_shrub"}
 
 
 def bush_box(mask: list) -> tuple:
@@ -1127,6 +1140,10 @@ FITTINGS = {
     "pale_oak_door_bottom": pixel_rows((10, 11), range(13)) | {(9, 9), (10, 9), (9, 12), (10, 12), (0, 0)}
                             | {(11, 0), (12, 0), (10, 1), (13, 1), (10, 2), (13, 2)} | pixel_rows((3,), range(10, 14)),
     "pale_oak_trapdoor": {(7, 13), (8, 13), (6, 14), (7, 14), (8, 14), (9, 14)},
+    # Poplar (26.3): the usual hinges, a small dark handle in the corner; the trapdoor a bracket handle
+    "poplar_door_top": HINGES_TOP | {(13, 14), (14, 14), (14, 15)},
+    "poplar_door_bottom": HINGES_BOTTOM | {(14, 0), (13, 1), (14, 1)},
+    "poplar_trapdoor": pixel_rows((13,), range(6, 10)) | {(6, 14), (9, 14)},
     # Crimson and warped: a U-shaped handle across the halves' seam - two posts, the bar below them
     "crimson_door_top": HINGES_TOP | {(10, 14), (10, 15), (14, 14), (14, 15)},
     "crimson_door_bottom": HINGES_BOTTOM | {(11, 0), (12, 0), (13, 0)},
@@ -1234,10 +1251,10 @@ def place_slab(quads: list, place, texture: str, outside_t: tuple) -> list:
     return elements
 
 
-DOORS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "bamboo",
+DOORS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "poplar", "bamboo",
          "crimson", "warped", "iron", "copper", "exposed_copper", "weathered_copper", "oxidized_copper"]
 # Trapdoors whose picture turns with the trapdoor's facing (vanilla's "orientable" templates)
-ORIENTABLE_TRAPDOORS = {"acacia", "bamboo", "birch", "cherry", "crimson", "jungle", "mangrove", "pale_oak", "spruce", "warped"}
+ORIENTABLE_TRAPDOORS = {"acacia", "bamboo", "birch", "cherry", "crimson", "jungle", "mangrove", "pale_oak", "poplar", "spruce", "warped"}
 
 
 def doors() -> None:
@@ -1430,10 +1447,11 @@ COPPER_STAGES = ["copper", "exposed_copper", "weathered_copper", "oxidized_coppe
 ITEM_MODELS = {
     **{name: (f"block/{name}", {}, BLOCK_DISPLAY) for name in (
         "amethyst_cluster", "large_amethyst_bud", "medium_amethyst_bud", "small_amethyst_bud",
-        "brown_mushroom", "red_mushroom", "crimson_fungus", "warped_fungus", "bush", "firefly_bush", "sugar_cane")},
+        "brown_mushroom", "red_mushroom", "crimson_fungus", "warped_fungus", "bush", "firefly_bush", "red_shrub", "sugar_cane")},
     "weeping_vines": ("block/weeping_vines_plant", {}, BLOCK_DISPLAY),
     "twisting_vines": ("block/twisting_vines_plant", {}, BLOCK_DISPLAY),
     "pointed_dripstone": ("block/pointed_dripstone_up_tip", {}, BLOCK_DISPLAY),
+    "sulfur_spike": ("block/sulfur_spike_up_tip", {}, BLOCK_DISPLAY),
     **{name: ("block/template_lantern", {"lantern": f"minecraft:block/{name}"}, BLOCK_DISPLAY)
        for name in ["lantern", "soul_lantern"] + [f"{stage}_lantern" for stage in COPPER_STAGES]},
     **{name: ("block/template_chain", {"texture": f"minecraft:block/{name}"}, BLOCK_DISPLAY)
@@ -1681,3 +1699,152 @@ def entity_items_3d() -> None:
 
 
 entity_items_3d()
+
+# --- Hanging signs from 26.3 on -------------------------------------------------------------------
+# Since 26.3 a hanging sign is a plain block model - before, the game drew it in code, and so did our
+# mod for its 3D chains (HangingSignChains.java in mod/1.21.11 and mod/26.1.2). There the pack takes
+# over: the sign templates again, with the same chain links made of small bars in place of the flat
+# crossed chain pictures. Every wood's models are children of these templates, so all of them follow.
+# Only in packs for 26.3 and later (MODELS_SINCE, by resource pack format): older games never load
+# these models, and only 26.x takes element rotations by any angle and around several axes.
+
+MODELS_SINCE: dict = {97: {}}
+
+SIGN_CHAIN_TEXTURE = "minecraft:block/iron_chain"
+# Solid pixels of the chain picture: a lighter one for a link's long sides, a darker one for its ends
+SIGN_CHAIN_SIDE = [1, 1, 2, 2]
+SIGN_CHAIN_END = [0, 3, 1, 4]
+SIGN_PIVOT = [8, 0, 8]
+SIGN_CEILING = [8, 16, 8]  # where the two legs of an attached sign's chains meet
+SIGN_NOTCH_INSET = 0.1
+
+
+def chain_link(x: float, top: float, height: float, facing_front: bool, clip: float = 16) -> list:
+    """One link hanging down from `top`: two bars a pixel apart with a pixel-sized bar across each end -
+    seen from the sign's front (facing_front) or turned a quarter. Nothing is drawn above `clip`."""
+    low = top - height
+    upper = min(top, clip)
+    if facing_front:
+        sides = [([x - 1.5, low, 7.5], [x - 0.5, upper, 8.5]), ([x + 0.5, low, 7.5], [x + 1.5, upper, 8.5])]
+        hidden = ("east", "west")  # the end bars' faces that lie against the side bars
+    else:
+        sides = [([x - 0.5, low, 6.5], [x + 0.5, upper, 7.5]), ([x - 0.5, low, 8.5], [x + 0.5, upper, 9.5])]
+        hidden = ("north", "south")
+    elements = [solid(frm, to, SIGN_CHAIN_SIDE, "#chain") for frm, to in sides]
+    for end_top in (top, low + 1):
+        if end_top <= clip:
+            elements.append(solid([x - 0.5, end_top - 1, 7.5], [x + 0.5, end_top, 8.5], SIGN_CHAIN_END, "#chain", skip=hidden))
+    return elements
+
+
+def euler_zyx(matrix: list) -> dict:
+    """The x, y, z angles of the game's several-axes element rotation (it turns around x, then y, then z)."""
+    y = -math.asin(max(-1.0, min(1.0, matrix[2][0])))
+    x = math.atan2(matrix[2][1], matrix[2][2])
+    z = math.atan2(matrix[1][0], matrix[0][0])
+    return {name: round(math.degrees(angle), 4) for name, angle in (("x", x), ("y", y), ("z", z))}
+
+
+def sign_turn(turn: float) -> dict | None:
+    """The whole sign turned around its middle - how the templates for the in-between rotations differ."""
+    return {"angle": turn, "axis": "y", "origin": SIGN_PIVOT} if turn else None
+
+
+def leg_turn(lean: float, turn: float) -> dict:
+    """A chain leg leaning sideways from the ceiling's middle, then turned along with the sign."""
+    if not turn:
+        return {"angle": lean, "axis": "z", "origin": SIGN_CEILING}
+    cl, sl = math.cos(math.radians(lean)), math.sin(math.radians(lean))
+    ct, st = math.cos(math.radians(turn)), math.sin(math.radians(turn))
+    lean_matrix = [[cl, -sl, 0], [sl, cl, 0], [0, 0, 1]]
+    turn_matrix = [[ct, 0, st], [0, 1, 0], [-st, 0, ct]]
+    both = [[sum(turn_matrix[i][k] * lean_matrix[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+    return {**euler_zyx(both), "origin": SIGN_CEILING}
+
+
+def turned_all(elements: list, rotation: dict | None) -> list:
+    for element in elements:
+        if rotation:
+            element["rotation"] = dict(rotation)
+    return elements
+
+
+def sign_board() -> dict:
+    """The board, where and with the picture regions the game's own hanging sign has."""
+    return box([1, 0, 7], [15, 10, 9], {
+        "north": face([9, 8, 16, 13], "#all"), "east": face([8, 8, 9, 13], "#all"),
+        "south": face([1, 8, 8, 13], "#all"), "west": face([0, 8, 1, 13], "#all"),
+        "up": face([1, 7, 8, 8], "#all"), "down": face([1, 13, 8, 14], "#all", cullface="down")})
+
+
+def side_chains(clip: float = 16) -> list:
+    """A chain of two links from the ceiling to the board near each end, the links hooked into each other."""
+    return [element for x in (3, 13)
+            for element in chain_link(x, 16, 4, True, clip) + chain_link(x, 14, 4, False, clip)]
+
+
+def middle_chains(turn: float) -> list:
+    """Two legs from the middle of the ceiling down to the board's corners, three links each."""
+    elements = []
+    for lean in (45, -45):
+        # Each leg starts half a pixel below the spot both lean around, with a link seen from its narrow
+        # side: so the two only touch along an edge. Starting at that spot with links facing the front,
+        # they crossed each other - three pixels wide, flickering through one another and sticking up
+        # into a chain block above (own user report).
+        # The link in the middle faces the front and is long enough to show its hole between the other two's ends
+        leg = chain_link(8, 15.5, 4, False) + chain_link(8, 13.5, 5, True) + chain_link(8, 10.5, 3.5, False)
+        elements += turned_all(leg, leg_turn(lean, turn))
+    # The notch the two legs leave between them under the ceiling: filled by a piece a little thinner
+    # than the links, so its faces lie behind theirs and not in the same plane
+    notch = solid([7.3, 15.3, 6.5 + SIGN_NOTCH_INSET], [8.7, 16, 9.5 - SIGN_NOTCH_INSET], SIGN_CHAIN_SIDE, "#chain")
+    elements += turned_all([notch], sign_turn(turn))
+    return elements
+
+
+def sign_template(name: str, elements: list) -> None:
+    MODELS_SINCE[97][f"block/{name}"] = {"parent": "block/block", "ambientocclusion": False,
+                                         "textures": {"chain": SIGN_CHAIN_TEXTURE}, "elements": elements}
+
+
+def hanging_signs() -> None:
+    for step in range(4):
+        turn = -22.5 * step
+        sign_template(f"template_hanging_sign_rot_{step}", turned_all([sign_board()] + side_chains(), sign_turn(turn)))
+        sign_template(f"template_attached_hanging_sign_rot_{step}",
+                      turned_all([sign_board()], sign_turn(turn)) + middle_chains(turn))
+    # On a wall: the bar it hangs from, the chains start at its underside
+    bar = box([0, 14, 6], [16, 16, 10], {
+        "north": face([0, 3.5, 8, 4.5], "#all"), "east": face([8, 2, 10, 3], "#all", cullface="east"),
+        "south": face([0, 2, 8, 3], "#all"), "west": face([8, 3.5, 10, 4.5], "#all", cullface="west"),
+        "up": face([0, 0, 8, 2], "#all", cullface="up"), "down": face([8, 4.5, 0, 6.5], "#all")})
+    sign_template("template_wall_hanging_sign", [sign_board(), bar] + side_chains(clip=14))
+
+
+def standing_sign() -> list:
+    """A sign on its post, where and with the picture regions the game's own has since 26.3."""
+    third = 16 / 12  # one pixel of the sign's picture: its board is 12 of them wide and fills the block's width
+    post = box([8 - third / 2, 0, 8 - third / 2], [8 + third / 2, 7 * third, 8 + third / 2], {
+        "north": face([14, 8, 15, 15], "#all"), "east": face([15, 0, 16, 7], "#all"),
+        "south": face([14, 0, 15, 7], "#all"), "west": face([15, 8, 16, 15], "#all"),
+        "down": face([14, 15, 15, 16], "#all")})
+    board = box([0, 7 * third, 8 - third / 2], [16, 13 * third, 8 + third / 2], {
+        "north": face([0, 8, 12, 14], "#all"), "east": face([12, 1, 13, 7], "#all"),
+        "south": face([0, 1, 12, 7], "#all"), "west": face([12, 8, 13, 14], "#all"),
+        "up": face([0, 0, 12, 1], "#all"), "down": face([0, 14, 12, 15], "#all")})
+    return [post, board]
+
+
+def sign_items() -> None:
+    """The sign items in 3D for 26.3 and later: the entity pictures the older versions' items are cut
+    from (entity_items.py) are gone there, the signs' pictures now are block textures."""
+    for wood in entity_items.SIGN_WOODS:
+        planks = f"minecraft:block/{wood}_planks"
+        MODELS_SINCE[97][f"item/{wood}_sign"] = item_model(
+            standing_sign(), {"all": f"minecraft:block/{wood}_sign", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
+        MODELS_SINCE[97][f"item/{wood}_hanging_sign"] = item_model(
+            [sign_board()] + side_chains(),
+            {"all": f"minecraft:block/{wood}_hanging_sign", "chain": SIGN_CHAIN_TEXTURE, "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
+
+
+hanging_signs()
+sign_items()

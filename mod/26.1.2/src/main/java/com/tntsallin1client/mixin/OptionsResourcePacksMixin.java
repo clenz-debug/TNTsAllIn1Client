@@ -5,8 +5,14 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.tntsallin1client.resourcepack.BundledResourcePacks;
 import net.minecraft.client.Options;
 import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackRepository;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 /**
  * {@code updateResourcePacks} leaves every fixed-position pack out of options.txt - vanilla only
@@ -18,6 +24,15 @@ import org.spongepowered.asm.mixin.injection.At;
  */
 @Mixin(Options.class)
 public class OptionsResourcePacksMixin {
+	@Shadow
+	public List<String> resourcePacks;
+
+	/** See {@link BundledResourcePacks#replaceLegacyDarkMode}. */
+	@Inject(method = "loadSelectedResourcePacks", at = @At("HEAD"))
+	private void tntsallin1client$replaceLegacyDarkMode(PackRepository repository, CallbackInfo ci) {
+		BundledResourcePacks.replaceLegacyDarkMode(this.resourcePacks, repository);
+	}
+
 	@WrapOperation(
 			method = "updateResourcePacks",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/Pack;isFixedPosition()Z")

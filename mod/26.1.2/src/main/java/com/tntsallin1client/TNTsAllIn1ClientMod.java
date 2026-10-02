@@ -29,6 +29,7 @@ import com.tntsallin1client.fullbright.FullbrightHandler;
 import com.tntsallin1client.hud.ArmorStatusBundledHud;
 import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.ArmorStatusSlotHud;
+import com.tntsallin1client.hud.ClockHud;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.FreecamHud;
@@ -79,6 +80,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 
 		// Own wishlist item: latency (ping) counter HUD, same shape as the FPS counter above.
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "latency_hud"), new LatencyHud());
+
+		// Own wishlist item: clock HUD (real time of day), same shape as the FPS counter above.
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "clock_hud"), new ClockHud());
 
 		// Phase 5j: fullbright toggle.
 		ClientTickEvents.END_CLIENT_TICK.register(FullbrightHandler::tick);

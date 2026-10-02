@@ -6,7 +6,7 @@ that are solid - so their shape depends on where each picture is see-through. On
 stored (one "#" or "." per pixel) - never the pictures themselves.
 Rerun when a Minecraft update changes one of these pictures:
 
-Usage: python extract_masks.py <client.jar>
+Usage: python extract_masks.py <client.jar>   (the newest supported version's - it has every picture)
 """
 import io
 import pathlib
@@ -18,8 +18,8 @@ from PIL import Image
 
 OUT = pathlib.Path(__file__).parent / "texture_masks.py"
 # Pictures besides the doors' and trapdoors' (those are found from the blockstates)
-EXTRA = ["glow_lichen", "sculk_vein", "vine", "weeping_vines", "weeping_vines_plant", "twisting_vines", "twisting_vines_plant", "bush", "firefly_bush", "sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3", "stonecutter_saw", "calibrated_sculk_sensor_amethyst", "bamboo_stage0", "lily_pad", "redstone_dust_dot", "redstone_dust_line0", "redstone_dust_line1"] + [
-    f"pointed_dripstone_{direction}_{thickness}" for direction in ("down", "up")
+EXTRA = ["glow_lichen", "sculk_vein", "vine", "weeping_vines", "weeping_vines_plant", "twisting_vines", "twisting_vines_plant", "bush", "firefly_bush", "red_shrub", "sweet_berry_bush_stage0", "sweet_berry_bush_stage1", "sweet_berry_bush_stage2", "sweet_berry_bush_stage3", "stonecutter_saw", "calibrated_sculk_sensor_amethyst", "bamboo_stage0", "lily_pad", "redstone_dust_dot", "redstone_dust_line0", "redstone_dust_line1"] + [
+    f"{spike}_{direction}_{thickness}" for spike in ("pointed_dripstone", "sulfur_spike") for direction in ("down", "up")
     for thickness in ("tip", "frustum", "middle", "base", "tip_merge")]
 # Pictures whose lighter pixels get a mask of their own ("<name>_light": solid and at least this bright) -
 # the vine's leaves stand further out than its stems

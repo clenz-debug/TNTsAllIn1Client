@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -43,6 +44,10 @@ public final class BundledResourcePacks {
 	private static final String FLAT_ICONS_PACK_PREFIX = "file/TNT-Flat-Inventory-Icons-";
 	/** Our own packs' file names (the 3D blocks, the 3D bushes, the flat icons). */
 	private static final String OWN_PACK_PREFIX = "file/TNT-";
+	/** "file/" + our own dark mode pack's file name (resourcepacks/dark-mode), which ends in the Minecraft version. */
+	private static final String DARK_MODE_PACK_PREFIX = "file/TNT-Dark-Mode-";
+	/** The third-party "Default Dark Mode" pack ours replaces - still recognized as long as an instance has it. */
+	private static final String LEGACY_DARK_MODE_PACK_PREFIX = "file/Default-Dark-Mode-";
 
 	private static Set<String> bundledFileNames;
 
@@ -133,9 +138,48 @@ public final class BundledResourcePacks {
 		return packId.startsWith("continuity:");
 	}
 
-	/** Matches every version of the bundled "Default Dark Mode" pack ({@code ClientMenuScreen#DARK_MODE_PACK_ID} names the exact file per Minecraft version). */
+	/** Our own dark mode pack, or the third-party one it replaces - any version of either. */
+	public static boolean isDarkModePackId(String packId) {
+		return packId.startsWith(DARK_MODE_PACK_PREFIX) || packId.startsWith(LEGACY_DARK_MODE_PACK_PREFIX);
+	}
+
 	private static boolean isDarkModePack(Pack pack) {
-		return pack.getId().startsWith("file/Default-Dark-Mode-");
+		return isDarkModePackId(pack.getId());
+	}
+
+	/** The dark mode pack the client menu's switch turns on: ours if the launcher bundled it, else the third-party one, else null. */
+	public static String darkModePackId(PackRepository repository) {
+		return firstAvailable(repository, DARK_MODE_PACK_PREFIX)
+				.or(() -> firstAvailable(repository, LEGACY_DARK_MODE_PACK_PREFIX))
+				.orElse(null);
+	}
+
+	private static Optional<String> firstAvailable(PackRepository repository, String prefix) {
+		return repository.getAvailableIds().stream().filter(id -> id.startsWith(prefix)).findFirst();
+	}
+
+	/**
+	 * Someone who had the third-party dark mode pack switched on keeps a dark mode once the launcher
+	 * stops bundling it: its entry in the saved pack list ({@code Options#resourcePacks}) is replaced
+	 * by our own pack. Runs before vanilla reads that list - vanilla drops entries whose pack is gone,
+	 * and dark mode would silently be off.
+	 */
+	public static void replaceLegacyDarkMode(List<String> savedPackIds, PackRepository repository) {
+		Optional<String> own = firstAvailable(repository, DARK_MODE_PACK_PREFIX);
+		if (own.isEmpty()) {
+			return;
+		}
+		for (int i = savedPackIds.size() - 1; i >= 0; i--) {
+			String id = savedPackIds.get(i);
+			if (!id.startsWith(LEGACY_DARK_MODE_PACK_PREFIX) || repository.isAvailable(id)) {
+				continue;
+			}
+			if (savedPackIds.contains(own.get())) {
+				savedPackIds.remove(i);
+			} else {
+				savedPackIds.set(i, own.get());
+			}
+		}
 	}
 
 	private static synchronized Set<String> bundledFileNames() {

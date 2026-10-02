@@ -18,7 +18,6 @@ Mods (downloaded from Modrinth, installed into the game instance):
   e4mc                MIT                         e4mc.txt              https://github.com/vgskye/e4mc-minecraft-architectury
 
 Resource packs (downloaded by the launcher, installed into the game instance):
-  Default Dark Mode   CC-BY-NC-SA-4.0             default-dark-mode.txt https://github.com/nebuIr/Default-Dark-Mode
   Bushy Vegetation    BSD-3-Clause                bushy-vegetation.txt  https://modrinth.com/resourcepack/bushy-vegetation
 
 Fonts:

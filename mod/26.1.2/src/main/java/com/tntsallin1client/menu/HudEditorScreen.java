@@ -6,6 +6,7 @@ import com.tntsallin1client.hud.ArmorStatusHud;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
 import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.ArmorStatusSlotHud;
+import com.tntsallin1client.hud.ClockHud;
 import com.tntsallin1client.hud.CoordinatesHud;
 import com.tntsallin1client.hud.FpsCounterHud;
 import com.tntsallin1client.hud.HudLayout;
@@ -97,6 +98,12 @@ public class HudEditorScreen extends Screen {
 					Component.translatable("gui.tntsallin1client.menu.latency_hud"),
 					config.latencyHudLayout,
 					this::latencyBounds));
+		}
+		if (config.clockHudEnabled) {
+			entries.add(new Entry(
+					Component.translatable("gui.tntsallin1client.menu.clock_hud"),
+					config.clockHudLayout,
+					this::clockBounds));
 		}
 		if (config.keystrokesEnabled) {
 			entries.add(new Entry(
@@ -239,6 +246,8 @@ public class HudEditorScreen extends Screen {
 		config.coordinatesHudLayout = new HudLayout();
 		config.itemCounterHudLayout = new HudLayout();
 		config.fpsCounterHudLayout = new HudLayout();
+		config.latencyHudLayout = new HudLayout();
+		config.clockHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
 		config.systemInfoHudLayout = new HudLayout();
 		config.pinnedRecipeHudLayout = new HudLayout();
@@ -359,6 +368,20 @@ public class HudEditorScreen extends Screen {
 		HudLayout layout = config.latencyHudLayout;
 		float x = layout.customPosition ? layout.x : LatencyHud.defaultX(this.width, this.font, label);
 		float y = layout.customPosition ? layout.y : LatencyHud.defaultY();
+
+		int unscaledWidth = this.font.width(label);
+		int unscaledHeight = this.font.lineHeight;
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect clockBounds() {
+		ClientConfig config = ClientConfig.get();
+		String label = ClockHud.buildLabel(config);
+
+		HudLayout layout = config.clockHudLayout;
+		float x = layout.customPosition ? layout.x : ClockHud.defaultX(this.width, this.font, label);
+		float y = layout.customPosition ? layout.y : ClockHud.defaultY();
 
 		int unscaledWidth = this.font.width(label);
 		int unscaledHeight = this.font.lineHeight;

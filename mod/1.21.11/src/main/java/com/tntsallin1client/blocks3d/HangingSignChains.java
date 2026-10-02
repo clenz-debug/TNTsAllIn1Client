@@ -48,7 +48,10 @@ public final class HangingSignChains {
 	public static void submit(PoseStack pose, SubmitNodeCollector collector, int light, boolean middle,
 			ModelFeatureRenderer.@Nullable CrumblingOverlay crumbling) {
 		Model.Simple model = middle ? middleChains() : sideChains();
-		collector.submitModel(model, Unit.INSTANCE, pose, model.renderType(TEXTURE), light, OverlayTexture.NO_OVERLAY, -1, crumbling);
+		// The last number is the outline color, not a tint: anything but 0 draws the chains into the
+		// glowing-entity outline as well - they turned white whenever a glowing entity was in view
+		// (own user report)
+		collector.submitModel(model, Unit.INSTANCE, pose, model.renderType(TEXTURE), light, OverlayTexture.NO_OVERLAY, 0, crumbling);
 	}
 
 	/** Shows or hides the sign model's own flat chains - hidden while ours are drawn instead. */
@@ -82,12 +85,22 @@ public final class HangingSignChains {
 			PartDefinition root = mesh.getRoot();
 			for (float turn : new float[] {(float) Math.PI / 4, (float) -Math.PI / 4}) {
 				CubeListBuilder cubes = CubeListBuilder.create();
-				// Each link's end bar sits in the neighbouring link's hole - never on top of another bar
-				link(cubes, 0, 0, 4, true);
-				link(cubes, 0, 2, 4, false);
-				link(cubes, 0, 4, 5, true);
+				// Each link's end bar sits in the neighbouring link's hole - never on top of another bar.
+				// A leg starts half a pixel below the spot both lean around, with a link seen from its
+				// narrow side: so the two only touch along an edge. Starting at that spot with links facing
+				// the front, they crossed each other - three pixels wide, flickering through one another
+				// and sticking up into a chain block above (own user report).
+				link(cubes, 0, 0.5f, 4, false);
+				link(cubes, 0, 2.5f, 5, true);
+				link(cubes, 0, 5.5f, 3.5f, false);
 				root.addOrReplaceChild(turn > 0 ? "left" : "right", cubes, PartPose.offsetAndRotation(0, -6, 0, 0, 0, turn));
 			}
+			// The notch the two legs leave between them under the ceiling: filled by a piece a little
+			// thinner than the links, so its faces lie behind theirs and not in the same plane
+			CubeListBuilder notch = CubeListBuilder.create();
+			texture(notch, SIDE_PIXEL);
+			notch.addBox(-0.7f, -6, -1.4f, 1.4f, 0.7f, 2.8f);
+			root.addOrReplaceChild("notch", notch, PartPose.ZERO);
 			middleChains = bake(mesh);
 		}
 		return middleChains;

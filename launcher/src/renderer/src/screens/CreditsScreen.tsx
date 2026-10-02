@@ -24,11 +24,6 @@ const ENTRIES: CreditEntry[] = [
   { name: 'Cape Provider', license: 'LGPL-2.1-or-later', url: 'https://github.com/litetex-oss/mcm-cape-provider' },
   { name: 'e4mc', license: 'MIT', url: 'https://github.com/vgskye/e4mc-minecraft-architectury' },
   {
-    name: 'Default Dark Mode (resource pack)',
-    license: 'CC-BY-NC-SA-4.0',
-    url: 'https://github.com/nebuIr/Default-Dark-Mode'
-  },
-  {
     name: 'Bushy Vegetation (resource pack)',
     license: 'BSD-3-Clause',
     url: 'https://modrinth.com/resourcepack/bushy-vegetation'

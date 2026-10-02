@@ -250,7 +250,8 @@ END_CRYSTAL = [
 ]
 END_CRYSTAL_TEXTURE = "minecraft:entity/end_crystal/end_crystal"
 
-WOODS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak"]
+# Poplar: 26.3 and later (build.py leaves its models out of older versions' packs)
+WOODS = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak", "poplar"]
 SIGN_WOODS = WOODS + ["bamboo", "crimson", "warped"]
 MINECART_TEXTURE = "minecraft:entity/minecart"
 ARMOR_STAND_TEXTURE = "minecraft:entity/armorstand/wood"
@@ -259,9 +260,15 @@ TEXTURE_RENAMES = {84: {MINECART_TEXTURE: "minecraft:entity/minecart/minecart",
                         ARMOR_STAND_TEXTURE: "minecraft:entity/armorstand/armorstand"}}
 
 
+def texture_renames(pack_format: int) -> dict:
+    """The renames in force at this pack format: the newest table at or below it."""
+    formats = [known for known in TEXTURE_RENAMES if known <= pack_format]
+    return TEXTURE_RENAMES[max(formats)] if formats else {}
+
+
 def atlas_sources(pack_format: int) -> dict:
     """Additions to the block texture atlas (the game merges every pack's atlas sources)."""
-    renames = TEXTURE_RENAMES.get(pack_format, {})
+    renames = texture_renames(pack_format)
     singles = [renames.get(name, name) for name in (MINECART_TEXTURE, ARMOR_STAND_TEXTURE)]
     return {"sources": [
         {"type": "minecraft:directory", "source": "entity/boat", "prefix": "entity/boat/"},

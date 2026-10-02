@@ -1,18 +1,21 @@
 """
 Generates the "TNT Flat Inventory Icons" resource pack for one Minecraft version (own user request:
-3D item models from the bundled 3D pack look wrong in the inventory, but should stay 3D everywhere
-else). The 3D pack is our own TNT 3D Blocks (resourcepacks/3d-blocks), which replaced Vanilla Tweaks.
+3D item models from the bundled 3D pack look wrong in the inventory; later: the hand should show
+the same item the inventory shows). The 3D pack is our own TNT 3D Blocks (resourcepacks/3d-blocks),
+which replaced Vanilla Tweaks.
 
 Since 1.21.4 an item definition (assets/minecraft/items/<id>.json) can pick its model per display
 context. For every item whose look the 3D pack changes - directly via its item definition, or
 indirectly through any item/block model in the item's model chain - this pack overrides the item
 definition with:
-    display_context == "gui"  ->  the untouched vanilla model (copied into our own namespace, so
-                                  the 3D pack's overrides of the same model paths can't reach it)
-    anything else             ->  exactly what the 3D pack would have used (3D in hand, on the
-                                  ground, in item frames)
+    in the GUI and in a hand  ->  the untouched vanilla model (copied into our own namespace, so
+    (first and third person)      the 3D pack's overrides of the same model paths can't reach it) -
+                                  also where that is a block in vanilla too, like a trapdoor (own
+                                  user report: it stayed the 3D pack's model in the hand)
+    anything else             ->  exactly what the 3D pack would have used (3D on the ground, in
+                                  item frames, on the head)
 The pack sits directly above the 3D pack (pinned by the mod), below the user's own packs, and is
-switched by the mod menu's "3D items in inventory" toggle.
+switched by the mod menu's "3D items in inventory & hand" toggle.
 
 Usage (re-run whenever the bundled 3D packs change; several 3D packs comma-separated, lowest first -
 the bushes have a pack of their own):
@@ -24,6 +27,7 @@ import zipfile
 
 NAMESPACE = "tntsallin1client"
 PREFIX = "assets/minecraft/"
+VANILLA_CONTEXTS = ["gui", "firstperson_lefthand", "firstperson_righthand", "thirdperson_lefthand", "thirdperson_righthand"]
 
 
 def normalize(model_id):
@@ -155,7 +159,7 @@ def main():
             definition["model"] = {
                 "type": "minecraft:select",
                 "property": "minecraft:display_context",
-                "cases": [{"when": "gui", "model": remap_refs(vanilla_definition["model"])}],
+                "cases": [{"when": VANILLA_CONTEXTS, "model": remap_refs(vanilla_definition["model"])}],
                 "fallback": source["model"],
             }
             out_items[f"{PREFIX}items/{item_id}.json"] = definition
@@ -166,7 +170,7 @@ def main():
         "pack": {
             "min_format": pack_format,
             "max_format": pack_format,
-            "description": "§6TNT Flat Inventory Icons\n§7Flache Items im Inventar",
+            "description": "§6TNT Flat Inventory Icons\n§7Flache Items in Inventar und Hand",
         }
     }
     if pack_format < 84:

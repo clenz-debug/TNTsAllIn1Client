@@ -136,8 +136,9 @@ export async function checkForModBundleUpdate(versionId: string): Promise<ModBun
   // Dev mode always runs the live build of our mod (bundleSync.ts) - a release jar is never offered there.
   const ownModUpdateAvailable = usesDownloadedBundles() && entry.ownMod !== null && entry.ownMod.version !== applied.ownMod
 
-  // Fully up to date, but a mod the manifest no longer lists may still sit in the bundle: an update
-  // applied by a launcher from before 0.1.5 left it there, and nothing offers "update" anymore.
+  // Fully up to date, but a mod or pack the manifest no longer lists may still sit in the bundle: an
+  // update applied by an older launcher left it there (mods before 0.1.5, packs up to 0.1.6), and
+  // nothing offers "update" anymore.
   const upToDate = outdatedMods.length === 0 && outdatedResourcepacks.length === 0 && !ownModUpdateAvailable
   if (upToDate && (!usesDownloadedBundles() || hasDownloadedBundle(versionId))) {
     await exclusivePerVersion(versionId, async () => pruneDroppedMods(versionId, entry, await loadLauncherSettings()))
@@ -352,25 +353,36 @@ async function applyModBundleUpdateUnlocked(versionId: string, signal?: AbortSig
 }
 
 /**
- * A mod dropped from the manifest leaves an already downloaded bundle too - `bundleSync.ts` then
- * takes its jar out of the instances like any other that's no longer bundled. Only ever called once
- * everything else matches the manifest: our own mod of an older release may still depend on the
- * dropped mod (0.1.4 needed 3D Skin Layers), and removing that jar before the new own mod is in
- * place leaves a game that doesn't start.
+ * A mod or resource pack dropped from the manifest leaves an already downloaded bundle too -
+ * `bundleSync.ts` then takes its file out of the instances like any other that's no longer bundled.
+ * Only ever called once everything else matches the manifest: our own mod of an older release may
+ * still depend on the dropped mod (0.1.4 needed 3D Skin Layers) or switch the dropped pack on by its
+ * file name (up to 0.1.6: Default Dark Mode), and removing the file before the new own mod is in
+ * place leaves a game that doesn't start, or a switch that does nothing.
  */
 async function pruneDroppedMods(versionId: string, entry: ModBundleVersionEntry, settings: LauncherSettings): Promise<LauncherSettings> {
-  const pinnedNames = new Set(entry.bundledMods.map((pin) => pin.name))
+  const pinnedMods = new Set(entry.bundledMods.map((pin) => pin.name))
   const appliedMods = settings.appliedModBundleVersions[versionId] ?? {}
-  const dropped = Object.keys(appliedMods).filter((name) => !pinnedNames.has(name))
-  if (dropped.length === 0) return settings
+  const droppedMods = Object.keys(appliedMods).filter((name) => !pinnedMods.has(name))
+  const pinnedPacks = new Set(entry.bundledResourcepacks.map((pin) => pin.name))
+  const appliedPacks = settings.appliedResourcepackVersions[versionId] ?? {}
+  const droppedPacks = Object.keys(appliedPacks).filter((name) => !pinnedPacks.has(name))
+  if (droppedMods.length === 0 && droppedPacks.length === 0) return settings
 
-  const modsDir = bundleDirsUnder(downloadedBundlesRoot(), versionId).mods
-  await Promise.all(dropped.map((name) => rm(join(modsDir, appliedMods[name].fileName), { force: true })))
+  const dirs = bundleDirsUnder(downloadedBundlesRoot(), versionId)
+  await Promise.all([
+    ...droppedMods.map((name) => rm(join(dirs.mods, appliedMods[name].fileName), { force: true })),
+    ...droppedPacks.map((name) => rm(join(dirs.resourcepacks, `${name}.zip`), { force: true }))
+  ])
   const updated: LauncherSettings = {
     ...settings,
     appliedModBundleVersions: {
       ...settings.appliedModBundleVersions,
-      [versionId]: Object.fromEntries(Object.entries(appliedMods).filter(([name]) => pinnedNames.has(name)))
+      [versionId]: Object.fromEntries(Object.entries(appliedMods).filter(([name]) => pinnedMods.has(name)))
+    },
+    appliedResourcepackVersions: {
+      ...settings.appliedResourcepackVersions,
+      [versionId]: Object.fromEntries(Object.entries(appliedPacks).filter(([name]) => pinnedPacks.has(name)))
     }
   }
   await saveLauncherSettings(updated)

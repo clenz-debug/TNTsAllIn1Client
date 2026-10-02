@@ -32,8 +32,61 @@ public final class InventorySorter {
 	}
 
 	public static void sort(MultiPlayerGameMode gameMode, InventoryMenu menu, Player player) {
+		if (player.hasInfiniteMaterials()) {
+			sortCreative(gameMode, menu);
+			return;
+		}
 		consolidateStacks(gameMode, menu, player);
 		reorderByItem(gameMode, menu, player);
+	}
+
+	/**
+	 * Creative mode: the sorted inventory is written slot by slot, the way the creative inventory itself
+	 * changes slots (a set-creative-slot packet per slot, the server takes it as it is) - no clicks.
+	 * Replayed clicks duplicated the held item there and left the rest unsorted (own user report): in
+	 * creative the client also reports changed slots to the server on its own
+	 * ({@code CreativeInventoryListener}, fired by every slot update that comes in), and those reports
+	 * cut in between our click packets, which leave paced over several ticks - the server then replayed
+	 * the clicks on an inventory that was already rearranged.
+	 */
+	private static void sortCreative(MultiPlayerGameMode gameMode, InventoryMenu menu) {
+		// Same result as the click version: partial stacks merged, then ordered by item (or category first)
+		List<ItemStack> stacks = new ArrayList<>();
+		for (int i = FIRST_SLOT; i < LAST_SLOT; i++) {
+			ItemStack stack = menu.getSlot(i).getItem();
+			int remaining = stack.getCount();
+			for (ItemStack earlier : stacks) {
+				if (remaining == 0) {
+					break;
+				}
+				if (ItemStack.isSameItemSameComponents(earlier, stack)) {
+					int moved = Math.min(remaining, earlier.getMaxStackSize() - earlier.getCount());
+					earlier.grow(moved);
+					remaining -= moved;
+				}
+			}
+			if (!stack.isEmpty() && remaining > 0) {
+				ItemStack rest = stack.copy();
+				rest.setCount(remaining);
+				stacks.add(rest);
+			}
+		}
+
+		Comparator<String> order = Comparator.naturalOrder();
+		if (ClientConfig.get().quickSortGroupByCategory) {
+			Map<String, Integer> categoryRanks = categoryRanks(stacks.stream().map(InventorySorter::itemKey).toList());
+			order = Comparator.<String>comparingInt(categoryRanks::get).thenComparing(Comparator.naturalOrder());
+		}
+		stacks.sort(Comparator.comparing(InventorySorter::itemKey, order));
+
+		for (int i = FIRST_SLOT; i < LAST_SLOT; i++) {
+			int rank = i - FIRST_SLOT;
+			ItemStack sorted = rank < stacks.size() ? stacks.get(rank) : ItemStack.EMPTY;
+			if (!ItemStack.matches(menu.getSlot(i).getItem(), sorted)) {
+				menu.getSlot(i).set(sorted);
+				gameMode.handleCreativeModeItemAdd(sorted, i);
+			}
+		}
 	}
 
 	/** Merges scattered partial stacks of the same item into as few slots as possible. */

@@ -3,12 +3,15 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.blocks3d.Blocks3d;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
+import com.tntsallin1client.resourcepack.BundledResourcePacks;
 import com.tntsallin1client.skinlayers.SkinLayers3d;
 import me.pepperbell.continuity.client.config.ContinuityConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackRepository;
+
+import java.util.List;
 
 
 /**
@@ -18,13 +21,6 @@ import net.minecraft.server.packs.repository.PackRepository;
  * exact same features without keeping two copies of this list in sync.
  */
 public final class ClientMenuFeatures {
-	/**
-	 * The 5r dark-inventory resource pack bundled in {@code launcher/resourcepacks-bundle/} - pack IDs
-	 * are "file/" + the file name on disk (vanilla's {@code FolderRepositorySource}); update it when
-	 * the file is renamed. The 3D block model packs are listed in {@link Blocks3d}.
-	 */
-	private static final String DARK_MODE_PACK_ID = "file/Default-Dark-Mode-1.21.11-2026.4.0.zip";
-
 	private ClientMenuFeatures() {
 	}
 
@@ -62,6 +58,13 @@ public final class ClientMenuFeatures {
 					config.save();
 				},
 				() -> new LatencyOptionsScreen(parent));
+
+		sink.addToggleRow(config.clockHudEnabled, Component.translatable("gui.tntsallin1client.menu.clock_hud"),
+				value -> {
+					config.clockHudEnabled = value;
+					config.save();
+				},
+				() -> new ClockOptionsScreen(parent));
 
 		sink.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
 				value -> {
@@ -193,13 +196,19 @@ public final class ClientMenuFeatures {
 				},
 				() -> new BlockModels3dOptionsScreen(parent));
 
-		boolean darkModeEnabled = packRepository.getSelectedIds().contains(DARK_MODE_PACK_ID);
+		// Ours if the launcher bundled it, else the third-party pack it replaces. Switching off removes
+		// whichever of the two is on.
+		String darkModePackId = BundledResourcePacks.darkModePackId(packRepository);
+		boolean darkModeEnabled = packRepository.getSelectedIds().stream().anyMatch(BundledResourcePacks::isDarkModePackId);
 		sink.addToggleRow(darkModeEnabled, Component.translatable("gui.tntsallin1client.menu.dark_mode"),
 				value -> {
-					if (value) {
-						packRepository.addPack(DARK_MODE_PACK_ID);
-					} else {
-						packRepository.removePack(DARK_MODE_PACK_ID);
+					for (String id : List.copyOf(packRepository.getSelectedIds())) {
+						if (BundledResourcePacks.isDarkModePackId(id)) {
+							packRepository.removePack(id);
+						}
+					}
+					if (value && darkModePackId != null) {
+						packRepository.addPack(darkModePackId);
 					}
 					minecraft.options.updateResourcePacks(packRepository);
 				});

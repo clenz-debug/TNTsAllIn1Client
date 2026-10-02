@@ -52,8 +52,8 @@ function optionKey(line: string): string {
 
 /**
  * Options that belong to the instance, not the player: the active resource packs. The pack files
- * live per instance and are often named per version (`Default-Dark-Mode-26.2-...` vs.
- * `...-1.21.11-...`), so a shared list switched a pack off in every instance that has a
+ * live per instance and are often named per version (`TNT-Dark-Mode-26.1.2` vs.
+ * `...-1.21.11`), so a shared list switched a pack off in every instance that has a
  * differently named file - and that instance then wrote the shortened list back for all others
  * (own user report: dark mode gone after playing another instance).
  */

@@ -20,6 +20,7 @@ import models3d
 PACK_FORMATS = {
     "1.21.11": 75,
     "26.1.2": 84,
+    "26.3": 97,
 }
 
 DESCRIPTION = "§6TNT 3D-Blöcke\n§7Eigene 3D-Modelle für TNT's All-In-1 Client"
@@ -34,8 +35,9 @@ FACES = {"north", "south", "east", "west", "up", "down"}
 ANGLES = {-45, -22.5, 0, 22.5, 45}
 
 
-def validate(path: str, data: dict) -> list:
-    """What Minecraft would reject or silently drop in a model - checked before anything gets packed."""
+def validate(path: str, data: dict, any_rotation: bool = False) -> list:
+    """What Minecraft would reject or silently drop in a model - checked before anything gets packed.
+    any_rotation: a model only 26.x loads, which takes any angle and rotations around several axes."""
     problems = []
     for i, element in enumerate(data.get("elements", [])):
         where = f"{path} element {i}"
@@ -43,7 +45,7 @@ def validate(path: str, data: dict) -> list:
             if len(corner) != 3 or any(not -16 <= v <= 32 for v in corner):
                 problems.append(f"{where}: position {corner} outside -16..32")
         rotation = element.get("rotation")
-        if rotation and (rotation["angle"] not in ANGLES or rotation["axis"] not in ("x", "y", "z")):
+        if rotation and not any_rotation and (rotation["angle"] not in ANGLES or rotation["axis"] not in ("x", "y", "z")):
             problems.append(f"{where}: rotation {rotation}")
         if not element.get("faces"):
             problems.append(f"{where}: no faces")
@@ -139,14 +141,33 @@ def overlapping_faces(path: str, data: dict) -> list:
 
 def for_version(data: dict, pack_format: int) -> dict:
     """Before 26.1 a model's texture entry is only a name - {"sprite": ..., "force_translucent": ...}
-    entries become just the sprite's name there. From 26.1 on, some entity textures have moved."""
-    renames = entity_items.TEXTURE_RENAMES.get(pack_format, {})
+    entries become just the sprite's name there. From 26.1 on, some entity textures have moved.
+    26.3 dropped an element's "shade": false for "shade_direction_override": "up" (as in its own models)."""
+    if pack_format >= 97 and "elements" in data:
+        data = {**data, "elements": [
+            {**{key: value for key, value in element.items() if key != "shade"}, "shade_direction_override": "up"}
+            if element.get("shade") is False else element
+            for element in data["elements"]]}
+    renames = entity_items.texture_renames(pack_format)
     if pack_format >= 84:
         textures = {key: renames.get(value, value) if isinstance(value, str) else value
                     for key, value in data.get("textures", {}).items()}
     else:
         textures = {key: value["sprite"] if isinstance(value, dict) else value for key, value in data.get("textures", {}).items()}
     return {**data, "textures": textures} if "textures" in data else data
+
+
+# Blocks that only exist from this pack format on - their models stay out of older versions' packs.
+NEW_BLOCKS = {"sulfur_spike": 97, "poplar": 97, "red_shrub": 97}
+
+
+def in_version(model_path: str, pack_format: int) -> bool:
+    """26.3 turned signs into plain block models with textures of their own (block/<wood>_sign): the
+    entity textures our 3D sign items are cut from are gone there, so those items keep their flat
+    vanilla look in 26.3 until they are rebuilt on the new models."""
+    if any(block in model_path and pack_format < since for block, since in NEW_BLOCKS.items()):
+        return False
+    return not (pack_format >= 97 and model_path.startswith("item/") and model_path.endswith("_sign"))
 
 
 def mcmeta(pack_format: int, description: str = DESCRIPTION) -> dict:
@@ -164,6 +185,8 @@ def write(zf: zipfile.ZipFile, name: str, data: str) -> None:
 
 def build(out_dir: pathlib.Path) -> list:
     problems = [problem for path, data in models3d.MODELS.items() for problem in validate(path, data) + overlapping_faces(path, data)]
+    problems += [problem for models in models3d.MODELS_SINCE.values() for path, data in models.items()
+                 for problem in validate(path, data, any_rotation=True)]
     if problems:
         raise SystemExit("Invalid models:\n" + "\n".join(problems))
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -174,8 +197,13 @@ def build(out_dir: pathlib.Path) -> list:
         with zipfile.ZipFile(path, "w") as zf:
             write(zf, "pack.mcmeta", json.dumps(mcmeta(pack_format), indent=2, ensure_ascii=False))
             for model_path in main_models:
+                if not in_version(model_path, pack_format):
+                    continue
                 data = for_version(models3d.MODELS[model_path], pack_format)
                 write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(data, indent=1))
+            for since, models in sorted(models3d.MODELS_SINCE.items()):
+                for model_path in sorted(models) if pack_format >= since else ():
+                    write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(for_version(models[model_path], pack_format), indent=1))
             for block in sorted(models3d.BLOCKSTATES):
                 write(zf, f"assets/minecraft/blockstates/{block}.json", json.dumps(models3d.BLOCKSTATES[block], indent=1))
             # Entity textures for the entity-shaped items, added to the block texture atlas
@@ -187,6 +215,8 @@ def build(out_dir: pathlib.Path) -> list:
         with zipfile.ZipFile(path, "w") as zf:
             write(zf, "pack.mcmeta", json.dumps(mcmeta(pack_format, BUSHES_DESCRIPTION), indent=2, ensure_ascii=False))
             for model_path in sorted(models3d.BUSH_MODELS):
+                if not in_version(model_path, pack_format):
+                    continue
                 data = for_version(models3d.MODELS[model_path], pack_format)
                 write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(data, indent=1))
         written.append(path)

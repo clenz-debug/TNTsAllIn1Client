@@ -51,7 +51,6 @@ public class CreditsScreen extends Screen {
 			new CreditEntry("Continuity", "LGPL-3.0-only", "https://github.com/PepperCode1/Continuity"),
 			new CreditEntry("Cape Provider", "LGPL-2.1-or-later", "https://github.com/litetex-oss/mcm-cape-provider"),
 			new CreditEntry("e4mc", "MIT", "https://github.com/vgskye/e4mc-minecraft-architectury"),
-			new CreditEntry("Default Dark Mode (resource pack)", "CC-BY-NC-SA-4.0", "https://github.com/nebuIr/Default-Dark-Mode"),
 			new CreditEntry("Bushy Vegetation (resource pack)", "BSD-3-Clause", "https://modrinth.com/resourcepack/bushy-vegetation"),
 			new CreditEntry("Inter (font)", "SIL OFL 1.1", "https://github.com/rsms/inter"));
 
