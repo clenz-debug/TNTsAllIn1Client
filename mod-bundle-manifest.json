@@ -2,9 +2,9 @@
   "versions": {
     "1.21.11": {
       "ownMod": {
-        "version": "0.1.6",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.6/tntsallin1client-0.1.6-mc1.21.11.jar",
-        "sha1": "cc846f95d33701d07e2f909e28dc8b4bb2392584"
+        "version": "0.1.7",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/tntsallin1client-0.1.7-mc1.21.11.jar",
+        "sha1": "fee1bf7aaa3abdd7283b0cb8df268bdba6ec1b2f"
       },
       "bundledMods": [
         {
@@ -46,12 +46,6 @@
           "sha1": "9d78b5b905f43a46463d7f848a04ec95a0f01508"
         },
         {
-          "name": "Default-Dark-Mode-1.21.11-2026.4.0",
-          "version": "2026.4.0",
-          "url": "https://cdn.modrinth.com/data/6SLU7tS5/versions/sPDc9hXF/Default-Dark-Mode-1.21.11-2026.4.0.zip",
-          "sha1": "fb44a18556bd2954b7ac566b677ed13b9b30f42b"
-        },
-        {
           "name": "TNT-3D-Blocks-1.21.11",
           "version": "0.1.4",
           "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/TNT-3D-Blocks-1.21.11.zip",
@@ -64,18 +58,24 @@
           "sha1": "72adb56d8a401d5c77d1f4f0ac01637368a7e291"
         },
         {
+          "name": "TNT-Dark-Mode-1.21.11",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Dark-Mode-1.21.11.zip",
+          "sha1": "03e692de51adc35daf309c05b24d168219278dc5"
+        },
+        {
           "name": "TNT-Flat-Inventory-Icons-1.21.11",
-          "version": "0.1.4",
-          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/TNT-Flat-Inventory-Icons-1.21.11.zip",
-          "sha1": "fa7405f7fd8b1a49084ed0154a84ac7028a23047"
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Flat-Inventory-Icons-1.21.11.zip",
+          "sha1": "13eb9171c34abc4cec10d87b53a3ad76e0fc261f"
         }
       ]
     },
     "26.1.2": {
       "ownMod": {
-        "version": "0.1.6",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.6/tntsallin1client-0.1.6-mc26.1.2.jar",
-        "sha1": "b32905ec5bf79dd16ff454c109c44ca14070e826"
+        "version": "0.1.7",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/tntsallin1client-0.1.7-mc26.1.2.jar",
+        "sha1": "bcaab9d025cbff193c5fbe55d7544f78e0941f05"
       },
       "bundledMods": [
         {
@@ -111,12 +111,6 @@
       ],
       "bundledResourcepacks": [
         {
-          "name": "Default-Dark-Mode-26.2-2026.6.0",
-          "version": "2026.6.0",
-          "url": "https://cdn.modrinth.com/data/6SLU7tS5/versions/tPC8gaIQ/Default-Dark-Mode-26.2-2026.6.0.zip",
-          "sha1": "5f9740e6866d8814624fcde84945d98193c51552"
-        },
-        {
           "name": "TNT-3D-Blocks-26.1.2",
           "version": "0.1.4",
           "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/TNT-3D-Blocks-26.1.2.zip",
@@ -129,10 +123,81 @@
           "sha1": "5a3e21877f49b030087b2c4cc32e159743f539ca"
         },
         {
+          "name": "TNT-Dark-Mode-26.1.2",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Dark-Mode-26.1.2.zip",
+          "sha1": "f29c02a234ed0dbd9cf48524d796e9384ea25895"
+        },
+        {
           "name": "TNT-Flat-Inventory-Icons-26.1.2",
-          "version": "0.1.4",
-          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.4/TNT-Flat-Inventory-Icons-26.1.2.zip",
-          "sha1": "93f96017b83b54857b6d5f395728128b446db738"
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Flat-Inventory-Icons-26.1.2.zip",
+          "sha1": "a6ed150c98f452e226f87786324e4bcdc489ace9"
+        }
+      ]
+    },
+    "26.3": {
+      "ownMod": {
+        "version": "0.1.7",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/tntsallin1client-0.1.7-mc26.3.jar",
+        "sha1": "eaec9b213f3f7255374b56251aa1aeef7a89163b"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "bNnaTiuM"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "v4PSXean"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "xS0Q8LSi"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "Jt2sCWTQ"
+        },
+        {
+          "name": "cape-provider",
+          "modrinthProjectId": "orXAsira",
+          "modrinthVersionId": "ehiQHMI3"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "AouleFRY"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "TNT-3D-Blocks-26.3",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-3D-Blocks-26.3.zip",
+          "sha1": "877b8c235faa908da21dccd08197a4b6166fb8bf"
+        },
+        {
+          "name": "TNT-3D-Bushes-26.3",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-3D-Bushes-26.3.zip",
+          "sha1": "473b854a33753d17f8decb2ebe0fb81c8b2d805e"
+        },
+        {
+          "name": "TNT-Dark-Mode-26.3",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Dark-Mode-26.3.zip",
+          "sha1": "9237fa17370ec524b1b6f0f3af346cf63fd88dd4"
+        },
+        {
+          "name": "TNT-Flat-Inventory-Icons-26.3",
+          "version": "0.1.7",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.7/TNT-Flat-Inventory-Icons-26.3.zip",
+          "sha1": "1e280b496775986dfc0f1c0f4aaa42a5f73e85ec"
         }
       ]
     }
