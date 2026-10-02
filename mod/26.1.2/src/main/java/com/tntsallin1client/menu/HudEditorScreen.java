@@ -263,7 +263,9 @@ public class HudEditorScreen extends Screen {
 		// example content so the box can still be positioned before ever joining a world.
 		List<String> lines = player != null ? CoordinatesHud.buildLines(config, player) : CoordinatesHud.placeholderLines(config);
 		if (lines.isEmpty()) {
-			return null;
+			// Every part (coordinates, direction, degrees) switched off - the real HUD correctly shows
+			// nothing then, but the editor still needs a box to drag/resize, same as itemCounterBounds.
+			lines = List.of(Component.translatable("gui.tntsallin1client.menu.coordinates_hud").getString());
 		}
 
 		HudLayout layout = config.coordinatesHudLayout;

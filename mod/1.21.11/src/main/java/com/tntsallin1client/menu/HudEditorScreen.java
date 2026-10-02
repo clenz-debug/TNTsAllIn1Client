@@ -245,7 +245,9 @@ public class HudEditorScreen extends Screen {
 		ClientConfig config = ClientConfig.get();
 		List<String> lines = CoordinatesHud.buildLines(config, player);
 		if (lines.isEmpty()) {
-			return null;
+			// Every part (coordinates, direction, degrees) switched off - the real HUD correctly shows
+			// nothing then, but the editor still needs a box to drag/resize, same as itemCounterBounds.
+			lines = List.of(Component.translatable("gui.tntsallin1client.menu.coordinates_hud").getString());
 		}
 
 		HudLayout layout = config.coordinatesHudLayout;
