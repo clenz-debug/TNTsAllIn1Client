@@ -4,6 +4,7 @@ import com.tntsallin1client.menu.ClientMenuScreen;
 import com.tntsallin1client.menu.HudEditorScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,9 +23,11 @@ public final class ThemedUi {
 	}
 
 	/**
-	 * Client design on, and either one of the mod's own menu screens or the pause menu in its client
-	 * layout. Not the HUD editor (draws the live HUD over the world) and not the Minecraft-design
-	 * list menu (only ever opened in the Minecraft design anyway).
+	 * Client design on, and either one of the mod's own menu screens or the pause menu or title screen
+	 * in its client layout (the title screen's own buttons draw themselves, this is for the vanilla
+	 * buttons in it: the icon row and the friends button). Not the HUD editor (draws the live HUD
+	 * over the world) and not the Minecraft-design list menu (only ever opened in the Minecraft
+	 * design anyway).
 	 */
 	public static boolean isThemed(@Nullable Screen screen) {
 		if (screen == null || !ClientDesign.isClient()) {
@@ -32,6 +35,9 @@ public final class ThemedUi {
 		}
 		if (screen instanceof PauseScreen) {
 			return screen instanceof PauseScreenLayoutAccess access && access.tntsallin1client$isClientLayout();
+		}
+		if (screen instanceof TitleScreen) {
+			return screen instanceof TitleScreenLayoutAccess access && access.tntsallin1client$isClientLayout();
 		}
 		return screen.getClass().getName().startsWith(MENU_PACKAGE)
 				&& !(screen instanceof HudEditorScreen) && !(screen instanceof ClientMenuScreen);

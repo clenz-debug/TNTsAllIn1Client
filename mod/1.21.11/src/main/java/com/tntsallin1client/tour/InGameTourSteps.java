@@ -27,11 +27,11 @@ import java.util.function.Predicate;
 
 /**
  * The in-game tour's steps (own user request), in order: on the title screen the Client Mods menu
- * in the design the player picked, the key binding hint, then the same in the other design (only
- * looking - nothing can be switched on there); then the player creates a world, opens the pause
- * menu and tries things out by clicking themselves: the design switch, the Client Mods menu, one
- * feature, its options, and the friends screen. Which design to keep is asked at the very end
- * ({@code TourFinishScreen}).
+ * in the design the player picked, the key binding hint, the Friends button, then the same in the
+ * other design (only looking - nothing can be switched on there); then the player creates a world,
+ * opens the pause menu and tries things out by clicking themselves: the design switch, the Client
+ * Mods menu, one feature, its options, and the friends screen. Which design to keep is asked at the
+ * very end ({@code TourFinishScreen}).
  */
 public final class InGameTourSteps {
 	private static final String OPEN_MODS = "gui.tntsallin1client.menu.open_button";
@@ -107,6 +107,9 @@ public final class InGameTourSteps {
 		}
 		if (first) {
 			steps.add(info("title_options", title, widget("menu.options"), null));
+			// The Friends button is on the title screen too (own user request: the tour should point it
+			// out) - like the pause menu's, only with friends available at all.
+			steps.add(new TourStep("title_friends", TourStep.Kind.INFO, title, widget(FRIENDS_BUTTON), null, null, FriendsBridge::isActive));
 		}
 		if (!bothDesigns) {
 			return;

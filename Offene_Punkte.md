@@ -1,19 +1,19 @@
 # Offene Punkte (ohne 3D-Modelle)
 
 Stand 2026-10-02. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
-Alles Gebaute ist mit 0.1.7 veröffentlicht. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
+Stand der Veröffentlichung: 0.1.7; was danach gebaut wurde, steht unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen portieren (vor allem Vollversionen)
 - [ ] Versionen vor 1.14 (z.B. 1.8.9 für PvP): der Launcher startet alles über Fabric, das geht erst ab 1.14 – bräuchte Start ohne Mod-Loader oder Legacy Fabric plus das alte Startformat
 - [ ] Linux und macOS
 
+
 ## 2. Noch von dir zu prüfen (mit 0.1.7 schon veröffentlicht)
 - [ ] Logo am Nametag: Test mit anderen Client-Nutzern
-- [ ] Auto-Update eines installierten Launchers von 0.1.6 auf 0.1.7
-- [ ] Erster Start einer 26.3-Instanz mit dem installierten Launcher (bisher lief 26.3 nur im Dev-Launcher)
-- [ ] Wegpunkt erstellen: die Schalter für Leuchtsäule, Markierung, Entfernung und Verblassen direkt im Erstell-Screen
-- [ ] Dark Mode: die nachgebesserte helle Ecke oben links an der Hotbar
+
+## 2a. Bestätigt, wartet auf das nächste Release
+- [ ] Nächstes Release (nur mit deinem OK): Mod-Version hochsetzen, die drei `TNT-Dark-Mode-<version>.zip` neu hochladen und ihre Manifest-Einträge hochziehen. Enthält bisher: dunkles Löschen-Feld im Dark Mode, die drei Symbol-Buttons im 26.3-Client-Design, Freunde-Menü im Hauptmenü samt Tour-Schritt - alles von dir bestätigt (2026-10-02)
 
 ## 3. Vor einer öffentlichen Veröffentlichung
 Derzeit nichts offen. Code-Signing steht unter „4. Eventuell“.

@@ -18,6 +18,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ServerData;
@@ -88,10 +89,11 @@ public final class FriendsBridge {
 			ClientUserBadges.tick(mc);
 		});
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> WorldInvites.onServerStopped());
-		// A small "Friends" button in the pause menu's top left corner - the button rows themselves
-		// already carry two layouts (Minecraft/client design), a corner stays clear of both.
+		// A small "Friends" button in the top left corner of the pause menu and of the title screen
+		// (own user request: not only in the pause menu) - the button rows themselves already carry
+		// two layouts (Minecraft/client design), a corner stays clear of both.
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-			if (!active || !(screen instanceof PauseScreen pauseScreen) || !pauseScreen.showsPauseMenu()) return;
+			if (!active || !hasFriendsButton(screen)) return;
 			Component label = invites.isEmpty()
 					? Component.translatable("gui.tntsallin1client.friends.title")
 					: Component.translatable("gui.tntsallin1client.friends.button_with_invites", invites.size());
@@ -99,6 +101,10 @@ public final class FriendsBridge {
 					.bounds(6, 6, 90, 20)
 					.build());
 		});
+	}
+
+	private static boolean hasFriendsButton(Screen screen) {
+		return screen instanceof TitleScreen || (screen instanceof PauseScreen pauseScreen && pauseScreen.showsPauseMenu());
 	}
 
 	/** Launched by our launcher with an online account - friends features are available. */
@@ -144,6 +150,8 @@ public final class FriendsBridge {
 	}
 
 	private static void read(Minecraft mc, JsonObject json) {
+		boolean wasActive = active;
+		int invitesBefore = invites.size();
 		active = true;
 		dnd = json.has("dnd") && json.get("dnd").getAsBoolean();
 
@@ -183,6 +191,13 @@ public final class FriendsBridge {
 			if (seenInvites.add(invite.key())) {
 				notifyInvite(mc, invite);
 			}
+		}
+
+		// The title screen's Friends button is only there while friends are active and names the
+		// number of invitations - rebuilt when either changed while that screen is open (through
+		// resize: Fabric's init events have to fire for the button to be added).
+		if ((!wasActive || invites.size() != invitesBefore) && mc.screen instanceof TitleScreen openTitleScreen) {
+			openTitleScreen.resize(openTitleScreen.width, openTitleScreen.height);
 		}
 
 		if (json.has("join") && json.get("join").isJsonObject()) {

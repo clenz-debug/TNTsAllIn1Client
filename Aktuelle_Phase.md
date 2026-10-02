@@ -1292,7 +1292,7 @@ Nutzerwunsch: 26.3 voll unterstützen wie 1.21.11 und 26.1.2. Minecraft 26.3 (20
 
 `gradlew build` grün, `check_mixins.py 26.3`: 104 Ziele, 0 Probleme.
 
-## Waypoint erstellen: Anzeige-Schalter direkt im Erstell-Screen (2026-10-01, gebaut, noch nicht bestätigt) — `mod/` (alle drei Versionen)
+## Waypoint erstellen: Anzeige-Schalter direkt im Erstell-Screen (2026-10-01, vom Nutzer selbst getestet und abgehakt 2026-10-02, mit 0.1.7 veröffentlicht) — `mod/` (alle drei Versionen)
 
 Nutzerwunsch: Leuchtsäule, Markierung, Entfernung und Verblassen schon beim Erstellen einstellen können, egal ob über das Waypoint-Menü oder den Hotkey. Beide Wege öffnen denselben `WaypointCreateScreen`, deshalb genügt die Änderung dort: vier An/Aus-Schalter unter dem Farbwähler, gleiche Beschriftung und Anordnung (zwei pro Zeile) wie im Bearbeiten-Screen, vorbelegt mit den Standardwerten aus den Waypoint-Optionen. Keine neuen Sprachschlüssel (`waypoint_edit.show_beam` usw. werden mitbenutzt). In 1.21.11, 26.1.2 und 26.3 identisch umgesetzt, `gradlew build` überall grün. Im Spiel noch nicht gesehen.
 
@@ -1309,7 +1309,7 @@ Nutzermeldung (in 26.3 gesehen, andere Versionen unbekannt): Liegt ein Item im a
 
 **Fix:** Im Kreativmodus (`player.hasInfiniteMaterials()`, dieselbe Prüfung wie in `handleCreativeModeItemAdd`) wird nicht mehr geklickt. `InventorySorter#sortCreative` berechnet das fertige Inventar (Teilstapel zusammengelegt, dann nach Item bzw. Kategorie geordnet - dasselbe Ergebnis wie der Klick-Weg) und schreibt nur die geänderten Plätze, je mit einem Kreativ-Slot-Paket - so wie das Kreativ-Inventar selbst Plätze ändert. Im Überlebensmodus bleibt der Klick-Weg. `gradlew build` in allen drei Versionen grün.
 
-## Dark Mode: Hotbar (2026-10-01, gebaut, noch nicht bestätigt) — `resourcepacks/dark-mode/`
+## Dark Mode: Hotbar (2026-10-01, samt Nachbesserung der Ecke vom Nutzer selbst getestet und abgehakt 2026-10-02, mit 0.1.7 veröffentlicht) — `resourcepacks/dark-mode/`
 
 Nutzermeldung: die Hotbar ist im Dark Mode noch zu hell. Sie war bisher nicht im Pack. Jetzt dabei: `sprites/hud/hotbar.png` und `hotbar_offhand_left/right.png` über die mildere `WIDGET_PALETTE` (Rahmen-Grau `0x5D`/`0x7E`/`0x93` → etwa `0x2E`/`0x41`/`0x4F`). Das halbtransparente Innere bleibt (es werden nur voll deckende Pixel umgefärbt), ebenso der farbige Auswahlrahmen. 195 statt 192 Bilder je Version, alle drei Versionen neu gebaut und ins Dev-Bundle kopiert. Die SHA-1 der beiden Dark-Mode-Einträge im lokalen Manifest sind nachgezogen (das Pack ist noch nicht veröffentlicht).
 
@@ -1370,6 +1370,40 @@ Auf ausdrückliche Anweisung des Nutzers ("pass das Manifest an und dann können
 - **Manifest:** `ownMod` 0.1.7 für alle drei Versionen; neuer Eintrag `versions.26.3` mit sechs Fremd-Mods (Fabric API `bNnaTiuM`, Sodium `v4PSXean` - Alpha -, Lithium `xS0Q8LSi`, Continuity `Jt2sCWTQ`, Cape Provider `ehiQHMI3`, e4mc `AouleFRY`; IDs per SHA-1 der lokal getesteten Jars bei Modrinth nachgeschlagen) und vier eigenen Packs; Flat-Icons-Packs für 1.21.11 und 26.1.2 von v0.1.4 auf v0.1.7; TNT Dark Mode statt Default Dark Mode. Gegengeprüft: jedes Pack im lokalen Bundle steht mit der Prüfsumme der lokalen Datei im Manifest und umgekehrt.
 - **Installer:** `npm run package:win`; `latest.yml` (sha512 und Größe) passt zum Installer, das beigelegte `seed-manifest.json` ist das Manifest aus dem Repo, die beigelegten Mod-Jars haben die Prüfsummen aus dem Manifest. 26.3 ist bewusst nicht im Installer (kein Eintrag in `SEED_BUNDLE_MINECRAFT_VERSIONS`) - die Version kommt über das Manifest.
 - **Veröffentlicht:** Tag `v0.1.7` auf Commit `9479e03`, ein `gh release create` mit allen 14 Dateien (Installer, Blockmap, `latest.yml`, drei Mod-Jars, acht Packs). Danach geprüft: genau ein Release zum Tag, als "Latest" markiert, kein Entwurf; alle elf im Manifest genannten v0.1.7-Dateien öffentlich heruntergeladen und gegen die SHA-1 aus dem Manifest geprüft; öffentliches `latest.yml` zeigt 0.1.7. Erst dann `main` gepusht - das Manifest auf `raw.githubusercontent.com` entspricht dem lokalen.
-- **Ohne Bestätigung des Nutzers mit ausgeliefert:** die Anzeige-Schalter im Waypoint-Erstell-Screen und die Nachbesserung der hellen Ecke an der Dark-Mode-Hotbar.
-- **Nicht geprüft:** das Auto-Update eines installierten 0.1.6-Launchers auf 0.1.7 und der erste Start einer 26.3-Instanz mit einem installierten (nicht Dev-) Launcher.
+- **Nach dem Release vom Nutzer selbst getestet und in `Offene_Punkte.md` abgehakt (2026-10-02):** das Auto-Update eines installierten Launchers von 0.1.6 auf 0.1.7, der erste Start einer 26.3-Instanz mit dem installierten (nicht Dev-) Launcher, die Anzeige-Schalter im Waypoint-Erstell-Screen und die nachgebesserte helle Ecke an der Dark-Mode-Hotbar. Diese vier Punkte waren beim Release noch ungeprüft bzw. unbestätigt.
 - **Commits:** `8e69d42` (26.3, Dark Mode, Uhr, Korrekturen), `9479e03` (Version und Manifest).
+
+## Dark Mode: Löschen-Feld im Kreativ-Inventar (2026-10-02, vom Nutzer bestätigt, nicht veröffentlicht) — `resourcepacks/dark-mode/`
+
+Punkt des Nutzers in `Offene_Punkte.md`: im Dark Mode ist das X- bzw. Löschen-Feld im Kreativ-Inventar etwas hell. Ursache: das Feld hat in Vanilla eine rötliche Füllung (`#AB7F7F`); das Pack färbt nur neutrale Grautöne um, die Füllung blieb also so hell wie in Vanilla, und das X (Grau 31) wurde fast schwarz.
+
+Fix: neue Tabelle `COLOR_SWAPS` in `build.py` - einzelne Farben, die je Bild genau ersetzt werden. Für `container/creative_inventory/tab_inventory.png`: Füllung `#AB7F7F` → dunkles Rot `#4A2424`. Die Farbe kommt in allen drei Versionen nur in diesem Bild vor (durchsucht: alle Container- und Rezeptbuch-Texturen). Das X bleibt dunkel: es ist ein neutrales Grau und läuft wie alles andere durch die Palette (fast schwarz, dunkler als das Feld wie in Vanilla). Ein erster Stand mit hellerem X (`#A06868`) wurde vom Nutzer abgelehnt (2026-10-02: "X nicht hell sondern dunkel, der Hintergrund ums X passt") - die Füllung ist damit bestätigt.
+
+Geprüft: gegenüber den mit 0.1.7 veröffentlichten Packs ändert sich in jeder der drei Versionen nur diese eine Datei; Vorher/Nachher-Bild angesehen. Packs liegen im Dev-Bundle. **Manifest nicht angefasst** - dort stehen noch die Prüfsummen der veröffentlichten Dark-Mode-Packs; beim nächsten Release die drei Packs neu hochladen und die Einträge hochziehen (nur mit OK).
+
+## Client-Design: die drei Symbol-Buttons des 26.3-Hauptmenüs (2026-10-02, vom Nutzer bestätigt, nicht veröffentlicht) — `mod/26.3/`
+
+Nutzerwunsch: das Client-Design an die drei neuen Buttons im Hauptmenü anpassen. In 26.3 hat das Vanilla-Hauptmenü zwischen Realms und Optionen/Beenden eine mittige Reihe aus drei 20er-Symbol-Buttons: Freunde (neu in 26.3, `FriendsButton`), Sprache und Barrierefreiheit (per javap aus `TitleScreen#init`: `CommonButtons.friends/language/accessibility`, Position über `getHorizontalPosition`). Das Client-Layout baut seine Buttons selbst (`TitleScreenDesign#buildClientLayout`) und hatte die drei gar nicht.
+
+- **Jetzt:** dieselbe Reihe im Client-Layout, mittig **unter** dem Client-Mods-Button (in Vanilla sitzt sie zwischen Realms und Optionen; die Platzierung war eine Annahme, der Nutzer hat den Punkt samt Platzierung abgehakt). Es sind Vanillas eigene Buttons mit denselben Aktionen wie im Vanilla-Menü (Freunde über `OnlineOptionsScreen.confirmFriendsListEnabled` → `FriendsOverlayScreen`, `LanguageSelectScreen`, `AccessibilityOptionsScreen`), also mit Symbol, Tooltip und der Zahl offener Freundschaftsanfragen.
+- **Aussehen:** `ThemedUi#isThemed` zählt jetzt auch das Hauptmenü im Client-Layout als Theme-Bildschirm - dadurch zeichnet `AbstractButtonThemeMixin` den Rahmen der Symbol-Buttons im Theme, wie schon im Pausenmenü. Die eigenen Buttons des Layouts (`ThemedButton`, `LogoButton`) sind davon nicht betroffen, sie zeichnen sich selbst.
+- **Freunde-Zähler:** `TitleScreen#tick` aktualisiert die Anfragen über sein Feld `friends`; `TitleScreenMixin` setzt dieses Feld (`@Shadow`) auf den Button des Client-Layouts.
+- **Logo:** `clientLogoRect` rechnet die zusätzliche Reihe ein, das Logo wird bei wenig Platz entsprechend kleiner.
+- **Nur 26.3:** in 1.21.11 und 26.1.2 gibt es den Freunde-Button nicht; Sprache und Barrierefreiheit fehlen dort im Client-Layout weiterhin (dort nicht verlangt).
+
+`check_mixins.py 26.3`: 108 Ziele, 0 Probleme; `gradlew build` grün. Im Spiel nicht gesehen. Der Jar heißt weiter 0.1.7, ist aber neuer als der veröffentlichte - fürs nächste Release die Mod-Version hochsetzen.
+
+## Freunde-Menü auch im Hauptmenü (2026-10-02, vom Nutzer im Spiel bestätigt, nicht veröffentlicht) — `mod/` (alle drei Versionen)
+
+Nutzervorschlag: das eigene Freunde-Menü nicht nur im Esc-Menü, sondern auch im Hauptmenü. Bisher hing der kleine "Freunde"-Button nur oben links im Pausenmenü (`FriendsBridge#register`).
+
+- **Button:** derselbe Button (oben links, 90 breit, mit der Zahl offener Einladungen im Text) jetzt auch im Hauptmenü, im Minecraft- und im Client-Design. Wie im Pausenmenü nur, wenn die Freunde-Funktionen aktiv sind (Start über unseren Launcher mit Online-Konto).
+- **Erst nach dem Start aktiv:** die Freunde-Daten liest die Mod erst rund eine Sekunde nach Spielstart aus der Datei des Launchers. Steht das Hauptmenü da schon, wird es einmal neu aufgebaut (`resize`, damit Fabrics Init-Ereignisse laufen), ebenso wenn sich die Zahl der Einladungen ändert, während es offen ist.
+- **Freunde-Bildschirm ohne Welt:** aus dem Hauptmenü geöffnet zeigt `FriendsInGameScreen` oben weiter die Einladungen (annehmen/ablehnen), darunter statt "Freunde in deine Welt einladen" die Überschrift "Freunde online" mit der Liste ohne Einladen-Buttons und dem Hinweis, dass Einladen aus der eigenen Einzelspielerwelt geht (Esc → Freunde). In einer Welt ist der Bildschirm unverändert. Zwei neue Sprachschlüssel (`friends.online_heading`, `friends.invite.from_world`) in `de_de.json` und `en_us.json`.
+- **Client-Design:** damit der Button im Client-Layout des Hauptmenüs nicht grau bleibt, zählt `ThemedUi#isThemed` das Hauptmenü im Client-Layout jetzt in allen drei Versionen als Theme-Bildschirm (in 26.3 schon seit den Symbol-Buttons).
+
+- **Tour (Nutzerwunsch: die Tour soll zeigen, dass dort auch ein Button ist):** neuer Schritt `title_friends` in `InGameTourSteps` - im Hauptmenü, direkt nach dem Hinweis auf die Tastenbelegung, hebt die Tour den Freunde-Button hervor und erklärt ihn (wer online ist, Einladungen annehmen; einladen im Pausenmenü). Nur im ersten der beiden Designs und nur, wenn die Freunde-Funktionen aktiv sind (`FriendsBridge::isActive`, wie die Freunde-Schritte im Pausenmenü). Zwei neue Sprachschlüssel (`tour.title_friends.title`/`.text`), deutsch und englisch, in allen drei Versionen.
+
+`gradlew build` in allen drei Versionen grün, `check_mixins.py`: 26.1.2 106 Ziele, 26.3 108 Ziele, je 0 Probleme. Vom Nutzer bestätigt (2026-10-02: "passt, ich konnte alles während der Tour prüfen und sehen") - Button im Hauptmenü und Tour-Schritt; ob dabei auch der Freunde-Bildschirm ohne Welt geöffnet wurde, ist nicht gesagt. In 26.3 gibt es damit im Hauptmenü zwei Freunde-Buttons: unseren (Text, oben links) und den von Minecraft selbst (Symbol in der Reihe).
+
+**Stand 2026-10-02 nach dem Release:** Der Nutzer hat in `Offene_Punkte.md` alle drei seit 0.1.7 gebauten Punkte selbst abgehakt (dunkles X im Dark Mode, die drei Symbol-Buttons im 26.3-Client-Design, Freunde-Menü im Hauptmenü samt Tour-Schritt). Alles ist committet, aber nicht veröffentlicht. Fürs nächste Release: Mod-Version hochsetzen (die lokalen Jars heißen noch 0.1.7, sind aber neuer als die veröffentlichten), die drei `TNT-Dark-Mode-<version>.zip` neu hochladen und ihre Manifest-Einträge hochziehen.

@@ -19,10 +19,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The pause menu's "Friends" screen (Phase 8b): world invitations to accept or decline, and - in
- * the player's own singleplayer world - online friends to invite into it (see
- * {@link WorldInvites}). Data comes from the launcher through {@link FriendsBridge}; rebuilt once a
- * second so invitations and their "sent" state show up without reopening.
+ * The "Friends" screen of the pause menu and the title screen (Phase 8b): world invitations to
+ * accept or decline, and - in the player's own singleplayer world - online friends to invite into
+ * it (see {@link WorldInvites}). Opened from the title screen there is no world to invite into: it
+ * lists who is online and says where inviting works. Data comes from the launcher through
+ * {@link FriendsBridge}; rebuilt once a second so invitations and their "sent" state show up without
+ * reopening.
  */
 public class FriendsInGameScreen extends Screen {
 	private static final int ROW_WIDTH = 320;
@@ -85,13 +87,14 @@ public class FriendsInGameScreen extends Screen {
 			y += 8;
 		}
 
-		label(Component.translatable("gui.tntsallin1client.friends.invite_heading"), x, y, 0xFFFFFFFF);
+		boolean inWorld = this.minecraft.level != null;
+		label(Component.translatable(inWorld ? "gui.tntsallin1client.friends.invite_heading" : "gui.tntsallin1client.friends.online_heading"), x, y, 0xFFFFFFFF);
 		y += 14;
-		Component hint = inviteHint();
+		Component hint = inWorld ? inviteHint() : null;
 		if (hint != null) {
 			label(hint, x, y, 0xFFFFCC66);
 		} else {
-			Component status = inviteStatus();
+			Component status = inWorld ? inviteStatus() : null;
 			if (status != null) {
 				label(status, x, y, WorldInvites.state() == WorldInvites.State.FAILED ? 0xFFFF6666 : 0xFFAAAAAA);
 				y += 14;
@@ -99,12 +102,17 @@ public class FriendsInGameScreen extends Screen {
 			List<FriendsBridge.Friend> friends = FriendsBridge.onlineFriends();
 			if (friends.isEmpty()) {
 				label(Component.translatable("gui.tntsallin1client.friends.no_online_friends"), x, y, 0xFFAAAAAA);
+				y += 14;
 			}
 			for (FriendsBridge.Friend friend : friends) {
 				if (y > lastRowY) break;
 				heads.add(new Head(friend.uuid(), x, y + 2));
 				label(Component.translatable("gui.tntsallin1client.friends.friend_row", friend.name(),
 						Component.translatable("gui.tntsallin1client.friends.status." + friend.status())), x + HEAD_TEXT_OFFSET, y + 6, 0xFFE0E0E0);
+				if (!inWorld) {
+					y += ROW_SPACING;
+					continue;
+				}
 				if (WorldInvites.isInvited(friend.uuid())) {
 					label(resultText(WorldInvites.inviteResult(friend.uuid())), buttonsX - BUTTON_WIDTH - 4, y + 6, 0xFFAAAAAA);
 					this.addRenderableWidget(Button.builder(Component.translatable("gui.tntsallin1client.friends.revoke"), button -> {
@@ -122,6 +130,9 @@ public class FriendsInGameScreen extends Screen {
 					this.addRenderableWidget(invite);
 				}
 				y += ROW_SPACING;
+			}
+			if (!inWorld) {
+				label(Component.translatable("gui.tntsallin1client.friends.invite.from_world"), x, y + 6, 0xFFAAAAAA);
 			}
 		}
 

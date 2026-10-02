@@ -4,12 +4,14 @@ import com.tntsallin1client.design.TitleScreenDesign;
 import com.tntsallin1client.design.TitleScreenLayoutAccess;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.FriendsButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,6 +28,9 @@ public abstract class TitleScreenMixin extends Screen implements TitleScreenLayo
 	@Unique
 	private boolean tntsallin1client$clientLayout;
 
+	@Shadow
+	private FriendsButton friends;
+
 	protected TitleScreenMixin(Component title) {
 		super(title);
 	}
@@ -39,7 +44,8 @@ public abstract class TitleScreenMixin extends Screen implements TitleScreenLayo
 	private void tntsallin1client$initClientLayout(CallbackInfo ci) {
 		this.tntsallin1client$clientLayout = TitleScreenDesign.useClientLayout();
 		if (this.tntsallin1client$clientLayout) {
-			TitleScreenDesign.buildClientLayout((TitleScreen) (Object) this, this.width, this.height,
+			// Kept where vanilla's own init keeps it: tick() refreshes the friend request count on it.
+			this.friends = TitleScreenDesign.buildClientLayout((TitleScreen) (Object) this, this.width, this.height,
 					widget -> this.addRenderableWidget(widget), this::tntsallin1client$rebuild);
 			ci.cancel();
 		}
