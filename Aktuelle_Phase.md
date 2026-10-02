@@ -1212,7 +1212,7 @@ Nutzerentscheidung: 3D-Skin-Layers als eigene Umsetzung, damit die Lizenz von tr
 
 **Veröffentlicht (2026-10-01):** Tag `v0.1.5` auf dem getesteten Commit, Release 0.1.5 mit Installer, `.blockmap`, `latest.yml` und beiden Mod-Jars (`tntsallin1client-0.1.5-mc1.21.11.jar`, `-mc26.1.2.jar`); die SHA-1 der hochgeladenen Jars stimmen mit dem Manifest überein. Danach `main` gepusht - damit sind das neue Manifest, README, `PRIVACY.md` und der Build-Workflow online. Stolperstein: Tag und Release konnte Claude anlegen, das Hochladen des Installers wurde ihm verweigert, den Schritt `npm run release:win` hat der Nutzer ausgeführt. Dazwischen war das leere Release kurz das "neueste" und der feste Download-Link ging nicht - beim nächsten Mal den ganzen Veröffentlichungs-Block am Stück vom Nutzer ausführen lassen.
 
-## Eigenes Dark-Mode-Pack "TNT Dark Mode" (2026-10-01, gebaut, vom Nutzer im Spiel bestätigt, noch nicht veröffentlicht) — `resourcepacks/dark-mode/`, `mod/`
+## Eigenes Dark-Mode-Pack "TNT Dark Mode" (2026-10-01, vom Nutzer im Spiel bestätigt, mit 0.1.7 veröffentlicht) — `resourcepacks/dark-mode/`, `mod/`
 
 Zweiter Schritt weg von fremden Inhalten (nach den eigenen 3D-Skin-Layers): Ersatz für "Default Dark Mode" (CC-BY-NC-SA). Aus jenem Pack ist nichts übernommen; angesehen wurde nur, welche Bereiche ein Dark Mode abdecken muss.
 
@@ -1241,7 +1241,7 @@ Neue Zips liegen im Dev-Bundle, keine Mod-Änderung. Vom Nutzer im Spiel bestät
 
 Geprüft: `npm run typecheck` und `npm run build` im Launcher, `./gradlew build` in beiden Mods grün. Das Entfernen aus dem heruntergeladenen Bundle ist nicht live durchgespielt (geht erst mit installiertem Launcher und live geschaltetem Manifest).
 
-## Freecam: kein Namensschild über der Inventar-Figur (2026-10-01, vom Nutzer bestätigt, noch nicht veröffentlicht) — `mod/`
+## Freecam: kein Namensschild über der Inventar-Figur (2026-10-01, vom Nutzer bestätigt, mit 0.1.7 veröffentlicht) — `mod/`
 
 Nutzermeldung: Ist die Freecam an und das Inventar offen, steht über der Spielerfigur im Inventar das eigene Namensschild.
 
@@ -1251,7 +1251,7 @@ Nutzermeldung: Ist die Freecam an und das Inventar offen, steht über der Spiele
 
 **Geprüft:** `./gradlew build` in beiden Versionen grün; im 1.21.11-Jar ist das Ziel korrekt gemappt (`method_48472` in `class_490`). Vom Nutzer im Spiel bestätigt ("passt", beide Versionen).
 
-## Uhrzeit-Anzeige (2026-10-01, vom Nutzer bestätigt, noch nicht veröffentlicht) — `mod/`
+## Uhrzeit-Anzeige (2026-10-01, vom Nutzer bestätigt, mit 0.1.7 veröffentlicht) — `mod/`
 
 Nutzerwunsch: eine Uhr im HUD, wie sie ein Bekannter in seinem Client hat.
 
@@ -1264,7 +1264,7 @@ Nutzerwunsch: eine Uhr im HUD, wie sie ein Bekannter in seinem Client hat.
 
 **Geprüft:** `./gradlew build` in beiden Versionen grün. Vom Nutzer im Spiel bestätigt ("passt", beide Versionen).
 
-## Port auf Minecraft 26.3 (2026-10-01, gebaut, noch nie gestartet) — `mod/26.3/`, `resourcepacks/`, `mod/check_mixins.py`
+## Port auf Minecraft 26.3 (2026-10-01 gebaut, 2026-10-02 vom Nutzer im Spiel bestätigt und mit 0.1.7 veröffentlicht) — `mod/26.3/`, `resourcepacks/`, `mod/check_mixins.py`
 
 Nutzerwunsch: 26.3 voll unterstützen wie 1.21.11 und 26.1.2. Minecraft 26.3 (2026-09-15, Java 25, Resourcepack-Format 97) ist ein großer Umbau: neues Render-System (`com.mojang.renderpearl`), Eingabe über SDL statt GLFW, HUD und Bildschirm-Verwaltung aus `Minecraft`/`Gui` herausgelöst.
 
@@ -1361,3 +1361,15 @@ Nutzerwunsch (am Boot aufgefallen): Sind die 3D-Items im Inventar ausgeschaltet,
 Nutzermeldung: Mit Client-Design ist der Hintergrund im Esc-Menü nicht dunkel, man sieht die Welt. Ursache (per javap, 26.1.2 gegen 26.3): Bis 26.1 ruft `PauseScreen#extractBackground` nur `Screen#extractBackground` auf - dort tauscht `ScreenThemeMixin` den Hintergrund gegen die Theme-Farbe. Seit 26.3 zeichnet `PauseScreen#extractBackground` Unschärfe und Abdunklung selbst (`extractBlurredBackground`, `extractMenuBackground`) und ruft die Basismethode nicht mehr auf, der Haken lief also ins Leere. 1.21.11 und 26.1.2 sind nicht betroffen (dort geht der Aufruf weiter über die Basismethode, in 1.21.11 `renderBackground`).
 
 Fix: `PauseScreenMixin` (nur 26.3) hängt sich selbst an den Anfang von `PauseScreen#extractBackground` und füllt bei Client-Layout mit `background1`, wie `ScreenThemeMixin` es für alle anderen Bildschirme tut. `check_mixins.py 26.3`: 107 Ziele, 0 Probleme; `gradlew build` grün. Vom Nutzer im Spiel bestätigt (2026-10-02, "ja passt").
+
+## Release 0.1.7 (2026-10-02, veröffentlicht) — Launcher, Mod, Manifest
+
+Auf ausdrückliche Anweisung des Nutzers ("pass das Manifest an und dann können wir committen, pushen und releasen"). Ablauf nach Runbook Abschnitt C, Veröffentlichung in einem Schritt.
+
+- **Versionen:** Launcher 0.1.7, eigene Mod 0.1.7 für 1.21.11, 26.1.2 und - neu - 26.3. Alle drei Mods mit `gradlew clean build` frisch gebaut, danach nicht mehr angefasst; `check_mixins.py`: 26.1.2 106 Ziele, 26.3 107 Ziele, je 0 Probleme.
+- **Manifest:** `ownMod` 0.1.7 für alle drei Versionen; neuer Eintrag `versions.26.3` mit sechs Fremd-Mods (Fabric API `bNnaTiuM`, Sodium `v4PSXean` - Alpha -, Lithium `xS0Q8LSi`, Continuity `Jt2sCWTQ`, Cape Provider `ehiQHMI3`, e4mc `AouleFRY`; IDs per SHA-1 der lokal getesteten Jars bei Modrinth nachgeschlagen) und vier eigenen Packs; Flat-Icons-Packs für 1.21.11 und 26.1.2 von v0.1.4 auf v0.1.7; TNT Dark Mode statt Default Dark Mode. Gegengeprüft: jedes Pack im lokalen Bundle steht mit der Prüfsumme der lokalen Datei im Manifest und umgekehrt.
+- **Installer:** `npm run package:win`; `latest.yml` (sha512 und Größe) passt zum Installer, das beigelegte `seed-manifest.json` ist das Manifest aus dem Repo, die beigelegten Mod-Jars haben die Prüfsummen aus dem Manifest. 26.3 ist bewusst nicht im Installer (kein Eintrag in `SEED_BUNDLE_MINECRAFT_VERSIONS`) - die Version kommt über das Manifest.
+- **Veröffentlicht:** Tag `v0.1.7` auf Commit `9479e03`, ein `gh release create` mit allen 14 Dateien (Installer, Blockmap, `latest.yml`, drei Mod-Jars, acht Packs). Danach geprüft: genau ein Release zum Tag, als "Latest" markiert, kein Entwurf; alle elf im Manifest genannten v0.1.7-Dateien öffentlich heruntergeladen und gegen die SHA-1 aus dem Manifest geprüft; öffentliches `latest.yml` zeigt 0.1.7. Erst dann `main` gepusht - das Manifest auf `raw.githubusercontent.com` entspricht dem lokalen.
+- **Ohne Bestätigung des Nutzers mit ausgeliefert:** die Anzeige-Schalter im Waypoint-Erstell-Screen und die Nachbesserung der hellen Ecke an der Dark-Mode-Hotbar.
+- **Nicht geprüft:** das Auto-Update eines installierten 0.1.6-Launchers auf 0.1.7 und der erste Start einer 26.3-Instanz mit einem installierten (nicht Dev-) Launcher.
+- **Commits:** `8e69d42` (26.3, Dark Mode, Uhr, Korrekturen), `9479e03` (Version und Manifest).
