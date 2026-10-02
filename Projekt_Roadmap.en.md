@@ -7,7 +7,8 @@ The goal is a custom Minecraft: Java Edition client (comparable to Lunar Client,
 **Note for continuing work:** New work sessions (including later, fresh conversations) can point directly at this file instead of reloading the previous chat history — saves tokens. It's useful to briefly state in the conversation which phase is currently active and what has already been implemented.
 
 **Fundamental decisions made** (clarified in discussion, considered settled):
-- **Base:** Fabric mod (Fabric Loader + Fabric API), deliberately not Forge and not a fully custom loader.
+- **Base:** Fabric mod (Fabric Loader + Fabric API), not a fully custom loader.
+- **Loader rule (2026-10-02):** Fabric from 1.14 on. The legacy versions (before 1.14, where Fabric doesn't exist) start without a mod loader – no Forge: players who want the old versions' modpacks use other programs for that anyway, and Forge asks not to have its installation automated. Our own mod is meant to get into the game there later through an entry of our own that loads only it (feasibility test: `mod/1.8.9/`). No loader choice per instance.
 - **Performance:** Bundle existing, proven open-source optimization mods (Sodium, Lithium, etc.), no custom rendering/logic engine built from scratch.
 - **Launcher technology:** Electron (TS/JS, renderer ideally with React).
 - **Experience level:** Mostly new territory (Java modding, Fabric/Mixins, Electron/frontend, backend/auth) — the roadmap is accordingly built as a learning path with early visible wins, not as a big-bang design.

@@ -17,7 +17,7 @@ The name is settled; the project's identity is comfort features bundled in one p
 
 | Path | What |
 |---|---|
-| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.21.11` = Java 21, `26.1.2` and `26.3` = Java 25) |
+| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.21.11` = Java 21, `26.1.2` and `26.3` = Java 25). Exception: legacy versions (before 1.14, so far `1.8.9`) have no Fabric - plain Gradle, own entry through LaunchWrapper + Mixin, Legacy Yarn names |
 | `launcher/` | Electron + React + TypeScript launcher (electron-vite); `src/main`, `src/preload`, `src/renderer`, `src/shared` |
 | `backend/` | Small Node service for custom capes and the friends system, runs on a server the user does not own |
 | `designs/` | Branding (logo SVG, color palette) |
@@ -47,6 +47,10 @@ login, skin upload and multiplayer are live.
   The launcher copies the jar from `build/libs/`, so a stale jar means the user tests old code.
 - After touching a mixin in a 26.x version, run `python mod/check_mixins.py <version>` - it checks every mixin
   target against that version's Minecraft jar without starting the game.
+- In a legacy version (`mod/1.8.9/`) that check is part of `./gradlew build` (`verifyMixins`): it loads
+  every mixin target through our own entry against the real obfuscated game, no game window. Code there
+  uses Legacy Yarn names (`TitleScreen`, not Mojang's), Java 8 language level, and nothing that touches
+  game classes may sit in the `launch` package (LaunchWrapper keeps it out of the game's class loader).
 - For tricky vanilla/Sodium behavior, verify via `javap` against the Loom-mapped jars instead of
   guessing - and trace the **full** call chain (including the method that consumes the value you just
   verified) before presenting a fix as the cause.
