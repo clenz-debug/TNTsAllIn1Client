@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"minVersion": "0.7.11",
+	"package": "com.tntsallin1client.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"client": [
+		"GameMenuScreenMixin",
+		"GameOptionsMixin",
+		"InGameHudMixin",
+		"MinecraftClientMixin",
+		"TitleScreenMixin",
+		"TranslationStorageMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -1,0 +1,34 @@
+package com.tntsallin1client.keybind;
+
+import java.util.Arrays;
+
+import net.minecraft.client.option.KeyBinding;
+
+public final class ModKeyBindings {
+	private static final String CATEGORY = "key.category.tntsallin1client.main";
+	/** LWJGL 2's `Keyboard.KEY_NONE` - shows as "NONE" in the Controls screen. */
+	private static final int UNBOUND = 0;
+
+	// Opens the mod menu directly from gameplay, in addition to the pause menu button. Unbound by
+	// default - the user picks a key in the vanilla Controls screen.
+	public static final KeyBinding OPEN_MENU = new KeyBinding("key.tntsallin1client.open_menu", UNBOUND, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU};
+
+	private ModKeyBindings() {
+	}
+
+	/**
+	 * The game's key bindings plus ours. The game keeps them in one array that the Controls screen
+	 * lists and `options.txt` is read into and written from - ours have to be in it before the
+	 * options are loaded (see `GameOptionsMixin`).
+	 */
+	public static KeyBinding[] appendTo(KeyBinding[] keys) {
+		if (Arrays.asList(keys).contains(OPEN_MENU)) {
+			return keys;
+		}
+		KeyBinding[] result = Arrays.copyOf(keys, keys.length + ALL.length);
+		System.arraycopy(ALL, 0, result, keys.length, ALL.length);
+		return result;
+	}
+}

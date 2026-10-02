@@ -1,0 +1,98 @@
+package com.tntsallin1client.config;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+import com.tntsallin1client.hud.HudLayout;
+import net.minecraft.client.MinecraftClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * JSON-backed config, one switch (and later its settings) per feature - same shape and file name as
+ * in the Fabric versions of the mod. Every feature is off until switched on in the mod menu.
+ */
+public class ClientConfig {
+	private static final Logger LOGGER = LogManager.getLogger("tntsallin1client");
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+	private static ClientConfig instance;
+
+	// Colors are ARGB with full alpha, as the color picker hands them out. A HudLayout is where the
+	// HUD editor put an element (see HudLayout).
+
+	// Which parts of the coordinates HUD to show - independent switches, not mutually exclusive.
+	public boolean coordinatesHudEnabled = false;
+	public boolean coordinatesHudShowCoordinates = true;
+	public boolean coordinatesHudShowDirection = true;
+	public boolean coordinatesHudShowDegrees = true;
+	public int coordinatesHudTextColor = 0xFFFFFFFF;
+	public HudLayout coordinatesHudLayout = new HudLayout();
+
+	// Always-visible FPS counter, no F3 needed.
+	public boolean fpsCounterEnabled = false;
+	public int fpsCounterTextColor = 0xFFFFFFFF;
+	public HudLayout fpsCounterHudLayout = new HudLayout();
+
+	// Always-visible latency (ping) in ms.
+	public boolean latencyHudEnabled = false;
+	public int latencyTextColor = 0xFFFFFFFF;
+	public HudLayout latencyHudLayout = new HudLayout();
+
+	// Always-visible clock - the real time of day, as "00:00" (24-hour) or with AM/PM (12-hour).
+	public boolean clockHudEnabled = false;
+	public boolean clockHud24Hour = true;
+	public int clockTextColor = 0xFFFFFFFF;
+	public HudLayout clockHudLayout = new HudLayout();
+
+	public static ClientConfig get() {
+		if (instance == null) {
+			instance = load();
+		}
+		return instance;
+	}
+
+	/** `config/` inside the instance's game folder - where the Fabric versions keep theirs too. */
+	private static Path file() {
+		return new File(MinecraftClient.getInstance().runDirectory, "config").toPath().resolve("tntsallin1client.json");
+	}
+
+	private static ClientConfig load() {
+		Path file = file();
+		if (Files.exists(file)) {
+			try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+				ClientConfig loaded = GSON.fromJson(reader, ClientConfig.class);
+				if (loaded != null) {
+					return loaded;
+				}
+			} catch (IOException | JsonParseException e) {
+				// A config that can't be read must never keep the game from starting.
+				LOGGER.warn("Failed to read config, falling back to defaults.", e);
+			}
+		}
+
+		ClientConfig defaults = new ClientConfig();
+		defaults.save();
+		return defaults;
+	}
+
+	public void save() {
+		Path file = file();
+		try {
+			Files.createDirectories(file.getParent());
+			try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+				GSON.toJson(this, writer);
+			}
+		} catch (IOException e) {
+			LOGGER.warn("Failed to save config.", e);
+		}
+	}
+}
