@@ -13,7 +13,8 @@ recipe book, the advancements window, the menu buttons and sliders (options, pau
 the hotbar's frame.
 Only pixels that are fully opaque and neutral grey change.
 Anything with a colour of its own - flames, arrows, paper, wood, gold frames, red crosses - stays as
-it is, so the pictures keep reading the way they do in vanilla.
+it is, so the pictures keep reading the way they do in vanilla. The exceptions are listed in
+COLOR_SWAPS.
 
 Vanilla draws the screens' labels ("Inventory", "Crafting") in a fixed dark grey that a resource pack
 cannot change. The pack therefore carries assets/tntsallin1client/dark_mode.json with the colour the
@@ -114,6 +115,17 @@ HOTBAR = ["sprites/hud/hotbar*.png"]
 # the exact grey levels a panel is made of change, so the button gets dark and the icon stays.
 ICON_BUTTONS = ["sprites/recipe_book/*filter*.png"]
 
+# Single colours swapped as they are, per picture - for the few places where "only neutral greys
+# change" leaves a bright patch. The creative inventory's "destroy item" slot has a reddish fill
+# that stayed as bright as in vanilla (own user report): now a dark red. Its cross is a neutral grey
+# and goes through the palette like everything else - nearly black, darker than the fill as in
+# vanilla (a lighter cross was tried and turned down).
+COLOR_SWAPS = {
+    "container/creative_inventory/tab_inventory.png": {
+        (0xAB, 0x7F, 0x7F): (0x4A, 0x24, 0x24),
+    },
+}
+
 
 def find_jar(version: str) -> pathlib.Path:
     """The client jar Loom downloaded for this version's mod project."""
@@ -162,14 +174,25 @@ def level_map_for(relative: str):
     return CURVE.__getitem__
 
 
-def recolor(data: bytes, level_map) -> bytes | None:
-    """The picture with its neutral greys run through level_map - None if no pixel changed."""
+def color_swaps_for(relative: str) -> dict:
+    """The single colours swapped in the picture at this path (below textures/gui/)."""
+    return next((swaps for pattern, swaps in COLOR_SWAPS.items() if fnmatch.fnmatchcase(relative, pattern)), {})
+
+
+def recolor(data: bytes, level_map, swaps: dict | None = None) -> bytes | None:
+    """The picture with its neutral greys run through level_map and the colours in swaps replaced -
+    None if no pixel changed."""
+    swaps = swaps or {}
     image = Image.open(io.BytesIO(data)).convert("RGBA")
     pixels = image.load()
     changed = False
     for y in range(image.height):
         for x in range(image.width):
             r, g, b, a = pixels[x, y]
+            if a == 255 and (r, g, b) in swaps:
+                pixels[x, y] = (*swaps[(r, g, b)], a)
+                changed = True
+                continue
             if a != 255 or max(r, g, b) - min(r, g, b) > MAX_CHROMA:
                 continue
             level = level_map(round((r + g + b) / 3))
@@ -237,7 +260,7 @@ def build(version: str, pack_format: int, jar: pathlib.Path, target: pathlib.Pat
             relative = name[len(GUI):]
             if not matches(relative, INCLUDE) or matches(relative, KEEP):
                 continue
-            data = recolor(source.read(name), level_map_for(relative))
+            data = recolor(source.read(name), level_map_for(relative), color_swaps_for(relative))
             if data is None:
                 continue
             write(zf, name, data)
