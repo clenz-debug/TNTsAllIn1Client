@@ -3,6 +3,7 @@ import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { isBundledModEnabled } from '../../../shared/bundledMods'
+import { isLegacyVersion } from '../../../shared/legacyVersions'
 import {
   isBundleCompatibleVersion,
   MODRINTH_SEARCH_PAGE_SIZE,
@@ -205,6 +206,21 @@ export function ModsScreen({
     } finally {
       setInstallingId(null)
     }
+  }
+
+  // A legacy version starts without a mod loader - nothing on this screen could take effect.
+  if (isLegacyVersion(versionId)) {
+    return (
+      <div className="mods-screen">
+        <header>
+          <strong>{t.mods.title}</strong>
+          <button className="link-button" onClick={onClose}>
+            {t.common.back}
+          </button>
+        </header>
+        <p className="version-warning">{t.mods.legacyNoMods(versionId)}</p>
+      </div>
+    )
   }
 
   return (

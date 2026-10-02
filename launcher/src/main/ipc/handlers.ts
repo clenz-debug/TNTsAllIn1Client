@@ -2,9 +2,10 @@ import type { IpcMainInvokeEvent } from 'electron'
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { writeFile } from 'node:fs/promises'
 import { totalmem } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { describeError, localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
+import { isLegacyVersion } from '../../shared/legacyVersions'
 import {
   type CapeLibraryEntry,
   type CapeUploadResult,
@@ -33,7 +34,7 @@ import { deleteCapeFromLibrary, listCapeLibrary, readCapeLibraryPng, saveCapeToL
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
 import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
 import { getBundleCompatibleVersions, isVersionBundleCompatible } from '../launch/bundleCompat'
-import { syncBundledContent } from '../launch/bundleSync'
+import { findOwnModJar, syncBundledContent } from '../launch/bundleSync'
 import { buildClasspath } from '../launch/classpath'
 import { assertInstanceNotImporting, importFromExternalClient, pickExternalClientFolder } from '../launch/clientImport'
 import { installFabricLoader } from '../launch/fabricInstaller'
@@ -64,6 +65,8 @@ import {
 } from '../launch/instanceManager'
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
+import { installLegacyClientEntry } from '../launch/legacyClientEntry'
+import { writeLegacyLogConfig } from '../launch/legacyLogging'
 import { applyModBundleUpdate, checkForModBundleUpdate, ensureLocalBundle } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
 import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
@@ -497,8 +500,20 @@ export function registerIpcHandlers(): void {
           message: `Java-Runtime bereit (${javaComponent}).`
         })
 
-        const bundleCompatible = await isVersionBundleCompatible(versionId)
-        if (!bundleCompatible) {
+        // Before 1.14 there is no Fabric - those versions start without a mod loader, through our
+        // own entry where our mod exists for the version (see legacyClientEntry.ts).
+        const legacy = isLegacyVersion(versionId)
+        const legacyOwnModJar = legacy ? await findOwnModJar(versionId) : null
+        const bundleCompatible = !legacy && (await isVersionBundleCompatible(versionId))
+        if (legacy) {
+          sendLog({
+            source: 'launcher',
+            level: 'info',
+            message: legacyOwnModJar
+              ? `${versionId} startet ohne Mod-Loader über den eigenen Client-Einstieg (${basename(legacyOwnModJar)}).`
+              : `${versionId} startet als reines Minecraft ohne Mod-Loader - ohne Mods und ohne den Client-Mod.`
+          })
+        } else if (!bundleCompatible) {
           sendLog({
             source: 'launcher',
             level: 'info',
@@ -532,7 +547,11 @@ export function registerIpcHandlers(): void {
         }
 
         const vanilla = await installVersion(sendProgress, versionId, instance.id, signal)
-        const installed = await installFabricLoader(vanilla, sendProgress, signal)
+        const installed = !legacy
+          ? await installFabricLoader(vanilla, sendProgress, signal)
+          : legacyOwnModJar
+            ? await installLegacyClientEntry(vanilla, legacyOwnModJar, sendProgress, signal)
+            : vanilla
         await syncBundledContent(
           installed.instanceDir,
           sendProgress,
@@ -549,7 +568,8 @@ export function registerIpcHandlers(): void {
           classpath,
           profile,
           maxMemoryMb: settings.maxMemoryMb,
-          quickPlayMultiplayer: joinAddress
+          quickPlayMultiplayer: joinAddress,
+          legacyLogConfigPath: legacy ? await writeLegacyLogConfig(installed.instanceDir) : undefined
         })
 
         const gameDir = join(installed.instanceDir, 'game')
@@ -557,7 +577,7 @@ export function registerIpcHandlers(): void {
         // instances, same reasoning as before the instance system existed when this carried settings
         // across version switches - these are personal preferences the player wants everywhere, not
         // something meaningfully different per instance. See sharedSettings.ts.
-        await applySharedOptions(gameDir)
+        await applySharedOptions(gameDir, versionId)
         await applySharedServers(gameDir)
         await writeClientDesignFiles(gameDir, settings)
         await writeInGameTourRequest(gameDir, inGameTour === true)
@@ -574,7 +594,7 @@ export function registerIpcHandlers(): void {
         // Friends presence: from here on the launcher reports where in the game the player is.
         await setGameRunning(gameDir)
         gameEndedCleanly = (await launchGame(javaBinaryPath, args, gameDir, sendLog, signal)) === 0
-        await saveSharedOptions(gameDir)
+        await saveSharedOptions(gameDir, versionId)
         await saveSharedServers(gameDir)
         await readBackClientDesign(gameDir)
         sendProgress('done', 1, 1)

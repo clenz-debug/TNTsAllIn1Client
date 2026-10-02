@@ -1,10 +1,12 @@
+import { isLegacyVersion } from '../../shared/legacyVersions'
 import type { GameVersionSummary, GameVersionType } from '../../shared/types'
 import { fetchFabricGameVersions } from './fabricMeta'
 import { fetchManifestVersions } from './versionManifest'
 
 /** Versions-picker data source (Phase 6a): intersects the full Mojang manifest with the set of
  * game versions Fabric actually supports, so nothing unlaunchable-through-Fabric ever shows up
- * in the dropdown. Only `release`/`snapshot` entries are kept — old_beta/old_alpha predate
+ * in the dropdown - plus the legacy versions, which start without a mod loader
+ * (`shared/legacyVersions.ts`). Only `release`/`snapshot` entries are kept — old_beta/old_alpha predate
  * Fabric entirely and never appear in Fabric's set anyway, filtered here too for clarity. Sorted
  * newest-first, same order as Mojang's own manifest. */
 export async function fetchAvailableVersions(): Promise<GameVersionSummary[]> {
@@ -14,6 +16,6 @@ export async function fetchAvailableVersions(): Promise<GameVersionSummary[]> {
   ])
 
   return manifestVersions
-    .filter((v) => (v.type === 'release' || v.type === 'snapshot') && fabricVersions.has(v.id))
+    .filter((v) => (v.type === 'release' || v.type === 'snapshot') && (fabricVersions.has(v.id) || isLegacyVersion(v.id)))
     .map((v) => ({ id: v.id, type: v.type as GameVersionType, releaseTime: v.releaseTime }))
 }

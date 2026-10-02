@@ -74,6 +74,9 @@ export interface VersionDetail {
     jvm: Array<string | ConditionalArgument>
     game: Array<string | ConditionalArgument>
   }
+  /** Versions before 1.13 have this instead of `arguments`: the game arguments as one
+   * space-separated string, and no JVM arguments at all (see `launchArgs.ts`). */
+  minecraftArguments?: string
   /** The Java runtime Mojang's own launcher would download for this version (e.g.
    * `{ component: 'java-runtime-delta', majorVersion: 21 }`). We don't manage per-version
    * runtimes ourselves (see `gameProcess.ts`'s `getInstalledJavaMajorVersion` doc comment) - this

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import { defaultOnPrefix } from '../../../shared/bundledMods'
+import { isLegacyVersion } from '../../../shared/legacyVersions'
 import { ClientSupportMark } from '../ClientSupportMark'
 import { Dropdown } from '../Dropdown'
 import { errorCode, formatError } from '../formatError'
@@ -686,7 +687,11 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
           {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}
           {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
-            <span className="version-warning">{t.play.bundleIncompatibleWarning(selectedInstance.versionId)}</span>
+            <span className="version-warning">
+              {isLegacyVersion(selectedInstance.versionId)
+                ? t.play.legacyWarning(selectedInstance.versionId)
+                : t.play.bundleIncompatibleWarning(selectedInstance.versionId)}
+            </span>
           )}
         </div>
 

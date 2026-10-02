@@ -218,6 +218,8 @@ export const en: typeof de = {
     noInstanceWarning: 'No instance created yet - create one via "Manage instances…".',
     bundleIncompatibleWarning: (versionId: string) =>
       `${versionId} has no bundled mods/resource packs (Sodium, Lithium, our own client mod, …) — launches as plain Fabric+vanilla without mods.`,
+    legacyWarning: (versionId: string) =>
+      `${versionId} launches as plain Minecraft — without mods and without the client features.`,
     play: 'Play',
     playing: 'Running…',
     cancel: 'Cancel Launch'
@@ -257,6 +259,8 @@ export const en: typeof de = {
     bundledInfo:
       'Off by default - enable individually here. Fabric API and Sodium/Lithium (performance, for good framerates even on weaker hardware) as well as Continuity (has its own in-game on/off in the mod menu) always run and therefore don\'t show up as their own toggles.',
     bundleIncompatible: (versionId: string) => `Has no effect right now - ${versionId} has no mod bundle, so it launches without bundled mods anyway.`,
+    legacyNoMods: (versionId: string) =>
+      `${versionId} launches as plain Minecraft without a mod loader - mods can't be used here for versions before 1.14.`,
     bundledSource:
       'The launcher downloads the bundled mods straight from Modrinth - the first launch of a version needs an internet connection for that. Please report problems with these mods (e.g. Sodium) to us, not to their developers: they don\'t give support for clients like this one.',
     bundledLoading: 'Downloading the bundled mods from Modrinth…',

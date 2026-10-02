@@ -1,13 +1,19 @@
 import { app } from 'electron'
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { usesLegacyOptionsFormat } from '../../shared/legacyVersions'
 
 /** Exported (not just used internally) so `clientImport.ts` can copy an external client's
  * `options.txt` straight into the same shared cache every instance already reads from/writes to -
  * see that module's own doc comment for why importing into just the new instance's own folder
- * would be silently overwritten on its first launch. */
-export function sharedOptionsPath(): string {
-  return join(app.getPath('userData'), 'shared-settings', 'options.txt')
+ * would be silently overwritten on its first launch.
+ *
+ * Versions before 1.13 share a file of their own (`legacy/options.txt`): they write key bindings
+ * as numeric LWJGL 2 key codes and drop every option they don't know, so one file for both
+ * generations would reset a modern instance's settings after every session in an old one. */
+export function sharedOptionsPath(versionId: string): string {
+  const root = join(app.getPath('userData'), 'shared-settings')
+  return usesLegacyOptionsFormat(versionId) ? join(root, 'legacy', 'options.txt') : join(root, 'options.txt')
 }
 
 function sharedServersPath(): string {
@@ -21,7 +27,8 @@ function sharedServersPath(): string {
  * settings would silently reset every time they tried a different version. Kept as a single
  * version-independent file instead of duplicating the per-version-instance approach, since these
  * are personal preferences the player wants to follow them everywhere, not something that's ever
- * meaningfully different per version (unlike mods/resourcepacks, which genuinely are).
+ * meaningfully different per version (unlike mods/resourcepacks, which genuinely are) - with the
+ * one split {@link sharedOptionsPath} describes.
  *
  * Scope deliberately narrow: just vanilla's `options.txt`. Not mod-specific config files (Sodium's
  * own options, etc.) - those only apply to 1.21.11 anyway since that's the only bundle-compatible
@@ -32,10 +39,10 @@ function sharedServersPath(): string {
  * Exception: which resource packs are switched on stays per instance ({@link PER_INSTANCE_OPTIONS}),
  * see {@link keepInstanceOptions}.
  */
-export async function applySharedOptions(gameDir: string): Promise<void> {
+export async function applySharedOptions(gameDir: string, versionId: string): Promise<void> {
   try {
     await mkdir(gameDir, { recursive: true })
-    const shared = await readFile(sharedOptionsPath(), 'utf8')
+    const shared = await readFile(sharedOptionsPath(versionId), 'utf8')
     const own = await readFile(join(gameDir, 'options.txt'), 'utf8').catch(() => '')
     await writeFile(join(gameDir, 'options.txt'), keepInstanceOptions(shared, own), 'utf8')
   } catch {
@@ -98,10 +105,10 @@ export function mergeOptions(written: string, previous: string): string {
 /** Copies whatever the just-finished session wrote back out to the shared location, so the next
  * launch - any version - picks up anything the player changed in-game. Options only another
  * instance's mods know are kept, see {@link mergeOptions}. */
-export async function saveSharedOptions(gameDir: string): Promise<void> {
+export async function saveSharedOptions(gameDir: string, versionId: string): Promise<void> {
   try {
-    const destination = sharedOptionsPath()
-    await mkdir(join(app.getPath('userData'), 'shared-settings'), { recursive: true })
+    const destination = sharedOptionsPath(versionId)
+    await mkdir(dirname(destination), { recursive: true })
     const written = await readFile(join(gameDir, 'options.txt'), 'utf8')
     const previous = await readFile(destination, 'utf8').catch(() => '')
     await writeFile(destination, mergeOptions(written, previous), 'utf8')

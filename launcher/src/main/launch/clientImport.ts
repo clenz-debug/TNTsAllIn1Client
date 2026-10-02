@@ -191,8 +191,8 @@ async function copyFromExternalClient(pickedFolder: string, instanceId: string, 
   let importedOptions = false
   const sourceOptionsPath = join(sourceFolder, 'options.txt')
   if (await fileExists(sourceOptionsPath)) {
-    await mkdir(dirname(sharedOptionsPath()), { recursive: true })
-    await copyFile(sourceOptionsPath, sharedOptionsPath())
+    await mkdir(dirname(sharedOptionsPath(versionId)), { recursive: true })
+    await copyFile(sourceOptionsPath, sharedOptionsPath(versionId))
     importedOptions = true
   }
 

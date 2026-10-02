@@ -116,23 +116,8 @@ async function writeSyncedMods(gameDir: string, fileNames: string[]): Promise<vo
  * safe to run standalone) so only the real, remapped runtime jar is ever picked.
  */
 async function syncOwnModJar(libsDir: string, destModsDir: string): Promise<string | null> {
-  let entries: string[]
-  try {
-    entries = await readdir(libsDir)
-  } catch {
-    // Mod hasn't been built yet on this checkout (no `gradlew build` run) - nothing to pull in.
-    return null
-  }
-
-  const candidates = entries.filter(
-    (name) => name.endsWith('.jar') && !name.includes('-sources') && !name.includes('-dev')
-  )
-  if (candidates.length === 0) return null
-
-  const withMtime = await Promise.all(
-    candidates.map(async (name) => ({ name, mtimeMs: (await stat(join(libsDir, name))).mtimeMs }))
-  )
-  const newest = withMtime.reduce((a, b) => (b.mtimeMs > a.mtimeMs ? b : a))
+  const newest = await newestOwnModJar(libsDir)
+  if (!newest) return null
 
   await mkdir(destModsDir, { recursive: true })
   await copyFile(join(libsDir, newest.name), join(destModsDir, newest.name))
@@ -167,6 +152,38 @@ async function resolveDevOwnModLibsDir(resourcesRoot: string, versionId: string)
   if (hasSnapshot) return snapshotDir
 
   return join(resourcesRoot, '..', 'mod', versionId, 'build', 'libs')
+}
+
+/** The newest runnable own-mod jar in `libsDir` (see {@link syncOwnModJar} for what counts), or
+ * `null` if there is none - e.g. the mod hasn't been built on this checkout yet. */
+async function newestOwnModJar(libsDir: string): Promise<{ name: string } | null> {
+  let entries: string[]
+  try {
+    entries = await readdir(libsDir)
+  } catch {
+    return null
+  }
+
+  const candidates = entries.filter(
+    (name) => name.endsWith('.jar') && !name.includes('-sources') && !name.includes('-dev')
+  )
+  if (candidates.length === 0) return null
+
+  const withMtime = await Promise.all(
+    candidates.map(async (name) => ({ name, mtimeMs: (await stat(join(libsDir, name))).mtimeMs }))
+  )
+  return withMtime.reduce((a, b) => (b.mtimeMs > a.mtimeMs ? b : a))
+}
+
+/**
+ * Full path of our own mod jar for `versionId`, from the same place {@link syncBundledContent}
+ * takes it - for the legacy versions, where the jar isn't copied into `mods/` for a loader to find
+ * but put on the game's classpath directly (see `legacyClientEntry.ts`).
+ */
+export async function findOwnModJar(versionId: string): Promise<string | null> {
+  const libsDir = app.isPackaged ? ownModDir(versionId) : await resolveDevOwnModLibsDir(bundledResourcesRoot(), versionId)
+  const newest = await newestOwnModJar(libsDir)
+  return newest ? join(libsDir, newest.name) : null
 }
 
 /**
