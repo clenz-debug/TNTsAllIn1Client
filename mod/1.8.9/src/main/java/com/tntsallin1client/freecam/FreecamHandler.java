@@ -1,0 +1,127 @@
+package com.tntsallin1client.freecam;
+
+import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.keybind.ModKeyBindings;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.entity.player.ClientPlayerEntity;
+
+/**
+ * Freecam: a key detaches the camera from the player and lets it fly around on its own, held back
+ * by walls ({@link FreecamCollision}). The game's camera follows a {@link FreecamCamera} for as long.
+ *
+ * <p>The player stays completely frozen meanwhile - no movement, no turning, nothing sent to the
+ * server about either - and attacking, mining, placing, using and dropping items are blocked (see
+ * the mixins asking {@link #isActive()}). That is deliberate: the feature is meant to stay usable on
+ * servers that don't allow acting from a detached camera.
+ */
+public final class FreecamHandler {
+	private static final int HINT_Y = 4;
+	private static final int HINT_COLOR = 0xFFFF55;
+
+	private static FreecamCamera camera;
+	private static boolean warningShown;
+
+	private FreecamHandler() {
+	}
+
+	public static boolean isActive() {
+		return camera != null;
+	}
+
+	/** Called every game tick. */
+	public static void tick(MinecraftClient client) {
+		while (ModKeyBindings.TOGGLE_FREECAM.wasPressed()) {
+			// Only from gameplay - with a screen open the key belongs to that screen.
+			if (client.currentScreen == null) {
+				if (isActive()) {
+					exit(client);
+				} else {
+					tryEnter(client);
+				}
+			}
+		}
+
+		if (client.world == null) {
+			// Left the world or server - the warning may show again on the next one.
+			warningShown = false;
+		}
+		if (camera != null) {
+			if (client.player == null || camera.world != client.world) {
+				exit(client);
+			} else {
+				camera.move(client);
+			}
+		}
+	}
+
+	private static void tryEnter(MinecraftClient client) {
+		ClientPlayerEntity player = client.player;
+		if (!ClientConfig.get().freecamEnabled || player == null || client.world == null) {
+			return;
+		}
+
+		// Starts exactly where the player's eyes are, looking the same way.
+		FreecamCamera newCamera = new FreecamCamera(client.world);
+		newCamera.placeAt(player.x, player.y + player.getEyeHeight() - FreecamCamera.SIZE / 2.0F, player.z, player.yaw, player.pitch);
+		camera = newCamera;
+		client.setCameraEntity(newCamera);
+
+		// A block half mined stays half mined on the server unless it is told otherwise.
+		client.interactionManager.cancelBlockBreaking();
+
+		// The player no longer ticks, so nothing brings its "a tick ago" values up to the current ones
+		// again - the game would keep drawing it somewhere between the two, twitching. Made equal once
+		// here; the walk animation is stopped the same way (previous and current limb swing amount).
+		player.prevX = player.x;
+		player.prevY = player.y;
+		player.prevZ = player.z;
+		player.prevTickX = player.x;
+		player.prevTickY = player.y;
+		player.prevTickZ = player.z;
+		player.prevYaw = player.yaw;
+		player.prevPitch = player.pitch;
+		player.prevHeadYaw = player.headYaw;
+		player.prevBodyYaw = player.bodyYaw;
+		player.lastHandSwingProgress = player.handSwingProgress;
+		player.field_6748 = 0.0F;
+		player.field_6749 = 0.0F;
+
+		if (!warningShown && !client.isIntegratedServerRunning()) {
+			warningShown = true;
+			client.inGameHud.setOverlayMessage(I18n.translate("gui.tntsallin1client.freecam.warning"), false);
+		}
+	}
+
+	public static void exit(MinecraftClient client) {
+		if (camera == null) {
+			return;
+		}
+		camera = null;
+		if (client.player != null) {
+			client.setCameraEntity(client.player);
+		}
+	}
+
+	/**
+	 * Mouse movement while active, already turned into degrees by the game (see `GameRendererMixin`):
+	 * turns the camera instead of the player, scaled by the freecam's own sensitivity.
+	 */
+	public static void turn(float yawChange, float pitchChange) {
+		if (camera != null) {
+			float factor = ClientConfig.get().freecamSensitivityPercent / 100.0F;
+			camera.increaseTransforms(yawChange * factor, pitchChange * factor);
+		}
+	}
+
+	/**
+	 * A reminder at the top of the screen while active - frozen and unable to move, attack or
+	 * interact, it would otherwise be easy to forget that freecam is the reason.
+	 */
+	public static void renderHint(MinecraftClient client, int screenWidth) {
+		if (camera != null) {
+			String hint = I18n.translate("gui.tntsallin1client.freecam.hud_active");
+			client.textRenderer.drawWithShadow(hint, (screenWidth - client.textRenderer.getStringWidth(hint)) / 2, HINT_Y, HINT_COLOR);
+		}
+	}
+}

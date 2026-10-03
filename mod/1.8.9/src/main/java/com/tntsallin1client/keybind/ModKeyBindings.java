@@ -16,7 +16,10 @@ public final class ModKeyBindings {
 	// Hold to zoom in. Unbound by default as well - also settable in the zoom's own options screen.
 	public static final KeyBinding ZOOM = new KeyBinding("key.tntsallin1client.zoom", UNBOUND, CATEGORY);
 
-	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM};
+	// Switches freecam on and off. Unbound by default - also settable in the freecam's own options screen.
+	public static final KeyBinding TOGGLE_FREECAM = new KeyBinding("key.tntsallin1client.toggle_freecam", UNBOUND, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM};
 
 	private ModKeyBindings() {
 	}

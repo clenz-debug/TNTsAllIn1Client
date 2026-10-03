@@ -140,6 +140,13 @@ public class ClientConfig {
 	public CrosshairPreset crosshairTargetShapePreset = CrosshairPreset.CIRCLE_DOT;
 	public boolean[][] crosshairTargetShapeCustomGrid = CrosshairGrid.empty();
 
+	// Freecam: a key detaches the camera, the player stays frozen and can't act on the world - see
+	// FreecamHandler. Speed in blocks per second; the sensitivity is a share of the normal mouse
+	// sensitivity (100 = the same).
+	public boolean freecamEnabled = false;
+	public int freecamSpeed = 10;
+	public int freecamSensitivityPercent = 100;
+
 	// Fullbright: the world is drawn at full brightness regardless of the actual light level.
 	public boolean fullbrightEnabled = false;
 

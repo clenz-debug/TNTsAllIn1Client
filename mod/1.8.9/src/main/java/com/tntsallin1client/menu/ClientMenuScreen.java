@@ -74,6 +74,8 @@ public class ClientMenuScreen extends ClientScreen {
 		addSection("gui.tntsallin1client.menu.section_rendering");
 		addFeature("gui.tntsallin1client.menu.zoom", () -> config.zoomEnabled, value -> config.zoomEnabled = value,
 				() -> new ZoomOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.freecam", () -> config.freecamEnabled, value -> config.freecamEnabled = value,
+				() -> new FreecamOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.crosshair", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value,
 				() -> new CrosshairOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
