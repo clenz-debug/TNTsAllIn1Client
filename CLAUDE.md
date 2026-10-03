@@ -43,6 +43,9 @@ login, skin upload and multiplayer are live.
 
 - A version-independent fix must be applied by hand to **every** affected `mod/<version>/` - there is
   deliberately no multi-version tool (Stonecutter etc.).
+- Menus and screens look the same in every version (user's standing rule): before building or changing
+  one, read the same screen in the other versions and mirror its row order, grouping, button placement
+  and wording. Deviate only where a version cannot do it, and say so.
 - After mod changes, finish with `./gradlew build` (not just `compileJava`) in every touched version dir.
   The launcher copies the jar from `build/libs/`, so a stale jar means the user tests old code.
 - After touching a mixin in a 26.x version, run `python mod/check_mixins.py <version>` - it checks every mixin
