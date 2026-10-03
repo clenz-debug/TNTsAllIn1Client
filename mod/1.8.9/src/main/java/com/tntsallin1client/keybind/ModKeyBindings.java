@@ -25,7 +25,10 @@ public final class ModKeyBindings {
 	// Opens the "New Waypoint" screen directly from gameplay, skipping the list. Unbound by default as well.
 	public static final KeyBinding CREATE_WAYPOINT = new KeyBinding("key.tntsallin1client.create_waypoint", UNBOUND, CATEGORY);
 
-	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM, OPEN_WAYPOINTS, CREATE_WAYPOINT};
+	// Shows the light level overlay - held or as an on/off switch, see ClientConfig#spawnOverlayHoldMode. Unbound by default as well.
+	public static final KeyBinding SPAWN_OVERLAY = new KeyBinding("key.tntsallin1client.spawn_overlay", UNBOUND, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM, OPEN_WAYPOINTS, CREATE_WAYPOINT, SPAWN_OVERLAY};
 
 	private ModKeyBindings() {
 	}

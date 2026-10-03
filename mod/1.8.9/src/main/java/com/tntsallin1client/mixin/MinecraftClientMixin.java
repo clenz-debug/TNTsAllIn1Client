@@ -5,6 +5,7 @@ import com.tntsallin1client.friends.ClientUserBadges;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.ClientMenuScreen;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
+import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import net.minecraft.client.MinecraftClient;
 import com.tntsallin1client.zoom.ZoomHandler;
 import net.minecraft.client.gui.screen.Screen;
@@ -33,6 +34,7 @@ public abstract class MinecraftClientMixin {
 		ClientUserBadges.tick((MinecraftClient) (Object) this);
 		FreecamHandler.tick((MinecraftClient) (Object) this);
 		WaypointMenuIntegration.tick((MinecraftClient) (Object) this);
+		SpawnOverlayRenderer.tick((MinecraftClient) (Object) this);
 		while (ModKeyBindings.OPEN_MENU.wasPressed()) {
 			// Only from gameplay - with a screen open the key belongs to that screen.
 			if (this.currentScreen == null) {

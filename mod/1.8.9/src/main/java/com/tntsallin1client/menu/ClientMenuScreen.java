@@ -82,6 +82,8 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.crosshair", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value,
 				() -> new CrosshairOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
+		addFeature("gui.tntsallin1client.menu.spawn_overlay", () -> config.spawnOverlayEnabled, value -> config.spawnOverlayEnabled = value,
+				() -> new SpawnOverlayOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.hitbox_color", () -> config.customHitboxColorEnabled, value -> config.customHitboxColorEnabled = value,
 				() -> new HitboxColorOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.block_outline_color",

@@ -177,6 +177,11 @@ public class ClientConfig {
 	public int zoomFov = 15;
 	public int zoomSensitivityPercent = 40;
 
+	// Light level overlay: a key marks the places nearby where hostile mobs can spawn with colored X
+	// marks on the ground (see SpawnOverlayRenderer). The key is either held or switches the overlay on and off.
+	public boolean spawnOverlayEnabled = false;
+	public boolean spawnOverlayHoldMode = true;
+
 	// Waypoints: markers the player sets, drawn into the world as a beam, a block outline and a name
 	// (see WaypointRenderer), with their own list and edit screens - reachable from the mod menu and
 	// by a key of their own.
