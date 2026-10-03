@@ -37,8 +37,8 @@ public class ColorPickerPanel extends DrawableHelper {
 	private static final int SWATCH_SIZE = 20;
 	private static final int LEFT_MOUSE_BUTTON = 0;
 
-	private final int x;
-	private final int y;
+	private int x;
+	private int y;
 	private final TextRenderer textRenderer;
 	private final TextFieldWidget redField;
 	private final TextFieldWidget greenField;
@@ -102,6 +102,34 @@ public class ColorPickerPanel extends DrawableHelper {
 
 	private int fieldX() {
 		return hueX() + HUE_SLIDER_WIDTH + FIELD_COLUMN_GAP;
+	}
+
+	/** Puts the whole picker somewhere else - for one that scrolls with the screen's other rows. */
+	public void moveTo(int x, int y) {
+		this.x = x;
+		this.y = y;
+		int fieldX = fieldX();
+		TextFieldWidget[] fields = fields();
+		for (int index = 0; index < fields.length; index++) {
+			fields[index].x = fieldX;
+			fields[index].y = y + FIELD_SPACING * index;
+		}
+	}
+
+	/** Whether one of the text fields is being typed into. */
+	public boolean hasFocus() {
+		for (TextFieldWidget field : fields()) {
+			if (field.isFocused()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void unfocus() {
+		for (TextFieldWidget field : fields()) {
+			field.setFocused(false);
+		}
 	}
 
 	private TextFieldWidget[] fields() {

@@ -146,7 +146,15 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		return option;
 	}
 
-	/** Gives the screen a color picker for the feature's one color. */
+	/**
+	 * A color picker as a row among the others - for a screen with more than one color, or with rows
+	 * that belong below the picker. It scrolls with them.
+	 */
+	protected final Option addColor(IntSupplier getter, IntConsumer setter) {
+		return addPanel(new ColorPanel(getter, setter));
+	}
+
+	/** Gives the screen a color picker for the feature's one color, placed after all rows. */
 	protected final void setColor(IntSupplier getter, IntConsumer setter) {
 		this.colorGetter = getter;
 		this.colorSetter = setter;
@@ -244,7 +252,15 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		if (this.hintKey != null) {
 			contentHeight = switchesHeight + HINT_GAP + this.textRenderer.fontHeight;
 		}
-		this.pane.layout(FIRST_ROW_Y, bottom - PICKER_GAP, left + buttonWidth + ScrollPane.SCROLLBAR_GAP, contentHeight);
+		// The scrollbar goes right of the widest row - a panel may be wider than the column of buttons.
+		int rowsRight = left + buttonWidth;
+		for (Option option : this.shown) {
+			OptionPanel panel = option.panel();
+			if (panel != null) {
+				rowsRight = Math.max(rowsRight, left + (buttonWidth + panel.width(buttonWidth)) / 2);
+			}
+		}
+		this.pane.layout(FIRST_ROW_Y, bottom - PICKER_GAP, rowsRight + ScrollPane.SCROLLBAR_GAP, contentHeight);
 
 		if (hudEditor) {
 			this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - FULL_WIDTH) / 2, hudEditorY, FULL_WIDTH, ROW_HEIGHT,

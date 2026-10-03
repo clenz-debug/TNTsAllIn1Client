@@ -29,7 +29,9 @@ public final class ConfigReset {
 		ARMOR_STATUS("gui.tntsallin1client.menu.armor_status", "armorStatusEnabled", "armorStatus"),
 		ZOOM("gui.tntsallin1client.menu.zoom", "zoomEnabled", "zoom"),
 		FREECAM("gui.tntsallin1client.menu.freecam", "freecamEnabled", "freecam"),
-		CROSSHAIR("gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair");
+		CROSSHAIR("gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair"),
+		HITBOX_COLOR("gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
+		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline");
 
 		public final String labelKey;
 		private final String switchField;

@@ -154,6 +154,22 @@ public class ClientConfig {
 	// one exception to "off until switched on": a cape is set on purpose, and seen by others.
 	public boolean clientCapesEnabled = true;
 
+	// Hitbox color: the box F3+B draws around entities in a color of the player's choice (white by
+	// default, the game's own, so switching it on changes nothing until a color is picked). The
+	// marks inside the box - eye height, view direction - are off until switched on then, each with
+	// a color that defaults to the game's own for it.
+	public boolean customHitboxColorEnabled = false;
+	public int customHitboxColor = 0xFFFFFFFF;
+	public boolean customHitboxShowEyeHeight = false;
+	public int customHitboxEyeHeightColor = 0xFFFF0000;
+	public boolean customHitboxShowViewDirection = false;
+	public int customHitboxViewDirectionColor = 0xFF0000FF;
+
+	// Block outline color: the outline around the block being looked at. Black by default, the
+	// game's own. Only the color is replaced - the outline stays see-through.
+	public boolean customBlockOutlineColorEnabled = false;
+	public int customBlockOutlineColor = 0xFF000000;
+
 	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
 	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.
 	public boolean zoomEnabled = false;

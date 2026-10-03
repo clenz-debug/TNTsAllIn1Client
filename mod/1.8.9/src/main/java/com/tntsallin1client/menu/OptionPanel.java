@@ -8,6 +8,11 @@ package com.tntsallin1client.menu;
 interface OptionPanel {
 	int height();
 
+	/** How wide the panel draws itself in a column of the given width - it is centered on the column if wider. */
+	default int width(int columnWidth) {
+		return columnWidth;
+	}
+
 	void render(int x, int y, int width);
 
 	/** @return whether the click was on something of the panel and is dealt with */
