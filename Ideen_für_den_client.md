@@ -109,4 +109,8 @@
 - skin editor layer-sichtbarkeit "wie bei skinmc.net" statt Checkboxen [check] (zwei klickbare 2D-Figur-Diagramme nebeneinander, eines für Basis-Schicht, eines für Overlay - Klick auf Kopf/Körper/Arm/Bein blendet genau dieses Körperteil auf der jeweiligen Schicht ein/aus, statt einer Checkbox-Liste; live bestätigt)
 
 Logo um Client user am nametag zu erkennen
-- Client Mods in den Legacy-Versionen (z. B. 1.8.9): die neuen Minecraft-Texturen (das Aussehen ab 1.14) per Schalter im Mod-Menü anschaltbar machen (Idee vom 2026-10-03, noch nicht geplant; offen: woher die Texturen kommen dürfen – Mojangs Texturen selbst mitliefern geht nicht)
+- Client Mods in den Legacy-Versionen (z. B. 1.8.9): die neuen Minecraft-Texturen (das Aussehen ab 1.14) per Schalter im Mod-Menü anschaltbar machen (Idee vom 2026-10-03, noch nicht geplant)
+    - Ein fertiges Texturenpaket mitliefern wäre technisch am einfachsten, geht aber nicht: die Texturen gehören Mojang, die EULA untersagt das Weitergeben (auch wichtig für die Code-Signierung über SignPath)
+    - Geplanter Weg (2026-10-03 besprochen): der Launcher baut das Paket lokal auf dem Rechner des Spielers aus der aktuellen Minecraft-Version, die er ohnehin direkt von Mojang lädt; von uns stammt nur die Zuordnungstabelle „neuer Dateiname → alter Dateiname“; Schalter im Mod-Menü schaltet das Paket an/aus
+    - Umfang: Blöcke und Items gehen weitgehend 1:1 (nur umbenannt); Mobs und Sonderfälle mit geänderter Textur-Aufteilung (z. B. Truhen, Pferde, Dorfbewohner) im ersten Schritt auslassen
+    - Nächster Schritt, sobald wir es angehen: an den echten Dateien prüfen, wie viele Block- und Item-Texturen sich sauber zuordnen lassen, und den Umfang nennen, bevor etwas gebaut wird
