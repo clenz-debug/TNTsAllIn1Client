@@ -109,3 +109,4 @@
 - skin editor layer-sichtbarkeit "wie bei skinmc.net" statt Checkboxen [check] (zwei klickbare 2D-Figur-Diagramme nebeneinander, eines für Basis-Schicht, eines für Overlay - Klick auf Kopf/Körper/Arm/Bein blendet genau dieses Körperteil auf der jeweiligen Schicht ein/aus, statt einer Checkbox-Liste; live bestätigt)
 
 Logo um Client user am nametag zu erkennen
+- Client Mods in den Legacy-Versionen (z. B. 1.8.9): die neuen Minecraft-Texturen (das Aussehen ab 1.14) per Schalter im Mod-Menü anschaltbar machen (Idee vom 2026-10-03, noch nicht geplant; offen: woher die Texturen kommen dürfen – Mojangs Texturen selbst mitliefern geht nicht)
