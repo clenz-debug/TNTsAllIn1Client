@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
+import com.tntsallin1client.resourcepack.NewTextures;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -88,6 +89,10 @@ public class ClientMenuScreen extends ClientScreen {
 				() -> new BlockOutlineColorOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.waypoints", () -> config.waypointsEnabled, value -> config.waypointsEnabled = value,
 				() -> new WaypointOptionsScreen(this));
+		// Only where the launcher has built the pack - see NewTextures.
+		if (NewTextures.isAvailable()) {
+			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
+		}
 
 		addSection("gui.tntsallin1client.menu.section_misc");
 		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);

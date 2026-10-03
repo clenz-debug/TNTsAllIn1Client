@@ -66,6 +66,7 @@ import {
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { installLegacyClientEntry } from '../launch/legacyClientEntry'
+import { ensureNewTexturesPack } from '../launch/newTexturesPack'
 import { writeLegacyLogConfig } from '../launch/legacyLogging'
 import { applyModBundleUpdate, checkForModBundleUpdate, ensureLocalBundle } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
@@ -573,6 +574,10 @@ export function registerIpcHandlers(): void {
         })
 
         const gameDir = join(installed.instanceDir, 'game')
+        // Legacy versions with our mod: the pack its "New Textures" switch turns on (see newTexturesPack.ts).
+        if (legacyOwnModJar) {
+          await ensureNewTexturesPack(gameDir, versionId, vanilla.clientJarPath, sendProgress, sendLog, signal)
+        }
         // Carries options.txt (graphics/controls/sound/...) and the multiplayer server list across
         // instances, same reasoning as before the instance system existed when this carried settings
         // across version switches - these are personal preferences the player wants everywhere, not

@@ -183,3 +183,4 @@ gui.tntsallin1client.waypoint_edit.fade_nearby=Fade Nearby
 gui.tntsallin1client.waypoint_edit.delete_button=Delete
 gui.tntsallin1client.waypoint_edit.delete_confirm_title=Delete Waypoint
 gui.tntsallin1client.waypoint_edit.delete_confirm_message=Really delete "%s"?
+gui.tntsallin1client.menu.new_textures=New Textures
