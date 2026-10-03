@@ -115,3 +115,4 @@ gui.tntsallin1client.item_counter_options.source=Source
 gui.tntsallin1client.item_counter_options.source.held=Held Item
 gui.tntsallin1client.item_counter_options.source.fixed=Fixed Item
 gui.tntsallin1client.item_counter_options.show_item_icon=Show Item Icon
+gui.tntsallin1client.menu.client_capes=Client Capes

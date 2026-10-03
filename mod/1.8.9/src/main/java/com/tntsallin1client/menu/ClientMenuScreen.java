@@ -79,6 +79,7 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
 
 		addSection("gui.tntsallin1client.menu.section_misc");
+		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);
 		addLink("gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(this));
 	}
 

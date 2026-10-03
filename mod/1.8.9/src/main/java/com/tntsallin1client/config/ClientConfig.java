@@ -143,6 +143,10 @@ public class ClientConfig {
 	// Fullbright: the world is drawn at full brightness regardless of the actual light level.
 	public boolean fullbrightEnabled = false;
 
+	// Shows the capes players set in the launcher (see ClientCapes). On unless switched off - the
+	// one exception to "off until switched on": a cape is set on purpose, and seen by others.
+	public boolean clientCapesEnabled = true;
+
 	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
 	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.
 	public boolean zoomEnabled = false;
