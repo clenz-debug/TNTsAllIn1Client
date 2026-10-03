@@ -10,10 +10,6 @@ import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.math.MathHelper;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 /**
  * The ingame mod menu: one on/off switch per feature, grouped under section headings. A feature
@@ -21,10 +17,8 @@ import org.lwjgl.opengl.GL11;
  * next to its switch. Reachable via the title screen and pause menu buttons ({@link MenuButtons}) or
  * its own key binding ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
  *
- * <p>The rows scroll between the title and the "Done" button (mouse wheel or the bar next to them)
- * once they no longer fit. Their buttons are therefore not in the screen's own button list - the
- * game would draw them over the title and take clicks on the parts scrolled out of view - but are
- * drawn clipped and clicked from here.
+ * <p>The rows scroll between the title and the "Done" button once they no longer fit (see
+ * {@link ScrollPane}).
  */
 public class ClientMenuScreen extends ClientScreen {
 	private static final int ROW_WIDTH = 210;
@@ -36,10 +30,6 @@ public class ClientMenuScreen extends ClientScreen {
 	private static final int VIEWPORT_TOP = 30;
 	/** Distance from the screen's bottom edge to where the rows end - leaves room for "Done". */
 	private static final int VIEWPORT_BOTTOM_MARGIN = 32;
-	private static final int SCROLL_STEP = 16;
-	private static final int SCROLLBAR_GAP = 8;
-	private static final int SCROLLBAR_WIDTH = 6;
-	private static final int MIN_THUMB_HEIGHT = 32;
 	private static final int LEFT_MOUSE_BUTTON = 0;
 	private static final int DONE_BUTTON_ID = 0;
 	/** A row's switch gets this plus the row's index in {@link #clickable}, the button opening its screen {@link #FIRST_SCREEN_ID} plus the same. */
@@ -49,12 +39,8 @@ public class ClientMenuScreen extends ClientScreen {
 	private final List<Row> rows = new ArrayList<Row>();
 	/** Every row that isn't a heading. */
 	private final List<Row> clickable = new ArrayList<Row>();
-	/** Survives opening an options screen and coming back, so the list doesn't jump to the top. */
-	private int scrollOffset;
-	private int maxScroll;
-	private boolean draggingScrollbar;
-	/** Where on the scrollbar's thumb it was grabbed. */
-	private int thumbGrabOffset;
+	/** Lives as long as the screen, so the list doesn't jump to the top after a visit to an options screen. */
+	private final ScrollPane pane = new ScrollPane(this::placeRows);
 
 	public ClientMenuScreen(Screen parent) {
 		super(parent, "gui.tntsallin1client.menu.title");
@@ -71,6 +57,8 @@ public class ClientMenuScreen extends ClientScreen {
 				() -> new ClockOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.keystrokes", () -> config.keystrokesEnabled, value -> config.keystrokesEnabled = value,
 				() -> new KeystrokesOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.armor_status", () -> config.armorStatusEnabled, value -> config.armorStatusEnabled = value,
+				() -> new ArmorStatusOptionsScreen(this));
 
 		addSection("gui.tntsallin1client.menu.section_rendering");
 		addFeature("gui.tntsallin1client.menu.zoom", () -> config.zoomEnabled, value -> config.zoomEnabled = value,
@@ -101,7 +89,7 @@ public class ClientMenuScreen extends ClientScreen {
 
 	@Override
 	public void init() {
-		int x = rowsLeft();
+		int x = (this.width - ROW_WIDTH) / 2;
 		int y = 0;
 		int contentHeight = 0;
 		for (Row row : this.rows) {
@@ -128,34 +116,14 @@ public class ClientMenuScreen extends ClientScreen {
 			contentHeight = y + ROW_HEIGHT;
 			y += ROW_SPACING;
 		}
-		this.maxScroll = Math.max(0, contentHeight - viewportHeight());
-		this.draggingScrollbar = false;
-		scrollTo(this.scrollOffset);
+		this.pane.layout(VIEWPORT_TOP, this.height - VIEWPORT_BOTTOM_MARGIN, x + ROW_WIDTH + ScrollPane.SCROLLBAR_GAP, contentHeight);
 
 		this.buttons.add(new ButtonWidget(DONE_BUTTON_ID, x, this.height - 28, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.done")));
 	}
 
-	private int rowsLeft() {
-		return (this.width - ROW_WIDTH) / 2;
-	}
-
-	private int viewportBottom() {
-		return this.height - VIEWPORT_BOTTOM_MARGIN;
-	}
-
-	private int viewportHeight() {
-		return viewportBottom() - VIEWPORT_TOP;
-	}
-
-	private boolean inViewport(int mouseY) {
-		return mouseY >= VIEWPORT_TOP && mouseY < viewportBottom();
-	}
-
-	/** Scrolls the rows so that `offset` pixels of them lie above the visible part. */
-	private void scrollTo(int offset) {
-		this.scrollOffset = MathHelper.clamp(offset, 0, this.maxScroll);
+	private void placeRows() {
 		for (Row row : this.rows) {
-			int y = VIEWPORT_TOP + row.y - this.scrollOffset;
+			int y = screenY(row);
 			if (row.toggle != null) {
 				row.toggle.y = y;
 			}
@@ -163,6 +131,10 @@ public class ClientMenuScreen extends ClientScreen {
 				row.open.y = y;
 			}
 		}
+	}
+
+	private int screenY(Row row) {
+		return VIEWPORT_TOP + row.y - this.pane.offset();
 	}
 
 	@Override
@@ -179,25 +151,16 @@ public class ClientMenuScreen extends ClientScreen {
 		}
 	}
 
-	/** The game hands a screen clicks and drags but not the wheel - that has to be read here. */
 	@Override
 	public void handleMouse() {
 		super.handleMouse();
-		int wheel = Mouse.getEventDWheel();
-		if (wheel != 0) {
-			scrollTo(this.scrollOffset - Integer.signum(wheel) * SCROLL_STEP);
-		}
+		this.pane.handleWheel();
 	}
 
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int button) {
-		if (button == LEFT_MOUSE_BUTTON && inViewport(mouseY)) {
-			if (this.maxScroll > 0 && mouseX >= scrollbarX() && mouseX < scrollbarX() + SCROLLBAR_WIDTH) {
-				// Grabbed on the thumb it keeps that spot under the cursor, clicked beside it the thumb jumps there.
-				boolean onThumb = mouseY >= thumbY() && mouseY < thumbY() + thumbHeight();
-				this.thumbGrabOffset = onThumb ? mouseY - thumbY() : thumbHeight() / 2;
-				this.draggingScrollbar = true;
-				dragScrollbarTo(mouseY);
+		if (button == LEFT_MOUSE_BUTTON && this.pane.contains(mouseY)) {
+			if (this.pane.mouseClicked(mouseX, mouseY)) {
 				return;
 			}
 			for (Row row : this.rows) {
@@ -214,33 +177,13 @@ public class ClientMenuScreen extends ClientScreen {
 
 	@Override
 	protected void mouseDragged(int mouseX, int mouseY, int button, long timeSinceClick) {
-		if (this.draggingScrollbar) {
-			dragScrollbarTo(mouseY);
-		}
+		this.pane.mouseDragged(mouseY);
 	}
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int button) {
-		this.draggingScrollbar = false;
+		this.pane.mouseReleased();
 		super.mouseReleased(mouseX, mouseY, button);
-	}
-
-	private void dragScrollbarTo(int mouseY) {
-		int thumbTravel = viewportHeight() - thumbHeight();
-		scrollTo(Math.round((mouseY - this.thumbGrabOffset - VIEWPORT_TOP) * (float) this.maxScroll / thumbTravel));
-	}
-
-	private int scrollbarX() {
-		return rowsLeft() + ROW_WIDTH + SCROLLBAR_GAP;
-	}
-
-	private int thumbHeight() {
-		int viewportHeight = viewportHeight();
-		return MathHelper.clamp(viewportHeight * viewportHeight / (viewportHeight + this.maxScroll), MIN_THUMB_HEIGHT, viewportHeight - 8);
-	}
-
-	private int thumbY() {
-		return VIEWPORT_TOP + this.scrollOffset * (viewportHeight() - thumbHeight()) / this.maxScroll;
 	}
 
 	@Override
@@ -248,14 +191,11 @@ public class ClientMenuScreen extends ClientScreen {
 		super.render(mouseX, mouseY, tickDelta);
 
 		// A button scrolled half out of view must not light up under a cursor that is on the title or on "Done".
-		int hoverY = inViewport(mouseY) ? mouseY : -1;
-		// The clip area is given in window pixels, counted from the bottom edge.
-		int scale = new Window(this.client).getScaleFactor();
-		GL11.glEnable(GL11.GL_SCISSOR_TEST);
-		GL11.glScissor(0, this.client.height - viewportBottom() * scale, this.client.width, viewportHeight() * scale);
+		int hoverY = this.pane.contains(mouseY) ? mouseY : -1;
+		this.pane.beginClip(this.client);
 		for (Row row : this.rows) {
 			if (row.isHeader()) {
-				this.drawCenteredString(this.textRenderer, I18n.translate(row.labelKey), this.width / 2, VIEWPORT_TOP + row.y - this.scrollOffset + 4, 0xA0A0A0);
+				this.drawCenteredString(this.textRenderer, I18n.translate(row.labelKey), this.width / 2, screenY(row) + 4, 0xA0A0A0);
 			}
 			if (row.toggle != null) {
 				row.toggle.render(this.client, mouseX, hoverY);
@@ -264,17 +204,8 @@ public class ClientMenuScreen extends ClientScreen {
 				row.open.render(this.client, mouseX, hoverY);
 			}
 		}
-		GL11.glDisable(GL11.GL_SCISSOR_TEST);
-
-		if (this.maxScroll > 0) {
-			// Same look as the scrollbar of the game's own lists.
-			int x = scrollbarX();
-			int thumbY = thumbY();
-			int thumbHeight = thumbHeight();
-			fill(x, VIEWPORT_TOP, x + SCROLLBAR_WIDTH, viewportBottom(), 0xFF000000);
-			fill(x, thumbY, x + SCROLLBAR_WIDTH, thumbY + thumbHeight, 0xFF808080);
-			fill(x, thumbY, x + SCROLLBAR_WIDTH - 1, thumbY + thumbHeight - 1, 0xFFC0C0C0);
-		}
+		this.pane.endClip();
+		this.pane.renderScrollbar();
 	}
 
 	/**

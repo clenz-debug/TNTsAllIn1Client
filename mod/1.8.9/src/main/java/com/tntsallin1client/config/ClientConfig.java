@@ -7,12 +7,19 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import com.tntsallin1client.hud.ArmorStatusColorMode;
+import com.tntsallin1client.hud.ArmorStatusDirection;
+import com.tntsallin1client.hud.ArmorStatusIconPosition;
+import com.tntsallin1client.hud.ArmorStatusLayoutMode;
+import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.HudLayout;
 import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +71,43 @@ public class ClientConfig {
 	// nothing has been switched off yet) counts as shown.
 	public Map<String, Boolean> keystrokesKeyEnabled = new HashMap<String, Boolean>();
 	public HudLayout keystrokesHudLayout = new HudLayout();
+
+	// Armor & Tool Status: durability of the four worn armor pieces and of the held item, or - for
+	// stackable items like blocks - the count in that one stack. Each slot can be switched off
+	// (armorStatusSlotEnabled, absent = shown) and put in another place in the order
+	// (armorStatusSlotOrder, names from ArmorStatusSlot; whatever is missing follows in its natural
+	// order). Shown as one bundled HUD element or as one element per slot - see ArmorStatusHud.
+	public boolean armorStatusEnabled = false;
+	public Map<String, Boolean> armorStatusSlotEnabled = new HashMap<String, Boolean>();
+	public List<String> armorStatusSlotOrder = new ArrayList<String>();
+	public boolean armorStatusShowName = true;
+	public boolean armorStatusShowIcon = true;
+	public ArmorStatusIconPosition armorStatusIconPosition = ArmorStatusIconPosition.LEFT;
+	// Nudges the text up (negative) or down (positive) against the icon - the font leaves blank
+	// space below digits, so centered text looks slightly high.
+	public int armorStatusTextVerticalOffset = 0;
+	// false shows just "current" instead of "current/max" for damageable items.
+	public boolean armorStatusShowMaxDurability = true;
+	public ArmorStatusColorMode armorStatusColorMode = ArmorStatusColorMode.FIXED;
+	// Also the color of stack counts in GRADIENT mode.
+	public int armorStatusColor = 0xFFFFFFFF;
+	public ArmorStatusLayoutMode armorStatusLayoutMode = ArmorStatusLayoutMode.BUNDLED;
+	public ArmorStatusDirection armorStatusBundledDirection = ArmorStatusDirection.VERTICAL;
+	// true: the bundled block sits at the bottom/right of its box and grows up/left - see ArmorStatusBundledHud.
+	public boolean armorStatusBundledReversed = false;
+	public HudLayout armorStatusBundledHudLayout = new HudLayout();
+	// Keyed by ArmorStatusSlot#name(), one layout per slot for INDIVIDUAL mode.
+	public Map<String, HudLayout> armorStatusSlotHudLayout = new HashMap<String, HudLayout>();
+
+	/** The layout of one armor status slot, created on first use. */
+	public HudLayout armorStatusLayoutFor(ArmorStatusSlot slot) {
+		HudLayout layout = this.armorStatusSlotHudLayout.get(slot.name());
+		if (layout == null) {
+			layout = new HudLayout();
+			this.armorStatusSlotHudLayout.put(slot.name(), layout);
+		}
+		return layout;
+	}
 
 	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
 	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.

@@ -1,6 +1,6 @@
 package com.tntsallin1client.hud;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,15 +10,24 @@ import net.minecraft.client.util.Window;
 
 /** Every HUD element of the mod - what the game HUD draws and the HUD editor offers. */
 public final class HudElements {
-	public static final List<HudElement> ALL = Collections.unmodifiableList(Arrays.<HudElement>asList(
-			new CoordinatesHud(),
-			new FpsCounterHud(),
-			new LatencyHud(),
-			new ClockHud(),
-			new KeystrokesHud()
-	));
+	public static final List<HudElement> ALL = Collections.unmodifiableList(all());
 
 	private HudElements() {
+	}
+
+	private static List<HudElement> all() {
+		List<HudElement> elements = new ArrayList<HudElement>();
+		elements.add(new CoordinatesHud());
+		elements.add(new FpsCounterHud());
+		elements.add(new LatencyHud());
+		elements.add(new ClockHud());
+		elements.add(new KeystrokesHud());
+		// The Armor & Tool Status display is either the one bundled element or one per slot.
+		elements.add(new ArmorStatusBundledHud());
+		for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
+			elements.add(new ArmorStatusSlotHud(slot));
+		}
+		return elements;
 	}
 
 	/** Called after the game's own HUD, so ours sits on top of it. */
