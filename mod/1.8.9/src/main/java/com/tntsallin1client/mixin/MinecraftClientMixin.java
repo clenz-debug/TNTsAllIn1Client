@@ -1,5 +1,6 @@
 package com.tntsallin1client.mixin;
 
+import com.tntsallin1client.friends.ClientUserBadges;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.ClientMenuScreen;
 import net.minecraft.client.MinecraftClient;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Reacts to our key bindings once per game tick, and to the mouse wheel while zooming. */
+/** What happens once per game tick: our key bindings and the exchange with the launcher; also the mouse wheel while zooming. */
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
 	@Shadow
@@ -24,6 +25,7 @@ public abstract class MinecraftClientMixin {
 
 	@Inject(method = "tick()V", at = @At("RETURN"))
 	private void tnt$handleKeyBindings(CallbackInfo ci) {
+		ClientUserBadges.tick((MinecraftClient) (Object) this);
 		while (ModKeyBindings.OPEN_MENU.wasPressed()) {
 			// Only from gameplay - with a screen open the key belongs to that screen.
 			if (this.currentScreen == null) {
