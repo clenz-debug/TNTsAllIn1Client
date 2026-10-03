@@ -161,11 +161,15 @@ dependencies {
 	compileOnly("com.google.code.gson:gson:2.2.4")
 	compileOnly("com.google.guava:guava:17.0")
 	compileOnly("org.apache.logging.log4j:log4j-api:2.0-beta9")
+	// The game runs on a nightly build of this that only Mojang's server has; the parts we use are the same.
+	compileOnly("org.lwjgl.lwjgl:lwjgl:2.9.3") { isTransitive = false }
 	// On the classpath through the launcher (for Mixin) - `VerifyMain` uses it.
 	compileOnly("org.ow2.asm:asm-all:5.0.3")
 
 	verifyRuntime("net.minecraft:launchwrapper:${project.property("launchwrapper_version")}") { isTransitive = false }
 	verifyRuntime("org.ow2.asm:asm-all:5.0.3")
+	// Mixin looks up every class a mixin's own code calls - `MinecraftClientMixin` reads the mouse wheel.
+	verifyRuntime("org.lwjgl.lwjgl:lwjgl:2.9.3") { isTransitive = false }
 	verifyRuntime("net.sf.jopt-simple:jopt-simple:4.6")
 	verifyRuntime("org.apache.logging.log4j:log4j-api:2.0-beta9")
 	verifyRuntime("org.apache.logging.log4j:log4j-core:2.0-beta9")

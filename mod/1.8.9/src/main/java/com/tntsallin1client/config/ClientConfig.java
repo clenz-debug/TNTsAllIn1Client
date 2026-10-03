@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -52,6 +54,22 @@ public class ClientConfig {
 	public boolean clockHud24Hour = true;
 	public int clockTextColor = 0xFFFFFFFF;
 	public HudLayout clockHudLayout = new HudLayout();
+
+	// Keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop). Of the active-box color only
+	// the RGB matters - KeystrokesHud applies its own see-through alpha.
+	public boolean keystrokesEnabled = false;
+	public int keystrokesActiveColor = 0xFF000000;
+	public int keystrokesTextColor = 0xFFFFFFFF;
+	// Per-key on/off, keyed by KeystrokeKey#name() - a key absent from the map (the common case,
+	// nothing has been switched off yet) counts as shown.
+	public Map<String, Boolean> keystrokesKeyEnabled = new HashMap<String, Boolean>();
+	public HudLayout keystrokesHudLayout = new HudLayout();
+
+	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
+	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.
+	public boolean zoomEnabled = false;
+	public int zoomFov = 15;
+	public int zoomSensitivityPercent = 40;
 
 	public static ClientConfig get() {
 		if (instance == null) {

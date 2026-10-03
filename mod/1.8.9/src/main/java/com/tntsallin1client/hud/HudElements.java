@@ -14,7 +14,8 @@ public final class HudElements {
 			new CoordinatesHud(),
 			new FpsCounterHud(),
 			new LatencyHud(),
-			new ClockHud()
+			new ClockHud(),
+			new KeystrokesHud()
 	));
 
 	private HudElements() {

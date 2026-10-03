@@ -6,6 +6,7 @@
 	"client": [
 		"GameMenuScreenMixin",
 		"GameOptionsMixin",
+		"GameRendererMixin",
 		"InGameHudMixin",
 		"MinecraftClientMixin",
 		"TitleScreenMixin",

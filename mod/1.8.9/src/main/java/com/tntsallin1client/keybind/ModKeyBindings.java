@@ -13,7 +13,10 @@ public final class ModKeyBindings {
 	// default - the user picks a key in the vanilla Controls screen.
 	public static final KeyBinding OPEN_MENU = new KeyBinding("key.tntsallin1client.open_menu", UNBOUND, CATEGORY);
 
-	private static final KeyBinding[] ALL = {OPEN_MENU};
+	// Hold to zoom in. Unbound by default as well - also settable in the zoom's own options screen.
+	public static final KeyBinding ZOOM = new KeyBinding("key.tntsallin1client.zoom", UNBOUND, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM};
 
 	private ModKeyBindings() {
 	}
