@@ -132,6 +132,9 @@ public class ClientConfig {
 	public CrosshairPreset crosshairTargetShapePreset = CrosshairPreset.CIRCLE_DOT;
 	public boolean[][] crosshairTargetShapeCustomGrid = CrosshairGrid.empty();
 
+	// Fullbright: the world is drawn at full brightness regardless of the actual light level.
+	public boolean fullbrightEnabled = false;
+
 	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
 	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.
 	public boolean zoomEnabled = false;

@@ -65,6 +65,7 @@ public class ClientMenuScreen extends ClientScreen {
 				() -> new ZoomOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.crosshair", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value,
 				() -> new CrosshairOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
 
 		addSection("gui.tntsallin1client.menu.section_misc");
 		addLink("gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(this));
