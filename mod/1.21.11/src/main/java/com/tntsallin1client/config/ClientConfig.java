@@ -197,12 +197,12 @@ public class ClientConfig {
 	public int customBlockOutlineColor = 0xFF000000;
 
 	// 5m: keystrokes overlay (WASD/Shift/Space/mouse buttons + sprint/drop).
-	// Active-box color, same green as the original hardcoded default; the
+	// Active-box color, black by default (own user request, was green); the
 	// alpha byte here is never actually shown as-is (KeystrokesHud always
 	// re-applies its own translucent glow alpha on top), only the RGB matters.
 	public boolean keystrokesEnabled = false;
 	public HudLayout keystrokesHudLayout = new HudLayout();
-	public int keystrokesActiveColor = 0xFF33CC33;
+	public int keystrokesActiveColor = 0xFF000000;
 	// Per-key on/off, keyed by KeystrokeKey#name() - a key absent from the map
 	// (the common case, nothing has been toggled off yet) counts as enabled.
 	public Map<String, Boolean> keystrokesKeyEnabled = new HashMap<>();
