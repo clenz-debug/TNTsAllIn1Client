@@ -86,6 +86,8 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.block_outline_color",
 				() -> config.customBlockOutlineColorEnabled, value -> config.customBlockOutlineColorEnabled = value,
 				() -> new BlockOutlineColorOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.waypoints", () -> config.waypointsEnabled, value -> config.waypointsEnabled = value,
+				() -> new WaypointOptionsScreen(this));
 
 		addSection("gui.tntsallin1client.menu.section_misc");
 		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);

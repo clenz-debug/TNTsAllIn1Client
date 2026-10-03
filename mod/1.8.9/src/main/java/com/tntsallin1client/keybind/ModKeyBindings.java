@@ -19,7 +19,13 @@ public final class ModKeyBindings {
 	// Switches freecam on and off. Unbound by default - also settable in the freecam's own options screen.
 	public static final KeyBinding TOGGLE_FREECAM = new KeyBinding("key.tntsallin1client.toggle_freecam", UNBOUND, CATEGORY);
 
-	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM};
+	// Opens the waypoint list directly from gameplay. Unbound by default - also settable in the waypoints' own options screen.
+	public static final KeyBinding OPEN_WAYPOINTS = new KeyBinding("key.tntsallin1client.open_waypoints", UNBOUND, CATEGORY);
+
+	// Opens the "New Waypoint" screen directly from gameplay, skipping the list. Unbound by default as well.
+	public static final KeyBinding CREATE_WAYPOINT = new KeyBinding("key.tntsallin1client.create_waypoint", UNBOUND, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM, OPEN_WAYPOINTS, CREATE_WAYPOINT};
 
 	private ModKeyBindings() {
 	}

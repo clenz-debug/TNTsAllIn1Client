@@ -27,7 +27,8 @@ import net.minecraft.client.resource.language.I18n;
  * picker are taller than this version's screen at the default window size - it moves to the right
  * of them instead; the switches always stay in one column (own user request). More switches than
  * fit scroll (see {@link ScrollPane}). Below them comes "Back" - and above that "Move / Resize HUD"
- * where the feature has something on the HUD.
+ * where the feature has something on the HUD. A screen whose point is one action (create, delete)
+ * has that button down there too, apart from the settings: above "Back" or to its left.
  */
 public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FULL_WIDTH = 210;
@@ -43,6 +44,9 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int BACK_BUTTON_ID = 0;
 	private static final int RESET_BUTTON_ID = 1;
 	private static final int HUD_EDITOR_BUTTON_ID = 2;
+	private static final int ACTION_BUTTON_ID = 3;
+	/** Between two buttons sharing the bottom row. */
+	private static final int BESIDE_BACK_GAP = 6;
 	private static final int RESET_BUTTON_WIDTH = 84;
 	private static final int RESET_BUTTON_MARGIN = 6;
 	private static final int LEFT_MOUSE_BUTTON = 0;
@@ -68,6 +72,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private String hintKey;
 	/** Set for a screen with a "Reset" button. */
 	private ConfigReset.Feature resetFeature;
+	/** Set for a screen with a button of its own next to "Back" - see {@link #setAction}. */
+	private String actionLabelKey;
+	private Runnable action;
+	private boolean actionBesideBack;
 	/** The key binding whose button was clicked and that gets the next key or mouse button pressed. */
 	private KeyBinding listeningFor;
 
@@ -95,6 +103,21 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	/** A button that opens another screen. */
 	protected final Option addLink(final String labelKey, final Supplier<Screen> screen) {
 		return add(new Option(() -> I18n.translate(labelKey), () -> this.client.setScreen(screen.get())));
+	}
+
+	/** Two on/off switches sharing a row, each half as wide. */
+	protected final Option addTogglePair(String firstLabelKey, BooleanSupplier firstGetter, Consumer<Boolean> firstSetter,
+			String secondLabelKey, BooleanSupplier secondGetter, Consumer<Boolean> secondSetter) {
+		return addPanel(new SplitPanel(togglePanel(firstLabelKey, firstGetter, firstSetter), togglePanel(secondLabelKey, secondGetter, secondSetter)));
+	}
+
+	private static ButtonPanel togglePanel(final String labelKey, final BooleanSupplier getter, final Consumer<Boolean> setter) {
+		return new ButtonPanel(() -> MenuText.onOff(labelKey, getter.getAsBoolean()), () -> setter.accept(!getter.getAsBoolean()));
+	}
+
+	/** A line of text between the rows - a heading for the ones below it, or something to read. */
+	protected final Option addLabel(Supplier<String> text) {
+		return addPanel(new LabelPanel(text));
 	}
 
 	/** A slider for a whole number. The translation of `labelKey` takes the value as its argument. */
@@ -165,6 +188,21 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.hintKey = hintKey;
 	}
 
+	/** What the button at the bottom says - "Back", unless leaving the screen drops what was entered on it. */
+	protected String backLabelKey() {
+		return "gui.back";
+	}
+
+	/**
+	 * Gives the screen a button for what it is there to do, kept apart from its settings: directly
+	 * above "Back", or - `besideBack` - sharing the bottom row with it, the action on the left.
+	 */
+	protected final void setAction(String labelKey, Runnable action, boolean besideBack) {
+		this.actionLabelKey = labelKey;
+		this.action = action;
+		this.actionBesideBack = besideBack;
+	}
+
 	/** Gives the screen a "Reset" button in its top right corner that puts the feature's settings back to their defaults. */
 	protected final void setResettable(ConfigReset.Feature feature) {
 		this.resetFeature = feature;
@@ -217,7 +255,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		boolean hudEditor = offersHudEditor();
 		int hudEditorY = backY - ROW_HEIGHT - ROW_GAP;
 		// Where the options have to end.
-		int bottom = hudEditor ? hudEditorY : backY;
+		boolean actionAboveBack = this.action != null && !this.actionBesideBack;
+		int bottom = hudEditor || actionAboveBack ? hudEditorY : backY;
 		this.optionTops.clear();
 		int switchesHeight = 0;
 		for (Option option : this.shown) {
@@ -266,7 +305,17 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - FULL_WIDTH) / 2, hudEditorY, FULL_WIDTH, ROW_HEIGHT,
 					I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
 		}
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - FULL_WIDTH) / 2, backY, FULL_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		int footerX = (this.width - FULL_WIDTH) / 2;
+		if (actionAboveBack) {
+			this.buttons.add(new ButtonWidget(ACTION_BUTTON_ID, footerX, hudEditorY, FULL_WIDTH, ROW_HEIGHT, I18n.translate(this.actionLabelKey)));
+		}
+		if (this.action != null && this.actionBesideBack) {
+			int halfWidth = (FULL_WIDTH - BESIDE_BACK_GAP) / 2;
+			this.buttons.add(new ButtonWidget(ACTION_BUTTON_ID, footerX, backY, halfWidth, ROW_HEIGHT, I18n.translate(this.actionLabelKey)));
+			this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, footerX + FULL_WIDTH - halfWidth, backY, halfWidth, ROW_HEIGHT, I18n.translate(backLabelKey())));
+		} else {
+			this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, footerX, backY, FULL_WIDTH, ROW_HEIGHT, I18n.translate(backLabelKey())));
+		}
 		if (this.resetFeature != null) {
 			this.buttons.add(new ButtonWidget(RESET_BUTTON_ID, this.width - RESET_BUTTON_MARGIN - RESET_BUTTON_WIDTH, RESET_BUTTON_MARGIN,
 					RESET_BUTTON_WIDTH, ROW_HEIGHT, I18n.translate("gui.tntsallin1client.reset.button")));
@@ -299,6 +348,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			back();
 		} else if (button.id == HUD_EDITOR_BUTTON_ID) {
 			this.client.setScreen(new HudEditorScreen(this));
+		} else if (button.id == ACTION_BUTTON_ID) {
+			this.action.run();
 		} else if (button.id == RESET_BUTTON_ID) {
 			// Asks first; the answer comes back through confirmResult.
 			this.client.setScreen(new ConfirmScreen(this,

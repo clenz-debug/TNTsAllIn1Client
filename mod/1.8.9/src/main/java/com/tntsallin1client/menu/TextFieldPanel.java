@@ -14,6 +14,9 @@ import net.minecraft.client.resource.language.I18n;
  * A text field as a row of a {@link FeatureOptionsScreen}: click to type, every change goes straight
  * to the setter and into the config. While empty and not being typed into, it shows a hint naming
  * what to enter; text the `valid` check rejects is shown in red.
+ *
+ * <p>The field takes whatever is typed - a setter for something other than text (a number) only
+ * takes over what it can read and leaves the setting alone otherwise.
  */
 final class TextFieldPanel implements OptionPanel {
 	private static final int HEIGHT = 20;
@@ -21,7 +24,7 @@ final class TextFieldPanel implements OptionPanel {
 	private static final int INVALID_COLOR = 0xFF5555;
 	private static final int HINT_COLOR = 0x707070;
 
-	private final String hintKey;
+	private final Supplier<String> hint;
 	private final int maxLength;
 	private final Supplier<String> getter;
 	private final Consumer<String> setter;
@@ -29,13 +32,26 @@ final class TextFieldPanel implements OptionPanel {
 	/** Created once the row's width is known - the game's text field can't change its size afterwards. */
 	private TextFieldWidget field;
 	private int fieldWidth;
+	/** Whether the field has the keyboard focus from the start, without a click. */
+	private boolean focusedAtFirst;
 
-	TextFieldPanel(String hintKey, int maxLength, Supplier<String> getter, Consumer<String> setter, Predicate<String> valid) {
-		this.hintKey = hintKey;
+	TextFieldPanel(final String hintKey, int maxLength, Supplier<String> getter, Consumer<String> setter, Predicate<String> valid) {
+		this(() -> I18n.translate(hintKey), maxLength, getter, setter, valid);
+	}
+
+	/** For a hint that is not a fixed text. */
+	TextFieldPanel(Supplier<String> hint, int maxLength, Supplier<String> getter, Consumer<String> setter, Predicate<String> valid) {
+		this.hint = hint;
 		this.maxLength = maxLength;
 		this.getter = getter;
 		this.setter = setter;
 		this.valid = valid;
+	}
+
+	/** Lets the player type right away - for the one field a screen is opened for. */
+	TextFieldPanel focused() {
+		this.focusedAtFirst = true;
+		return this;
 	}
 
 	@Override
@@ -45,7 +61,8 @@ final class TextFieldPanel implements OptionPanel {
 
 	private TextFieldWidget fieldAt(int x, int y, int width) {
 		if (this.field == null || this.fieldWidth != width) {
-			boolean focused = this.field != null && this.field.isFocused();
+			boolean focused = this.field != null ? this.field.isFocused() : this.focusedAtFirst;
+			this.focusedAtFirst = false;
 			// The field's frame lies one pixel outside the box given here.
 			this.field = new TextFieldWidget(0, MinecraftClient.getInstance().textRenderer, x + 1, y + 1, width - 2, HEIGHT - 2);
 			this.field.setMaxLength(this.maxLength);
@@ -65,7 +82,7 @@ final class TextFieldPanel implements OptionPanel {
 		field.render();
 		if (field.getText().isEmpty() && !field.isFocused()) {
 			TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-			textRenderer.drawWithShadow(I18n.translate(this.hintKey), field.x + 4, field.y + (HEIGHT - 2 - textRenderer.fontHeight) / 2, HINT_COLOR);
+			textRenderer.drawWithShadow(this.hint.get(), field.x + 4, field.y + (HEIGHT - 2 - textRenderer.fontHeight) / 2, HINT_COLOR);
 		}
 	}
 

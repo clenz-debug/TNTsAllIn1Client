@@ -2,6 +2,7 @@ package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.render.GameRenderer;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * The renderer reads the field of view, the mouse sensitivity and the brightness from the game's
  * settings as it goes - where one of our features wants another value, it gets ours instead. It is
  * also where the mouse turns the player and where the first-person hand is drawn, both of which the
- * freecam takes over.
+ * freecam takes over, and where the waypoints get drawn into the finished world.
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
@@ -66,5 +67,15 @@ public abstract class GameRendererMixin {
 		if (FreecamHandler.isActive()) {
 			ci.cancel();
 		}
+	}
+
+	/**
+	 * Waypoints: the world is drawn, the view it was drawn with is still set, and the hand comes next -
+	 * the game names that step "hand" for its profiler.
+	 */
+	@Inject(method = "renderWorld(IFJ)V",
+			at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V", args = "ldc=hand"))
+	private void tnt$renderWaypoints(int anaglyphPass, float tickDelta, long limitTime, CallbackInfo ci) {
+		WaypointRenderer.render(tickDelta);
 	}
 }

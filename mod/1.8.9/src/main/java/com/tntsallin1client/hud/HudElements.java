@@ -7,6 +7,7 @@ import java.util.List;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.waypoint.WaypointArrowHud;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
 
@@ -40,6 +41,7 @@ public final class HudElements {
 		for (HudElement element : ALL) {
 			element.render(client, config, window.getWidth(), window.getHeight());
 		}
+		WaypointArrowHud.render(client, config, window.getWidth(), window.getHeight());
 		FreecamHandler.renderHint(client, window.getWidth());
 		// Drawing text leaves its color set - whatever the game draws next would be tinted with it.
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

@@ -24,6 +24,7 @@ import com.tntsallin1client.hud.ArmorStatusIconPosition;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
 import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.HudLayout;
+import com.tntsallin1client.waypoint.Waypoint;
 import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -175,6 +176,32 @@ public class ClientConfig {
 	public boolean zoomEnabled = false;
 	public int zoomFov = 15;
 	public int zoomSensitivityPercent = 40;
+
+	// Waypoints: markers the player sets, drawn into the world as a beam, a block outline and a name
+	// (see WaypointRenderer), with their own list and edit screens - reachable from the mod menu and
+	// by a key of their own.
+	public boolean waypointsEnabled = false;
+	// One list per world or server (the key is WaypointScope#currentKey) - see waypointsFor.
+	public Map<String, List<Waypoint>> waypointsByWorld = new HashMap<String, List<Waypoint>>();
+	// What a new waypoint starts with - each waypoint has its own copy of these four.
+	public boolean waypointShowBeam = true;
+	public boolean waypointShowMarker = true;
+	public boolean waypointShowDistance = true;
+	public boolean waypointFadeNearby = false;
+	// Whether deleting one waypoint asks first - "Delete All" always does.
+	public boolean waypointConfirmDelete = true;
+	// An arrowhead at the screen edge towards every waypoint outside the field of view (see WaypointArrowHud).
+	public boolean waypointOffscreenArrows = true;
+
+	/** The waypoints of one world or server, created on first use - callers add to and remove from the list itself. */
+	public List<Waypoint> waypointsFor(String worldKey) {
+		List<Waypoint> waypoints = this.waypointsByWorld.get(worldKey);
+		if (waypoints == null) {
+			waypoints = new ArrayList<Waypoint>();
+			this.waypointsByWorld.put(worldKey, waypoints);
+		}
+		return waypoints;
+	}
 
 	public static ClientConfig get() {
 		if (instance == null) {

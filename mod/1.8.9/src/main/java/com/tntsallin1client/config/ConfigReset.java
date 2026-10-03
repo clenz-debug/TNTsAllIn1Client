@@ -11,9 +11,11 @@ import org.apache.logging.log4j.Logger;
  * and where the HUD editor put it. Whether the feature is switched on stays as it is (own user
  * decision) - someone resetting a feature from its options screen is using it.
  *
- * <p>A feature's settings are the config fields whose names start with one of its prefixes; the
- * config's field naming is what ties a field to its feature. Key bindings are not part of the
- * config - they belong to the game's controls.
+ * <p>A feature's settings are the config fields named after it: those starting with one of its
+ * prefixes, followed by a new word. That keeps what a feature stores apart from what it is set to -
+ * {@code waypoint} covers {@code waypointShowBeam} but not the waypoints themselves
+ * ({@code waypointsByWorld}). Key bindings are not part of the config - they belong to the game's
+ * controls.
  */
 public final class ConfigReset {
 	private static final Logger LOGGER = LogManager.getLogger("tntsallin1client");
@@ -31,7 +33,8 @@ public final class ConfigReset {
 		FREECAM("gui.tntsallin1client.menu.freecam", "freecamEnabled", "freecam"),
 		CROSSHAIR("gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair"),
 		HITBOX_COLOR("gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
-		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline");
+		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline"),
+		WAYPOINTS("gui.tntsallin1client.menu.waypoints", "waypointsEnabled", "waypoint");
 
 		public final String labelKey;
 		private final String switchField;
@@ -61,7 +64,8 @@ public final class ConfigReset {
 				return false;
 			}
 			for (String prefix : this.prefixes) {
-				if (fieldName.startsWith(prefix)) {
+				if (fieldName.startsWith(prefix)
+						&& (fieldName.length() == prefix.length() || !Character.isLowerCase(fieldName.charAt(prefix.length())))) {
 					return true;
 				}
 			}
