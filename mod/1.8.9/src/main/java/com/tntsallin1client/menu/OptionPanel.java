@@ -31,6 +31,10 @@ interface OptionPanel {
 		return false;
 	}
 
+	/** Called after the settings were changed from outside (reset) - a panel holding a copy of one reads it anew. */
+	default void reload() {
+	}
+
 	/** Called once per game tick. */
 	default void tick() {
 	}

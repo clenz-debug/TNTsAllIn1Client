@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import net.minecraft.client.gui.screen.Screen;
 
 /**
@@ -26,5 +27,6 @@ public class CrosshairOptionsScreen extends CrosshairShapeScreen {
 				() -> config.customCrosshairColor, argb -> config.customCrosshairColor = argb));
 		addLink(KEY + "target_color_button", () -> new CrosshairTargetColorOptionsScreen(this));
 		addLink(KEY + "target_shape_button", () -> new CrosshairTargetShapeOptionsScreen(this));
+		setResettable(ConfigReset.Feature.CROSSHAIR);
 	}
 }

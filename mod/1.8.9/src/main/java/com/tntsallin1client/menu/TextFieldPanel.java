@@ -101,6 +101,12 @@ final class TextFieldPanel implements OptionPanel {
 		return true;
 	}
 
+	/** The field is made anew, with the current text, the next time it is drawn. */
+	@Override
+	public void reload() {
+		this.field = null;
+	}
+
 	@Override
 	public void tick() {
 		if (this.field != null) {

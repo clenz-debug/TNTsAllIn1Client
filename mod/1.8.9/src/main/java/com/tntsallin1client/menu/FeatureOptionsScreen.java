@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.GameOptions;
@@ -24,7 +26,8 @@ import net.minecraft.client.resource.language.I18n;
  * <p>The color picker goes below the switches. Where that doesn't fit - four switches plus the
  * picker are taller than this version's screen at the default window size - it moves to the right
  * of them instead; the switches always stay in one column (own user request). More switches than
- * fit above "Back" scroll (see {@link ScrollPane}).
+ * fit scroll (see {@link ScrollPane}). Below them comes "Back" - and above that "Move / Resize HUD"
+ * where the feature has something on the HUD.
  */
 public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FULL_WIDTH = 210;
@@ -38,6 +41,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FIRST_ROW_Y = 34;
 	private static final int HINT_GAP = 2;
 	private static final int BACK_BUTTON_ID = 0;
+	private static final int RESET_BUTTON_ID = 1;
+	private static final int HUD_EDITOR_BUTTON_ID = 2;
+	private static final int RESET_BUTTON_WIDTH = 84;
+	private static final int RESET_BUTTON_MARGIN = 6;
 	private static final int LEFT_MOUSE_BUTTON = 0;
 	private static final int ESCAPE_KEY = 1;
 	/** LWJGL 2's `Keyboard.KEY_NONE`. */
@@ -59,6 +66,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private IntSupplier colorGetter;
 	private IntConsumer colorSetter;
 	private String hintKey;
+	/** Set for a screen with a "Reset" button. */
+	private ConfigReset.Feature resetFeature;
 	/** The key binding whose button was clicked and that gets the next key or mouse button pressed. */
 	private KeyBinding listeningFor;
 
@@ -148,6 +157,37 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.hintKey = hintKey;
 	}
 
+	/** Gives the screen a "Reset" button in its top right corner that puts the feature's settings back to their defaults. */
+	protected final void setResettable(ConfigReset.Feature feature) {
+		this.resetFeature = feature;
+	}
+
+	/**
+	 * Whether the screen belongs to a feature with something on the HUD: the feature's own screen
+	 * says so itself, a screen opened from another options screen (a color, a shape) follows that one.
+	 */
+	private boolean offersHudEditor() {
+		if (this.resetFeature != null) {
+			return this.resetFeature.hasHudElement();
+		}
+		return this.parent instanceof FeatureOptionsScreen && ((FeatureOptionsScreen) this.parent).offersHudEditor();
+	}
+
+	/** The answer to the question the "Reset" button asks. Either way the player is back on this screen afterwards. */
+	@Override
+	public void confirmResult(boolean confirmed, int id) {
+		if (confirmed) {
+			ConfigReset.reset(this.resetFeature);
+			for (Option option : this.options) {
+				OptionPanel panel = option.panel();
+				if (panel != null) {
+					panel.reload();
+				}
+			}
+		}
+		this.client.setScreen(this);
+	}
+
 	private List<Option> visibleOptions() {
 		List<Option> visible = new ArrayList<Option>();
 		for (Option option : this.options) {
@@ -164,6 +204,12 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.shown = visibleOptions();
 		boolean hasColor = this.colorGetter != null;
 		int backY = this.height - 28;
+		// "Move / Resize HUD" directly above "Back", on the screens of features that have something on
+		// the HUD (own user request, both the button and leaving it out elsewhere).
+		boolean hudEditor = offersHudEditor();
+		int hudEditorY = backY - ROW_HEIGHT - ROW_GAP;
+		// Where the options have to end.
+		int bottom = hudEditor ? hudEditorY : backY;
 		this.optionTops.clear();
 		int switchesHeight = 0;
 		for (Option option : this.shown) {
@@ -172,7 +218,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		}
 		// Does the picker still fit between the last switch and the "Back" button?
 		boolean pickerBeside = hasColor
-				&& FIRST_ROW_Y + switchesHeight + PICKER_GAP + ColorPickerPanel.totalHeight() > backY - PICKER_GAP;
+				&& FIRST_ROW_Y + switchesHeight + PICKER_GAP + ColorPickerPanel.totalHeight() > bottom - PICKER_GAP;
 
 		int buttonWidth = pickerBeside ? NARROW_WIDTH : FULL_WIDTH;
 		int contentWidth = pickerBeside ? NARROW_WIDTH + BESIDE_GAP + ColorPickerPanel.totalWidth() : FULL_WIDTH;
@@ -198,9 +244,17 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		if (this.hintKey != null) {
 			contentHeight = switchesHeight + HINT_GAP + this.textRenderer.fontHeight;
 		}
-		this.pane.layout(FIRST_ROW_Y, backY - PICKER_GAP, left + buttonWidth + ScrollPane.SCROLLBAR_GAP, contentHeight);
+		this.pane.layout(FIRST_ROW_Y, bottom - PICKER_GAP, left + buttonWidth + ScrollPane.SCROLLBAR_GAP, contentHeight);
 
+		if (hudEditor) {
+			this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - FULL_WIDTH) / 2, hudEditorY, FULL_WIDTH, ROW_HEIGHT,
+					I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
+		}
 		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - FULL_WIDTH) / 2, backY, FULL_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		if (this.resetFeature != null) {
+			this.buttons.add(new ButtonWidget(RESET_BUTTON_ID, this.width - RESET_BUTTON_MARGIN - RESET_BUTTON_WIDTH, RESET_BUTTON_MARGIN,
+					RESET_BUTTON_WIDTH, ROW_HEIGHT, I18n.translate("gui.tntsallin1client.reset.button")));
+		}
 	}
 
 	private void placeOptions() {
@@ -227,6 +281,13 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	protected void buttonClicked(ButtonWidget button) {
 		if (button.id == BACK_BUTTON_ID) {
 			back();
+		} else if (button.id == HUD_EDITOR_BUTTON_ID) {
+			this.client.setScreen(new HudEditorScreen(this));
+		} else if (button.id == RESET_BUTTON_ID) {
+			// Asks first; the answer comes back through confirmResult.
+			this.client.setScreen(new ConfirmScreen(this,
+					I18n.translate("gui.tntsallin1client.reset.confirm_title", I18n.translate(this.resetFeature.labelKey)),
+					I18n.translate("gui.tntsallin1client.reset.confirm_message"), 0));
 		}
 	}
 

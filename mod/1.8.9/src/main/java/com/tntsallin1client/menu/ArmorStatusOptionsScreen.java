@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import com.tntsallin1client.hud.ArmorStatusColorMode;
 import com.tntsallin1client.hud.ArmorStatusDirection;
 import com.tntsallin1client.hud.ArmorStatusIconPosition;
@@ -53,6 +54,7 @@ public class ArmorStatusOptionsScreen extends FeatureOptionsScreen {
 		addToggle(KEY + "reversed", () -> config.armorStatusBundledReversed, value -> config.armorStatusBundledReversed = value)
 				.onlyIf(() -> config.armorStatusLayoutMode == ArmorStatusLayoutMode.BUNDLED);
 		addLink(KEY + "slots_button", () -> new ArmorStatusSlotsOptionsScreen(this));
+		setResettable(ConfigReset.Feature.ARMOR_STATUS);
 	}
 
 	/**

@@ -27,6 +27,7 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 	private static final int BUTTON_WIDTH = 210;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int BACK_BUTTON_ID = 0;
+	private static final int HUD_EDITOR_BUTTON_ID = 1;
 	private static final int LEFT_MOUSE_BUTTON = 0;
 
 	private final List<KeyBox> boxes = new ArrayList<KeyBox>();
@@ -49,6 +50,9 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 			rowY += BOX_HEIGHT + GAP;
 		}
 
+		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD" directly above "Back".
+		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, this.height - 52, BUTTON_WIDTH, BUTTON_HEIGHT,
+				I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
 		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, this.height - 28, BUTTON_WIDTH, BUTTON_HEIGHT,
 				I18n.translate("gui.back")));
 	}
@@ -57,6 +61,8 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 	protected void buttonClicked(ButtonWidget button) {
 		if (button.id == BACK_BUTTON_ID) {
 			back();
+		} else if (button.id == HUD_EDITOR_BUTTON_ID) {
+			this.client.setScreen(new HudEditorScreen(this));
 		}
 	}
 

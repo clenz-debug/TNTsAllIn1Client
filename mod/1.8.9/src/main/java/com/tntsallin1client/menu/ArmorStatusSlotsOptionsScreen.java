@@ -25,6 +25,7 @@ public class ArmorStatusSlotsOptionsScreen extends ClientScreen {
 	private static final int TOGGLE_WIDTH = ROW_WIDTH - 2 * ARROW_WIDTH - 2 * ARROW_GAP;
 	private static final int FIRST_ROW_Y = 40;
 	private static final int BACK_BUTTON_ID = 0;
+	private static final int HUD_EDITOR_BUTTON_ID = 1;
 	/** Each plus the row's index, top to bottom. */
 	private static final int FIRST_TOGGLE_ID = 100;
 	private static final int FIRST_UP_ID = 200;
@@ -59,6 +60,9 @@ public class ArmorStatusSlotsOptionsScreen extends ClientScreen {
 		}
 		updateLabels();
 
+		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD" directly above "Back".
+		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, x, this.height - 52, ROW_WIDTH, ROW_HEIGHT,
+				I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
 		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, x, this.height - 28, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
 	}
 
@@ -76,6 +80,10 @@ public class ArmorStatusSlotsOptionsScreen extends ClientScreen {
 	protected void buttonClicked(ButtonWidget button) {
 		if (button.id == BACK_BUTTON_ID) {
 			back();
+			return;
+		}
+		if (button.id == HUD_EDITOR_BUTTON_ID) {
+			this.client.setScreen(new HudEditorScreen(this));
 			return;
 		}
 

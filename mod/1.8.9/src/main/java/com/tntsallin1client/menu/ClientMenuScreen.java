@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -83,6 +85,9 @@ public class ClientMenuScreen extends ClientScreen {
 		addSection("gui.tntsallin1client.menu.section_misc");
 		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);
 		addLink("gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(this));
+		// Asks first; the answer comes back through confirmResult.
+		addLink("gui.tntsallin1client.menu.reset_all_button", () -> new ConfirmScreen(this,
+				I18n.translate("gui.tntsallin1client.reset.confirm_all_title"), I18n.translate("gui.tntsallin1client.reset.confirm_all_message"), 0));
 	}
 
 	private void addSection(String labelKey) {
@@ -135,6 +140,15 @@ public class ClientMenuScreen extends ClientScreen {
 		layoutRows();
 
 		this.buttons.add(new ButtonWidget(DONE_BUTTON_ID, x, this.height - 28, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.done")));
+	}
+
+	/** The answer to the question "Reset All Settings" asks. Either way the player is back in the menu afterwards. */
+	@Override
+	public void confirmResult(boolean confirmed, int id) {
+		if (confirmed) {
+			ConfigReset.resetAll();
+		}
+		this.client.setScreen(this);
 	}
 
 	@Override

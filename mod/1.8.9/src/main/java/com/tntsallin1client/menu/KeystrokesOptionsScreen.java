@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import net.minecraft.client.gui.screen.Screen;
 
 /**
@@ -20,5 +21,6 @@ public class KeystrokesOptionsScreen extends FeatureOptionsScreen {
 				() -> new ColorOptionsScreen(this, "gui.tntsallin1client.keystrokes_options.text_color_label",
 						() -> config.keystrokesTextColor, argb -> config.keystrokesTextColor = argb));
 		addLink("gui.tntsallin1client.keystrokes_options.keys_button", () -> new KeystrokesKeysOptionsScreen(this));
+		setResettable(ConfigReset.Feature.KEYSTROKES);
 	}
 }

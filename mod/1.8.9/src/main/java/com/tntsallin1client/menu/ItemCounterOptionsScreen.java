@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import com.tntsallin1client.hud.ItemCounterHud;
 import net.minecraft.client.gui.screen.Screen;
 
@@ -20,5 +21,6 @@ public class ItemCounterOptionsScreen extends FeatureOptionsScreen {
 				.onlyIf(() -> !config.itemCounterUseHeldItem);
 		addToggle(KEY + "show_item_icon", () -> config.itemCounterShowItemIcon, value -> config.itemCounterShowItemIcon = value);
 		setColor(() -> config.itemCounterTextColor, argb -> config.itemCounterTextColor = argb);
+		setResettable(ConfigReset.Feature.ITEM_COUNTER);
 	}
 }

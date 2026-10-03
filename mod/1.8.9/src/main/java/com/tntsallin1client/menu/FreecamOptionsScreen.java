@@ -1,6 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.client.gui.screen.Screen;
 
@@ -20,5 +21,6 @@ public class FreecamOptionsScreen extends FeatureOptionsScreen {
 		addSlider(KEY + "speed", MIN_SPEED, MAX_SPEED, () -> config.freecamSpeed, value -> config.freecamSpeed = value);
 		addSlider(KEY + "sensitivity", MIN_SENSITIVITY_PERCENT, MAX_SENSITIVITY_PERCENT,
 				() -> config.freecamSensitivityPercent, value -> config.freecamSensitivityPercent = value);
+		setResettable(ConfigReset.Feature.FREECAM);
 	}
 }
