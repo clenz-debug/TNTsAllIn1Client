@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
@@ -110,6 +111,11 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 				return panel;
 			}
 		});
+	}
+
+	/** A field to type text into, shown in red while `valid` rejects what is in it. `hintKey` names what to enter while it is empty. */
+	protected final Option addTextField(String hintKey, int maxLength, Supplier<String> getter, Consumer<String> setter, Predicate<String> valid) {
+		return addPanel(new TextFieldPanel(hintKey, maxLength, getter, setter, valid));
 	}
 
 	/**
@@ -246,7 +252,26 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			bindListeningTo(code == ESCAPE_KEY ? UNBOUND : code);
 			return;
 		}
+		if (code != ESCAPE_KEY) {
+			for (Option option : this.shown) {
+				OptionPanel panel = option.panel();
+				if (panel != null && panel.keyPressed(character, code)) {
+					return;
+				}
+			}
+		}
 		super.keyPressed(character, code);
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		for (Option option : this.shown) {
+			OptionPanel panel = option.panel();
+			if (panel != null) {
+				panel.tick();
+			}
+		}
 	}
 
 	@Override
@@ -261,6 +286,12 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			bindListeningTo(FIRST_MOUSE_BUTTON_CODE + button);
 			return;
 		}
+		for (Option option : this.shown) {
+			OptionPanel panel = option.panel();
+			if (panel != null) {
+				panel.unfocus();
+			}
+		}
 		if (button == LEFT_MOUSE_BUTTON && this.pane.contains(mouseY)) {
 			if (this.pane.mouseClicked(mouseX, mouseY)) {
 				return;
@@ -270,6 +301,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 				OptionPanel panel = this.shown.get(index).panel();
 				if (panel != null) {
 					if (panel.mouseClicked(this.optionsLeft, optionY(index), this.optionsWidth, mouseX, mouseY)) {
+						// The click was not on the color picker - its text fields give up the keyboard focus.
+						if (this.colorPicker != null) {
+							this.colorPicker.mouseClicked(mouseX, mouseY, button);
+						}
 						return;
 					}
 				} else if (optionButton.isMouseOver(this.client, mouseX, mouseY)) {

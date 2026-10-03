@@ -21,4 +21,17 @@ interface OptionPanel {
 
 	default void mouseReleased() {
 	}
+
+	/** Called before every click on the screen is handed out - a panel with keyboard focus gives it up. */
+	default void unfocus() {
+	}
+
+	/** @return whether the panel had the keyboard focus and took the key */
+	default boolean keyPressed(char character, int code) {
+		return false;
+	}
+
+	/** Called once per game tick. */
+	default void tick() {
+	}
 }

@@ -49,6 +49,14 @@ public class ClientConfig {
 	public int coordinatesHudTextColor = 0xFFFFFFFF;
 	public HudLayout coordinatesHudLayout = new HudLayout();
 
+	// Total count of one item across the inventory - a fixed item id, or whatever is currently held.
+	public boolean itemCounterEnabled = false;
+	public boolean itemCounterUseHeldItem = false;
+	public String itemCounterItemId = "minecraft:diamond";
+	public boolean itemCounterShowItemIcon = false;
+	public int itemCounterTextColor = 0xFFFFFFFF;
+	public HudLayout itemCounterHudLayout = new HudLayout();
+
 	// Always-visible FPS counter, no F3 needed.
 	public boolean fpsCounterEnabled = false;
 	public int fpsCounterTextColor = 0xFFFFFFFF;

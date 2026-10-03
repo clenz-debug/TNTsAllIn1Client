@@ -18,6 +18,7 @@ public final class HudElements {
 	private static List<HudElement> all() {
 		List<HudElement> elements = new ArrayList<HudElement>();
 		elements.add(new CoordinatesHud());
+		elements.add(new ItemCounterHud());
 		elements.add(new FpsCounterHud());
 		elements.add(new LatencyHud());
 		elements.add(new ClockHud());

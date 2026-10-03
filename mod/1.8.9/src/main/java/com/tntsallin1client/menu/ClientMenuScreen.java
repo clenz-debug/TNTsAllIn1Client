@@ -58,6 +58,8 @@ public class ClientMenuScreen extends ClientScreen {
 		addSection("gui.tntsallin1client.menu.section_hud");
 		addFeature("gui.tntsallin1client.menu.coordinates_hud", () -> config.coordinatesHudEnabled, value -> config.coordinatesHudEnabled = value,
 				() -> new CoordinatesHudOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.item_counter", () -> config.itemCounterEnabled, value -> config.itemCounterEnabled = value,
+				() -> new ItemCounterOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.fps_counter", () -> config.fpsCounterEnabled, value -> config.fpsCounterEnabled = value,
 				() -> new FpsCounterOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.latency_hud", () -> config.latencyHudEnabled, value -> config.latencyHudEnabled = value,

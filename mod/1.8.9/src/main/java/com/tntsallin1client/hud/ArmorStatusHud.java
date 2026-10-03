@@ -4,11 +4,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -21,7 +19,7 @@ import net.minecraft.util.math.MathHelper;
  * (all slots as a single element), whichever {@link ClientConfig#armorStatusLayoutMode} is active.
  */
 public final class ArmorStatusHud {
-	private static final int ICON_SIZE = 16;
+	private static final int ICON_SIZE = ItemIcons.SIZE;
 	private static final int ICON_GAP = 2;
 	static final int GAP = 4;
 
@@ -233,27 +231,10 @@ public final class ArmorStatusHud {
 		int textY = y + (ICON_SIZE - textRenderer.fontHeight) / 2 + config.armorStatusTextVerticalOffset;
 		if (config.armorStatusIconPosition == ArmorStatusIconPosition.RIGHT) {
 			textRenderer.drawWithShadow(entry.text, x, textY, entry.color);
-			drawIcon(client, entry.stack, x + textColumnWidth + ICON_GAP, y);
+			ItemIcons.draw(client, entry.stack, x + textColumnWidth + ICON_GAP, y);
 		} else {
-			drawIcon(client, entry.stack, x, y);
+			ItemIcons.draw(client, entry.stack, x, y);
 			textRenderer.drawWithShadow(entry.text, x + ICON_SIZE + ICON_GAP, textY, entry.color);
 		}
-	}
-
-	/** Draws an item the way the hotbar does. */
-	private static void drawIcon(MinecraftClient client, ItemStack stack, int x, int y) {
-		if (stack == null) {
-			return;
-		}
-		// Text drawn before leaves its color set, which would tint the item.
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		GlStateManager.enableRescaleNormal();
-		GlStateManager.enableBlend();
-		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-		DiffuseLighting.enable();
-		client.getItemRenderer().renderInGuiWithOverrides(stack, x, y);
-		DiffuseLighting.disable();
-		GlStateManager.disableRescaleNormal();
-		GlStateManager.disableBlend();
 	}
 }
