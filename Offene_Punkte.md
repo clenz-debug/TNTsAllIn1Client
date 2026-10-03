@@ -34,14 +34,16 @@ Stand der Veröffentlichung: 0.1.7; was danach gebaut wurde, steht unter 2a. Erl
 
 
 ## 2. Noch von dir zu prüfen (mit 0.1.7 schon veröffentlicht)
-- [ ] Logo am Nametag: Test mit anderen Client-Nutzern
+Derzeit nichts offen. Der Test des Logos am Nametag mit anderen Client-Nutzern steht jetzt unter 2b.
 
 ## 2a. Bestätigt, wartet auf das nächste Release
 - [ ] Nächstes Release (nur mit deinem OK): Mod-Version hochsetzen, die drei `TNT-Dark-Mode-<version>.zip` neu hochladen und ihre Manifest-Einträge hochziehen. Enthält bisher: dunkles Löschen-Feld im Dark Mode, die drei Symbol-Buttons im 26.3-Client-Design, Freunde-Menü im Hauptmenü samt Tour-Schritt - alles von dir bestätigt (2026-10-02)
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
-- [ ] Capes im Multiplayer testen, in allen Versionen (1.8.9, 1.21.11, 26.1.2, 26.3): sehen zwei Client-Nutzer auf demselben Server gegenseitig ihre Capes? Für 1.8.9 geht das erst, wenn die Legacy-Unterstützung in einem Update veröffentlicht ist
+- [ ] Multiplayer-Test mit einem zweiten Client-Nutzer auf demselben Server, beides in einem Durchgang:
+  - [ ] Capes, in allen Versionen (1.8.9, 1.21.11, 26.1.2, 26.3): sehen beide gegenseitig ihre Capes? Für 1.8.9 geht das erst, wenn die Legacy-Unterstützung in einem Update veröffentlicht ist
+  - [ ] Logo am Nametag (mit 0.1.7 veröffentlicht, in 1.21.11, 26.1.2 und 26.3; in 1.8.9 gibt es das Logo noch nicht): sehen beide das Client-Logo am Namen des anderen?
 
 ## 3. Vor einer öffentlichen Veröffentlichung
 Derzeit nichts offen. Code-Signing steht unter „4. Eventuell“.
