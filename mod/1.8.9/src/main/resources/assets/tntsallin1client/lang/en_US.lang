@@ -106,3 +106,4 @@ gui.tntsallin1client.crosshair_preset.four_angled=4 Angled Crosshair
 gui.tntsallin1client.crosshair_preset.four_angled_dot=4 Angled Dot Crosshair
 gui.tntsallin1client.crosshair_preset.arrow=Arrow Crosshair
 gui.tntsallin1client.menu.fullbright=Fullbright
+gui.tntsallin1client.menu.search=Search...
