@@ -15,6 +15,9 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import com.tntsallin1client.crosshair.CrosshairGrid;
+import com.tntsallin1client.crosshair.CrosshairMode;
+import com.tntsallin1client.crosshair.CrosshairPreset;
 import com.tntsallin1client.hud.ArmorStatusColorMode;
 import com.tntsallin1client.hud.ArmorStatusDirection;
 import com.tntsallin1client.hud.ArmorStatusIconPosition;
@@ -108,6 +111,26 @@ public class ClientConfig {
 		}
 		return layout;
 	}
+
+	// Custom crosshair: a shape from the preset library or one drawn on a grid, in a color of its
+	// own (white by default, so switching it on changes nothing until a color is picked). The size
+	// is the edge of one grid cell - in GUI-scale units, or in screen pixels with
+	// crosshairIgnoreGuiScale. While aiming at a mob a left click would hit, it can change to a
+	// second color and/or a second shape, each switched on separately.
+	public boolean customCrosshairEnabled = false;
+	public int customCrosshairColor = 0xFFFFFFFF;
+	public CrosshairMode crosshairMode = CrosshairMode.PRESET;
+	public CrosshairPreset crosshairPreset = CrosshairPreset.SMALLER;
+	public boolean[][] crosshairCustomGrid = CrosshairGrid.empty();
+	public int crosshairPixelSize = 2;
+	public boolean crosshairIgnoreGuiScale = false;
+	public boolean crosshairTargetColorEnabled = false;
+	public int crosshairTargetColor = 0xFFFF5555;
+	// The default differs from the crosshair's own, so switching it on has an obvious effect.
+	public boolean crosshairTargetShapeEnabled = false;
+	public CrosshairMode crosshairTargetShapeMode = CrosshairMode.PRESET;
+	public CrosshairPreset crosshairTargetShapePreset = CrosshairPreset.CIRCLE_DOT;
+	public boolean[][] crosshairTargetShapeCustomGrid = CrosshairGrid.empty();
 
 	// Hold-to-zoom. The zoom level is the field of view while zooming - changed with the mouse wheel
 	// and remembered. The mouse is slowed down to this share of its normal speed while zooming.

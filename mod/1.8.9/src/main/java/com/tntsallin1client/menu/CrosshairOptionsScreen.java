@@ -1,0 +1,30 @@
+package com.tntsallin1client.menu;
+
+import com.tntsallin1client.config.ClientConfig;
+import net.minecraft.client.gui.screen.Screen;
+
+/**
+ * Options of the custom crosshair: its shape (a preset or drawn by hand), its size, whether that
+ * size ignores the GUI scale, and its color. What changes while aiming at a mob has its own screens
+ * ({@link CrosshairTargetColorOptionsScreen}, {@link CrosshairTargetShapeOptionsScreen}).
+ */
+public class CrosshairOptionsScreen extends CrosshairShapeScreen {
+	private static final String KEY = "gui.tntsallin1client.crosshair_options.";
+	private static final int MIN_PIXEL_SIZE = 1;
+	private static final int MAX_PIXEL_SIZE = 6;
+
+	public CrosshairOptionsScreen(Screen parent) {
+		super(parent, KEY + "title");
+		final ClientConfig config = ClientConfig.get();
+		addToggle(KEY + "enabled", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value);
+		addShapeOptions(() -> config.crosshairMode, mode -> config.crosshairMode = mode,
+				() -> config.crosshairPreset, preset -> config.crosshairPreset = preset,
+				() -> config.crosshairCustomGrid);
+		addSlider(KEY + "pixel_size", MIN_PIXEL_SIZE, MAX_PIXEL_SIZE, () -> config.crosshairPixelSize, value -> config.crosshairPixelSize = value);
+		addToggle(KEY + "ignore_gui_scale", () -> config.crosshairIgnoreGuiScale, value -> config.crosshairIgnoreGuiScale = value);
+		addLink(KEY + "color_button", () -> new ColorOptionsScreen(this, KEY + "color_title",
+				() -> config.customCrosshairColor, argb -> config.customCrosshairColor = argb));
+		addLink(KEY + "target_color_button", () -> new CrosshairTargetColorOptionsScreen(this));
+		addLink(KEY + "target_shape_button", () -> new CrosshairTargetShapeOptionsScreen(this));
+	}
+}

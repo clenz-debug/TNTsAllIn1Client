@@ -32,7 +32,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int BESIDE_GAP = 10;
 	private static final int PICKER_GAP = 6;
 	private static final int ROW_HEIGHT = 20;
-	private static final int ROW_SPACING = 24;
+	/** Free space below every row. */
+	private static final int ROW_GAP = 4;
 	private static final int FIRST_ROW_Y = 34;
 	private static final int HINT_GAP = 2;
 	private static final int BACK_BUTTON_ID = 0;
@@ -44,9 +45,15 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FIRST_MOUSE_BUTTON_CODE = -100;
 
 	private final List<Option> options = new ArrayList<Option>();
-	/** The options on screen right now, top to bottom, and the button of each. */
+	/** The options on screen right now, top to bottom. */
 	private List<Option> shown = new ArrayList<Option>();
+	/** The button of each of them - null for one that is a panel. */
 	private final List<ButtonWidget> optionButtons = new ArrayList<ButtonWidget>();
+	/** The top edge of each of them, counted from the top of the first. */
+	private final List<Integer> optionTops = new ArrayList<Integer>();
+	/** Where the column of options is and how wide. */
+	private int optionsLeft;
+	private int optionsWidth;
 	private final ScrollPane pane = new ScrollPane(this::placeOptions);
 	private IntSupplier colorGetter;
 	private IntConsumer colorSetter;
@@ -70,6 +77,11 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 				() -> setter.accept(!getter.getAsBoolean())));
 	}
 
+	/** A button stepping through more than two values, shown as "Label: Value". `next` switches to the value after the current one. */
+	protected final Option addCycle(final String labelKey, final Supplier<String> valueKey, final Runnable next) {
+		return add(new Option(() -> I18n.translate(labelKey) + ": " + I18n.translate(valueKey.get()), next));
+	}
+
 	/** A button that opens another screen. */
 	protected final Option addLink(final String labelKey, final Supplier<Screen> screen) {
 		return add(new Option(() -> I18n.translate(labelKey), () -> this.client.setScreen(screen.get())));
@@ -81,6 +93,21 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			@Override
 			ButtonWidget createButton(int x, int width) {
 				return new IntSliderButton(0, x, 0, width, ROW_HEIGHT, labelKey, min, max, getter.getAsInt(), setter);
+			}
+		});
+	}
+
+	/** An area that draws itself instead of a button. */
+	protected final Option addPanel(final OptionPanel panel) {
+		return add(new Option(null, null) {
+			@Override
+			ButtonWidget createButton(int x, int width) {
+				return null;
+			}
+
+			@Override
+			OptionPanel panel() {
+				return panel;
 			}
 		});
 	}
@@ -131,7 +158,12 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.shown = visibleOptions();
 		boolean hasColor = this.colorGetter != null;
 		int backY = this.height - 28;
-		int switchesHeight = this.shown.size() * ROW_SPACING;
+		this.optionTops.clear();
+		int switchesHeight = 0;
+		for (Option option : this.shown) {
+			this.optionTops.add(switchesHeight);
+			switchesHeight += option.height() + ROW_GAP;
+		}
 		// Does the picker still fit between the last switch and the "Back" button?
 		boolean pickerBeside = hasColor
 				&& FIRST_ROW_Y + switchesHeight + PICKER_GAP + ColorPickerPanel.totalHeight() > backY - PICKER_GAP;
@@ -139,6 +171,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		int buttonWidth = pickerBeside ? NARROW_WIDTH : FULL_WIDTH;
 		int contentWidth = pickerBeside ? NARROW_WIDTH + BESIDE_GAP + ColorPickerPanel.totalWidth() : FULL_WIDTH;
 		int left = (this.width - contentWidth) / 2;
+		this.optionsLeft = left;
+		this.optionsWidth = buttonWidth;
 		this.optionButtons.clear();
 		for (Option option : this.shown) {
 			this.optionButtons.add(option.createButton(left, buttonWidth));
@@ -154,7 +188,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			});
 		}
 
-		int contentHeight = switchesHeight - (ROW_SPACING - ROW_HEIGHT);
+		int contentHeight = switchesHeight - ROW_GAP;
 		if (this.hintKey != null) {
 			contentHeight = switchesHeight + HINT_GAP + this.textRenderer.fontHeight;
 		}
@@ -165,8 +199,22 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 
 	private void placeOptions() {
 		for (int index = 0; index < this.optionButtons.size(); index++) {
-			this.optionButtons.get(index).y = FIRST_ROW_Y + index * ROW_SPACING - this.pane.offset();
+			ButtonWidget button = this.optionButtons.get(index);
+			if (button != null) {
+				button.y = optionY(index);
+			}
 		}
+	}
+
+	/** Where the top edge of an option is on screen right now. */
+	private int optionY(int index) {
+		return FIRST_ROW_Y + this.optionTops.get(index) - this.pane.offset();
+	}
+
+	/** The height of all options on screen, including the free space below the last one. */
+	private int optionsHeight() {
+		int last = this.shown.size() - 1;
+		return last < 0 ? 0 : this.optionTops.get(last) + this.shown.get(last).height() + ROW_GAP;
 	}
 
 	@Override
@@ -219,7 +267,12 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			}
 			for (int index = 0; index < this.optionButtons.size(); index++) {
 				ButtonWidget optionButton = this.optionButtons.get(index);
-				if (optionButton.isMouseOver(this.client, mouseX, mouseY)) {
+				OptionPanel panel = this.shown.get(index).panel();
+				if (panel != null) {
+					if (panel.mouseClicked(this.optionsLeft, optionY(index), this.optionsWidth, mouseX, mouseY)) {
+						return;
+					}
+				} else if (optionButton.isMouseOver(this.client, mouseX, mouseY)) {
 					optionButton.playDownSound(this.client.getSoundManager());
 					optionClicked(this.shown.get(index), optionButton);
 					return;
@@ -232,15 +285,26 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	@Override
 	protected void mouseDragged(int mouseX, int mouseY, int button, long timeSinceClick) {
 		this.pane.mouseDragged(mouseY);
+		for (int index = 0; index < this.shown.size(); index++) {
+			OptionPanel panel = this.shown.get(index).panel();
+			if (panel != null) {
+				panel.mouseDragged(this.optionsLeft, optionY(index), this.optionsWidth, mouseX, mouseY);
+			}
+		}
 		super.mouseDragged(mouseX, mouseY, button, timeSinceClick);
 	}
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int button) {
 		this.pane.mouseReleased();
-		// Lets a slider go.
-		for (ButtonWidget optionButton : this.optionButtons) {
-			optionButton.mouseReleased(mouseX, mouseY);
+		for (int index = 0; index < this.shown.size(); index++) {
+			OptionPanel panel = this.shown.get(index).panel();
+			if (panel != null) {
+				panel.mouseReleased();
+			} else {
+				// Lets a slider go.
+				this.optionButtons.get(index).mouseReleased(mouseX, mouseY);
+			}
 		}
 		super.mouseReleased(mouseX, mouseY, button);
 	}
@@ -265,11 +329,16 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		// A button scrolled half out of view must not light up under a cursor that is on the title or on "Back".
 		int hoverY = this.pane.contains(mouseY) ? mouseY : -1;
 		this.pane.beginClip(this.client);
-		for (ButtonWidget optionButton : this.optionButtons) {
-			optionButton.render(this.client, mouseX, hoverY);
+		for (int index = 0; index < this.shown.size(); index++) {
+			OptionPanel panel = this.shown.get(index).panel();
+			if (panel != null) {
+				panel.render(this.optionsLeft, optionY(index), this.optionsWidth);
+			} else {
+				this.optionButtons.get(index).render(this.client, mouseX, hoverY);
+			}
 		}
 		if (this.hintKey != null) {
-			int hintY = FIRST_ROW_Y + this.shown.size() * ROW_SPACING + HINT_GAP - this.pane.offset();
+			int hintY = FIRST_ROW_Y + optionsHeight() + HINT_GAP - this.pane.offset();
 			this.drawCenteredString(this.textRenderer, I18n.translate(this.hintKey), this.width / 2, hintY, 0xA0A0A0);
 		}
 		this.pane.endClip();
@@ -295,6 +364,16 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 
 		ButtonWidget createButton(int x, int width) {
 			return new ButtonWidget(0, x, 0, width, ROW_HEIGHT, this.label.get());
+		}
+
+		/** Set for an option that is an area drawing itself instead of a button. */
+		OptionPanel panel() {
+			return null;
+		}
+
+		int height() {
+			OptionPanel panel = panel();
+			return panel != null ? panel.height() : ROW_HEIGHT;
 		}
 	}
 }
