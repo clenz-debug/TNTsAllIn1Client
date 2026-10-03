@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
@@ -167,9 +166,7 @@ public class PinnedRecipeOptionsScreen extends Screen {
 				.build());
 		y += ROW_SPACING;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(this.labelX, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, this.labelX, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	/** Mirrors the y-cursor arithmetic in {@link #init} - keep in sync if that layout ever changes. */
@@ -187,7 +184,7 @@ public class PinnedRecipeOptionsScreen extends Screen {
 		y += ROW_SPACING + 16;
 		y += ROW_SPACING;
 		y += ROW_SPACING;
-		y += ROW_SPACING;
+		y += OptionsChrome.flowHeight(PinnedRecipeOptionsScreen.class);
 		return y;
 	}
 

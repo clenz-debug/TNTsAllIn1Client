@@ -3,10 +3,8 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.offline.OfflineProfile;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -83,9 +81,7 @@ public class DiscordPresenceOptionsScreen extends Screen {
 						}));
 		y += ROW_SPACING + 6;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, x, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	@Override

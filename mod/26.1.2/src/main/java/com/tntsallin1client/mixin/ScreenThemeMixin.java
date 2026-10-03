@@ -2,6 +2,7 @@ package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.design.ClientTheme;
 import com.tntsallin1client.design.ThemedUi;
+import com.tntsallin1client.menu.OptionsChrome;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +24,9 @@ public class ScreenThemeMixin {
 
 	@Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("RETURN"))
 	private void tntsallin1client$endThemed(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+		// The top bar of the mod's options screens in the client design, drawn after the screen itself
+		// - see OptionsChrome for why the screen does not draw it.
+		OptionsChrome.renderTopBar((Screen) (Object) this, graphics, mouseX, mouseY, a);
 		ThemedUi.end();
 	}
 

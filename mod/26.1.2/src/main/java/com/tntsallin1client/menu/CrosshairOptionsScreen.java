@@ -9,7 +9,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
@@ -183,9 +182,7 @@ public class CrosshairOptionsScreen extends Screen {
 				.build());
 		y += ROW_SPACING;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, x, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	/**
@@ -209,7 +206,7 @@ public class CrosshairOptionsScreen extends Screen {
 		y += ColorPickerPanel.totalHeight() + 6;
 		y += ROW_SPACING;
 		y += ROW_SPACING;
-		y += ROW_HEIGHT;
+		y += OptionsChrome.flowHeight(CrosshairOptionsScreen.class);
 		return y;
 	}
 

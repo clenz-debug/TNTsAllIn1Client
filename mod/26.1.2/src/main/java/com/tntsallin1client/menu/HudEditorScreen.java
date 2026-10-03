@@ -1,6 +1,8 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.design.ClientDesign;
+import com.tntsallin1client.design.ClientTheme;
 import com.tntsallin1client.hud.ArmorStatusDirection;
 import com.tntsallin1client.hud.ArmorStatusHud;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
@@ -35,7 +37,7 @@ import java.util.function.Supplier;
  * being toggled on/off. Only elements the player actually has enabled show up
  * here at all - {@link #init} skips adding an {@link Entry} for anything
  * that's toggled off in the mod menu. Deliberately not a normal
- * {@link Screen}-with-dark-background: {@link #extractBackground} is a no-op
+ * {@link Screen}-with-dark-background: {@link #extractBackground} draws nothing in a world,
  * so the real game HUD keeps rendering live underneath our drag handles
  * (Minecraft renders the HUD before the open screen every frame regardless
  * of whether a screen is open, so this works without any extra plumbing).
@@ -156,7 +158,18 @@ public class HudEditorScreen extends Screen {
 
 	@Override
 	public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-		// Intentionally empty: keep the live game HUD visible, unlike a normal darkened screen.
+		// In a world: nothing, so the live game HUD stays visible, unlike a normal darkened screen.
+		if (this.minecraft.level != null) {
+			return;
+		}
+		// Opened from the title screen there is no world behind it - without a background of its own
+		// the screen would be plain black (own user report). The Minecraft design gets the game's menu
+		// background, the client design its theme's, like that design's title screen.
+		if (ClientDesign.isClient()) {
+			guiGraphics.fill(0, 0, this.width, this.height, ClientTheme.get().background1);
+		} else {
+			super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+		}
 	}
 
 	@Override

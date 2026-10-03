@@ -6,7 +6,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -59,9 +58,7 @@ public class HitboxColorOptionsScreen extends Screen {
 				.build());
 		y += ROW_SPACING;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, x, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	@Override

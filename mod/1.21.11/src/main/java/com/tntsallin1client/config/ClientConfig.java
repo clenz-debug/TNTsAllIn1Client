@@ -224,6 +224,10 @@ public class ClientConfig {
 	public int clockTextColor = 0xFFFFFFFF;
 	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;
+	// No "enabled" flag - visibility is the transient F3+S toggle (SystemInfoOverlay#visible), not
+	// persisted, same as vanilla's own F3 screen. Position/scale still persist like every other HUD
+	// element though, so it doesn't matter that "customPosition" starts false on a fresh install.
+	public HudLayout systemInfoHudLayout = new HudLayout();
 	public int keystrokesTextColor = 0xFFFFFFFF;
 
 	// 5ah: recipes pinned from the crafting-table/inventory recipe book, shown as a movable HUD

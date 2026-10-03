@@ -1,7 +1,9 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.blocks3d.Blocks3d;
+import com.tntsallin1client.compat.CapeProviderCompat;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.config.ConfigReset;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.resourcepack.BundledResourcePacks;
 import com.tntsallin1client.skinlayers.SkinLayers3d;
@@ -260,8 +262,21 @@ public final class ClientMenuFeatures {
 				},
 				() -> new DiscordPresenceOptionsScreen(parent));
 
+		// The capes players set in the launcher, shown by the bundled Cape Provider mod - only there to
+		// switch while that mod is installed (see CapeProviderCompat).
+		if (CapeProviderCompat.isAvailable()) {
+			sink.addToggleRow(CapeProviderCompat.isEnabled(), Component.translatable("gui.tntsallin1client.menu.client_capes"),
+					CapeProviderCompat::setEnabled);
+		}
+
 		sink.addButtonRow(FeatureSink.ButtonRole.HUD_EDITOR, Component.translatable("gui.tntsallin1client.menu.hud_editor_button"),
 				() -> minecraft.gui.setScreen(new HudEditorScreen(parent)));
+
+		sink.addButtonRow(FeatureSink.ButtonRole.RESET_ALL, Component.translatable("gui.tntsallin1client.menu.reset_all_button"),
+				() -> minecraft.gui.setScreen(ResetButtons.confirm(minecraft, parent,
+						Component.translatable("gui.tntsallin1client.reset.confirm_all_title"),
+						Component.translatable("gui.tntsallin1client.reset.confirm_all_message"),
+						ConfigReset::resetAll)));
 
 		sink.addButtonRow(FeatureSink.ButtonRole.OTHER, Component.translatable("gui.tntsallin1client.menu.external_mods_button"),
 				() -> minecraft.gui.setScreen(new ExternalModsScreen(parent)));

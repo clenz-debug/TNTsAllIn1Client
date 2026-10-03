@@ -4,10 +4,8 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.hud.KeystrokeKey;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -62,9 +60,7 @@ public class KeystrokesKeysOptionsScreen extends Screen {
 		this.boxes = layout;
 
 		int buttonX = (this.width - BUTTON_WIDTH) / 2;
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(buttonX, rowY + 6, BUTTON_WIDTH, BUTTON_HEIGHT)
-				.build());
+		OptionsChrome.add(this, buttonX, rowY + 6, BUTTON_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	@Override

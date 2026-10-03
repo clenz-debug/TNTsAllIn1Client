@@ -12,6 +12,8 @@ public interface FeatureSink {
 	/** Where a view should put a plain button - the card view gives the HUD editor its own top-bar spot ("Move/Resize"). */
 	enum ButtonRole {
 		HUD_EDITOR,
+		/** "Reset All Settings" - the card view puts it below "Move/Resize" (own user request). */
+		RESET_ALL,
 		OTHER
 	}
 

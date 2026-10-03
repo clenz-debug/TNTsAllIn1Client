@@ -2,11 +2,9 @@ package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -133,15 +131,13 @@ public class HitboxIndicatorsOptionsScreen extends Screen {
 				}));
 		y += ColorPickerPanel.totalHeight() + GROUP_GAP;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, x, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	/** Mirrors {@link #init}'s y-cursor arithmetic - four identical toggle+picker groups, so a simple multiply. */
 	private static int computeContentHeight() {
 		int groupHeight = ROW_SPACING + ColorPickerPanel.totalHeight() + GROUP_GAP;
-		return TOP_MARGIN + 4 * groupHeight + ROW_HEIGHT;
+		return TOP_MARGIN + 4 * groupHeight + OptionsChrome.flowHeight(HitboxIndicatorsOptionsScreen.class);
 	}
 
 	private void rebuild() {

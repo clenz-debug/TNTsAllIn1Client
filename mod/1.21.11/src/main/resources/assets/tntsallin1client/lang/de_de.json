@@ -342,7 +342,7 @@
   "gui.tntsallin1client.tour.cards_card.title": "Die Features",
   "gui.tntsallin1client.tour.cards_card.text": "Im Client-Design ist jedes Feature eine Karte: oben Symbol und Name, in der Mitte „Optionen“ zum genaueren Einstellen, unten „Aktiviert“/„Deaktiviert“ zum Ein- und Ausschalten. Hier schauen wir nur, ausprobieren kannst du es gleich im Spiel.",
   "gui.tntsallin1client.tour.cards_top.title": "Suche und Anzeigen",
-  "gui.tntsallin1client.tour.cards_top.text": "Oben findest du „Fertig“, die Suche und „Verschieben/Größe“ - damit ordnest du Anzeigen wie die FPS-Anzeige auf dem Bildschirm an.",
+  "gui.tntsallin1client.tour.cards_top.text": "Oben findest du „Fertig“, die Suche und „Verschieben/Größe“ - damit ordnest du Anzeigen wie die FPS-Anzeige auf dem Bildschirm an. Mit „Zurücksetzen“ darunter stellst du alle Einstellungen wieder auf den Standard.",
   "gui.tntsallin1client.tour.title_options.title": "Tasten belegen",
   "gui.tntsallin1client.tour.title_options.text": "Viele Features haben eigene Tasten, z. B. Zoom oder Freecam. Du belegst sie in den Optionen des Features - oder alle zusammen hier unter „Optionen …“ → „Steuerung …“ → „Tastenbelegung …“ im Abschnitt „TNT's All-In-1 Client“.",
   "gui.tntsallin1client.tour.title_friends.title": "Freunde",
@@ -388,5 +388,14 @@
   "gui.tntsallin1client.tour.finish.text_essential": "Das war die Tour. Solange Essential installiert ist, bleibt das Spiel im Minecraft-Design.",
   "gui.tntsallin1client.tour.finish.world_hint": "Die Welt aus der Tour kannst du im Einzelspieler-Menü jederzeit wieder löschen.",
   "gui.tntsallin1client.tour.finish.keep_minecraft": "Minecraft-Design",
-  "gui.tntsallin1client.tour.finish.keep_client": "Client-Design"
+  "gui.tntsallin1client.tour.finish.keep_client": "Client-Design",
+  "gui.tntsallin1client.menu.client_capes": "Client-Capes",
+  "gui.tntsallin1client.menu.reset_all_button": "Alle Einstellungen zurücksetzen",
+  "gui.tntsallin1client.cards.reset_all": "Zurücksetzen",
+  "gui.tntsallin1client.reset.button": "Zurücksetzen",
+  "gui.tntsallin1client.reset.confirm_title": "%s zurücksetzen?",
+  "gui.tntsallin1client.reset.confirm_message": "Einstellungen, Farben und Position gehen auf den Standard zurück. An/Aus bleibt, wie es ist.",
+  "gui.tntsallin1client.reset.confirm_all_title": "Alle Client Mods zurücksetzen?",
+  "gui.tntsallin1client.reset.confirm_all_message": "Einstellungen, Farben und Positionen aller Mods gehen auf den Standard zurück. An/Aus bleibt, wie es ist; Wegpunkte und angepinnte Rezepte bleiben erhalten.",
+  "gui.tntsallin1client.menu.system_info": "System-Info-Overlay"
 }

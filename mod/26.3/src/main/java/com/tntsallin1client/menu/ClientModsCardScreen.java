@@ -38,7 +38,9 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 	private static final int MARGIN = 10;
 	private static final int TOP_BAR_Y = 8;
 	private static final int TOP_BAR_HEIGHT = 20;
-	private static final int CONTENT_TOP = TOP_BAR_Y + TOP_BAR_HEIGHT + 10;
+	/** "Reset All" sits below "Move/Resize" in the top right corner - the cards start below both. */
+	private static final int SECOND_ROW_Y = TOP_BAR_Y + TOP_BAR_HEIGHT + 4;
+	private static final int CONTENT_TOP = SECOND_ROW_Y + TOP_BAR_HEIGHT + 6;
 	private static final int FOOTER_HEIGHT = 30;
 	private static final int CARD_WIDTH = 110;
 	private static final int CARD_GAP = 10;
@@ -58,6 +60,7 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 	private final List<Section> sections = new ArrayList<>();
 	private final List<Footer> footerButtons = new ArrayList<>();
 	private @Nullable Runnable hudEditor;
+	private @Nullable Runnable resetAll;
 
 	/** Kept across {@link #init()} reruns, like {@link ClientMenuScreen}'s own search - coming back from an options screen rebuilds everything. */
 	private String searchQuery = "";
@@ -67,6 +70,7 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 	private @Nullable AbstractWidget doneButton;
 	private @Nullable AbstractWidget searchBox;
 	private @Nullable AbstractWidget moveResizeButton;
+	private @Nullable AbstractWidget resetAllButton;
 
 	public ClientModsCardScreen(@Nullable Screen parent) {
 		super(Component.translatable("gui.tntsallin1client.menu.title"));
@@ -99,6 +103,12 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 					Component.translatable("gui.tntsallin1client.cards.move_resize"), openHudEditor));
 		}
 
+		this.resetAllButton = null;
+		if (this.resetAll != null) {
+			this.resetAllButton = this.addRenderableWidget(new ThemedButton(this.width - MARGIN - 80, SECOND_ROW_Y, 80, TOP_BAR_HEIGHT,
+					Component.translatable("gui.tntsallin1client.cards.reset_all"), this.resetAll));
+		}
+
 		int footerWidth = 120;
 		int footerX = (this.width - (this.footerButtons.size() * (footerWidth + CARD_GAP) - CARD_GAP)) / 2;
 		for (Footer footer : this.footerButtons) {
@@ -124,6 +134,8 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 	public void addButtonRow(ButtonRole role, Component label, Runnable onPress) {
 		if (role == ButtonRole.HUD_EDITOR) {
 			this.hudEditor = onPress;
+		} else if (role == ButtonRole.RESET_ALL) {
+			this.resetAll = onPress;
 		} else {
 			this.footerButtons.add(new Footer(label, onPress));
 		}
@@ -367,7 +379,8 @@ public class ClientModsCardScreen extends Screen implements FeatureSink, TourTar
 		if (name.equals(TOP_BAR)) {
 			TourRect bar = this.doneButton != null ? TourRect.of(this.doneButton) : null;
 			bar = TourRect.union(bar, tourTarget(SEARCH));
-			return TourRect.union(bar, tourTarget(HUD_EDITOR));
+			bar = TourRect.union(bar, tourTarget(HUD_EDITOR));
+			return this.resetAllButton != null ? TourRect.union(bar, TourRect.of(this.resetAllButton)) : bar;
 		}
 		if (name.startsWith(FEATURE_OPTIONS)) return cardBounds(name.substring(FEATURE_OPTIONS.length()), IMAGE_HEIGHT, OPTIONS_HEIGHT);
 		if (name.startsWith(FEATURE_SWITCH)) return cardBounds(name.substring(FEATURE_SWITCH.length()), IMAGE_HEIGHT + OPTIONS_HEIGHT, STATUS_HEIGHT);

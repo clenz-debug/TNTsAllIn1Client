@@ -1,6 +1,9 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.debug.SystemInfoOverlay;
+import com.tntsallin1client.design.ClientDesign;
+import com.tntsallin1client.design.ClientTheme;
 import com.tntsallin1client.hud.ArmorStatusDirection;
 import com.tntsallin1client.hud.ArmorStatusHud;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
@@ -34,7 +37,7 @@ import java.util.function.Supplier;
  * being toggled on/off. Only elements the player actually has enabled show up
  * here at all - {@link #init} skips adding an {@link Entry} for anything
  * that's toggled off in the mod menu. Deliberately not a normal
- * {@link Screen}-with-dark-background: {@link #renderBackground} is a no-op
+ * {@link Screen}-with-dark-background: {@link #renderBackground} draws nothing in a world,
  * so the real game HUD keeps rendering live underneath our drag handles
  * (Minecraft renders the HUD before the open screen every frame regardless
  * of whether a screen is open, so this works without any extra plumbing).
@@ -99,6 +102,13 @@ public class HudEditorScreen extends Screen {
 					config.keystrokesHudLayout,
 					this::keystrokesBounds));
 		}
+		// Unlike the others, there's no persisted "enabled" setting to gate this on - visibility is
+		// the transient F3+S toggle (SystemInfoOverlay#visible), which resets on every launch. Always
+		// offered here instead, so its position can be set up before ever pressing F3+S.
+		entries.add(new Entry(
+				Component.translatable("gui.tntsallin1client.menu.system_info"),
+				config.systemInfoHudLayout,
+				this::systemInfoOverlayBounds));
 		if (config.pinnedRecipeEnabled) {
 			entries.add(new Entry(
 					Component.translatable("gui.tntsallin1client.menu.pinned_recipe"),
@@ -137,7 +147,18 @@ public class HudEditorScreen extends Screen {
 
 	@Override
 	public void renderBackground(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-		// Intentionally empty: keep the live game HUD visible, unlike a normal darkened screen.
+		// In a world: nothing, so the live game HUD stays visible, unlike a normal darkened screen.
+		if (this.minecraft.level != null) {
+			return;
+		}
+		// Opened from the title screen there is no world behind it - without a background of its own
+		// the screen would be plain black (own user report). The Minecraft design gets the game's menu
+		// background, the client design its theme's, like that design's title screen.
+		if (ClientDesign.isClient()) {
+			guiGraphics.fill(0, 0, this.width, this.height, ClientTheme.get().background1);
+		} else {
+			super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+		}
 	}
 
 	@Override
@@ -230,6 +251,7 @@ public class HudEditorScreen extends Screen {
 		config.latencyHudLayout = new HudLayout();
 		config.clockHudLayout = new HudLayout();
 		config.keystrokesHudLayout = new HudLayout();
+		config.systemInfoHudLayout = new HudLayout();
 		config.pinnedRecipeHudLayout = new HudLayout();
 		config.armorStatusBundledHudLayout = new HudLayout();
 		config.armorStatusSlotHudLayout.clear();
@@ -314,6 +336,22 @@ public class HudEditorScreen extends Screen {
 
 		int unscaledWidth = PinnedRecipeHud.contentWidth(this.font, rows, showSub);
 		int unscaledHeight = PinnedRecipeHud.contentHeight(this.font, rows, showSub);
+
+		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
+	}
+
+	private Rect systemInfoOverlayBounds() {
+		ClientConfig config = ClientConfig.get();
+		List<String> lines = SystemInfoOverlay.buildLines();
+		if (lines.isEmpty()) {
+			return null;
+		}
+
+		HudLayout layout = config.systemInfoHudLayout;
+		int unscaledWidth = SystemInfoOverlay.contentWidth(this.font, lines);
+		int unscaledHeight = SystemInfoOverlay.contentHeight(this.font, lines);
+		float x = layout.customPosition ? layout.x : SystemInfoOverlay.defaultX(this.width, unscaledWidth);
+		float y = layout.customPosition ? layout.y : SystemInfoOverlay.defaultY(this.height, unscaledHeight);
 
 		return new Rect(Math.round(x), Math.round(y), Math.round(unscaledWidth * layout.scale), Math.round(unscaledHeight * layout.scale));
 	}

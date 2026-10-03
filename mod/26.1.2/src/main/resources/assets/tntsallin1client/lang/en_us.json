@@ -342,7 +342,7 @@
   "gui.tntsallin1client.tour.cards_card.title": "The features",
   "gui.tntsallin1client.tour.cards_card.text": "In the client design every feature is a card: symbol and name on top, “Options” in the middle to fine-tune it, “Enabled”/“Disabled” at the bottom to switch it. Here we only look, you'll try it out in the game in a moment.",
   "gui.tntsallin1client.tour.cards_top.title": "Search and displays",
-  "gui.tntsallin1client.tour.cards_top.text": "At the top you'll find “Done”, the search and “Move/Resize” - that's where you arrange displays like the FPS counter on the screen.",
+  "gui.tntsallin1client.tour.cards_top.text": "At the top you'll find “Done”, the search and “Move/Resize” - that's where you arrange displays like the FPS counter on the screen. “Reset All” below it puts every setting back to its default.",
   "gui.tntsallin1client.tour.title_options.title": "Key bindings",
   "gui.tntsallin1client.tour.title_options.text": "Many features have keys of their own, like zoom or freecam. You bind them in the feature's options - or all of them together here under “Options...” → “Controls...” → “Key Binds...” in the “TNT's All-In-1 Client” section.",
   "gui.tntsallin1client.tour.title_friends.title": "Friends",
@@ -388,5 +388,13 @@
   "gui.tntsallin1client.tour.finish.text_essential": "That was the tour. As long as Essential is installed, the game stays in the Minecraft design.",
   "gui.tntsallin1client.tour.finish.world_hint": "You can delete the tour's world anytime in the singleplayer menu.",
   "gui.tntsallin1client.tour.finish.keep_minecraft": "Minecraft design",
-  "gui.tntsallin1client.tour.finish.keep_client": "Client design"
+  "gui.tntsallin1client.tour.finish.keep_client": "Client design",
+  "gui.tntsallin1client.menu.client_capes": "Client Capes",
+  "gui.tntsallin1client.menu.reset_all_button": "Reset All Settings",
+  "gui.tntsallin1client.cards.reset_all": "Reset All",
+  "gui.tntsallin1client.reset.button": "Reset",
+  "gui.tntsallin1client.reset.confirm_title": "Reset %s?",
+  "gui.tntsallin1client.reset.confirm_message": "Settings, colors and position go back to their defaults. On/off stays as it is.",
+  "gui.tntsallin1client.reset.confirm_all_title": "Reset all client mods?",
+  "gui.tntsallin1client.reset.confirm_all_message": "Settings, colors and positions of all mods go back to their defaults. On/off stays as it is; waypoints and pinned recipes are kept."
 }

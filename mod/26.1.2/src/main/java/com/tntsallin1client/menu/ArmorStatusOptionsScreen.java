@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
@@ -204,9 +203,7 @@ public class ArmorStatusOptionsScreen extends Screen {
 				.build());
 		y += ROW_HEIGHT + 4;
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(x, y, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		OptionsChrome.add(this, x, y, ROW_WIDTH, this::onClose, this::addRenderableWidget, this::addWidget);
 	}
 
 	/** Mirrors the y-cursor arithmetic in {@link #init} - keep in sync if that layout ever changes. */
@@ -229,7 +226,7 @@ public class ArmorStatusOptionsScreen extends Screen {
 			y += ROW_SPACING; // reversed growth
 		}
 		y += ROW_HEIGHT + 4; // slots button
-		y += ROW_HEIGHT; // back
+		y += OptionsChrome.flowHeight(ArmorStatusOptionsScreen.class);
 		return y;
 	}
 
