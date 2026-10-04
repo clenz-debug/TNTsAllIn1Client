@@ -498,6 +498,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           versionsError={versionsError}
           showSnapshots={showSnapshots}
           bundleCompatibleVersions={bundleCompatibleVersions}
+          legacyClientVersions={legacyClientVersions}
           showClientSupportMarks={showClientSupportMarks}
           onInstancesChange={handleInstancesChange}
           onSelect={setSelectedInstanceId}

@@ -20,6 +20,8 @@ interface Props {
    * instances and versions get the client logo; the dropdown itself still lists every
    * release/snapshot Fabric-supported version regardless. */
   bundleCompatibleVersions: string[]
+  /** Legacy versions (before 1.14) our own mod exists for - they get the client logo too. */
+  legacyClientVersions: string[]
   /** Read-only here as well (Settings screen toggle) - off hides every client logo marker. */
   showClientSupportMarks: boolean
   /** Both instance-list mutations (create/rename) and a delete result (fetched fresh from the
@@ -52,6 +54,7 @@ export function InstancesScreen({
   versionsError,
   showSnapshots,
   bundleCompatibleVersions,
+  legacyClientVersions,
   showClientSupportMarks,
   onInstancesChange,
   onSelect,
@@ -60,7 +63,7 @@ export function InstancesScreen({
   const t = useTranslations()
   const visibleVersions = versions.filter((v) => showSnapshots || v.type === 'release')
   const isMarkedVersion = (versionId: string): boolean =>
-    showClientSupportMarks && isBundleCompatibleVersion(versionId, bundleCompatibleVersions)
+    showClientSupportMarks && (isBundleCompatibleVersion(versionId, bundleCompatibleVersions) || legacyClientVersions.includes(versionId))
 
   const [newName, setNewName] = useState('')
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
