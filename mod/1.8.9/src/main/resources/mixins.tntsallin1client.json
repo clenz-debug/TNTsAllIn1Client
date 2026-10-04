@@ -5,6 +5,7 @@
 	"compatibilityLevel": "JAVA_8",
 	"client": [
 		"AbstractClientPlayerEntityMixin",
+		"CapeFeatureRendererMixin",
 		"ClientPlayerEntityMixin",
 		"ClientPlayerInteractionManagerMixin",
 		"DebugHudMixin",
@@ -15,6 +16,7 @@
 		"GameRendererMixin",
 		"HandledScreenMixin",
 		"InGameHudMixin",
+		"ItemEntityRendererMixin",
 		"LivingEntityRendererMixin",
 		"MinecraftClientMixin",
 		"PlayerEntityRendererMixin",

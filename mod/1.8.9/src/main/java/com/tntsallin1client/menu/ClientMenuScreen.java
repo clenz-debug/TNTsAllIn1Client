@@ -93,12 +93,15 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.block_outline_color",
 				() -> config.customBlockOutlineColorEnabled, value -> config.customBlockOutlineColorEnabled = value,
 				() -> new BlockOutlineColorOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.item_tilt", () -> config.itemTiltEnabled, value -> config.itemTiltEnabled = value, null);
 		addFeature("gui.tntsallin1client.menu.waypoints", () -> config.waypointsEnabled, value -> config.waypointsEnabled = value,
 				() -> new WaypointOptionsScreen(this));
 		// Only where the launcher has built the pack - see NewTextures.
 		if (NewTextures.isAvailable()) {
 			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
 		}
+		addFeature("gui.tntsallin1client.menu.skin_layers_3d", () -> config.skinLayers3dEnabled, value -> config.skinLayers3dEnabled = value,
+				() -> new SkinLayers3dOptionsScreen(this));
 
 		addSection("gui.tntsallin1client.menu.section_inventory");
 		addFeature("gui.tntsallin1client.menu.quick_sort", () -> config.quickSortEnabled, value -> config.quickSortEnabled = value,

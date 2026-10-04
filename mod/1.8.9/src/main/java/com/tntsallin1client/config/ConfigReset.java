@@ -38,6 +38,7 @@ public final class ConfigReset {
 		HITBOX_COLOR("gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
 		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline"),
 		WAYPOINTS("gui.tntsallin1client.menu.waypoints", "waypointsEnabled", "waypoint"),
+		SKIN_LAYERS_3D("gui.tntsallin1client.menu.skin_layers_3d", "skinLayers3dEnabled", "skinLayers3d"),
 		QUICK_SORT("gui.tntsallin1client.menu.quick_sort", "quickSortEnabled", "quickSort"),
 		DISCORD_PRESENCE("gui.tntsallin1client.menu.discord_presence", "discordPresenceEnabled", "discordPresence");
 

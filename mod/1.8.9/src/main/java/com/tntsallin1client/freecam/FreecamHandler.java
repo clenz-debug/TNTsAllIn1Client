@@ -86,6 +86,13 @@ public final class FreecamHandler {
 		player.lastHandSwingProgress = player.handSwingProgress;
 		player.field_6748 = 0.0F;
 		player.field_6749 = 0.0F;
+		// The cape is drawn from "a tick ago" and current values as well: where it hangs, how far the
+		// player has walked and how much it bobs. Left unequal, the cape would twitch on the frozen body.
+		player.prevCapeX = player.capeX;
+		player.prevCapeY = player.capeY;
+		player.prevCapeZ = player.capeZ;
+		player.prevHorizontalSpeed = player.horizontalSpeed;
+		player.prevStrideDistance = player.strideDistance;
 
 		if (!warningShown && !client.isIntegratedServerRunning()) {
 			warningShown = true;

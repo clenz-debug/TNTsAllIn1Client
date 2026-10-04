@@ -171,6 +171,20 @@ public class ClientConfig {
 	public boolean discordPresenceShowServerName = false;
 	public boolean discordPresenceShowElapsedTime = true;
 
+	// Item physics: dropped items don't spin or bob and lie flat on the ground (see ItemTilt).
+	public boolean itemTiltEnabled = false;
+
+	// Own 3D skin layers (see SkinLayers3d). On unless switched off, as in the Fabric versions.
+	// Depth is how far the layer stands off the body, in percent of a model pixel; distance is in
+	// blocks, beyond it players keep the flat layers.
+	public boolean skinLayers3dEnabled = true;
+	public boolean skinLayers3dHead = true;
+	public boolean skinLayers3dJacket = true;
+	public boolean skinLayers3dSleeves = true;
+	public boolean skinLayers3dPants = true;
+	public int skinLayers3dDepthPercent = 30;
+	public int skinLayers3dDistance = 16;
+
 	// No fog: removes the chosen kinds of fog (see NoFog). The fog at the edge of the view distance
 	// (incl. the Nether's and the one inside clouds) is the one people usually mean, so it's the
 	// only one on by default. Blindness is never touched.

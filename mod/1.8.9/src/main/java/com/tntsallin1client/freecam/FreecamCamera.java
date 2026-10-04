@@ -49,8 +49,11 @@ final class FreecamCamera extends Entity {
 	void placeAt(double x, double y, double z, float yaw, float pitch) {
 		updatePositionAndAngles(x, y, z, yaw, pitch);
 		rememberPosition();
-		this.prevYaw = yaw;
-		this.prevPitch = pitch;
+		// Not the angles handed in: the game keeps an entity's own within one turn, while the player's
+		// yaw counts every turn it ever made. A "tick ago" value several turns away from the current
+		// one would have the view spin through all of them, every tick.
+		this.prevYaw = this.yaw;
+		this.prevPitch = this.pitch;
 	}
 
 	/** The game draws an entity between where it was a tick ago and where it is now - normally the world keeps these up to date. */
