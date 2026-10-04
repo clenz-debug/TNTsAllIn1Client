@@ -1186,6 +1186,22 @@ def uncovered(own: tuple, neighbour) -> list:
     return parts
 
 
+def within_slab(a: float, b: float) -> list:
+    """A side at the picture's edge, split into (from, to, lies on the block's side): only the part
+    within the slab's own thickness lies against the neighbouring block and may disappear with it. What a
+    fitting adds beyond the slab's two faces stands in the open beside that block - hidden along with
+    the rest, it left a hinge open at the back, and one could look through the door there (own user
+    report, seen with a door standing next to a wall)."""
+    parts = []
+    if a < FRAME[0]:
+        parts.append((a, min(b, FRAME[0]), False))
+    if b > FRAME[0] and a < FRAME[1]:
+        parts.append((max(a, FRAME[0]), min(b, FRAME[1]), True))
+    if b > FRAME[1]:
+        parts.append((max(a, FRAME[1]), b, False))
+    return parts
+
+
 def slab_quads(ranges: list, beyond) -> list:
     """The faces of a picture-shaped slab, in picture space: (corners (u, v, t), picture UVs, outward
     direction, lies on the block's outside). beyond(u, v) describes a pixel past the picture's edge:
@@ -1212,7 +1228,8 @@ def slab_quads(ranges: list, beyond) -> list:
                 neighbour, outside = (ranges[nv][nu], False) if 0 <= nu < 16 and 0 <= nv < 16 else beyond(nu, nv)
                 for a, b in uncovered(own, neighbour):
                     line, along = (u, v) if du else (v, u)
-                    runs.setdefault((du, dv, line, a, b, outside), []).append(along)
+                    for a, b, on_block_side in within_slab(a, b) if outside else [(a, b, False)]:
+                        runs.setdefault((du, dv, line, a, b, on_block_side), []).append(along)
     for (du, dv, line, a, b, outside), positions in runs.items():
         # Neighbouring pixels along the same edge become one face
         spans = []
