@@ -97,15 +97,20 @@ def ladder() -> None:
 
 RAIL_TIE_ROWS = (1, 5, 9, 13)
 RAIL_COLUMNS = (2, 12)
+STRIP_HEIGHT = 1.5  # between the ties' one pixel and the rails' two
 
 
 # The detector rail's sensor plate in its picture: columns and rows 5-10, all solid
 SENSOR = (5, 11)
 
 
-def rail_parts(texture: str, base: float, rotation: dict | None = None, sensor: bool = False) -> list:
+def rail_parts(texture: str, base: float, rotation: dict | None = None, sensor: bool = False, strips: tuple = ()) -> list:
     """sensor: the detector rail - its sensor becomes one plate at the ties' height (own user request:
-    with the ties at rows 5 and 9 running through it, it came out wavy, lower in the middle)."""
+    with the ties at rows 5 and 9 running through it, it came out wavy, lower in the middle).
+    strips: columns of the picture that run the rail's whole length next to a rail (a powered rail's
+    gold) - each becomes a bar of its own, lower than the rails (own user report, first seen on the
+    1.8.9 item: lying on the ties and, between them, on the flat layer, the gold came out chopped
+    into pieces)."""
     elements = [box([0, base + 0.25, 0], [16, base + 0.25, 16], {
         "up": face([0, 0, 16, 16], texture),
         "down": face([0, 16, 16, 0], texture),
@@ -142,6 +147,16 @@ def rail_parts(texture: str, base: float, rotation: dict | None = None, sensor: 
             "north": face([column, 0, column + 2, 2], texture),
             "south": face([column, 14, column + 2, 16], texture),
         }, rotation))
+    for column in strips:
+        length = face([column, 0, column + 1, 16], texture, rotation=90)
+        # A side lying against a rail is never seen
+        sides = [side for side, beside in (("west", column - 2), ("east", column + 1)) if beside not in RAIL_COLUMNS]
+        elements.append(box([column, base, 0], [column + 1, base + STRIP_HEIGHT, 16], {
+            "up": face([column, 0, column + 1, 16], texture),
+            **{side: length for side in sides},
+            "north": face([column, 0, column + 1, 1], texture),
+            "south": face([column, 15, column + 1, 16], texture),
+        }, rotation))
     return elements
 
 
@@ -149,11 +164,11 @@ def rail_flat() -> None:
     model("block/rail_flat", {"particle": "#rail"}, rail_parts("#rail", 0))
 
 
-def rail_raised(path: str, angle: float, textures: dict | None = None, sensor: bool = False) -> None:
+def rail_raised(path: str, angle: float, textures: dict | None = None, sensor: bool = False, strips: tuple = ()) -> None:
     # Vanilla's slope: the flat layer lifted to y 9 and tilted by 45 degrees around the block's middle,
     # stretched to reach from edge to edge. Our parts sit one pixel lower, so the ties rest on the slope.
     rotation = {"origin": [8, 9, 8], "axis": "x", "angle": angle, "rescale": True}
-    model(path, textures or {"particle": "#rail"}, rail_parts("#rail", 8, rotation, sensor))
+    model(path, textures or {"particle": "#rail"}, rail_parts("#rail", 8, rotation, sensor, strips))
 
 
 def detector_rails() -> None:
@@ -163,6 +178,20 @@ def detector_rails() -> None:
         model(f"block/detector_rail{suffix}", textures, rail_parts("#rail", 0, sensor=True))
         rail_raised(f"block/detector_rail{suffix}_raised_ne", 45, textures, sensor=True)
         rail_raised(f"block/detector_rail{suffix}_raised_sw", -45, textures, sensor=True)
+
+
+# The powered rail's gold in its picture: a column along the inside of each rail
+GOLD_COLUMNS = (4, 11)
+
+
+def powered_rails() -> None:
+    """The powered rail's own models (vanilla gives it the shared rail templates) - for its gold, which
+    becomes a bar of its own along each rail."""
+    for suffix, picture in (("", "powered_rail"), ("_on", "powered_rail_on")):
+        textures = {"particle": "#rail", "rail": f"minecraft:block/{picture}"}
+        model(f"block/powered_rail{suffix}", textures, rail_parts("#rail", 0, strips=GOLD_COLUMNS))
+        rail_raised(f"block/powered_rail{suffix}_raised_ne", 45, textures, strips=GOLD_COLUMNS)
+        rail_raised(f"block/powered_rail{suffix}_raised_sw", -45, textures, strips=GOLD_COLUMNS)
 
 
 RAIL_HEIGHT = 2  # as on the straight rail: rails two pixels high, ties one
@@ -1328,6 +1357,7 @@ rail_raised("block/template_rail_raised_ne", 45)
 rail_raised("block/template_rail_raised_sw", -45)
 rail_curved()
 detector_rails()
+powered_rails()
 chain()
 lanterns()
 bars()
@@ -1474,7 +1504,8 @@ ITEM_MODELS = {
     **{name: ("block/template_chain", {"texture": f"minecraft:block/{name}"}, BLOCK_DISPLAY)
        for name in ["iron_chain"] + [f"{stage}_chain" for stage in COPPER_STAGES]},
     **{name: ("block/rail_flat", {"rail": f"minecraft:block/{name}"}, RAIL_DISPLAY)
-       for name in ("rail", "powered_rail", "activator_rail")},
+       for name in ("rail", "activator_rail")},
+    "powered_rail": ("block/powered_rail", {}, RAIL_DISPLAY),
     "detector_rail": ("block/detector_rail", {}, RAIL_DISPLAY),
     "lily_pad": ("block/lily_pad", {}, FLOOR_DISPLAY),
     **{name: (f"block/{name}", {}, FLAT_DISPLAY) for name in ("glow_lichen", "sculk_vein", "vine", "ladder")},

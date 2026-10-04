@@ -18,18 +18,24 @@ How it works: models3d.py's generators run again with this version's pictures (t
 the classic set its own door tables), and what they make is renamed to the model files 1.8.9's
 blockstates ask for. Where 1.8.9 puts a block together differently - iron bars and vines are single
 models per combination of sides there, not parts a blockstate assembles - the model is put together
-here from the same pieces. Not covered: redstone dust (other pictures and models before 1.16) and
-the 3D items (every item stays the flat picture it is in this version).
+here from the same pieces. Not covered: redstone dust (other pictures and models before 1.16).
+
+The items of these blocks are 3D models too (items() below). 1.8.9 has one model per item, for every
+place it is shown in, so the "3D items in inventory & hand" switch is the mod's (Items3d.java): each
+pack lists the items it changes in assets/tntsallin1client/flat_items.json, and for those the mod
+also keeps the model the game would show without this pack.
 """
 import copy
 import io
 import json
+import math
 import pathlib
 import sys
 import zipfile
 
 from PIL import Image
 
+import entity_items
 import models3d
 from build import TIMESTAMP, overlapping_faces, validate
 
@@ -41,6 +47,8 @@ NEW_JAR = pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom" / NEW_VERSI
 
 # Resource pack format of 1.6.1 to 1.8.9
 PACK_FORMAT = 1
+# The items whose look a pack changes, for the mod's "3D items in inventory & hand" switch (Items3d.java)
+FLAT_ITEMS_LIST = "assets/tntsallin1client/flat_items.json"
 DESCRIPTIONS = {
     "classic": "§6TNT 3D-Blöcke\n§7Eigene 3D-Modelle für TNT's All-In-1 Client",
     "new": "§6TNT 3D-Blöcke (Neue Texturen)\n§7Eigene 3D-Modelle für TNT's All-In-1 Client",
@@ -54,6 +62,12 @@ TEXTURES = {
     "rail_corner": "rail_normal_turned",
     "detector_rail": "rail_detector",
     "detector_rail_on": "rail_detector_powered",
+    "powered_rail": "rail_golden",
+    "powered_rail_on": "rail_golden_powered",
+    "stone": "stone",
+    "gold_block": "gold_block",
+    "iron_block": "iron_block",
+    "activator_rail": "rail_activator",
     "iron_bars": "iron_bars",
     "vine": "vine",
     "lily_pad": "waterlily",
@@ -275,7 +289,8 @@ def vines(textures: TextureSet) -> None:
         return (0.0, VINE_LEAF_DEPTH if brightness(image.getpixel((u, v))) >= light else VINE_DEPTH)
 
     quads = models3d.slab_quads(models3d.thickness_ranges(mask, thickness_at), lambda u, v: (None, True))
-    for name, sides in VINE_MODELS.items():
+    # The item's vine (items() below) hangs on the north side: its picture faces the inventory slot
+    for name, sides in {**VINE_MODELS, VINE_ITEM: "n"}.items():
         elements = []
         for side in sides:
             # The side lying on the block the vine grows on is the slab's t = 0
@@ -286,10 +301,234 @@ def vines(textures: TextureSet) -> None:
         models3d.model(f"block/{name}", {"particle": "block/vine", "vine": "block/vine"}, elements)
 
 
+# --- Items ------------------------------------------------------------------------------------------
+# models3d.items_3d's item models - the block's 3D model moved into the middle of the item's space -
+# with the display settings as 1.8.9 reads them. That version shows an item differently from today's:
+#  - In the inventory, a model made of boxes is already turned like a block (and lit); the model's
+#    own "gui" entry comes on top of that. So today's entry is taken back by that turn here.
+#  - In the hand, on the ground and in an item frame the game treats a model of boxes like a block
+#    and a flat picture like an item. The numbers below are the ones 1.8.9's own block and item
+#    models have, changed only where a model of boxes is handled differently from a flat picture
+#    (dropped: half the size and lifted by its scale; in a frame: half the size, not turned round).
+
+VINE_ITEM = "vine_item"
+# The turn and size 1.8.9 gives a model of boxes in the inventory before its "gui" entry
+GUI_BLOCK_TURN = (30, 225)
+GUI_BLOCK_SCALE = 0.625
+HELD_AS_BLOCK = {"rotation": [10, -45, 170], "translation": [0, 1.5, -2.75], "scale": [0.375] * 3}
+LEGACY_DISPLAY = {
+    "block": {"thirdperson": HELD_AS_BLOCK},
+    "flat": {
+        "thirdperson": {"rotation": [-90, 0, 0], "translation": [0, 1, -3], "scale": [0.55] * 3},
+        "firstperson": {"rotation": [0, -135, 25], "translation": [0, 4, 2], "scale": [1.7] * 3},
+        "ground": {"translation": [0, -8, 0], "scale": [2] * 3},
+        "fixed": {"rotation": [0, 180, 0], "scale": [2] * 3},
+    },
+    # Two blocks tall: smaller everywhere, by as much as in today's versions (models3d.DOOR_DISPLAY)
+    "door": {
+        "thirdperson": {**HELD_AS_BLOCK, "scale": [0.25] * 3},
+        "firstperson": {"scale": [0.75] * 3},
+        "ground": {"scale": [0.8] * 3},
+        "fixed": {"rotation": [0, 90, 0], "scale": [0.8] * 3},
+    },
+}
+# How much of the inventory slot the ladder and the vine fill (own user feedback: at the full slot, 16,
+# a touch too big)
+WALL_ITEM_GUI_FILL = 14
+# 1.8.9's item -> (our block model, textures a child model would fill in, today's display, how it is
+# held[, how much of the slot it fills])
+ITEM_MODELS = {
+    "ladder": ("block/ladder", {}, models3d.FLAT_DISPLAY, "flat", WALL_ITEM_GUI_FILL),
+    "vine": (f"block/{VINE_ITEM}", {}, models3d.FLAT_DISPLAY, "flat", WALL_ITEM_GUI_FILL),
+    "rail": ("block/rail_flat", {"rail": "block/rail"}, models3d.RAIL_DISPLAY, "block"),
+    "golden_rail": ("block/powered_rail", {}, models3d.RAIL_DISPLAY, "block"),
+    "activator_rail": ("block/rail_flat", {"rail": "block/activator_rail"}, models3d.RAIL_DISPLAY, "block"),
+    "detector_rail": ("block/detector_rail", {}, models3d.RAIL_DISPLAY, "block"),
+    "iron_bars": ("block/bars_ns", {}, models3d.BLOCK_DISPLAY, "block"),
+    "waterlily": ("block/lily_pad", {}, models3d.FLOOR_DISPLAY, "block"),
+    "reeds": ("block/sugar_cane", {}, models3d.BLOCK_DISPLAY, "block"),
+    "brown_mushroom": ("block/brown_mushroom", {}, models3d.BLOCK_DISPLAY, "block"),
+    "red_mushroom": ("block/red_mushroom", {}, models3d.BLOCK_DISPLAY, "block"),
+}
+# Items that are their block's model in 1.8.9 already, and so are 3D with this pack without an item
+# model of ours - listed for the mod's switch like the others
+BLOCK_MODEL_ITEMS = ["trapdoor", "iron_trapdoor", "bookshelf"]
+# Pressure plates: 1.8.9's item is a plate four pixels thick, its own inventory model. Here it is as
+# thin as the plate lying in the world - and as today's item (own user feedback: too thick).
+# item -> the picture it wears
+PRESSURE_PLATES = {
+    "stone_pressure_plate": "stone",
+    "wooden_pressure_plate": "oak_planks",
+    "light_weighted_pressure_plate": "gold_block",
+    "heavy_weighted_pressure_plate": "iron_block",
+}
+PRESSURE_PLATE_GUI_FILL = 14  # the plate's own width: as big in the slot as the game's
+
+# Items of blocks that are 3D in 1.8.9 already, but a flat picture as an item (as in models3d): the
+# item points at the game's block model, only moved into the middle of the slot and scaled like a
+# block - no geometry of the game's copied. The block models' bounds (from the 1.8.9 jar; a torch's
+# are its stick's - its model is three crossed pictures a block wide): item -> (model, low, high).
+VANILLA_3D_ITEMS = {
+    "lever": ("lever_off", (5, 0, 4), (11, 11, 12)),
+    "tripwire_hook": ("tripwire_hook", (6, 1, 7.9), (10, 9, 16)),
+    "repeater": ("repeater_1tick", (0, 0, 0), (16, 7, 16)),
+    "comparator": ("comparator_unlit", (0, 0, 0), (16, 7, 16)),
+    "torch": ("normal_torch", (7, 0, 7), (9, 10, 9)),
+    "redstone_torch": ("lit_redstone_torch", (7, 0, 7), (9, 10, 9)),
+    "cauldron": ("cauldron_empty", (0, 0, 0), (16, 16, 16)),
+    "hopper": ("hopper_down", (0, 0, 0), (16, 16, 16)),
+    "brewing_stand": ("brewing_stand_empty", (1, 0, 1), (15, 14, 15)),
+    "flower_pot": ("flower_pot", (5, 0, 5), (11, 6, 11)),
+    "cake": ("cake_uneaten", (1, 0, 1), (15, 8, 15)),
+}
+# 1.8.9's names for the sixteen colors of stained glass
+GLASS_COLORS = ["white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "silver", "cyan", "purple",
+                "blue", "brown", "green", "red", "black"]
+
+# The entity models of 1.8.9 that differ from today's (entity_items.py has the others; numbers from
+# that version's own model classes). The boat was five plain boards then; the chest's picture was
+# laid out for a model built upside down.
+HALF_PI, PI = entity_items.HALF_PI, entity_items.PI
+BOAT = [
+    {"offset": (0, 4, 0), "rotation": (HALF_PI, 0, 0), "cubes": [((0, 8), (-12, -8, -3), (24, 16, 4), False)]},      # bottom
+    {"offset": (-11, 4, 0), "rotation": (0, 3 * HALF_PI, 0), "cubes": [((0, 0), (-10, -7, -1), (20, 6, 2), False)]},
+    {"offset": (11, 4, 0), "rotation": (0, HALF_PI, 0), "cubes": [((0, 0), (-10, -7, -1), (20, 6, 2), False)]},
+    {"offset": (0, 4, -9), "rotation": (0, PI, 0), "cubes": [((0, 0), (-10, -7, -1), (20, 6, 2), False)]},
+    {"offset": (0, 4, 9), "cubes": [((0, 0), (-10, -7, -1), (20, 6, 2), False)]},
+]
+CHEST = [
+    {"offset": (1, 6, 1), "cubes": [((0, 19), (0, 0, 0), (14, 10, 14), False)]},                    # bottom
+    {"offset": (1, 7, 15), "inset": 0.01, "cubes": [((0, 0), (0, -5, -14), (14, 5, 14), False)]},  # lid
+    {"offset": (8, 7, 15), "cubes": [((0, 0), (-1, -2, -15), (2, 4, 1), False)]},                  # lock
+]
+# The boat's, the minecart's and the sign's pictures are 64 x 32, and 1.8.9 takes only square pictures
+# for models. The mod makes them square as the game reads them, with nothing in the lower half
+# (SpriteMixin.java) - so a model counts their pixels on 64 x 64.
+ENTITY_PICTURE = (64, 64)
+# A minecart's load: item -> (pictures, shape), the shapes as in models3d (None: the chest)
+CART_LOADS = {
+    "chest_minecart": None,
+    "furnace_minecart": {"furnace_front": "blocks/furnace_front_off", "furnace_side": "blocks/furnace_side", "furnace_top": "blocks/furnace_top"},
+    "tnt_minecart": {"tnt_side": "blocks/tnt_side", "tnt_top": "blocks/tnt_top", "tnt_bottom": "blocks/tnt_bottom"},
+    "command_block_minecart": {"command_front": "blocks/command_block", "command_back": "blocks/command_block",
+                               "command_side": "blocks/command_block"},
+    "hopper_minecart": {"hopper_outside": "blocks/hopper_outside", "hopper_inside": "blocks/hopper_inside", "hopper_top": "blocks/hopper_top"},
+}
+
+
+def turn(axis: str, degrees: float) -> list:
+    c, s = math.cos(math.radians(degrees)), math.sin(math.radians(degrees))
+    return {"x": [[1, 0, 0], [0, c, -s], [0, s, c]],
+            "y": [[c, 0, s], [0, 1, 0], [-s, 0, c]],
+            "z": [[c, -s, 0], [s, c, 0], [0, 0, 1]]}[axis]
+
+
+def combined(*matrices) -> list:
+    result = matrices[0]
+    for matrix in matrices[1:]:
+        result = [[sum(result[i][k] * matrix[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+    return result
+
+
+def legacy_gui(gui: dict) -> dict:
+    """Today's "gui" entry as 1.8.9 needs it for a model of boxes. Today's game turns the model around
+    x, then y, then z, seen face-on; 1.8.9 first gives it a block's turn, then turns it by the entry
+    around y, then x, then z."""
+    x, y, z = gui["rotation"]
+    wanted = combined(turn("x", x), turn("y", y), turn("z", z))
+    rest = combined(turn("y", -GUI_BLOCK_TURN[1]), turn("x", -GUI_BLOCK_TURN[0]), wanted)
+    rotation = [math.degrees(math.asin(max(-1.0, min(1.0, -rest[1][2])))),
+                math.degrees(math.atan2(rest[0][2], rest[2][2])),
+                math.degrees(math.atan2(rest[1][0], rest[1][1]))]
+    again = combined(turn("y", rotation[1]), turn("x", rotation[0]), turn("z", rotation[2]))
+    if any(abs(again[i][j] - rest[i][j]) > 1e-6 for i in range(3) for j in range(3)):
+        raise SystemExit(f"No 1.8.9 turn for the gui rotation {gui['rotation']}")
+    return {"rotation": [round(angle, 2) + 0.0 for angle in rotation], "translation": [0, 0, 0],
+            "scale": [round(gui["scale"][0] / GUI_BLOCK_SCALE, 3)] * 3}
+
+
+def vanilla_3d_items() -> dict:
+    """Item models on the game's own block models (VANILLA_3D_ITEMS), their middle moved to the slot's
+    middle. 1.8.9 moves a model before it turns and scales it, and halves every item model after
+    that - so the way to the middle is turned, scaled and halved here."""
+    found = {}
+    for item, (model, low, high) in VANILLA_3D_ITEMS.items():
+        today = models3d.VANILLA_3D_GUI_TURN.get(item, models3d.BLOCK_DISPLAY["gui"]["rotation"])
+        longest = max(h - l for l, h in zip(low, high))
+        scale = min(models3d.GUI_MAX_SCALE, models3d.BLOCK_DISPLAY["gui"]["scale"][0] * models3d.GUI_FILL / longest)
+        gui = legacy_gui({"rotation": today, "scale": [scale] * 3})
+        turned = combined(turn("y", gui["rotation"][1]), turn("x", gui["rotation"][0]), turn("z", gui["rotation"][2]))
+        offset = [gui["scale"][0] / 2 * ((l + h) / 2 - 8) for l, h in zip(low, high)]
+        gui["translation"] = [round(-sum(turned[i][k] * offset[k] for k in range(3)), 3) + 0.0 for i in range(3)]
+        found[item] = {"parent": f"block/{model}", "display": {**LEGACY_DISPLAY["block"], "gui": gui}}
+    return found
+
+
+def items(made: dict) -> dict:
+    """The item models, by 1.8.9's item names - still with today's picture names (see legacy_model)."""
+    found = {}
+
+    def add(name, elements, textures, display, held, fill=models3d.GUI_FILL):
+        data = models3d.item_model(elements, textures, display, fill)
+        data["display"] = {**LEGACY_DISPLAY[held], "gui": legacy_gui(data["display"]["gui"])}
+        found[name] = data
+
+    for name, (block_model, textures, display, held, *fill) in ITEM_MODELS.items():
+        block = made[block_model]
+        add(name, block["elements"], {**block["textures"], **textures}, display, held, *fill)
+    for name, picture in PRESSURE_PLATES.items():
+        t = "#texture"
+        edge = models3d.face([1, 15, 15, 16], t)
+        plate = models3d.box([1, 0, 1], [15, 1, 15], {"up": models3d.face([1, 1, 15, 15], t), "down": models3d.face([1, 1, 15, 15], t),
+                                                       "north": edge, "south": edge, "east": edge, "west": edge})
+        add(name, [plate], {"particle": f"block/{picture}", "texture": f"block/{picture}"}, models3d.BLOCK_DISPLAY, "block", PRESSURE_PLATE_GUI_FILL)
+    # Glass panes: a straight piece of pane, glass on its faces, the pane's edge picture around it
+    for color in [None] + GLASS_COLORS:
+        name = f"{color}_stained_glass_pane" if color else "glass_pane"
+        glass, top = (f"blocks/glass_{color}", f"blocks/glass_pane_top_{color}") if color else ("blocks/glass", "blocks/glass_pane_top")
+        edge = models3d.face([7, 0, 9, 16], "#edge")
+        pane = models3d.box([7, 0, 0], [9, 16, 16], {"east": models3d.face([0, 0, 16, 16], "#pane"), "west": models3d.face([0, 0, 16, 16], "#pane"),
+                                                      "north": edge, "south": edge, "up": edge, "down": edge})
+        add(name, [pane], {"particle": glass, "pane": glass, "edge": top}, models3d.BLOCK_DISPLAY, "block")
+    # Shaped like their entities (see entity_items.py): boat, sign, armor stand, and the minecarts
+    e = entity_items
+    planks = "block/oak_planks"
+    add("boat", e.model_elements(BOAT, "#texture", ENTITY_PICTURE), {"texture": "entity/boat", "particle": planks}, models3d.BLOCK_DISPLAY, "block")
+    add("sign", e.model_elements(e.SIGN, "#texture", ENTITY_PICTURE), {"texture": "entity/sign", "particle": planks},
+        models3d.FLAT_DISPLAY, "flat", models3d.SIGN_GUI_FILL)
+    add("armor_stand", e.model_elements(e.ARMOR_STAND, "#texture", (64, 64)), {"texture": "entity/armorstand/wood", "particle": planks},
+        models3d.FLAT_DISPLAY, "flat", models3d.ARMOR_STAND_GUI_FILL)
+    # Minecarts: the cart, and on its floor the load - a block made small, as in models3d
+    cart = e.model_elements(e.MINECART, "#cart", ENTITY_PICTURE)
+    floor = max(el["to"][1] for el in cart if el["to"][1] - el["from"][1] <= 2.01)  # top of the bottom plate
+    middle = [(min(el["from"][i] for el in cart) + max(el["to"][i] for el in cart)) / 2 for i in range(3)]
+    cart_textures = {"cart": "entity/minecart", "particle": "items/minecart_normal"}
+    add("minecart", cart, cart_textures, models3d.BLOCK_DISPLAY, "block")
+    size = 16 * models3d.CART_LOAD_SCALE
+    for name, textures in CART_LOADS.items():
+        if textures is None:
+            textures = {"chest": "entity/chest/normal"}
+            elements = e.model_elements(CHEST, "#chest", (64, 64))
+        else:
+            elements = models3d.CART_LOADS[name][1]()
+        low = [min(el["from"][i] for el in elements) for i in range(3)]
+        high = [max(el["to"][i] for el in elements) for i in range(3)]
+        models3d.scaled(elements, size / max(h - l for l, h in zip(low, high)), low)
+        models3d.moved(elements, middle[0] - low[0] - size / 2, floor - low[1], middle[2] - low[2] - size / 2)
+        add(name, copy.deepcopy(cart) + elements, {**cart_textures, **textures}, models3d.BLOCK_DISPLAY, "block")
+    # Doors: the whole door, both halves on top of each other
+    for wood in DOORS:
+        bottom, top = made[f"block/{wood}_door_bottom_left"], made[f"block/{wood}_door_top_left"]
+        elements = bottom["elements"] + models3d.moved(copy.deepcopy(top["elements"]), dy=16)
+        add(f"{wood}_door", elements, {**top["textures"], **bottom["textures"]}, models3d.DOOR_DISPLAY, "door", models3d.DOOR_GUI_FILL)
+    return found
+
+
 # --- Putting a pack together --------------------------------------------------------------------------
 
 def generate(textures: TextureSet) -> tuple:
-    """(models, blockstates) for 1.8.9, shaped after this set of pictures - by the names that version uses."""
+    """(block models, blockstates, item models) for 1.8.9, shaped after this set of pictures - by the
+    names that version uses."""
     saved = {name: getattr(models3d, name) for name in ("MASKS", "MODELS", "BLOCKSTATES", "DOORS", "FITTINGS", "PANELS", "PLANK_GAPS")}
     try:
         models3d.MASKS = masks_for(textures)
@@ -305,6 +544,7 @@ def generate(textures: TextureSet) -> tuple:
         models3d.rail_raised("block/template_rail_raised_sw", -45)
         models3d.rail_curved()
         models3d.detector_rails()
+        models3d.powered_rails()
         bars()
         vines(textures)
         models3d.lily_pad()
@@ -316,6 +556,8 @@ def generate(textures: TextureSet) -> tuple:
         models3d.DOORS = list(TRAPDOORS)
         models3d.trapdoors()
         made = models3d.MODELS
+        item_models = {name: legacy_model(data) for name, data in items(made).items()}
+        item_models.update(vanilla_3d_items())
     finally:
         for name, value in saved.items():
             setattr(models3d, name, value)
@@ -333,6 +575,12 @@ def generate(textures: TextureSet) -> tuple:
         "block/detector_rail_on": "detector_rail_powered_flat",
         "block/detector_rail_on_raised_ne": "detector_rail_powered_raised_ne",
         "block/detector_rail_on_raised_sw": "detector_rail_powered_raised_sw",
+        "block/powered_rail": "golden_rail_flat",
+        "block/powered_rail_raised_ne": "golden_rail_raised_ne",
+        "block/powered_rail_raised_sw": "golden_rail_raised_sw",
+        "block/powered_rail_on": "golden_rail_active_flat",
+        "block/powered_rail_on_raised_ne": "golden_rail_active_raised_ne",
+        "block/powered_rail_on_raised_sw": "golden_rail_active_raised_sw",
         "block/lily_pad": "waterlily",
         "block/sugar_cane": "reeds",
         "block/bookshelf": "bookshelf",
@@ -359,11 +607,12 @@ def generate(textures: TextureSet) -> tuple:
             {"model": f"{mushroom}{suffix}", **({"y": angle} if angle else {})}
             for suffix in models3d.MUSHROOM_TURNS for angle in models3d.QUARTER_TURN_ANGLES]}}
         for mushroom in ("brown_mushroom", "red_mushroom")}
-    return models, blockstates
+    return models, blockstates, item_models
 
 
 def legacy_texture(value: str) -> str:
-    if value.startswith("#"):
+    # A reference to another entry, or a picture by its 1.8.9 name already
+    if value.startswith(("#", "blocks/", "items/", "entity/")):
         return value
     name = value.split(":", 1)[-1]
     return "blocks/" + TEXTURES[name.removeprefix("block/")]
@@ -441,8 +690,8 @@ def build(sets: list, out_dir: pathlib.Path) -> list:
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     for textures in sets:
-        models, blockstates = generate(textures)
-        problems = []
+        models, blockstates, item_models = generate(textures)
+        problems = [problem for name, data in item_models.items() for problem in validate(f"item/{name}", data)]
         for name, data in models.items():
             problems += validate(name, data)
             # A vine model covering several sides has them meet in the block's corners; that is how the
@@ -462,8 +711,11 @@ def build(sets: list, out_dir: pathlib.Path) -> list:
                 write(zf, f"assets/minecraft/models/block/{name}.json", json.dumps(models[name], indent=1))
             for block in sorted(blockstates):
                 write(zf, f"assets/minecraft/blockstates/{block}.json", json.dumps(blockstates[block], indent=1))
-        elements = sum(len(data["elements"]) for data in models.values())
-        print(f"{path.name}: {len(models)} models, {elements} elements, {path.stat().st_size // 1024} KB")
+            for name in sorted(item_models):
+                write(zf, f"assets/minecraft/models/item/{name}.json", json.dumps(item_models[name], indent=1))
+            write(zf, FLAT_ITEMS_LIST, json.dumps({"items": sorted(list(item_models) + BLOCK_MODEL_ITEMS)}, indent=1))
+        elements = sum(len(data.get("elements", [])) for data in list(models.values()) + list(item_models.values()))
+        print(f"{path.name}: {len(models)} block models, {len(item_models)} item models, {elements} elements, {path.stat().st_size // 1024} KB")
         written.append(path)
     return written
 

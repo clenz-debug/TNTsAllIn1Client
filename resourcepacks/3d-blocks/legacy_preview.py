@@ -195,7 +195,7 @@ def main(argv: list) -> None:
     sets = legacy.texture_sets(jar_args)
     classic = sets[0]
     for textures in sets:
-        models, blockstates = legacy.generate(textures)
+        models, blockstates, _ = legacy.generate(textures)
         vanilla = LegacyAssets(textures, classic, {}, {})
         ours = LegacyAssets(textures, classic, models, blockstates)
         for name in names or list(SCENES):
