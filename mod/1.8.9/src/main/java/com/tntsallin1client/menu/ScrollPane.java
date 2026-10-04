@@ -1,5 +1,7 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.design.ThemedUi;
+import com.tntsallin1client.design.ClientTheme;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.util.Window;
@@ -61,7 +63,7 @@ final class ScrollPane {
 		return mouseY >= this.top && mouseY < this.bottom;
 	}
 
-	private void scrollTo(int newOffset) {
+	void scrollTo(int newOffset) {
 		this.offset = MathHelper.clamp(newOffset, 0, this.maxScroll);
 		this.onScroll.run();
 	}
@@ -119,13 +121,19 @@ final class ScrollPane {
 		GL11.glDisable(GL11.GL_SCISSOR_TEST);
 	}
 
-	/** Same look as the scrollbar of the game's own lists; nothing if everything fits. */
+	/** Same look as the scrollbar of the game's own lists - in the client design a flat track with an accent thumb; nothing if everything fits. */
 	void renderScrollbar() {
 		if (this.maxScroll <= 0) {
 			return;
 		}
 		int thumbY = thumbY();
 		int thumbHeight = thumbHeight();
+		if (ThemedUi.active()) {
+			ClientTheme theme = ClientTheme.get();
+			DrawableHelper.fill(this.scrollbarX, this.top, this.scrollbarX + SCROLLBAR_WIDTH, this.bottom, theme.background2);
+			DrawableHelper.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, theme.accent3);
+			return;
+		}
 		DrawableHelper.fill(this.scrollbarX, this.top, this.scrollbarX + SCROLLBAR_WIDTH, this.bottom, 0xFF000000);
 		DrawableHelper.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, 0xFF808080);
 		DrawableHelper.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH - 1, thumbY + thumbHeight - 1, 0xFFC0C0C0);

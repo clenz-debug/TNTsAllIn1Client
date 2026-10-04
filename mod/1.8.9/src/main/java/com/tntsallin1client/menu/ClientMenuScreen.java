@@ -9,10 +9,8 @@ import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
-import com.tntsallin1client.resourcepack.Blocks3d;
-import com.tntsallin1client.resourcepack.DarkMode;
-import com.tntsallin1client.resourcepack.NewTextures;
-import net.minecraft.client.gui.screen.ConfirmScreen;
+import com.tntsallin1client.tour.TourRect;
+import com.tntsallin1client.tour.TourTargets;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -20,7 +18,8 @@ import net.minecraft.client.resource.language.I18n;
 import org.lwjgl.input.Keyboard;
 
 /**
- * The ingame mod menu: one on/off switch per feature, grouped under section headings. A feature
+ * The ingame mod menu in the Minecraft design (the client design has {@link ClientModsCardScreen}; what
+ * is in either comes from {@link ClientMenuFeatures}): one on/off switch per feature, grouped under section headings. A feature
  * with more to configure than the switch gets its own options screen, opened via the small button
  * next to its switch. Reachable via the title screen and pause menu buttons ({@link MenuButtons}) or
  * its own key binding ({@link com.tntsallin1client.keybind.ModKeyBindings#OPEN_MENU}).
@@ -29,7 +28,7 @@ import org.lwjgl.input.Keyboard;
  * {@link ScrollPane}). Typing into the search field leaves only the rows whose name contains the
  * text; a section none of whose rows are left drops its heading too.
  */
-public class ClientMenuScreen extends ClientScreen {
+public class ClientMenuScreen extends ClientScreen implements FeatureSink, TourTargets {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
@@ -59,86 +58,23 @@ public class ClientMenuScreen extends ClientScreen {
 	public ClientMenuScreen(Screen parent) {
 		super(parent, "gui.tntsallin1client.menu.title");
 
-		final ClientConfig config = ClientConfig.get();
-		addSection("gui.tntsallin1client.menu.section_hud");
-		addFeature("gui.tntsallin1client.menu.coordinates_hud", () -> config.coordinatesHudEnabled, value -> config.coordinatesHudEnabled = value,
-				() -> new CoordinatesHudOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.item_counter", () -> config.itemCounterEnabled, value -> config.itemCounterEnabled = value,
-				() -> new ItemCounterOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.fps_counter", () -> config.fpsCounterEnabled, value -> config.fpsCounterEnabled = value,
-				() -> new FpsCounterOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.latency_hud", () -> config.latencyHudEnabled, value -> config.latencyHudEnabled = value,
-				() -> new LatencyOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.clock_hud", () -> config.clockHudEnabled, value -> config.clockHudEnabled = value,
-				() -> new ClockOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.keystrokes", () -> config.keystrokesEnabled, value -> config.keystrokesEnabled = value,
-				() -> new KeystrokesOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.armor_status", () -> config.armorStatusEnabled, value -> config.armorStatusEnabled = value,
-				() -> new ArmorStatusOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.f3_quick_info", () -> config.f3QuickInfoEnabled, value -> config.f3QuickInfoEnabled = value,
-				() -> new F3OptionsScreen(this));
-
-		addSection("gui.tntsallin1client.menu.section_rendering");
-		addFeature("gui.tntsallin1client.menu.zoom", () -> config.zoomEnabled, value -> config.zoomEnabled = value,
-				() -> new ZoomOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.freecam", () -> config.freecamEnabled, value -> config.freecamEnabled = value,
-				() -> new FreecamOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.crosshair", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value,
-				() -> new CrosshairOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
-		addFeature("gui.tntsallin1client.menu.no_fog", () -> config.noFogEnabled, value -> config.noFogEnabled = value,
-				() -> new NoFogOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.spawn_overlay", () -> config.spawnOverlayEnabled, value -> config.spawnOverlayEnabled = value,
-				() -> new SpawnOverlayOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.hitbox_color", () -> config.customHitboxColorEnabled, value -> config.customHitboxColorEnabled = value,
-				() -> new HitboxColorOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.block_outline_color",
-				() -> config.customBlockOutlineColorEnabled, value -> config.customBlockOutlineColorEnabled = value,
-				() -> new BlockOutlineColorOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.item_tilt", () -> config.itemTiltEnabled, value -> config.itemTiltEnabled = value, null);
-		addFeature("gui.tntsallin1client.menu.waypoints", () -> config.waypointsEnabled, value -> config.waypointsEnabled = value,
-				() -> new WaypointOptionsScreen(this));
-		// Only where the packs are there - see NewTextures, Blocks3d, DarkMode.
-		if (NewTextures.isAvailable()) {
-			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
-		}
-		if (Blocks3d.isAvailable()) {
-			addFeature("gui.tntsallin1client.menu.block_models_3d", Blocks3d::isEnabled, Blocks3d::setEnabled,
-					() -> new BlockModels3dOptionsScreen(this));
-		}
-		if (DarkMode.isAvailable()) {
-			addFeature("gui.tntsallin1client.menu.dark_mode", DarkMode::isEnabled, DarkMode::setEnabled, null);
-		}
-		addFeature("gui.tntsallin1client.menu.skin_layers_3d", () -> config.skinLayers3dEnabled, value -> config.skinLayers3dEnabled = value,
-				() -> new SkinLayers3dOptionsScreen(this));
-
-		addSection("gui.tntsallin1client.menu.section_inventory");
-		addFeature("gui.tntsallin1client.menu.quick_sort", () -> config.quickSortEnabled, value -> config.quickSortEnabled = value,
-				() -> new QuickSortOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.screenshot_toast", () -> config.screenshotToastEnabled, value -> config.screenshotToastEnabled = value, null);
-
-		addSection("gui.tntsallin1client.menu.section_misc");
-		addFeature("gui.tntsallin1client.menu.discord_presence", () -> config.discordPresenceEnabled, value -> config.discordPresenceEnabled = value,
-				() -> new DiscordPresenceOptionsScreen(this));
-		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);
-		addLink("gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(this));
-		// Asks first; the answer comes back through confirmResult.
-		addLink("gui.tntsallin1client.menu.reset_all_button", () -> new ConfirmScreen(this,
-				I18n.translate("gui.tntsallin1client.reset.confirm_all_title"), I18n.translate("gui.tntsallin1client.reset.confirm_all_message"), 0));
-		addLink("gui.tntsallin1client.menu.credits_button", () -> new CreditsScreen(this));
+		ClientMenuFeatures.populate(this, this);
 	}
 
-	private void addSection(String labelKey) {
+	@Override
+	public void beginSection(String labelKey) {
 		this.rows.add(new Row(labelKey, null, null, null));
 	}
 
 	/** `optionsScreen` may be null for a feature that is nothing but its switch. */
-	private void addFeature(String labelKey, BooleanSupplier getter, Consumer<Boolean> setter, Supplier<Screen> optionsScreen) {
+	@Override
+	public void addFeature(String labelKey, BooleanSupplier getter, Consumer<Boolean> setter, Supplier<Screen> optionsScreen) {
 		addClickable(new Row(labelKey, getter, setter, optionsScreen));
 	}
 
 	/** A row that is one button opening another screen. */
-	private void addLink(String labelKey, Supplier<Screen> screen) {
+	@Override
+	public void addLink(LinkRole role, String labelKey, Supplier<Screen> screen) {
 		addClickable(new Row(labelKey, null, null, screen));
 	}
 
@@ -227,6 +163,56 @@ public class ClientMenuScreen extends ClientScreen {
 		}
 		int x = (this.width - ROW_WIDTH) / 2;
 		this.pane.layout(VIEWPORT_TOP, this.height - VIEWPORT_BOTTOM_MARGIN, x + ROW_WIDTH + ScrollPane.SCROLLBAR_GAP, contentHeight);
+	}
+
+	// --- In-game tour ------------------------------------------------------------------------
+
+	@Override
+	public TourRect tourTarget(String name) {
+		if (this.searchField == null) {
+			return null;
+		}
+		if (name.equals(SEARCH)) {
+			return new TourRect(this.searchField.x - 1, this.searchField.y - 1, ROW_WIDTH, ROW_HEIGHT);
+		}
+		if (name.equals(HUD_EDITOR)) {
+			return rowBounds("gui.tntsallin1client.menu.hud_editor_button", null);
+		}
+		if (name.startsWith(FEATURE_OPTIONS)) {
+			return rowBounds(name.substring(FEATURE_OPTIONS.length()), Boolean.FALSE);
+		}
+		if (name.startsWith(FEATURE_SWITCH)) {
+			return rowBounds(name.substring(FEATURE_SWITCH.length()), Boolean.TRUE);
+		}
+		if (name.startsWith(FEATURE)) {
+			return rowBounds(name.substring(FEATURE.length()), null);
+		}
+		return null;
+	}
+
+	/**
+	 * A row (by its translation key) - `part` true: its switch, false: its Options button, null: all
+	 * of it. A row outside the viewport gets scrolled to instead.
+	 */
+	private TourRect rowBounds(String labelKey, Boolean part) {
+		for (Row row : this.rows) {
+			if (!row.labelKey.equals(labelKey) || !row.visible || row.isHeader()) {
+				continue;
+			}
+			int top = screenY(row);
+			if (top < VIEWPORT_TOP || top + ROW_HEIGHT > this.height - VIEWPORT_BOTTOM_MARGIN) {
+				this.pane.scrollTo(row.y);
+				return null;
+			}
+			ButtonWidget button = part == null ? null : part ? row.toggle : row.open;
+			if (part != null && button == null) {
+				return null;
+			}
+			return button != null
+					? new TourRect(button.x, top, button.getWidth(), ROW_HEIGHT)
+					: new TourRect((this.width - ROW_WIDTH) / 2, top, ROW_WIDTH, ROW_HEIGHT);
+		}
+		return null;
 	}
 
 	private void placeRows() {

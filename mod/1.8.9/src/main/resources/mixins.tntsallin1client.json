@@ -5,6 +5,7 @@
 	"compatibilityLevel": "JAVA_8",
 	"client": [
 		"AbstractClientPlayerEntityMixin",
+		"ButtonWidgetMixin",
 		"CapeFeatureRendererMixin",
 		"ClientPlayerEntityMixin",
 		"ClientPlayerInteractionManagerMixin",
@@ -26,6 +27,7 @@
 		"PlayerEntityRendererMixin",
 		"ScreenMixin",
 		"SpriteMixin",
+		"TextFieldWidgetMixin",
 		"TextRendererMixin",
 		"TitleScreenMixin",
 		"TranslationStorageMixin",

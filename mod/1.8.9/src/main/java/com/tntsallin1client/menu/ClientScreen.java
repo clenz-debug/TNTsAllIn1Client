@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.tour.TourScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
 
@@ -10,7 +11,7 @@ import net.minecraft.client.resource.language.I18n;
  * themselves, so text fields and the picker's drag areas need every event passed on by hand; doing
  * that here once keeps each feature's options screen down to its own rows.
  */
-public abstract class ClientScreen extends Screen {
+public abstract class ClientScreen extends Screen implements TourScreen.Closable {
 	private static final int ESCAPE_KEY = 1;
 	private static final int TITLE_Y = 14;
 
@@ -26,6 +27,11 @@ public abstract class ClientScreen extends Screen {
 
 	protected void back() {
 		this.client.setScreen(this.parent);
+	}
+
+	@Override
+	public void closeForTour() {
+		back();
 	}
 
 	@Override
@@ -67,7 +73,7 @@ public abstract class ClientScreen extends Screen {
 		}
 	}
 
-	/** What lies behind the screen - vanilla's darkened game view (or dirt without a world) unless a screen wants something else. */
+	/** What lies behind the screen - vanilla's darkened game view (or dirt without a world), in the client design the plain theme background (`ScreenMixin`) - unless a screen wants something else. */
 	protected void renderScreenBackground() {
 		this.renderBackground();
 	}
@@ -75,7 +81,7 @@ public abstract class ClientScreen extends Screen {
 	@Override
 	public void render(int mouseX, int mouseY, float tickDelta) {
 		renderScreenBackground();
-		this.drawCenteredString(this.textRenderer, I18n.translate(this.titleKey), this.width / 2, TITLE_Y, 0xFFFFFF);
+		MenuText.centered(I18n.translate(this.titleKey), this.width / 2, TITLE_Y, 0xFFFFFF);
 		super.render(mouseX, mouseY, tickDelta);
 		if (this.colorPicker != null) {
 			this.colorPicker.render(0xFFFFFF);

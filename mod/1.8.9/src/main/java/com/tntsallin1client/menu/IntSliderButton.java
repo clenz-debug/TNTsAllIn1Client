@@ -1,5 +1,8 @@
 package com.tntsallin1client.menu;
 
+import net.minecraft.client.gui.DrawableHelper;
+import com.tntsallin1client.design.ThemedUi;
+import com.tntsallin1client.design.ClientTheme;
 import java.util.function.IntConsumer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -50,6 +53,12 @@ public class IntSliderButton extends ButtonWidget {
 			moveKnobTo(mouseX);
 		}
 		int knobX = this.x + Math.round((float) (this.value - this.min) / (this.max - this.min) * (this.width - KNOB_WIDTH));
+		if (ThemedUi.active()) {
+			// The client design's slider: a solid accent knob on the plain track (`ButtonWidgetMixin`).
+			ClientTheme theme = ClientTheme.get();
+			DrawableHelper.fill(knobX, this.y, knobX + KNOB_WIDTH, this.y + this.height, this.active && this.hovered ? theme.accent4 : theme.accent3);
+			return;
+		}
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		this.drawTexture(knobX, this.y, 0, 66, 4, 20);
 		this.drawTexture(knobX + 4, this.y, 196, 66, 4, 20);

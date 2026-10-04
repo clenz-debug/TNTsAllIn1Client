@@ -167,7 +167,7 @@ public class ColorPickerPanel extends DrawableHelper {
 	}
 
 	private void drawLabel(String key, int labelX, int fieldY, int color) {
-		this.drawWithShadow(this.textRenderer, I18n.translate(key), labelX, fieldY + 6, color);
+		MenuText.text(I18n.translate(key), labelX, fieldY + 6, color);
 	}
 
 	private static void drawMarker(int centerX, int centerY) {

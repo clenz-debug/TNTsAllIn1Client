@@ -4,6 +4,7 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.fog.NoFog;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
+import com.tntsallin1client.tour.TourOverlay;
 import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 import net.minecraft.client.MinecraftClient;
@@ -22,7 +23,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * settings as it goes - where one of our features wants another value, it gets ours instead. It is
  * also where the mouse turns the player and where the first-person hand is drawn, both of which the
  * freecam takes over, where the waypoints and the light level overlay get drawn into the finished
- * world, and where the fog is set up that "No fog" takes away again.
+ * world, where the fog is set up that "No fog" takes away again, and where the screen on display is
+ * drawn - with the in-game tour's explanation on top of it.
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
@@ -34,6 +36,12 @@ public abstract class GameRendererMixin {
 	/** Set while the camera is inside a cloud. */
 	@Shadow
 	private boolean thickFog;
+
+	/** The in-game tour: its explanation goes on top of whatever screen the game has just drawn. */
+	@Inject(method = "render(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;render(IIF)V", shift = At.Shift.AFTER))
+	private void tnt$drawTourOverScreen(float tickDelta, long limitTime, CallbackInfo ci) {
+		TourOverlay.renderScreen(this.client.currentScreen);
+	}
 
 	/** No fog: the game has just set up the fog for the next part of the world it draws. */
 	@Inject(method = "renderFog(IF)V", at = @At("RETURN"))

@@ -29,6 +29,9 @@ import net.minecraft.client.resource.language.I18n;
  * apart from the settings: above "Back" or to its left. What doesn't fit scrolls (see
  * {@link ScrollPane}) - the buttons at the end included. "Reset" stays put, right of the column and
  * level with its first row.
+ *
+ * <p>In the client design "Back", "Move / Resize" and "Reset" are a bar along the top instead
+ * ({@link TopBar}), as in the Fabric versions; only a screen's action button stays below its settings.
  */
 public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FULL_WIDTH = 210;
@@ -41,6 +44,9 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	/** Extra space between the settings and the buttons that follow them. */
 	private static final int FOOTER_GAP = 6;
 	private static final int RESET_BUTTON_ID = 1;
+	/** The client design's top bar - see {@link TopBar}. */
+	private static final int BACK_BUTTON_ID = 2;
+	private static final int HUD_EDITOR_BUTTON_ID = 3;
 	private static final int RESET_BUTTON_WIDTH = 84;
 	private static final int RESET_BUTTON_MARGIN = 6;
 	/** The scrollbar's room right of the rows, which "Reset" keeps clear of. */
@@ -269,6 +275,13 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	/** The buttons that follow the settings, top to bottom. */
 	private List<Option> footerOptions() {
 		List<Option> footer = new ArrayList<Option>();
+		if (TopBar.inUse()) {
+			// "Move / Resize" and "Back" are in the top bar.
+			if (this.action != null) {
+				footer.add(new Option(() -> I18n.translate(this.actionLabelKey), this.action));
+			}
+			return footer;
+		}
 		// "Move / Resize HUD" on the screens of features that have something on the HUD (own user
 		// request, both the button and leaving it out elsewhere).
 		if (offersHudEditor()) {
@@ -312,7 +325,14 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			this.optionTops.add(y);
 			y += this.shown.get(index).height() + ROW_GAP;
 		}
-		int contentHeight = y - ROW_GAP;
+		if (settings == this.shown.size()) {
+			// Nothing follows the settings: the hint is the last thing in the column.
+			this.hintTop = y - ROW_GAP + HINT_GAP;
+			if (this.hintKey != null) {
+				y = this.hintTop + this.textRenderer.fontHeight + ROW_GAP;
+			}
+		}
+		int contentHeight = Math.max(0, y - ROW_GAP);
 
 		int left = (this.width - FULL_WIDTH) / 2;
 		this.optionsLeft = left;
@@ -333,10 +353,21 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.pane.layout(FIRST_ROW_Y, this.height - BOTTOM_MARGIN, rowsRight + ScrollPane.SCROLLBAR_GAP, contentHeight);
 
 		this.shortResetButton = null;
+		boolean topBar = TopBar.inUse();
+		boolean hudEditor = offersHudEditor();
+		if (topBar) {
+			TopBar.add(this.buttons, this.width, BACK_BUTTON_ID, I18n.translate(backLabelKey()), HUD_EDITOR_BUTTON_ID, hudEditor);
+		}
 		if (this.resetFeature != null) {
-			boolean fits = this.width - RESET_BUTTON_MARGIN - RESET_BUTTON_WIDTH >= rowsRight + SCROLLBAR_SPACE;
-			int resetWidth = fits ? RESET_BUTTON_WIDTH : ROW_HEIGHT;
-			ButtonWidget reset = new ButtonWidget(RESET_BUTTON_ID, this.width - RESET_BUTTON_MARGIN - resetWidth, FIRST_ROW_Y,
+			// In the top bar "Reset" sits below "Move / Resize" - level with the first rows, like in the
+			// Minecraft design - or in its place, above them, where there is none.
+			boolean besideRows = !topBar || hudEditor;
+			int margin = topBar ? TopBar.MARGIN : RESET_BUTTON_MARGIN;
+			int fullWidth = topBar ? TopBar.BUTTON_WIDTH : RESET_BUTTON_WIDTH;
+			boolean fits = !besideRows || this.width - margin - fullWidth >= rowsRight + SCROLLBAR_SPACE;
+			int resetWidth = fits ? fullWidth : ROW_HEIGHT;
+			int resetY = !topBar ? FIRST_ROW_Y : hudEditor ? TopBar.SECOND_ROW_Y : TopBar.Y;
+			ButtonWidget reset = new ButtonWidget(RESET_BUTTON_ID, this.width - margin - resetWidth, resetY,
 					resetWidth, ROW_HEIGHT, fits ? I18n.translate("gui.tntsallin1client.reset.button") : SHORT_RESET_LABEL);
 			this.buttons.add(reset);
 			if (!fits) {
@@ -366,6 +397,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			this.client.setScreen(new ConfirmScreen(this,
 					I18n.translate("gui.tntsallin1client.reset.confirm_title", I18n.translate(this.resetFeature.labelKey)),
 					I18n.translate("gui.tntsallin1client.reset.confirm_message"), 0));
+		} else if (button.id == BACK_BUTTON_ID) {
+			back();
+		} else if (button.id == HUD_EDITOR_BUTTON_ID) {
+			this.client.setScreen(new HudEditorScreen(this));
 		}
 	}
 
@@ -513,7 +548,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		}
 		if (this.hintKey != null) {
 			int hintY = FIRST_ROW_Y + this.hintTop - this.pane.offset();
-			this.drawCenteredString(this.textRenderer, I18n.translate(this.hintKey), this.width / 2, hintY, 0xA0A0A0);
+			MenuText.centered(I18n.translate(this.hintKey), this.width / 2, hintY, 0xA0A0A0);
 		}
 		this.pane.endClip();
 		this.pane.renderScrollbar();

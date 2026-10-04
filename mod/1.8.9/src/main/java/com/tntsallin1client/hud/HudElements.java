@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.tntsallin1client.tour.TourOverlay;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.SystemInfoHud;
 import com.tntsallin1client.freecam.FreecamHandler;
@@ -45,6 +46,7 @@ public final class HudElements {
 		}
 		WaypointArrowHud.render(client, config, window.getWidth(), window.getHeight());
 		FreecamHandler.renderHint(client, window.getWidth());
+		TourOverlay.renderHud(client);
 		// Drawing text leaves its color set - whatever the game draws next would be tinted with it.
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 	}

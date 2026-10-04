@@ -31,6 +31,7 @@ public class CreditsScreen extends ClientScreen {
 	private static final Entry[] ENTRIES = {
 			// Inside our jar.
 			new Entry("Mixin", "MIT", "https://github.com/SpongePowered/Mixin"),
+			new Entry("Inter (font)", "SIL OFL 1.1", "https://github.com/rsms/inter"),
 			// Both come from Mojang's library server when the launcher sets the game up.
 			new Entry("LaunchWrapper", "Mojang", "https://github.com/Mojang/LegacyLauncher"),
 			new Entry("ASM", "BSD-3-Clause", "https://asm.ow2.io"),

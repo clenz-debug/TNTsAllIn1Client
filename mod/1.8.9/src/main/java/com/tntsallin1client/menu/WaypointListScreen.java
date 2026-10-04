@@ -1,5 +1,7 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.design.ThemedUi;
+import com.tntsallin1client.design.ClientFont;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -219,9 +221,9 @@ public class WaypointListScreen extends ClientScreen {
 		super.render(mouseX, mouseY, tickDelta);
 
 		if (this.worldKey == null) {
-			this.drawCenteredString(this.textRenderer, I18n.translate(KEY + "no_world"), this.width / 2, LIST_TOP + 10, MESSAGE_COLOR);
+			MenuText.centered(I18n.translate(KEY + "no_world"), this.width / 2, LIST_TOP + 10, MESSAGE_COLOR);
 		} else if (this.waypoints.isEmpty()) {
-			this.drawCenteredString(this.textRenderer, I18n.translate(KEY + "empty"), this.width / 2, LIST_TOP + 10, MESSAGE_COLOR);
+			MenuText.centered(I18n.translate(KEY + "empty"), this.width / 2, LIST_TOP + 10, MESSAGE_COLOR);
 		}
 
 		// A button scrolled half out of view must not light up under a cursor that is on the title or on the buttons below.
@@ -229,7 +231,7 @@ public class WaypointListScreen extends ClientScreen {
 		this.pane.beginClip(this.client);
 		for (Row row : this.rows) {
 			if (row.edit == null) {
-				this.drawCenteredString(this.textRenderer, row.heading, this.width / 2, screenY(row) + 4, MESSAGE_COLOR);
+				MenuText.centered(row.heading, this.width / 2, screenY(row) + 4, MESSAGE_COLOR);
 			} else {
 				row.edit.render(this.client, mouseX, hoverY);
 				row.toggle.render(this.client, mouseX, hoverY);
@@ -283,7 +285,14 @@ public class WaypointListScreen extends ClientScreen {
 		@Override
 		public void render(MinecraftClient client, int mouseX, int mouseY) {
 			super.render(client, mouseX, mouseY);
-			if (this.visible) {
+			if (!this.visible) {
+				return;
+			}
+			if (ThemedUi.active()) {
+				// The waypoint's own color, in the client design's font.
+				ClientFont.drawCentered(ClientFont.fit(this.text, this.width - 2 * TEXT_MARGIN), this.x + this.width / 2.0F,
+						this.y + (this.height - ClientFont.HEIGHT) / 2.0F, 0xFF000000 | this.color);
+			} else {
 				String shown = client.textRenderer.trimToWidth(this.text, this.width - 2 * TEXT_MARGIN);
 				this.drawCenteredString(client.textRenderer, shown, this.x + this.width / 2, this.y + (this.height - 8) / 2, this.color);
 			}

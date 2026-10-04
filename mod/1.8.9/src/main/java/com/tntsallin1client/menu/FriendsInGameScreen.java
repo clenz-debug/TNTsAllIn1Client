@@ -127,7 +127,7 @@ public class FriendsInGameScreen extends ClientScreen {
 	public void render(int mouseX, int mouseY, float tickDelta) {
 		super.render(mouseX, mouseY, tickDelta);
 		for (Label label : this.labels) {
-			this.drawWithShadow(this.textRenderer, label.text, label.x, label.y, label.color);
+			MenuText.text(label.text, label.x, label.y, label.color);
 		}
 	}
 

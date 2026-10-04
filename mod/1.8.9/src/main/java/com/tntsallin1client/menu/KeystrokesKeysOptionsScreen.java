@@ -51,7 +51,11 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 		}
 
 		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD"
-		// and "Back" follow below the keys, as in the Fabric versions.
+		// and "Back" follow below the keys, as in the Fabric versions - in the client design they are the top bar.
+		if (TopBar.inUse()) {
+			TopBar.add(this.buttons, this.width, BACK_BUTTON_ID, I18n.translate("gui.back"), HUD_EDITOR_BUTTON_ID, true);
+			return;
+		}
 		int buttonY = rowY + 6;
 		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT,
 				I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));

@@ -10,7 +10,8 @@ import com.tntsallin1client.inventory.ContainerClickPacing;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import org.lwjgl.input.Keyboard;
 import com.tntsallin1client.keybind.ModKeyBindings;
-import com.tntsallin1client.menu.ClientMenuScreen;
+import com.tntsallin1client.menu.ClientMenus;
+import com.tntsallin1client.tour.InGameTour;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import net.minecraft.client.MinecraftClient;
@@ -47,6 +48,7 @@ public abstract class MinecraftClientMixin {
 		ActivityReporter.tick((MinecraftClient) (Object) this);
 		FriendsBridge.tick((MinecraftClient) (Object) this);
 		DiscordPresenceManager.tick((MinecraftClient) (Object) this);
+		InGameTour.tick((MinecraftClient) (Object) this);
 		while (ModKeyBindings.SYSTEM_INFO.wasPressed()) {
 			// Only together with F3, like the game's own debug key combinations.
 			if (Keyboard.isKeyDown(Keyboard.KEY_F3)) {
@@ -56,7 +58,7 @@ public abstract class MinecraftClientMixin {
 		while (ModKeyBindings.OPEN_MENU.wasPressed()) {
 			// Only from gameplay - with a screen open the key belongs to that screen.
 			if (this.currentScreen == null) {
-				this.setScreen(new ClientMenuScreen(null));
+				this.setScreen(ClientMenus.create(null));
 			}
 		}
 	}

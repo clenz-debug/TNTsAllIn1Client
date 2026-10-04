@@ -2,8 +2,6 @@ package com.tntsallin1client.menu;
 
 import java.util.function.Supplier;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 
 /**
  * A line of text as a row of a {@link FeatureOptionsScreen}: gray and centered on the column of rows,
@@ -34,12 +32,11 @@ final class LabelPanel implements OptionPanel {
 
 	@Override
 	public void render(int x, int y, int width) {
-		TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 		String text = this.text.get();
 		if (this.heading) {
-			textRenderer.drawWithShadow(text, x, y + TEXT_Y, HEADING_COLOR);
+			MenuText.text(text, x, y + TEXT_Y, HEADING_COLOR);
 		} else {
-			textRenderer.drawWithShadow(text, x + (width - textRenderer.getStringWidth(text)) / 2, y + TEXT_Y, COLOR);
+			MenuText.centered(text, x + width / 2, y + TEXT_Y, COLOR);
 		}
 	}
 }
