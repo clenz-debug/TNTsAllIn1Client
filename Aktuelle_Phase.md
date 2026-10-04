@@ -1430,3 +1430,17 @@ Nutzervorschlag: das eigene Freunde-Menü nicht nur im Esc-Menü, sondern auch i
 **Freunde** (Button, Bildschirm mit beiden Hinweisen und ein Online-Freund in der Liste bestätigt): `friends/ActivityReporter`, `friends/FriendsBridge`, `menu/FriendsInGameScreen`, "Freunde"-Button oben links in Titel- und Pausenmenü. Abgespeckt, weil es e4mc für 1.8.9 nicht gibt: kein Einladen in die eigene Welt (Hinweis im Bildschirm), Einladungen aus anderen Versionen nur ablehnbar mit Hinweis "Braucht Minecraft X", neue Einladung als Chat-Zeile, keine Gesichter neben den Namen. Die Tests mit zweitem Konto stehen in `Offene_Punkte.md` unter "2b. Vor der 1.0 zu testen".
 
 `gradlew build` grün (18 Mixin-Ziele). Noch offen für 1.8.9: 3D-Skin-Layer, Item Physics, Client-Design in Stufen.
+
+## 1.8.9: Item Physics, 3D-Skin-Layer, Cape beim Ducken, Freecam-Korrekturen (2026-10-04, vom Nutzer im Spiel bestätigt, nicht veröffentlicht) — `mod/1.8.9/`
+
+**Item Physics** (bestätigt: "item physik passt"): `itemphysics/ItemTilt` + `ItemEntityRendererMixin`. Das Spiel setzt ein liegendes Item mit einer Verschiebung und einer Drehung; beide laufen über `ItemTilt`. Fester Winkel pro Item, kein Wippen, am Boden flach, im Wasser wie im Original. Schalter ohne Optionen, wie bei Fabric.
+
+**3D-Skin-Layer** (bestätigt: "3d layer passt"): `skinlayers/` mit demselben Mesh-Aufbau wie in den Fabric-Versionen. Die Seiten der Modell-Boxen kommen per Reflection über den Feldtyp, die Skin-Pixel werden von der Grafikkarte zurückgelesen und etwa einmal pro Sekunde neu geprüft (ein heruntergeladener Skin ersetzt das Standardbild in derselben Textur), gezeichnet wird aus Display-Listen. `PlayerEntityRendererMixin` fügt das Feature hinzu, entscheidet pro Spieler über die Teile und zeichnet den Ärmel am Ego-Arm. Fallstrick: ein unsichtbar geschaltetes `ModelPart` wendet seine Position nicht an - sie kommt vom Körperteil darunter. Standardmäßig an, wie bei Fabric.
+
+**Cape beim Ducken** (bestätigt: "sonst passt das cape"): `CapeFeatureRendererMixin`. 1.8.9 hängt das Cape am Nacken des aufrechten Körpers auf und schwenkt es beim Ducken nur weiter aus; jetzt bekommt es zuerst die Körperhaltung (0,2 Blöcke tiefer, 28,6° Neigung), wie in 1.21.11, wo das Cape ein Teil des Körpers ist. Ohne Schalter.
+
+**Freecam** (beides bestätigt: "ja passt jetzt"):
+- Die Sicht drehte sich im Kreis, sobald der Spieler sich vor dem Einschalten insgesamt mehr als einmal gedreht hatte: `FreecamCamera#placeAt` setzte den Vorwert der Blickrichtung auf den ungekürzten Wert des Spielers, das Spiel kürzt den aktuellen auf eine Umdrehung. Steckte seit dem Bau von Freecam drin.
+- Das Cape am eingefrorenen Spieler zitterte: `FreecamHandler#tryEnter` setzt jetzt auch die Vorwerte von Cape-Position, Laufstrecke und Wippen gleich.
+
+`gradlew build` grün (20 Mixin-Ziele). Für 1.8.9 ist damit nur noch das Client-Design offen.
