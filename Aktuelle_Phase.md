@@ -1450,3 +1450,13 @@ Nutzervorschlag: das eigene Freunde-Menü nicht nur im Esc-Menü, sondern auch i
 Nutzerwunsch: die Anzeige war ein Debug-Feature aus Phase 2 ("TNT's All-In-1 Client (Mixin active)" oben links) und fliegt aus allen Versionen. Entfernt: die Menü-Zeile, `ClientNameLabelOptionsScreen`, der Render-Inject in `GuiMixin` samt Log-Zeile (das Fadenkreuz im selben Mixin bleibt), die Config-Felder `clientNameLabelEnabled`/`clientNameLabelColor`, der Reset-Eintrag und die drei Texte je Sprache. In 1.8.9 gab es sie nie und sie wird dort nicht gebaut.
 
 `gradlew build` in allen drei Versionen grün, `check_mixins.py`: 26.1.2 105 Ziele, 26.3 107 Ziele, je 0 Probleme. Im Spiel nicht angesehen.
+
+## 1.8.9: Credits und Offline-Skin; Abstand der Schalter in den Launcher-Einstellungen (2026-10-04, vom Nutzer bestätigt, nicht veröffentlicht)
+
+**Credits (`mod/1.8.9/`, bestätigt: "jawohl passt"):** `menu/CreditsScreen`, Zeile "Drittanbieter-Credits" unter "Sonstiges". Eigene Liste für diese Version statt der Fabric-Liste: Mixin (MIT, in unserer Jar), LaunchWrapper (Mojang) und ASM (BSD-3-Clause, beide lädt der Launcher von Mojangs Server), Legacy Yarn (CC0-1.0, nur beim Bauen). Ein Klick stellt die Link-Frage des Spiels und öffnet die Projektseite. Die Liste von Hand mit `build.gradle.kts` aktuell halten.
+
+**Offline-Skin und -Cape (`mod/1.8.9/`, bestätigt: "jo passt beides"):** `offline/OfflineProfile` liest die Übergabe des Launchers (`config/tntsallin1client-offline.json` plus `skin.png`/`cape.png`), die der Launcher schon für jede Version schreibt. `AbstractClientPlayerEntityMixin` gibt bei einem Offline-Start für den eigenen Spieler Skin, Armmodell und Cape daraus zurück. Die Discord-Aktivität nutzt dieselbe Offline-Erkennung.
+
+**Launcher (`styles/global.css`, bestätigt):** Schalter, die in einem Einstellungs-Abschnitt direkt untereinander stehen, haben jetzt Abstand (betraf die zwei unter "Instanzen").
+
+`gradlew build` für 1.8.9 grün (20 Mixin-Ziele), Launcher-Typecheck grün. Für 1.8.9 noch offen: Tour im Spiel, Client-Design in Stufen.
