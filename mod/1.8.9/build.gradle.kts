@@ -229,6 +229,9 @@ val verifyMixins by tasks.registering(JavaExec::class) {
 	systemProperty("log4j.configurationFile", layout.projectDirectory.file("src/verify/log4j2.xml").asFile.toURI().toString())
 	inputs.file(layout.projectDirectory.file("src/verify/log4j2.xml"))
 	workingDir = temporaryDir
+	// `temporaryDir` creates the folder while the build is being set up - a `clean` in the same run
+	// deletes it again before this task gets its turn.
+	doFirst { workingDir.mkdirs() }
 }
 
 tasks.check {

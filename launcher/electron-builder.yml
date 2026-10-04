@@ -57,6 +57,15 @@ extraResources:
       - '*.jar'
       - '!*-sources.jar'
       - '!*-dev.jar'
+  # The legacy versions' mod (before 1.14, no mod loader - see legacyClientEntry.ts) only travels this
+  # way: the manifest has no entry for them, since installed launchers before 0.1.8 would take a
+  # version named there for one with a Fabric bundle.
+  - from: ../mod/1.8.9/build/libs
+    to: own-mod/1.8.9
+    filter:
+      - '*.jar'
+      - '!*-sources.jar'
+      - '!*-dev.jar'
   - from: ../mod-bundle-manifest.json
     to: seed-manifest.json
   # The project's own license plus the license text of every third-party mod, resource pack, font
