@@ -4,13 +4,12 @@ Stand 2026-10-04. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md`
 Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
-- [ ] Eigene Mod auf weitere Minecraft-Versionen portieren (vor allem Vollversionen)
-- [ ] Legacy-Versionen (vor 1.14). Regel seit 2026-10-02: ab 1.14 Fabric, darunter ohne Mod-Loader (kein Forge), keine Loader-Auswahl pro Instanz. Ziel sind langfristig alle Minecraft-Versionen, pro alter Hauptversion nur die letzte Unterversion
-  - [ ] 1.6.4 und älter: brauchen noch das alte Asset-Format und das Session-Argument
-  - [ ] Features für die Legacy-Versionen: kleiner Kern, Neuschreiben statt Portierung
-  - [ ] Log4Shell: der Launcher schützt jetzt jede Version vor 1.18.1, nicht nur die Legacy-Versionen (gebaut 2026-10-04) – vor dem Release einmal eine Instanz zwischen 1.14 und 1.18 starten
+- [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion
+  - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
+  - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
+  - [ ] Fabric-Versionen zwischen 1.14 und 1.21.10: starten mit Fabric, aber ohne unsere Mod
+- [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
-
 
 ## 2. Noch von dir zu prüfen (mit 0.1.8 schon veröffentlicht)
 - [ ] Den installierten Launcher 0.1.8 einmal ansehen: kommt das Auto-Update an, und startet 1.8.9 dort mit den Client-Features? Die 1.8.9-Mod steckt nur im Installer (kein Manifest-Eintrag), der gepackte Installer wurde vor der Veröffentlichung nicht installiert getestet
