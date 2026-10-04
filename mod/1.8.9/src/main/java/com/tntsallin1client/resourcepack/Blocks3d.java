@@ -15,7 +15,8 @@ import org.apache.logging.log4j.Logger;
 /**
  * "3D Block Models": our own 3D models for ladders, rails, iron bars, vines, lily pads, sugar cane,
  * mushrooms, bookshelves, doors and trapdoors, as a switch in the mod menu - the same models as in
- * the Fabric versions, for the blocks this version has.
+ * the Fabric versions, for the blocks this version has. Their items are 3D with it too; whether the
+ * inventory and the hand show that is {@link Items3d}'s switch.
  *
  * <p>A 3D model follows the pixels of the picture it wears, and this version can show two sets of
  * pictures: its own, and the newer versions' through {@link NewTextures}. So there are two packs,
@@ -67,13 +68,18 @@ public final class Blocks3d {
 		}
 	}
 
-	private static byte[] readAll(InputStream in) throws IOException {
+	static byte[] readAll(InputStream in) throws IOException {
 		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
 		byte[] buffer = new byte[8192];
 		for (int read = in.read(buffer); read >= 0; read = in.read(buffer)) {
 			out.write(buffer, 0, read);
 		}
 		return out.toByteArray();
+	}
+
+	/** Whether a pack by that name is one of the two. */
+	static boolean isOwnPack(String packName) {
+		return CLASSIC_PACK.equals(packName) || NEW_PACK.equals(packName);
 	}
 
 	public static boolean isAvailable() {

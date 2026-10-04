@@ -103,7 +103,8 @@ public class ClientMenuScreen extends ClientScreen {
 			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
 		}
 		if (Blocks3d.isAvailable()) {
-			addFeature("gui.tntsallin1client.menu.block_models_3d", Blocks3d::isEnabled, Blocks3d::setEnabled, null);
+			addFeature("gui.tntsallin1client.menu.block_models_3d", Blocks3d::isEnabled, Blocks3d::setEnabled,
+					() -> new BlockModels3dOptionsScreen(this));
 		}
 		if (DarkMode.isAvailable()) {
 			addFeature("gui.tntsallin1client.menu.dark_mode", DarkMode::isEnabled, DarkMode::setEnabled, null);

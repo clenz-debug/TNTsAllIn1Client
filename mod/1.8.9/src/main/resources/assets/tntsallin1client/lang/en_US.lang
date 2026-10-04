@@ -263,3 +263,5 @@ gui.tntsallin1client.menu.credits_button=Third-Party Credits
 gui.tntsallin1client.credits.title=Third-Party Credits
 gui.tntsallin1client.menu.dark_mode=Dark Mode
 gui.tntsallin1client.menu.block_models_3d=3D Block Models
+gui.tntsallin1client.block_models_3d_options.title=3D Block Models Options
+gui.tntsallin1client.menu.items_3d_inventory=3D Items in Inventory & Hand

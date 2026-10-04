@@ -174,6 +174,10 @@ public class ClientConfig {
 	// Item physics: dropped items don't spin or bob and lie flat on the ground (see ItemTilt).
 	public boolean itemTiltEnabled = false;
 
+	// 3D block models: whether the inventory and the hand show their items in 3D too (see Items3d).
+	// The row's own switch isn't here - it is whether the pack is among the game's active ones.
+	public boolean blockModels3dItems = true;
+
 	// Own 3D skin layers (see SkinLayers3d). On unless switched off, as in the Fabric versions.
 	// Depth is how far the layer stands off the body, in percent of a model pixel; distance is in
 	// blocks, beyond it players keep the flat layers.
