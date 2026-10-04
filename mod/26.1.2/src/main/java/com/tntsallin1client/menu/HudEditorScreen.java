@@ -421,16 +421,19 @@ public class HudEditorScreen extends Screen {
 		// every one were worn/held (max durability), not on what's actually equipped right now.
 		ClientConfig config = ClientConfig.get();
 		List<ArmorStatusHud.Entry> entries = ArmorStatusHud.buildMaxEntries(config);
-		if (entries.isEmpty()) {
-			return null;
-		}
-
 		HudLayout layout = config.armorStatusBundledHudLayout;
 		float x = ArmorStatusHud.bundledAnchorX(this.font, config, entries);
 		float y = ArmorStatusHud.bundledAnchorY(this.font, config, entries);
 
-		int scaledWidth = Math.round(ArmorStatusHud.bundledWidth(this.font, config, entries) * layout.scale);
-		int scaledHeight = Math.round(ArmorStatusHud.bundledHeight(this.font, config, entries) * layout.scale);
+		// Every slot switched off - the real HUD correctly shows nothing then, but the editor still needs a
+		// box to drag/resize: one in the size of the feature's name, same as coordinatesBounds.
+		boolean nothingShown = entries.isEmpty();
+		int unscaledWidth = nothingShown
+				? this.font.width(Component.translatable("gui.tntsallin1client.menu.armor_status"))
+				: ArmorStatusHud.bundledWidth(this.font, config, entries);
+		int unscaledHeight = nothingShown ? this.font.lineHeight : ArmorStatusHud.bundledHeight(this.font, config, entries);
+		int scaledWidth = Math.round(unscaledWidth * layout.scale);
+		int scaledHeight = Math.round(unscaledHeight * layout.scale);
 
 		// Mirrors ArmorStatusHud#drawBundled's own origin shift exactly, so this drag box lines
 		// up with what's actually rendered instead of sitting on the wrong edge of it.

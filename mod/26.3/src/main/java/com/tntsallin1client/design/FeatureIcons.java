@@ -230,7 +230,7 @@ public final class FeatureIcons {
 		}
 	}
 
-	/** Clock: a dial with hour marks and two hands at ten past ten, the minute hand in the accent color. */
+	/** Clock: a dial with hour marks and two hands at ten past ten, each hand in an accent color of its own (own user request). */
 	private static void clock(Shapes s, ClientTheme t) {
 		float w = W * s.unit;
 		s.stroke(circle(50, 50, 42), w, t.text);
@@ -240,7 +240,7 @@ public final class FeatureIcons {
 			float sin = (float) Math.sin(radians);
 			s.line(50 + cos * 30, 50 + sin * 30, 50 + cos * 40, 50 + sin * 40, 5 * s.unit, t.text);
 		}
-		s.line(50, 50, 33, 40, w, t.text);
+		s.line(50, 50, 33, 40, w, t.accent2);
 		s.line(50, 50, 76, 35, 5 * s.unit, t.accent4);
 		s.fill(circle(50, 50, 5), t.text);
 	}
