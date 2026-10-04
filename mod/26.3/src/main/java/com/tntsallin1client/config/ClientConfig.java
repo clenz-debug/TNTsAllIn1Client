@@ -71,9 +71,6 @@ public class ClientConfig {
 	// 5d: extra "Quick Info" block on the F3 debug screen.
 	public boolean f3QuickInfoEnabled = false;
 
-	// Phase 2 leftover: the "TNT's All-In-1 Client (Mixin active)" top-left label.
-	public boolean clientNameLabelEnabled = false;
-
 	// 5g: always-visible FPS counter, no F3 needed.
 	public boolean fpsCounterEnabled = false;
 	public HudLayout fpsCounterHudLayout = new HudLayout();
@@ -222,7 +219,6 @@ public class ClientConfig {
 	public int fpsCounterTextColor = 0xFFFFFFFF;
 	public int latencyTextColor = 0xFFFFFFFF;
 	public int clockTextColor = 0xFFFFFFFF;
-	public int clientNameLabelColor = 0xFFFFFFFF;
 	public int systemInfoTextColor = 0xFFFFFFFF;
 	// No "enabled" flag - visibility is the transient F3+S toggle (SystemInfoOverlay#visible), not
 	// persisted, same as vanilla's own F3 screen. Position/scale still persist like every other HUD

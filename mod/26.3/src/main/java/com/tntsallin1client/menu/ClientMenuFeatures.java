@@ -67,13 +67,6 @@ public final class ClientMenuFeatures {
 				},
 				() -> new ClockOptionsScreen(parent));
 
-		sink.addToggleRow(config.clientNameLabelEnabled, Component.translatable("gui.tntsallin1client.menu.client_name_label"),
-				value -> {
-					config.clientNameLabelEnabled = value;
-					config.save();
-				},
-				() -> new ClientNameLabelOptionsScreen(parent));
-
 		sink.addToggleRow(config.keystrokesEnabled, Component.translatable("gui.tntsallin1client.menu.keystrokes"),
 				value -> {
 					config.keystrokesEnabled = value;

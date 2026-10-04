@@ -3,7 +3,6 @@ package com.tntsallin1client.config;
 import com.mojang.logging.LogUtils;
 import com.tntsallin1client.menu.ArmorStatusOptionsScreen;
 import com.tntsallin1client.menu.BlockOutlineColorOptionsScreen;
-import com.tntsallin1client.menu.ClientNameLabelOptionsScreen;
 import com.tntsallin1client.menu.ClockOptionsScreen;
 import com.tntsallin1client.menu.CoordinatesHudOptionsScreen;
 import com.tntsallin1client.menu.CrosshairOptionsScreen;
@@ -51,7 +50,6 @@ public final class ConfigReset {
 		FPS_COUNTER(FpsCounterOptionsScreen.class, "gui.tntsallin1client.menu.fps_counter", "fpsCounterEnabled", "fpsCounter"),
 		LATENCY(LatencyOptionsScreen.class, "gui.tntsallin1client.menu.latency_hud", "latencyHudEnabled", "latency"),
 		CLOCK(ClockOptionsScreen.class, "gui.tntsallin1client.menu.clock_hud", "clockHudEnabled", "clock"),
-		CLIENT_NAME_LABEL(ClientNameLabelOptionsScreen.class, "gui.tntsallin1client.menu.client_name_label", "clientNameLabelEnabled", "clientNameLabel"),
 		KEYSTROKES(KeystrokesOptionsScreen.class, "gui.tntsallin1client.menu.keystrokes", "keystrokesEnabled", "keystrokes"),
 		ARMOR_STATUS(ArmorStatusOptionsScreen.class, "gui.tntsallin1client.menu.armor_status", "armorStatusEnabled", "armorStatus"),
 		F3_QUICK_INFO(F3OptionsScreen.class, "gui.tntsallin1client.menu.f3_quick_info", "f3QuickInfoEnabled", "f3QuickInfo", "systemInfo"),
