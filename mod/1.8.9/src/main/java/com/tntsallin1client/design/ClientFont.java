@@ -149,6 +149,18 @@ public final class ClientFont {
 		return cut.trim() + ELLIPSIS;
 	}
 
+	/** As much of `text` as fits `maxWidth` - from its start, or (`fromEnd`) from its end. The game's own font has the same for its text fields. */
+	public static String trim(String text, int maxWidth, boolean fromEnd) {
+		int length = text.length();
+		for (int kept = length; kept > 0; kept--) {
+			String part = fromEnd ? text.substring(length - kept) : text.substring(0, kept);
+			if (width(part) <= maxWidth) {
+				return part;
+			}
+		}
+		return "";
+	}
+
 	private static Atlas atlas(float size) {
 		int scale = new Window(MinecraftClient.getInstance()).getScaleFactor();
 		long key = ((long) scale << 32) | Float.floatToIntBits(size);

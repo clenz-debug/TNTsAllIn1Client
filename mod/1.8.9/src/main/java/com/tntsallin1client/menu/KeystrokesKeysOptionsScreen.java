@@ -79,7 +79,7 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 		for (KeyBox box : this.boxes) {
 			boolean shown = box.key.isShown(config);
 			fill(box.x, box.y, box.x + box.width, box.y + BOX_HEIGHT, shown ? BOX_COLOR_ON : BOX_COLOR_OFF);
-			this.drawCenteredString(this.textRenderer, box.key.label, box.x + box.width / 2, box.y + (BOX_HEIGHT - this.textRenderer.fontHeight) / 2,
+			MenuText.centered(box.key.label, box.x + box.width / 2, box.y + (BOX_HEIGHT - this.textRenderer.fontHeight) / 2,
 					shown ? TEXT_COLOR_ON : TEXT_COLOR_OFF);
 		}
 	}
@@ -108,7 +108,7 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 	}
 
 	private int boxWidth(KeystrokeKey key) {
-		return this.textRenderer.getStringWidth(key.label) + BOX_PADDING;
+		return MenuText.width(key.label) + BOX_PADDING;
 	}
 
 	private static final class KeyBox {

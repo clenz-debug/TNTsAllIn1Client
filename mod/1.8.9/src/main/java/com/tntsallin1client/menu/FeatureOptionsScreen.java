@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
-import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.GameOptions;
@@ -394,7 +393,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	protected void buttonClicked(ButtonWidget button) {
 		if (button.id == RESET_BUTTON_ID) {
 			// Asks first; the answer comes back through confirmResult.
-			this.client.setScreen(new ConfirmScreen(this,
+			this.client.setScreen(new ThemedConfirmScreen(this,
 					I18n.translate("gui.tntsallin1client.reset.confirm_title", I18n.translate(this.resetFeature.labelKey)),
 					I18n.translate("gui.tntsallin1client.reset.confirm_message"), 0));
 		} else if (button.id == BACK_BUTTON_ID) {

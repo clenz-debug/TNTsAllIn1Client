@@ -260,12 +260,10 @@ public class HudEditorScreen extends Screen {
 
 	private Rect coordinatesBounds() {
 		LocalPlayer player = this.minecraft.player;
-		if (player == null) {
-			return null;
-		}
-
 		ClientConfig config = ClientConfig.get();
-		List<String> lines = CoordinatesHud.buildLines(config, player);
+		// No live player yet (e.g. opened from the title screen) - fall back to representative
+		// example content so the box can still be positioned before ever joining a world.
+		List<String> lines = player != null ? CoordinatesHud.buildLines(config, player) : CoordinatesHud.placeholderLines(config);
 		if (lines.isEmpty()) {
 			// Every part (coordinates, direction, degrees) switched off - the real HUD correctly shows
 			// nothing then, but the editor still needs a box to drag/resize, same as itemCounterBounds.
@@ -287,16 +285,12 @@ public class HudEditorScreen extends Screen {
 
 	private Rect itemCounterBounds() {
 		LocalPlayer player = this.minecraft.player;
-		if (player == null) {
-			return null;
-		}
-
 		ClientConfig config = ClientConfig.get();
-		String label = ItemCounterHud.buildLabel(config, player);
+		// Real inventory counts need a live player - without one (e.g. title screen, or "track held
+		// item" with an empty hand) the real HUD correctly shows nothing, but the editor still needs
+		// a box to drag/resize, otherwise positioning this element requires being in a world at all.
+		String label = player != null ? ItemCounterHud.buildLabel(config, player) : null;
 		if (label == null) {
-			// Nothing to actually count right now (e.g. "track held item" with an empty hand) - the real
-			// HUD correctly shows nothing then, but the editor still needs a box to drag/resize, otherwise
-			// positioning this element is only possible while holding a trackable item.
 			label = Component.translatable("gui.tntsallin1client.menu.item_counter").getString();
 		}
 
@@ -399,10 +393,7 @@ public class HudEditorScreen extends Screen {
 	}
 
 	private Rect keystrokesBounds() {
-		if (this.minecraft.player == null) {
-			return null;
-		}
-
+		// No player needed - the box grid only depends on which keys are enabled, not live input state.
 		ClientConfig config = ClientConfig.get();
 		HudLayout layout = config.keystrokesHudLayout;
 		int unscaledWidth = KeystrokesHud.computeTotalWidth(this.minecraft);
@@ -414,10 +405,7 @@ public class HudEditorScreen extends Screen {
 	}
 
 	private Rect armorStatusBundledBounds() {
-		if (this.minecraft.player == null) {
-			return null;
-		}
-
+		// No player needed - buildMaxEntries only depends on which slots are enabled.
 		ClientConfig config = ClientConfig.get();
 		// Editor-only: sized as if every enabled slot were worn/held (max durability), not
 		// whatever happens to actually be equipped right now - see ArmorStatusHud#buildMaxEntries.
@@ -471,10 +459,7 @@ public class HudEditorScreen extends Screen {
 	}
 
 	private Rect armorStatusSlotBounds(ArmorStatusSlot slot) {
-		if (this.minecraft.player == null) {
-			return null;
-		}
-
+		// No player needed - see armorStatusBundledBounds above.
 		ClientConfig config = ClientConfig.get();
 		// Editor-only max-size text (see ArmorStatusHud#buildMaxEntry) instead of the slot's actual
 		// current content, so positioning/sizing doesn't have to be redone once different gear is worn.

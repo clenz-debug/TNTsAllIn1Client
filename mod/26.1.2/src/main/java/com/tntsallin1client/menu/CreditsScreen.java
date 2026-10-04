@@ -70,9 +70,7 @@ public class CreditsScreen extends Screen {
 		}
 		this.addRenderableWidget(list);
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds((this.width - ROW_WIDTH) / 2, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		this.addRenderableWidget(OptionsChrome.back(this::onClose, (this.width - ROW_WIDTH) / 2, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH));
 	}
 
 	@Override

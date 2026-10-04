@@ -5,8 +5,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.IdentifiableBooleanConsumer;
 
 /**
- * The game's yes/no question in the client design - for "Reset All" of the card menu, as in the
- * Fabric versions (own user request). The buttons and what they do are the game's; being one of the
+ * The game's yes/no question in the client design - for the questions before a reset (one feature's
+ * or "Reset All"), as in the Fabric versions (own user request). The buttons and what they do are the game's; being one of the
  * mod's menu screens, it gets the theme's background and buttons by itself (`ThemedUi`), and its two
  * texts are drawn here in the client font.
  */

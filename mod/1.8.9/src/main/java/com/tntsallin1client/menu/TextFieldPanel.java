@@ -96,7 +96,7 @@ final class TextFieldPanel implements OptionPanel {
 		field.render();
 		if (field.getText().isEmpty() && !field.isFocused()) {
 			TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-			textRenderer.drawWithShadow(this.hint.get(), field.x + 4, field.y + (HEIGHT - 2 - textRenderer.fontHeight) / 2, HINT_COLOR);
+			MenuText.text(this.hint.get(), field.x + 4, field.y + (HEIGHT - 2 - textRenderer.fontHeight) / 2, HINT_COLOR);
 		}
 	}
 

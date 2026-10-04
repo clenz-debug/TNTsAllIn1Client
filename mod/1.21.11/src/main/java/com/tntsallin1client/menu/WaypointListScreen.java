@@ -93,9 +93,7 @@ public class WaypointListScreen extends Screen {
 		deleteAllButton.active = this.worldKey != null && !waypoints.isEmpty();
 		this.addRenderableWidget(deleteAllButton);
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds(buttonX, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH, ROW_HEIGHT)
-				.build());
+		this.addRenderableWidget(OptionsChrome.back(this::onClose, buttonX, this.height - FOOTER_HEIGHT + 6, ROW_WIDTH));
 	}
 
 	/** Always confirms, regardless of {@link ClientConfig#waypointConfirmDelete} - that setting only

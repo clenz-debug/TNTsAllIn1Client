@@ -79,7 +79,7 @@ public class WaypointListScreen extends ClientScreen {
 				I18n.translate(KEY + "delete_all_button"));
 		deleteAllButton.active = !this.waypoints.isEmpty();
 		this.buttons.add(deleteAllButton);
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, x, backY, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		this.buttons.add(TopBar.back(BACK_BUTTON_ID, x, backY, ROW_WIDTH));
 	}
 
 	private void buildRows(int x) {

@@ -136,9 +136,7 @@ public class FriendsInGameScreen extends Screen {
 			}
 		}
 
-		this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> this.onClose())
-				.bounds((this.width - 200) / 2, this.height - 30, 200, ROW_HEIGHT)
-				.build());
+		this.addRenderableWidget(OptionsChrome.back(this::onClose, (this.width - 200) / 2, this.height - 30, 200));
 	}
 
 	/** Why inviting isn't possible here, or null if it is. */

@@ -51,7 +51,7 @@ public class CreditsScreen extends ClientScreen {
 			this.buttons.add(new ButtonWidget(FIRST_ROW_ID + index, x, FIRST_ROW_Y + index * ROW_SPACING, ROW_WIDTH, ROW_HEIGHT,
 					entry.name + " — " + entry.license));
 		}
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, x, this.height - 24, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		this.buttons.add(TopBar.back(BACK_BUTTON_ID, x, this.height - 24, ROW_WIDTH));
 	}
 
 	@Override

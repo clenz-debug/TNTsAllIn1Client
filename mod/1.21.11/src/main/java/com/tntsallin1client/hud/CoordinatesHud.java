@@ -64,6 +64,23 @@ public class CoordinatesHud implements HudElement {
 		return lines;
 	}
 
+	/** Same shape as {@link #buildLines}, fixed example values instead of a real position/facing -
+	 * lets the HUD editor size/position this element without a live player (e.g. from the title
+	 * screen, before joining a world). */
+	public static List<String> placeholderLines(ClientConfig config) {
+		List<String> lines = new ArrayList<>(2);
+		if (config.coordinatesHudShowCoordinates) {
+			lines.add("0, 64, 0");
+		}
+
+		String facingLine = facingLine(config, 0f);
+		if (facingLine != null) {
+			lines.add(facingLine);
+		}
+
+		return lines;
+	}
+
 	public static void drawLines(GuiGraphics guiGraphics, Font font, List<String> lines, float x, float y, float scale, int color) {
 		guiGraphics.pose().pushMatrix();
 		guiGraphics.pose().translate(x, y);

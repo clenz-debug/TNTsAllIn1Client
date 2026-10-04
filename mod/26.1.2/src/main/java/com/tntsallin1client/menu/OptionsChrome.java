@@ -145,6 +145,17 @@ public final class OptionsChrome {
 		}
 	}
 
+	/**
+	 * "Back" for a screen that lays everything else out itself (credits, friends, waypoint list): in
+	 * the client design in the top left corner like on the options screens (own user request), else
+	 * where the screen wants it.
+	 */
+	public static Button back(Runnable onPress, int x, int y, int width) {
+		return ClientDesign.isClient()
+				? button(CommonComponents.GUI_BACK, onPress, MARGIN, TOP_BAR_Y, TOP_BAR_BUTTON_WIDTH)
+				: button(CommonComponents.GUI_BACK, onPress, x, y, width);
+	}
+
 	private static Button button(Component label, Runnable onPress, int x, int y, int width) {
 		return Button.builder(label, pressed -> onPress.run()).bounds(x, y, width, BUTTON_HEIGHT).build();
 	}

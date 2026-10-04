@@ -31,6 +31,12 @@ final class TopBar {
 		return screenWidth - MARGIN - width;
 	}
 
+	/** "Back" alone, for a screen that lays the rest out itself: in the top left corner in the client design, else where the screen has it. */
+	static ButtonWidget back(int id, int x, int y, int width) {
+		String label = I18n.translate("gui.back");
+		return inUse() ? new ButtonWidget(id, MARGIN, Y, BUTTON_WIDTH, BUTTON_HEIGHT, label) : new ButtonWidget(id, x, y, width, BUTTON_HEIGHT, label);
+	}
+
 	/** Adds "Back" and - `hudEditor` - "Move/Resize". What a click does is the screen's business, by the ids. */
 	static void add(List<ButtonWidget> buttons, int screenWidth, int backId, String backLabel, int hudEditorId, boolean hudEditor) {
 		buttons.add(new ButtonWidget(backId, MARGIN, Y, BUTTON_WIDTH, BUTTON_HEIGHT, backLabel));

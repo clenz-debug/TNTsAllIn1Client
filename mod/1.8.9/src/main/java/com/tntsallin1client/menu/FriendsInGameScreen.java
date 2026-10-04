@@ -91,7 +91,7 @@ public class FriendsInGameScreen extends ClientScreen {
 		}
 		label(I18n.translate(KEY + "invite.not_in_this_version"), x, y + 6, FAINT_COLOR);
 
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - BACK_BUTTON_WIDTH) / 2, this.height - 30, BACK_BUTTON_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		this.buttons.add(TopBar.back(BACK_BUTTON_ID, (this.width - BACK_BUTTON_WIDTH) / 2, this.height - 30, BACK_BUTTON_WIDTH));
 	}
 
 	private void label(String text, int x, int y, int color) {

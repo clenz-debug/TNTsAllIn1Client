@@ -51,7 +51,8 @@ public final class ThemedUi {
 	public static int textColor(int color) {
 		int rgb = color & 0xFFFFFF;
 		ClientTheme theme = ClientTheme.get();
-		if (rgb == 0xFFFFFF) {
+		// 0xE0E0E0: what a text field writes in.
+		if (rgb == 0xFFFFFF || rgb == 0xE0E0E0) {
 			return theme.text;
 		}
 		if (rgb == 0xA0A0A0 || rgb == 0xAAAAAA || rgb == 0x808080 || rgb == 0x707070) {
