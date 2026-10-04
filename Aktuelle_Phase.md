@@ -1444,3 +1444,9 @@ Nutzervorschlag: das eigene Freunde-Menü nicht nur im Esc-Menü, sondern auch i
 - Das Cape am eingefrorenen Spieler zitterte: `FreecamHandler#tryEnter` setzt jetzt auch die Vorwerte von Cape-Position, Laufstrecke und Wippen gleich.
 
 `gradlew build` grün (20 Mixin-Ziele). Für 1.8.9 ist damit nur noch das Client-Design offen.
+
+## Client-Name-Anzeige entfernt (2026-10-04, nicht veröffentlicht) — `mod/1.21.11/`, `mod/26.1.2/`, `mod/26.3/`
+
+Nutzerwunsch: die Anzeige war ein Debug-Feature aus Phase 2 ("TNT's All-In-1 Client (Mixin active)" oben links) und fliegt aus allen Versionen. Entfernt: die Menü-Zeile, `ClientNameLabelOptionsScreen`, der Render-Inject in `GuiMixin` samt Log-Zeile (das Fadenkreuz im selben Mixin bleibt), die Config-Felder `clientNameLabelEnabled`/`clientNameLabelColor`, der Reset-Eintrag und die drei Texte je Sprache. In 1.8.9 gab es sie nie und sie wird dort nicht gebaut.
+
+`gradlew build` in allen drei Versionen grün, `check_mixins.py`: 26.1.2 105 Ziele, 26.3 107 Ziele, je 0 Probleme. Im Spiel nicht angesehen.
