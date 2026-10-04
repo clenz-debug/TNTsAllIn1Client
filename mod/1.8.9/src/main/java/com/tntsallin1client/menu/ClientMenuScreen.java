@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
+import com.tntsallin1client.resourcepack.Blocks3d;
+import com.tntsallin1client.resourcepack.DarkMode;
 import com.tntsallin1client.resourcepack.NewTextures;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -96,9 +98,15 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.item_tilt", () -> config.itemTiltEnabled, value -> config.itemTiltEnabled = value, null);
 		addFeature("gui.tntsallin1client.menu.waypoints", () -> config.waypointsEnabled, value -> config.waypointsEnabled = value,
 				() -> new WaypointOptionsScreen(this));
-		// Only where the launcher has built the pack - see NewTextures.
+		// Only where the packs are there - see NewTextures, Blocks3d, DarkMode.
 		if (NewTextures.isAvailable()) {
 			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
+		}
+		if (Blocks3d.isAvailable()) {
+			addFeature("gui.tntsallin1client.menu.block_models_3d", Blocks3d::isEnabled, Blocks3d::setEnabled, null);
+		}
+		if (DarkMode.isAvailable()) {
+			addFeature("gui.tntsallin1client.menu.dark_mode", DarkMode::isEnabled, DarkMode::setEnabled, null);
 		}
 		addFeature("gui.tntsallin1client.menu.skin_layers_3d", () -> config.skinLayers3dEnabled, value -> config.skinLayers3dEnabled = value,
 				() -> new SkinLayers3dOptionsScreen(this));

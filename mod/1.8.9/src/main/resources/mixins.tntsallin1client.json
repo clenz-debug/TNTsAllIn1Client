@@ -21,6 +21,7 @@
 		"MinecraftClientMixin",
 		"PlayerEntityRendererMixin",
 		"ScreenMixin",
+		"TextRendererMixin",
 		"TitleScreenMixin",
 		"TranslationStorageMixin",
 		"WorldRendererMixin"

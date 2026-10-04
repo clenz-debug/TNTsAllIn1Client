@@ -261,3 +261,5 @@ gui.tntsallin1client.skin_layers_3d_options.depth=Depth: %s%%
 gui.tntsallin1client.skin_layers_3d_options.distance=In 3D up to: %s blocks
 gui.tntsallin1client.menu.credits_button=Third-Party Credits
 gui.tntsallin1client.credits.title=Third-Party Credits
+gui.tntsallin1client.menu.dark_mode=Dark Mode
+gui.tntsallin1client.menu.block_models_3d=3D Block Models
