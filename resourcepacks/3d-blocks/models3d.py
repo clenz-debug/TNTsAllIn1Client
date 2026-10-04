@@ -1488,6 +1488,10 @@ DOOR_DISPLAY = {
 GUI_FILL = 16    # how much of the inventory slot the item's longest side may fill, at the gui scale below
 DOOR_GUI_FILL = 24  # doors nearly the slot's full height (own user feedback: squeezed to a block's, too small)
 GUI_MAX_SCALE = 1.2
+# The ladder and the vine a little smaller than the slot (own user feedback, first on the 1.8.9 icons:
+# at the full slot they were a touch too big)
+WALL_ITEM_GUI_FILL = 14
+ITEM_GUI_FILL = {"ladder": WALL_ITEM_GUI_FILL, "vine": WALL_ITEM_GUI_FILL}
 
 COPPER_STAGES = ["copper", "exposed_copper", "weathered_copper", "oxidized_copper"]
 # item -> (our block model, textures a vanilla child model would fill in, display)
@@ -1588,7 +1592,7 @@ def item_model(elements: list, textures: dict, display: dict, fill: float = GUI_
 def items_3d() -> None:
     for item, (block_model, textures, display) in ITEM_MODELS.items():
         block = MODELS[block_model]
-        MODELS[f"item/{item}"] = item_model(block["elements"], {**block["textures"], **textures}, display)
+        MODELS[f"item/{item}"] = item_model(block["elements"], {**block["textures"], **textures}, display, ITEM_GUI_FILL.get(item, GUI_FILL))
     # Doors: the whole door, both halves on top of each other
     for door in DOORS:
         bottom, top = MODELS[f"block/{door}_door_bottom_left"], MODELS[f"block/{door}_door_top_left"]

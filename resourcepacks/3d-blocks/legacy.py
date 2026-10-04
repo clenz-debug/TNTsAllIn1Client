@@ -332,14 +332,11 @@ LEGACY_DISPLAY = {
         "fixed": {"rotation": [0, 90, 0], "scale": [0.8] * 3},
     },
 }
-# How much of the inventory slot the ladder and the vine fill (own user feedback: at the full slot, 16,
-# a touch too big)
-WALL_ITEM_GUI_FILL = 14
 # 1.8.9's item -> (our block model, textures a child model would fill in, today's display, how it is
-# held[, how much of the slot it fills])
+# held[, how much of the slot it fills - the ladder and the vine as in models3d])
 ITEM_MODELS = {
-    "ladder": ("block/ladder", {}, models3d.FLAT_DISPLAY, "flat", WALL_ITEM_GUI_FILL),
-    "vine": (f"block/{VINE_ITEM}", {}, models3d.FLAT_DISPLAY, "flat", WALL_ITEM_GUI_FILL),
+    "ladder": ("block/ladder", {}, models3d.FLAT_DISPLAY, "flat", models3d.WALL_ITEM_GUI_FILL),
+    "vine": (f"block/{VINE_ITEM}", {}, models3d.FLAT_DISPLAY, "flat", models3d.WALL_ITEM_GUI_FILL),
     "rail": ("block/rail_flat", {"rail": "block/rail"}, models3d.RAIL_DISPLAY, "block"),
     "golden_rail": ("block/powered_rail", {}, models3d.RAIL_DISPLAY, "block"),
     "activator_rail": ("block/rail_flat", {"rail": "block/activator_rail"}, models3d.RAIL_DISPLAY, "block"),
@@ -380,6 +377,8 @@ VANILLA_3D_ITEMS = {
     "brewing_stand": ("brewing_stand_empty", (1, 0, 1), (15, 14, 15)),
     "flower_pot": ("flower_pot", (5, 0, 5), (11, 6, 11)),
     "cake": ("cake_uneaten", (1, 0, 1), (15, 8, 15)),
+    # Drawn through a block model in this version already, although it is an entity
+    "item_frame": ("item_frame", (2, 2, 15), (14, 14, 16)),
 }
 # 1.8.9's names for the sixteen colors of stained glass
 GLASS_COLORS = ["white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "silver", "cyan", "purple",
@@ -447,6 +446,34 @@ def legacy_gui(gui: dict) -> dict:
             "scale": [round(gui["scale"][0] / GUI_BLOCK_SCALE, 3)] * 3}
 
 
+# The item frame hangs flat on its block's back wall, half a block from the middle a held item turns
+# around. Held like any block it ended up out of sight (own user report: nothing in the hand) - so in
+# the hand it is moved to that middle first. And it is turned in first person: the game holds a block
+# a quarter turn to the side of where this flat thing's front would face the player (own user report,
+# with a screenshot: seen almost edge-on). item -> its turn in first person.
+HELD_BY_ITS_MIDDLE = {"item_frame": [0, 90, 0]}
+
+
+def way_to_middle(low, high, rotation: list, scale: float) -> list:
+    """How far a display entry with that turn and size has to move a model for the middle of its shape
+    to land where the middle of its block would - turned, scaled and halved like in vanilla_3d_items."""
+    offset = [(l + h) / 2 - 8 for l, h in zip(low, high)]
+    turned = combined(turn("y", rotation[1]), turn("x", rotation[0]), turn("z", rotation[2]))
+    return [-sum(turned[i][k] * scale / 2 * offset[k] for k in range(3)) for i in range(3)]
+
+
+def held_by_middle(low, high, first_person_turn: list) -> dict:
+    """"firstperson" and "thirdperson" for a block model whose shape is not in the middle of its block:
+    the way to the middle, added to the place a block is held at. A block has no "firstperson" entry
+    of its own - there it is the way and the turn alone."""
+    first = way_to_middle(low, high, first_person_turn, 1)
+    third = way_to_middle(low, high, HELD_AS_BLOCK["rotation"], HELD_AS_BLOCK["scale"][0])
+    return {
+        "firstperson": {"rotation": first_person_turn, "translation": [round(value, 3) + 0.0 for value in first]},
+        "thirdperson": {**HELD_AS_BLOCK, "translation": [round(base + value, 3) + 0.0 for base, value in zip(HELD_AS_BLOCK["translation"], third)]},
+    }
+
+
 def vanilla_3d_items() -> dict:
     """Item models on the game's own block models (VANILLA_3D_ITEMS), their middle moved to the slot's
     middle. 1.8.9 moves a model before it turns and scales it, and halves every item model after
@@ -460,7 +487,10 @@ def vanilla_3d_items() -> dict:
         turned = combined(turn("y", gui["rotation"][1]), turn("x", gui["rotation"][0]), turn("z", gui["rotation"][2]))
         offset = [gui["scale"][0] / 2 * ((l + h) / 2 - 8) for l, h in zip(low, high)]
         gui["translation"] = [round(-sum(turned[i][k] * offset[k] for k in range(3)), 3) + 0.0 for i in range(3)]
-        found[item] = {"parent": f"block/{model}", "display": {**LEGACY_DISPLAY["block"], "gui": gui}}
+        display = {**LEGACY_DISPLAY["block"], "gui": gui}
+        if item in HELD_BY_ITS_MIDDLE:
+            display.update(held_by_middle(low, high, HELD_BY_ITS_MIDDLE[item]))
+        found[item] = {"parent": f"block/{model}", "display": display}
     return found
 
 
