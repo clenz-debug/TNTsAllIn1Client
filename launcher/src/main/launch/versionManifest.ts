@@ -66,6 +66,8 @@ export interface LibraryEntry {
 
 export interface VersionDetail {
   id: string
+  /** When Mojang released the version, as in its version JSON (ISO date). */
+  releaseTime?: string
   assetIndex: { id: string; url: string; sha1: string }
   downloads: { client: { url: string; sha1: string } }
   libraries: LibraryEntry[]

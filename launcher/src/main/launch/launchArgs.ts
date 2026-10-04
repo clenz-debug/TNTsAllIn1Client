@@ -17,7 +17,7 @@ export interface LaunchContext {
   maxMemoryMb: number | null
   /** Friends "join" (Phase 8): start straight into this server (`host` or `host:port`). */
   quickPlayMultiplayer?: string
-  /** The replacement log4j configuration for a legacy version (see `legacyLogging.ts`). */
+  /** The replacement log4j configuration for a version released before 1.18.1 (see `legacyLogging.ts`). */
   legacyLogConfigPath?: string
 }
 
@@ -109,6 +109,8 @@ export function buildLaunchArgs(context: LaunchContext): string[] {
   // URL-decodes the URI, which would turn a literal "+" in the path into a space.
   if (legacyLogConfigPath) {
     jvmArgs.unshift(`-Dlog4j.configurationFile=${pathToFileURL(legacyLogConfigPath).href.replace(/\+/g, '%2B')}`)
+    // Mojang's own switch for 1.17 and 1.18 (log4j 2.10 and later know it) - on top of the filter, costs nothing elsewhere.
+    jvmArgs.unshift('-Dlog4j2.formatMsgNoLookups=true')
   }
 
   const memoryArgs = maxMemoryMb != null ? [`-Xmx${maxMemoryMb}M`] : []

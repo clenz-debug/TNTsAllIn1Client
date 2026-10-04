@@ -46,6 +46,20 @@ const LEGACY_LOG_CONFIG = `<?xml version="1.0" encoding="UTF-8"?>
 </Configuration>
 `
 
+/** 1.18.1 came out on this day - the first version whose log4j no longer resolves lookups in logged text. */
+const LOG4J_FIXED_SINCE = Date.parse('2021-12-10T00:00:00Z')
+
+/**
+ * Whether a version needs the replacement configuration: every one released before 1.18.1. That is
+ * all legacy versions, and the Fabric-capable ones from 1.14 to 1.18 as well - their log4j (2.8.1 up
+ * to 2.14.1) has the same flaw, and the configuration's filter works there too. `releaseTime` is the
+ * vanilla version's own (a loader profile carries its own date); an unknown date counts as old.
+ */
+export function needsLog4jProtection(releaseTime: string | undefined): boolean {
+  const released = releaseTime ? Date.parse(releaseTime) : NaN
+  return Number.isNaN(released) || released < LOG4J_FIXED_SINCE
+}
+
 /** Writes the configuration next to the instance's `game/` folder (rewritten on every launch, so a
  * launcher update that changes it always reaches existing instances) and returns its path. */
 export async function writeLegacyLogConfig(instanceDir: string): Promise<string> {
