@@ -55,6 +55,11 @@ Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wo
 - [ ] Multiplayer-Test mit einem zweiten Client-Nutzer auf demselben Server, beides in einem Durchgang:
   - [ ] Capes, in allen Versionen (1.8.9, 1.21.11, 26.1.2, 26.3): sehen beide gegenseitig ihre Capes? Für 1.8.9 geht das erst, wenn die Legacy-Unterstützung in einem Update veröffentlicht ist
   - [ ] Logo am Nametag, in allen Versionen (in 1.21.11, 26.1.2 und 26.3 mit 0.1.7 veröffentlicht; in 1.8.9 am 2026-10-03 gebaut, bisher ungesehen): sehen beide das Client-Logo am Namen des anderen, stehend und geduckt, in den richtigen Farben?
+- [ ] Freunde in 1.8.9 mit einem zweiten Konto (am 2026-10-04 gebaut, allein nicht testbar). Geht erst, wenn die Legacy-Unterstützung in einem Update veröffentlicht ist:
+  - [ ] Sieht der Freund im Launcher, wo du in 1.8.9 bist (Hauptmenü, Einzelspieler, Server)?
+  - [x] Taucht der Freund im Freunde-Bildschirm unter „Freunde online“ auf? (von dir am 2026-10-04 gesehen)
+  - [ ] Einladung aus einer Fabric-Welt: Chat-Zeile mit Versionshinweis, Zähler am „Freunde“-Button, Hinweis „Braucht Minecraft X“ im Bildschirm, „Ablehnen“ nimmt sie weg
+  - [ ] „Server beitreten“ aus dem Launcher verbindet 1.8.9 mit der Adresse
 
 ## 3. Vor einer öffentlichen Veröffentlichung
 Derzeit nichts offen. Code-Signing steht unter „4. Eventuell“.

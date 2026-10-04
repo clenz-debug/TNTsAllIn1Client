@@ -1407,3 +1407,26 @@ Nutzervorschlag: das eigene Freunde-Menü nicht nur im Esc-Menü, sondern auch i
 `gradlew build` in allen drei Versionen grün, `check_mixins.py`: 26.1.2 106 Ziele, 26.3 108 Ziele, je 0 Probleme. Vom Nutzer bestätigt (2026-10-02: "passt, ich konnte alles während der Tour prüfen und sehen") - Button im Hauptmenü und Tour-Schritt; ob dabei auch der Freunde-Bildschirm ohne Welt geöffnet wurde, ist nicht gesagt. In 26.3 gibt es damit im Hauptmenü zwei Freunde-Buttons: unseren (Text, oben links) und den von Minecraft selbst (Symbol in der Reihe).
 
 **Stand 2026-10-02 nach dem Release:** Der Nutzer hat in `Offene_Punkte.md` alle drei seit 0.1.7 gebauten Punkte selbst abgehakt (dunkles X im Dark Mode, die drei Symbol-Buttons im 26.3-Client-Design, Freunde-Menü im Hauptmenü samt Tour-Schritt). Alles ist committet, aber nicht veröffentlicht. Fürs nächste Release: Mod-Version hochsetzen (die lokalen Jars heißen noch 0.1.7, sind aber neuer als die veröffentlichten), die drei `TNT-Dark-Mode-<version>.zip` neu hochladen und ihre Manifest-Einträge hochziehen.
+
+## 1.8.9: Menüabgleich, No Fog, Quick Sort, Screenshot, F3, Discord, Freunde (2026-10-04, vom Nutzer im Spiel bestätigt, nicht veröffentlicht) — `mod/1.8.9/`
+
+**Menüabgleich mit den Fabric-Versionen** (Grundsatz "Menüs überall gleich"; bestätigt: "jo passt"). Hauptmenü-Reihenfolge, Abschnitte und alle Texte stimmten schon. Angeglichen:
+- Keystrokes und Armor & Tool Status: Farben mit Überschrift und Farbwähler direkt auf dem Bildschirm statt auf eigenen Seiten (`FeatureOptionsScreen#addHeading`, `addColor`); `ColorOptionsScreen` und die zwei nur in 1.8.9 vorhandenen Fadenkreuz-Texte sind weg.
+- Fadenkreuz: Farbwähler unter "GUI-Skalierung ignorieren", Größen-Regler 100 breit (`addSlider` mit Höchstbreite).
+- Item Counter: das ID-Feld bleibt sichtbar und ist nur gesperrt, solange das gehaltene Item gezählt wird (`TextFieldPanel#editableIf`).
+- Alle Optionsbildschirme sind jetzt eine scrollende Spalte wie bei Fabric: erste Zeile bei y=40, Farbwähler immer unter den Schaltern (die 1.8.9-Sonderlösung "daneben" ist weg), "HUD verschieben", Aktion und "Zurück" folgen als Zeilen und scrollen mit (`footerOptions()`), "Zurücksetzen" rechts neben der ersten Zeile - im schmalen Fenster als "↺" mit Tooltip.
+- Bewusst anders: Hitbox-Indikatoren ohne Fahrzeug-Markierung und Drachen-Teile (gibt es in 1.8.9 nicht).
+
+**No Fog** (bestätigt: "passt"): `fog/NoFog`, aufgerufen aus `GameRendererMixin` am Ende von `renderFog` (Zweige aus dem Bytecode gelesen). Schalter für Sichtweiten-, Unterwasser- und Lava-Nebel; Blindheit und der Horizont-Nebel des Himmels bleiben; kein Pulverschnee in 1.8.9.
+
+**Quick Sort** (bestätigt: "passt"): neuer Menü-Abschnitt "Inventar & Tools". `inventory/InventorySorter` (Klicks wie von Hand im Survival, Slot-Pakete im Kreativmodus; Sortierschlüssel = Item-ID plus Schadenswert bei Varianten; Item-Gruppe = Kreativ-Tab), `QuickSortUi` + `HandledScreenMixin` ("Sortieren"-Button rechts neben dem Inventar, Taste "Inventar sortieren" unbelegt), `ContainerClickPacing` (alle Inventar-Klick-Pakete gehen mit 3 pro Tick raus, vor dem Schließen des Bildschirms alle auf einmal). Fallstrick: Legacy Yarns `ItemStack.equalsIgnoreDamage` vergleicht nur die NBT-Daten.
+
+**Screenshot** (bestätigt): `screenshot/` - Chat-Nachricht mit "[Öffnen]" und "[Kopieren]" für jeden neuen Screenshot; "Kopieren" ist ein Befehls-Klick mit eigenem Präfix, den `ScreenMixin` abfängt.
+
+**F3 Quick Info** (bestätigt): `debug/QuickInfo` über `DebugHudMixin` (Block links; Biom-Zeile, Versionszeile und der Systemblock rechts verschwinden), `debug/SystemInfoHud` (eigene Seite mit F3+K, im HUD-Editor verschiebbar), `F3OptionsScreen`. Beachtet "reduzierte Debug-Infos" eines Servers - die Fabric-Versionen tun das bisher nicht.
+
+**Discord-Aktivität** (bestätigt): `discord/` wie bei Fabric, gleiche Discord-Anwendung; in 1.8.9 nur unter Windows (Java 8 kann den Unix-Socket nicht öffnen).
+
+**Freunde** (Button, Bildschirm mit beiden Hinweisen und ein Online-Freund in der Liste bestätigt): `friends/ActivityReporter`, `friends/FriendsBridge`, `menu/FriendsInGameScreen`, "Freunde"-Button oben links in Titel- und Pausenmenü. Abgespeckt, weil es e4mc für 1.8.9 nicht gibt: kein Einladen in die eigene Welt (Hinweis im Bildschirm), Einladungen aus anderen Versionen nur ablehnbar mit Hinweis "Braucht Minecraft X", neue Einladung als Chat-Zeile, keine Gesichter neben den Namen. Die Tests mit zweitem Konto stehen in `Offene_Punkte.md` unter "2b. Vor der 1.0 zu testen".
+
+`gradlew build` grün (18 Mixin-Ziele). Noch offen für 1.8.9: 3D-Skin-Layer, Item Physics, Client-Design in Stufen.
