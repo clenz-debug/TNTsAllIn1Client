@@ -1,17 +1,13 @@
 package com.tntsallin1client.discord;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.offline.OfflineProfile;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.resource.language.I18n;
@@ -35,8 +31,6 @@ public final class DiscordPresenceManager {
 	private static final long RECONNECT_INTERVAL_MILLIS = 15_000;
 	private static final int TICKS_BETWEEN_UPDATES = 20;
 	private static final String MINECRAFT_VERSION = "1.8.9";
-	/** Written by the launcher for a start without internet. */
-	private static final String OFFLINE_FILE = "config/tntsallin1client-offline.json";
 
 	private static final ExecutorService IPC = Executors.newSingleThreadExecutor(runnable -> {
 		Thread thread = new Thread(runnable, "TNT Discord IPC");
@@ -53,7 +47,6 @@ public final class DiscordPresenceManager {
 	private static long lastConnectAttemptMillis;
 	private static long scopeStartMillis;
 	private static int tickCounter;
-	private static Boolean offlineLaunch;
 
 	private DiscordPresenceManager() {
 	}
@@ -64,7 +57,7 @@ public final class DiscordPresenceManager {
 		}
 		ClientConfig config = ClientConfig.get();
 		// Without internet Discord can't show anything anyway.
-		if (!config.discordPresenceEnabled || isOfflineLaunch()) {
+		if (!config.discordPresenceEnabled || OfflineProfile.isOfflineLaunch()) {
 			if (client != null) {
 				runOnIpc(DiscordPresenceManager::disconnect);
 			}
@@ -84,28 +77,6 @@ public final class DiscordPresenceManager {
 		final RichPresenceData desired = computePresence(mc, config);
 		if (!desired.equals(lastSent)) {
 			runOnIpc(() -> send(desired));
-		}
-	}
-
-	/** Whether the launcher started the game in its offline mode. */
-	public static boolean isOfflineLaunch() {
-		if (offlineLaunch == null) {
-			offlineLaunch = readOfflineLaunch();
-		}
-		return offlineLaunch;
-	}
-
-	private static boolean readOfflineLaunch() {
-		File file = new File(MinecraftClient.getInstance().runDirectory, OFFLINE_FILE);
-		if (!file.isFile()) {
-			return false;
-		}
-		try {
-			JsonObject json = new Gson().fromJson(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8), JsonObject.class);
-			return json != null && json.has("offline") && json.get("offline").getAsBoolean();
-		} catch (IOException | RuntimeException e) {
-			LOGGER.warn("Failed to read " + file + ".", e);
-			return false;
 		}
 	}
 

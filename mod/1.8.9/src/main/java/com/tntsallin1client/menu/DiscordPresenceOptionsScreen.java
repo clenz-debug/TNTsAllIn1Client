@@ -2,7 +2,7 @@ package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
-import com.tntsallin1client.discord.DiscordPresenceManager;
+import com.tntsallin1client.offline.OfflineProfile;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
 
@@ -18,7 +18,7 @@ public class DiscordPresenceOptionsScreen extends FeatureOptionsScreen {
 		super(parent, KEY + "title");
 		final ClientConfig config = ClientConfig.get();
 		// The activity is skipped in offline mode - said here, as the switches below still read "on".
-		addLabel(() -> I18n.translate(KEY + "offline_hint")).onlyIf(DiscordPresenceManager::isOfflineLaunch);
+		addLabel(() -> I18n.translate(KEY + "offline_hint")).onlyIf(OfflineProfile::isOfflineLaunch);
 		addToggle(KEY + "enabled", () -> config.discordPresenceEnabled, value -> config.discordPresenceEnabled = value);
 		addToggle(KEY + "show_game_mode", () -> config.discordPresenceShowGameMode, value -> config.discordPresenceShowGameMode = value);
 		addToggle(KEY + "show_version", () -> config.discordPresenceShowVersion, value -> config.discordPresenceShowVersion = value);

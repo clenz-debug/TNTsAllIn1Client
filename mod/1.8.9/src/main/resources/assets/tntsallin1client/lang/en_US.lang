@@ -259,3 +259,5 @@ gui.tntsallin1client.skin_layers_3d_options.sleeves=Sleeves
 gui.tntsallin1client.skin_layers_3d_options.pants=Pants
 gui.tntsallin1client.skin_layers_3d_options.depth=Depth: %s%%
 gui.tntsallin1client.skin_layers_3d_options.distance=In 3D up to: %s blocks
+gui.tntsallin1client.menu.credits_button=Third-Party Credits
+gui.tntsallin1client.credits.title=Third-Party Credits

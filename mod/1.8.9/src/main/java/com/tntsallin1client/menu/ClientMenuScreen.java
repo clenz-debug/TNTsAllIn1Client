@@ -116,6 +116,7 @@ public class ClientMenuScreen extends ClientScreen {
 		// Asks first; the answer comes back through confirmResult.
 		addLink("gui.tntsallin1client.menu.reset_all_button", () -> new ConfirmScreen(this,
 				I18n.translate("gui.tntsallin1client.reset.confirm_all_title"), I18n.translate("gui.tntsallin1client.reset.confirm_all_message"), 0));
+		addLink("gui.tntsallin1client.menu.credits_button", () -> new CreditsScreen(this));
 	}
 
 	private void addSection(String labelKey) {
