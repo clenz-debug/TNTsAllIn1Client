@@ -23,32 +23,30 @@ import net.minecraft.client.resource.language.I18n;
  * has a color, "Back" at the bottom. A subclass only lists what there is to set (in its
  * constructor) - layout, clicks and saving happen here.
  *
- * <p>The color picker goes below the switches. Where that doesn't fit - four switches plus the
- * picker are taller than this version's screen at the default window size - it moves to the right
- * of them instead; the switches always stay in one column (own user request). More switches than
- * fit scroll (see {@link ScrollPane}). Below them comes "Back" - and above that "Move / Resize HUD"
- * where the feature has something on the HUD. A screen whose point is one action (create, delete)
- * has that button down there too, apart from the settings: above "Back" or to its left.
+ * <p>Everything is one column, as in the Fabric versions: the rows, below them the color picker of
+ * a feature with one color, then "Move / Resize HUD" where the feature has something on the HUD,
+ * then "Back". A screen whose point is one action (create, delete) has that button down there too,
+ * apart from the settings: above "Back" or to its left. What doesn't fit scrolls (see
+ * {@link ScrollPane}) - the buttons at the end included. "Reset" stays put, right of the column and
+ * level with its first row.
  */
 public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FULL_WIDTH = 210;
-	/** Switch width while the color picker sits beside them - both together fit the default window's width. */
-	private static final int NARROW_WIDTH = 150;
-	private static final int BESIDE_GAP = 10;
-	private static final int PICKER_GAP = 6;
 	private static final int ROW_HEIGHT = 20;
 	/** Free space below every row. */
 	private static final int ROW_GAP = 4;
-	private static final int FIRST_ROW_Y = 34;
+	private static final int FIRST_ROW_Y = 40;
+	private static final int BOTTOM_MARGIN = 10;
 	private static final int HINT_GAP = 2;
-	private static final int BACK_BUTTON_ID = 0;
+	/** Extra space between the settings and the buttons that follow them. */
+	private static final int FOOTER_GAP = 6;
 	private static final int RESET_BUTTON_ID = 1;
-	private static final int HUD_EDITOR_BUTTON_ID = 2;
-	private static final int ACTION_BUTTON_ID = 3;
-	/** Between two buttons sharing the bottom row. */
-	private static final int BESIDE_BACK_GAP = 6;
 	private static final int RESET_BUTTON_WIDTH = 84;
 	private static final int RESET_BUTTON_MARGIN = 6;
+	/** The scrollbar's room right of the rows, which "Reset" keeps clear of. */
+	private static final int SCROLLBAR_SPACE = 16;
+	/** Shown instead of the word where a narrow window leaves no room for it. */
+	private static final String SHORT_RESET_LABEL = "\u21BA";
 	private static final int LEFT_MOUSE_BUTTON = 0;
 	private static final int ESCAPE_KEY = 1;
 	/** LWJGL 2's `Keyboard.KEY_NONE`. */
@@ -57,8 +55,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private static final int FIRST_MOUSE_BUTTON_CODE = -100;
 
 	private final List<Option> options = new ArrayList<Option>();
-	/** The options on screen right now, top to bottom. */
+	/** The rows on screen right now, top to bottom: the options, then the color picker and the buttons at the end. */
 	private List<Option> shown = new ArrayList<Option>();
+	/** The options among them - what {@link #visibleOptions()} gave when the screen was laid out. */
+	private List<Option> shownOptions = new ArrayList<Option>();
 	/** The button of each of them - null for one that is a panel. */
 	private final List<ButtonWidget> optionButtons = new ArrayList<ButtonWidget>();
 	/** The top edge of each of them, counted from the top of the first. */
@@ -67,9 +67,13 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	private int optionsLeft;
 	private int optionsWidth;
 	private final ScrollPane pane = new ScrollPane(this::placeOptions);
-	private IntSupplier colorGetter;
-	private IntConsumer colorSetter;
+	/** The feature's one color, as the row after all options - see {@link #setColor}. */
+	private Option colorOption;
 	private String hintKey;
+	/** The hint's top edge, counted like {@link #optionTops}. */
+	private int hintTop;
+	/** Set while "Reset" shows {@link #SHORT_RESET_LABEL} and explains itself under the cursor. */
+	private ButtonWidget shortResetButton;
 	/** Set for a screen with a "Reset" button. */
 	private ConfigReset.Feature resetFeature;
 	/** Set for a screen with a button of its own next to "Back" - see {@link #setAction}. */
@@ -93,6 +97,11 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		return add(new Option(
 				() -> I18n.translate(labelKey) + ": " + I18n.translate(getter.getAsBoolean() ? onKey : offKey),
 				() -> setter.accept(!getter.getAsBoolean())));
+	}
+
+	/** A switch between two named choices that shows nothing but the current one. */
+	protected final Option addValueSwitch(final String onKey, final String offKey, final BooleanSupplier getter, final Consumer<Boolean> setter) {
+		return add(new Option(() -> I18n.translate(getter.getAsBoolean() ? onKey : offKey), () -> setter.accept(!getter.getAsBoolean())));
 	}
 
 	/** A button stepping through more than two values, shown as "Label: Value". `next` switches to the value after the current one. */
@@ -120,19 +129,33 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		return addPanel(new LabelPanel(text));
 	}
 
+	/** The name of the row below it (a color picker), at the left edge of the column. */
+	protected final Option addHeading(final String labelKey) {
+		return addPanel(new LabelPanel(() -> I18n.translate(labelKey), true));
+	}
+
 	/** A slider for a whole number. The translation of `labelKey` takes the value as its argument. */
-	protected final Option addSlider(final String labelKey, final int min, final int max, final IntSupplier getter, final IntConsumer setter) {
+	protected final Option addSlider(String labelKey, int min, int max, IntSupplier getter, IntConsumer setter) {
+		return addSlider(labelKey, Integer.MAX_VALUE, min, max, getter, setter);
+	}
+
+	/** A slider no wider than `maxWidth`, at the left edge of the column. */
+	protected final Option addSlider(final String labelKey, final int maxWidth, final int min, final int max, final IntSupplier getter, final IntConsumer setter) {
 		return add(new Option(null, null) {
 			@Override
 			ButtonWidget createButton(int x, int width) {
-				return new IntSliderButton(0, x, 0, width, ROW_HEIGHT, labelKey, min, max, getter.getAsInt(), setter);
+				return new IntSliderButton(0, x, 0, Math.min(width, maxWidth), ROW_HEIGHT, labelKey, min, max, getter.getAsInt(), setter);
 			}
 		});
 	}
 
 	/** An area that draws itself instead of a button. */
-	protected final Option addPanel(final OptionPanel panel) {
-		return add(new Option(null, null) {
+	protected final Option addPanel(OptionPanel panel) {
+		return add(panelOption(panel));
+	}
+
+	private static Option panelOption(final OptionPanel panel) {
+		return new Option(null, null) {
 			@Override
 			ButtonWidget createButton(int x, int width) {
 				return null;
@@ -142,7 +165,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			OptionPanel panel() {
 				return panel;
 			}
-		});
+		};
 	}
 
 	/** A field to type text into, shown in red while `valid` rejects what is in it. `hintKey` names what to enter while it is empty. */
@@ -179,11 +202,10 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 
 	/** Gives the screen a color picker for the feature's one color, placed after all rows. */
 	protected final void setColor(IntSupplier getter, IntConsumer setter) {
-		this.colorGetter = getter;
-		this.colorSetter = setter;
+		this.colorOption = panelOption(new ColorPanel(getter, setter));
 	}
 
-	/** A line of explanation below the switches. */
+	/** A line of explanation below the options. */
 	protected final void setHint(String hintKey) {
 		this.hintKey = hintKey;
 	}
@@ -195,7 +217,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 
 	/**
 	 * Gives the screen a button for what it is there to do, kept apart from its settings: directly
-	 * above "Back", or - `besideBack` - sharing the bottom row with it, the action on the left.
+	 * above "Back", or - `besideBack` - sharing the last row with it, the action on the left.
 	 */
 	protected final void setAction(String labelKey, Runnable action, boolean besideBack) {
 		this.actionLabelKey = labelKey;
@@ -203,7 +225,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		this.actionBesideBack = besideBack;
 	}
 
-	/** Gives the screen a "Reset" button in its top right corner that puts the feature's settings back to their defaults. */
+	/** Gives the screen a "Reset" button right of its rows that puts the feature's settings back to their defaults. */
 	protected final void setResettable(ConfigReset.Feature feature) {
 		this.resetFeature = feature;
 	}
@@ -224,7 +246,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	public void confirmResult(boolean confirmed, int id) {
 		if (confirmed) {
 			ConfigReset.reset(this.resetFeature);
-			for (Option option : this.options) {
+			for (Option option : this.shown) {
 				OptionPanel panel = option.panel();
 				if (panel != null) {
 					panel.reload();
@@ -244,81 +266,82 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		return visible;
 	}
 
+	/** The buttons that follow the settings, top to bottom. */
+	private List<Option> footerOptions() {
+		List<Option> footer = new ArrayList<Option>();
+		// "Move / Resize HUD" on the screens of features that have something on the HUD (own user
+		// request, both the button and leaving it out elsewhere).
+		if (offersHudEditor()) {
+			footer.add(new Option(() -> I18n.translate("gui.tntsallin1client.menu.hud_editor_button"),
+					() -> this.client.setScreen(new HudEditorScreen(this))));
+		}
+		Supplier<String> backLabel = () -> I18n.translate(backLabelKey());
+		if (this.action != null && this.actionBesideBack) {
+			footer.add(panelOption(new SplitPanel(
+					new ButtonPanel(() -> I18n.translate(this.actionLabelKey), this.action), new ButtonPanel(backLabel, this::back))));
+			return footer;
+		}
+		if (this.action != null) {
+			footer.add(new Option(() -> I18n.translate(this.actionLabelKey), this.action));
+		}
+		footer.add(new Option(backLabel, this::back));
+		return footer;
+	}
+
 	@Override
 	public void init() {
 		this.listeningFor = null;
-		this.shown = visibleOptions();
-		boolean hasColor = this.colorGetter != null;
-		int backY = this.height - 28;
-		// "Move / Resize HUD" directly above "Back", on the screens of features that have something on
-		// the HUD (own user request, both the button and leaving it out elsewhere).
-		boolean hudEditor = offersHudEditor();
-		int hudEditorY = backY - ROW_HEIGHT - ROW_GAP;
-		// Where the options have to end.
-		boolean actionAboveBack = this.action != null && !this.actionBesideBack;
-		int bottom = hudEditor || actionAboveBack ? hudEditorY : backY;
-		this.optionTops.clear();
-		int switchesHeight = 0;
-		for (Option option : this.shown) {
-			this.optionTops.add(switchesHeight);
-			switchesHeight += option.height() + ROW_GAP;
+		this.shownOptions = visibleOptions();
+		this.shown = new ArrayList<Option>(this.shownOptions);
+		if (this.colorOption != null) {
+			this.shown.add(this.colorOption);
 		}
-		// Does the picker still fit between the last switch and the "Back" button?
-		boolean pickerBeside = hasColor
-				&& FIRST_ROW_Y + switchesHeight + PICKER_GAP + ColorPickerPanel.totalHeight() > bottom - PICKER_GAP;
+		int settings = this.shown.size();
+		this.shown.addAll(footerOptions());
 
-		int buttonWidth = pickerBeside ? NARROW_WIDTH : FULL_WIDTH;
-		int contentWidth = pickerBeside ? NARROW_WIDTH + BESIDE_GAP + ColorPickerPanel.totalWidth() : FULL_WIDTH;
-		int left = (this.width - contentWidth) / 2;
+		this.optionTops.clear();
+		int y = 0;
+		for (int index = 0; index < this.shown.size(); index++) {
+			if (index == settings) {
+				this.hintTop = y - ROW_GAP + HINT_GAP;
+				if (this.hintKey != null) {
+					y = this.hintTop + this.textRenderer.fontHeight + ROW_GAP;
+				}
+				y += FOOTER_GAP;
+			}
+			this.optionTops.add(y);
+			y += this.shown.get(index).height() + ROW_GAP;
+		}
+		int contentHeight = y - ROW_GAP;
+
+		int left = (this.width - FULL_WIDTH) / 2;
 		this.optionsLeft = left;
-		this.optionsWidth = buttonWidth;
+		this.optionsWidth = FULL_WIDTH;
 		this.optionButtons.clear();
 		for (Option option : this.shown) {
-			this.optionButtons.add(option.createButton(left, buttonWidth));
+			this.optionButtons.add(option.createButton(left, FULL_WIDTH));
 		}
 
-		if (hasColor) {
-			int pickerX = pickerBeside ? left + NARROW_WIDTH + BESIDE_GAP : (this.width - ColorPickerPanel.totalWidth()) / 2;
-			int pickerY = pickerBeside ? FIRST_ROW_Y : FIRST_ROW_Y + switchesHeight + PICKER_GAP;
-			final IntConsumer setter = this.colorSetter;
-			this.colorPicker = new ColorPickerPanel(this.textRenderer, pickerX, pickerY, this.colorGetter.getAsInt(), argb -> {
-				setter.accept(argb);
-				ClientConfig.get().save();
-			});
-		}
-
-		int contentHeight = switchesHeight - ROW_GAP;
-		if (this.hintKey != null) {
-			contentHeight = switchesHeight + HINT_GAP + this.textRenderer.fontHeight;
-		}
 		// The scrollbar goes right of the widest row - a panel may be wider than the column of buttons.
-		int rowsRight = left + buttonWidth;
+		int rowsRight = left + FULL_WIDTH;
 		for (Option option : this.shown) {
 			OptionPanel panel = option.panel();
 			if (panel != null) {
-				rowsRight = Math.max(rowsRight, left + (buttonWidth + panel.width(buttonWidth)) / 2);
+				rowsRight = Math.max(rowsRight, left + (FULL_WIDTH + panel.width(FULL_WIDTH)) / 2);
 			}
 		}
-		this.pane.layout(FIRST_ROW_Y, bottom - PICKER_GAP, rowsRight + ScrollPane.SCROLLBAR_GAP, contentHeight);
+		this.pane.layout(FIRST_ROW_Y, this.height - BOTTOM_MARGIN, rowsRight + ScrollPane.SCROLLBAR_GAP, contentHeight);
 
-		if (hudEditor) {
-			this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - FULL_WIDTH) / 2, hudEditorY, FULL_WIDTH, ROW_HEIGHT,
-					I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
-		}
-		int footerX = (this.width - FULL_WIDTH) / 2;
-		if (actionAboveBack) {
-			this.buttons.add(new ButtonWidget(ACTION_BUTTON_ID, footerX, hudEditorY, FULL_WIDTH, ROW_HEIGHT, I18n.translate(this.actionLabelKey)));
-		}
-		if (this.action != null && this.actionBesideBack) {
-			int halfWidth = (FULL_WIDTH - BESIDE_BACK_GAP) / 2;
-			this.buttons.add(new ButtonWidget(ACTION_BUTTON_ID, footerX, backY, halfWidth, ROW_HEIGHT, I18n.translate(this.actionLabelKey)));
-			this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, footerX + FULL_WIDTH - halfWidth, backY, halfWidth, ROW_HEIGHT, I18n.translate(backLabelKey())));
-		} else {
-			this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, footerX, backY, FULL_WIDTH, ROW_HEIGHT, I18n.translate(backLabelKey())));
-		}
+		this.shortResetButton = null;
 		if (this.resetFeature != null) {
-			this.buttons.add(new ButtonWidget(RESET_BUTTON_ID, this.width - RESET_BUTTON_MARGIN - RESET_BUTTON_WIDTH, RESET_BUTTON_MARGIN,
-					RESET_BUTTON_WIDTH, ROW_HEIGHT, I18n.translate("gui.tntsallin1client.reset.button")));
+			boolean fits = this.width - RESET_BUTTON_MARGIN - RESET_BUTTON_WIDTH >= rowsRight + SCROLLBAR_SPACE;
+			int resetWidth = fits ? RESET_BUTTON_WIDTH : ROW_HEIGHT;
+			ButtonWidget reset = new ButtonWidget(RESET_BUTTON_ID, this.width - RESET_BUTTON_MARGIN - resetWidth, FIRST_ROW_Y,
+					resetWidth, ROW_HEIGHT, fits ? I18n.translate("gui.tntsallin1client.reset.button") : SHORT_RESET_LABEL);
+			this.buttons.add(reset);
+			if (!fits) {
+				this.shortResetButton = reset;
+			}
 		}
 	}
 
@@ -336,21 +359,9 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		return FIRST_ROW_Y + this.optionTops.get(index) - this.pane.offset();
 	}
 
-	/** The height of all options on screen, including the free space below the last one. */
-	private int optionsHeight() {
-		int last = this.shown.size() - 1;
-		return last < 0 ? 0 : this.optionTops.get(last) + this.shown.get(last).height() + ROW_GAP;
-	}
-
 	@Override
 	protected void buttonClicked(ButtonWidget button) {
-		if (button.id == BACK_BUTTON_ID) {
-			back();
-		} else if (button.id == HUD_EDITOR_BUTTON_ID) {
-			this.client.setScreen(new HudEditorScreen(this));
-		} else if (button.id == ACTION_BUTTON_ID) {
-			this.action.run();
-		} else if (button.id == RESET_BUTTON_ID) {
+		if (button.id == RESET_BUTTON_ID) {
 			// Asks first; the answer comes back through confirmResult.
 			this.client.setScreen(new ConfirmScreen(this,
 					I18n.translate("gui.tntsallin1client.reset.confirm_title", I18n.translate(this.resetFeature.labelKey)),
@@ -365,7 +376,11 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 		}
 		option.onClick.run();
 		ClientConfig.get().save();
-		if (visibleOptions().equals(this.shown)) {
+		// The click may have led to another screen ("Back").
+		if (this.client.currentScreen != this) {
+			return;
+		}
+		if (visibleOptions().equals(this.shownOptions)) {
 			button.message = option.label.get();
 		} else {
 			// The click switched something that other options depend on - lay the screen out anew.
@@ -429,10 +444,6 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 				OptionPanel panel = this.shown.get(index).panel();
 				if (panel != null) {
 					if (panel.mouseClicked(this.optionsLeft, optionY(index), this.optionsWidth, mouseX, mouseY)) {
-						// The click was not on the color picker - its text fields give up the keyboard focus.
-						if (this.colorPicker != null) {
-							this.colorPicker.mouseClicked(mouseX, mouseY, button);
-						}
 						return;
 					}
 				} else if (optionButton.isMouseOver(this.client, mouseX, mouseY)) {
@@ -489,7 +500,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 	public void render(int mouseX, int mouseY, float tickDelta) {
 		super.render(mouseX, mouseY, tickDelta);
 
-		// A button scrolled half out of view must not light up under a cursor that is on the title or on "Back".
+		// A button scrolled half out of view must not light up under a cursor that is on the title.
 		int hoverY = this.pane.contains(mouseY) ? mouseY : -1;
 		this.pane.beginClip(this.client);
 		for (int index = 0; index < this.shown.size(); index++) {
@@ -501,11 +512,14 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 			}
 		}
 		if (this.hintKey != null) {
-			int hintY = FIRST_ROW_Y + optionsHeight() + HINT_GAP - this.pane.offset();
+			int hintY = FIRST_ROW_Y + this.hintTop - this.pane.offset();
 			this.drawCenteredString(this.textRenderer, I18n.translate(this.hintKey), this.width / 2, hintY, 0xA0A0A0);
 		}
 		this.pane.endClip();
 		this.pane.renderScrollbar();
+		if (this.shortResetButton != null && this.shortResetButton.isMouseOver(this.client, mouseX, mouseY)) {
+			renderTooltip(I18n.translate("gui.tntsallin1client.reset.button"), mouseX, mouseY);
+		}
 	}
 
 	/** One row of the screen. */

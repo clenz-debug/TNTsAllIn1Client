@@ -151,6 +151,42 @@ public class ClientConfig {
 	// Fullbright: the world is drawn at full brightness regardless of the actual light level.
 	public boolean fullbrightEnabled = false;
 
+	// F3 Quick Info: an extra block on the debug screen (see QuickInfo).
+	public boolean f3QuickInfoEnabled = false;
+	// The system info page (see SystemInfoHud). No "enabled" - whether it shows is the F3 key
+	// combination's doing and not saved; where it sits and its color are.
+	public int systemInfoTextColor = 0xFFFFFFFF;
+	public HudLayout systemInfoHudLayout = new HudLayout();
+
+	// A chat message with "Open" and "Copy" links for every new screenshot (see ScreenshotWatcher).
+	public boolean screenshotToastEnabled = false;
+
+	// Discord activity: shows in the player's Discord status that they play through this client
+	// (see DiscordPresenceManager). Off until switched on; the server's name is the one detail
+	// that stays off even then.
+	public boolean discordPresenceEnabled = false;
+	public boolean discordPresenceShowGameMode = true;
+	public boolean discordPresenceShowVersion = true;
+	public boolean discordPresenceShowWorldName = true;
+	public boolean discordPresenceShowServerName = false;
+	public boolean discordPresenceShowElapsedTime = true;
+
+	// No fog: removes the chosen kinds of fog (see NoFog). The fog at the edge of the view distance
+	// (incl. the Nether's and the one inside clouds) is the one people usually mean, so it's the
+	// only one on by default. Blindness is never touched.
+	public boolean noFogEnabled = false;
+	public boolean noFogDistance = true;
+	public boolean noFogWater = false;
+	public boolean noFogLava = false;
+
+	// Quick sort: a "Sort" button and key on the inventory screen (see InventorySorter).
+	public boolean quickSortEnabled = false;
+	public boolean quickSortGroupByCategory = false;
+
+	// How many inventory click packets leave per game tick (see ContainerClickPacing) - a burst of
+	// them, as the quick sort makes, can trip a server's packet limit. 1-20, clamped where it is used.
+	public int containerClickPacketsPerTick = 3;
+
 	// Shows the capes players set in the launcher (see ClientCapes). On unless switched off - the
 	// one exception to "off until switched on": a cape is set on purpose, and seen by others.
 	public boolean clientCapesEnabled = true;

@@ -49,7 +49,7 @@ public class HudEditorScreen extends ClientScreen {
 		this.elements.clear();
 		ClientConfig config = ClientConfig.get();
 		for (HudElement element : HudElements.ALL) {
-			if (element.isEnabled(config)) {
+			if (element.isEditable(config)) {
 				this.elements.add(element);
 			}
 		}

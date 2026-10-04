@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -34,6 +35,8 @@ final class TextFieldPanel implements OptionPanel {
 	private int fieldWidth;
 	/** Whether the field has the keyboard focus from the start, without a click. */
 	private boolean focusedAtFirst;
+	/** Set for a field that can only be typed into while something else is set a certain way. */
+	private BooleanSupplier editable;
 
 	TextFieldPanel(final String hintKey, int maxLength, Supplier<String> getter, Consumer<String> setter, Predicate<String> valid) {
 		this(() -> I18n.translate(hintKey), maxLength, getter, setter, valid);
@@ -52,6 +55,16 @@ final class TextFieldPanel implements OptionPanel {
 	TextFieldPanel focused() {
 		this.focusedAtFirst = true;
 		return this;
+	}
+
+	/** Locks the field while the condition does not hold: it keeps showing its text, grayed out, and takes no clicks. */
+	TextFieldPanel editableIf(BooleanSupplier condition) {
+		this.editable = condition;
+		return this;
+	}
+
+	private boolean isEditable() {
+		return this.editable == null || this.editable.getAsBoolean();
 	}
 
 	@Override
@@ -78,6 +91,7 @@ final class TextFieldPanel implements OptionPanel {
 	@Override
 	public void render(int x, int y, int width) {
 		TextFieldWidget field = fieldAt(x, y, width);
+		field.setEditable(isEditable());
 		field.setEditableColor(this.valid.test(field.getText()) ? TEXT_COLOR : INVALID_COLOR);
 		field.render();
 		if (field.getText().isEmpty() && !field.isFocused()) {
@@ -88,7 +102,7 @@ final class TextFieldPanel implements OptionPanel {
 
 	@Override
 	public boolean mouseClicked(int x, int y, int width, int mouseX, int mouseY) {
-		if (mouseX < x || mouseX >= x + width || mouseY < y || mouseY >= y + HEIGHT) {
+		if (!isEditable() || mouseX < x || mouseX >= x + width || mouseY < y || mouseY >= y + HEIGHT) {
 			return false;
 		}
 		TextFieldWidget field = fieldAt(x, y, width);

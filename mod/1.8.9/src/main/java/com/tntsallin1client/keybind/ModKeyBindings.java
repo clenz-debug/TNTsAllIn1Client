@@ -3,6 +3,7 @@ package com.tntsallin1client.keybind;
 import java.util.Arrays;
 
 import net.minecraft.client.option.KeyBinding;
+import org.lwjgl.input.Keyboard;
 
 public final class ModKeyBindings {
 	private static final String CATEGORY = "key.category.tntsallin1client.main";
@@ -28,7 +29,14 @@ public final class ModKeyBindings {
 	// Shows the light level overlay - held or as an on/off switch, see ClientConfig#spawnOverlayHoldMode. Unbound by default as well.
 	public static final KeyBinding SPAWN_OVERLAY = new KeyBinding("key.tntsallin1client.spawn_overlay", UNBOUND, CATEGORY);
 
-	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM, OPEN_WAYPOINTS, CREATE_WAYPOINT, SPAWN_OVERLAY};
+	// Sorts the inventory while the inventory screen is open, like its "Sort" button. Unbound by default as well.
+	public static final KeyBinding SORT_INVENTORY = new KeyBinding("key.tntsallin1client.sort_inventory", UNBOUND, CATEGORY);
+
+	// Pressed with F3 held: shows or hides the system info page. K like in the Fabric versions - the
+	// game has no F3 combination with it. Also settable in the F3 options screen.
+	public static final KeyBinding SYSTEM_INFO = new KeyBinding("key.tntsallin1client.system_info", Keyboard.KEY_K, CATEGORY);
+
+	private static final KeyBinding[] ALL = {OPEN_MENU, ZOOM, TOGGLE_FREECAM, OPEN_WAYPOINTS, CREATE_WAYPOINT, SPAWN_OVERLAY, SORT_INVENTORY, SYSTEM_INFO};
 
 	private ModKeyBindings() {
 	}

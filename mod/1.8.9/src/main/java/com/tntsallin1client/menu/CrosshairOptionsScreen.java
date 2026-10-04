@@ -13,6 +13,8 @@ public class CrosshairOptionsScreen extends CrosshairShapeScreen {
 	private static final String KEY = "gui.tntsallin1client.crosshair_options.";
 	private static final int MIN_PIXEL_SIZE = 1;
 	private static final int MAX_PIXEL_SIZE = 6;
+	/** Narrower than the other rows, as in the Fabric versions. */
+	private static final int PIXEL_SIZE_SLIDER_WIDTH = 100;
 
 	public CrosshairOptionsScreen(Screen parent) {
 		super(parent, KEY + "title");
@@ -21,10 +23,9 @@ public class CrosshairOptionsScreen extends CrosshairShapeScreen {
 		addShapeOptions(() -> config.crosshairMode, mode -> config.crosshairMode = mode,
 				() -> config.crosshairPreset, preset -> config.crosshairPreset = preset,
 				() -> config.crosshairCustomGrid);
-		addSlider(KEY + "pixel_size", MIN_PIXEL_SIZE, MAX_PIXEL_SIZE, () -> config.crosshairPixelSize, value -> config.crosshairPixelSize = value);
+		addSlider(KEY + "pixel_size", PIXEL_SIZE_SLIDER_WIDTH, MIN_PIXEL_SIZE, MAX_PIXEL_SIZE, () -> config.crosshairPixelSize, value -> config.crosshairPixelSize = value);
 		addToggle(KEY + "ignore_gui_scale", () -> config.crosshairIgnoreGuiScale, value -> config.crosshairIgnoreGuiScale = value);
-		addLink(KEY + "color_button", () -> new ColorOptionsScreen(this, KEY + "color_title",
-				() -> config.customCrosshairColor, argb -> config.customCrosshairColor = argb));
+		addColor(() -> config.customCrosshairColor, argb -> config.customCrosshairColor = argb);
 		addLink(KEY + "target_color_button", () -> new CrosshairTargetColorOptionsScreen(this));
 		addLink(KEY + "target_shape_button", () -> new CrosshairTargetShapeOptionsScreen(this));
 		setResettable(ConfigReset.Feature.CROSSHAIR);

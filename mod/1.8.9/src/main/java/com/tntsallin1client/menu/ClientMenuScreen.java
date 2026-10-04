@@ -73,6 +73,8 @@ public class ClientMenuScreen extends ClientScreen {
 				() -> new KeystrokesOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.armor_status", () -> config.armorStatusEnabled, value -> config.armorStatusEnabled = value,
 				() -> new ArmorStatusOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.f3_quick_info", () -> config.f3QuickInfoEnabled, value -> config.f3QuickInfoEnabled = value,
+				() -> new F3OptionsScreen(this));
 
 		addSection("gui.tntsallin1client.menu.section_rendering");
 		addFeature("gui.tntsallin1client.menu.zoom", () -> config.zoomEnabled, value -> config.zoomEnabled = value,
@@ -82,6 +84,8 @@ public class ClientMenuScreen extends ClientScreen {
 		addFeature("gui.tntsallin1client.menu.crosshair", () -> config.customCrosshairEnabled, value -> config.customCrosshairEnabled = value,
 				() -> new CrosshairOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
+		addFeature("gui.tntsallin1client.menu.no_fog", () -> config.noFogEnabled, value -> config.noFogEnabled = value,
+				() -> new NoFogOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.spawn_overlay", () -> config.spawnOverlayEnabled, value -> config.spawnOverlayEnabled = value,
 				() -> new SpawnOverlayOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.hitbox_color", () -> config.customHitboxColorEnabled, value -> config.customHitboxColorEnabled = value,
@@ -96,7 +100,14 @@ public class ClientMenuScreen extends ClientScreen {
 			addFeature("gui.tntsallin1client.menu.new_textures", NewTextures::isEnabled, NewTextures::setEnabled, null);
 		}
 
+		addSection("gui.tntsallin1client.menu.section_inventory");
+		addFeature("gui.tntsallin1client.menu.quick_sort", () -> config.quickSortEnabled, value -> config.quickSortEnabled = value,
+				() -> new QuickSortOptionsScreen(this));
+		addFeature("gui.tntsallin1client.menu.screenshot_toast", () -> config.screenshotToastEnabled, value -> config.screenshotToastEnabled = value, null);
+
 		addSection("gui.tntsallin1client.menu.section_misc");
+		addFeature("gui.tntsallin1client.menu.discord_presence", () -> config.discordPresenceEnabled, value -> config.discordPresenceEnabled = value,
+				() -> new DiscordPresenceOptionsScreen(this));
 		addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);
 		addLink("gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(this));
 		// Asks first; the answer comes back through confirmResult.

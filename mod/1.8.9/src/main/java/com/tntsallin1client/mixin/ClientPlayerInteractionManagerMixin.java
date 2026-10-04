@@ -4,7 +4,11 @@ import com.tntsallin1client.freecam.FreecamHandler;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import com.tntsallin1client.inventory.ContainerClickPacing;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.Packet;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -13,7 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Freecam: an inventory can still be opened and sorted while it is active, but nothing may be
  * dropped out of it. (Attacking, mining, placing and using are stopped earlier, in
- * `MinecraftClientMixin`, before they get here.)
+ * `MinecraftClientMixin`, before they get here.) Also where the packet of every inventory click
+ * leaves - it is handed to {@link ContainerClickPacing} instead.
  */
 @Mixin(ClientPlayerInteractionManager.class)
 public abstract class ClientPlayerInteractionManagerMixin {
@@ -38,6 +43,16 @@ public abstract class ClientPlayerInteractionManagerMixin {
 		if (mode == THROW_MODE || dropsOutside) {
 			cir.setReturnValue(null);
 		}
+	}
+
+	/**
+	 * By the time the packet is sent the game has applied the click on its own side, so the player
+	 * sees it at once; only telling the server is spread over the next ticks.
+	 */
+	@Redirect(method = "clickSlot(IIIILnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/item/ItemStack;",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayNetworkHandler;sendPacket(Lnet/minecraft/network/Packet;)V"))
+	private void tnt$paceClickPacket(ClientPlayNetworkHandler handler, Packet packet) {
+		ContainerClickPacing.enqueue(handler, packet);
 	}
 
 	/** The creative inventory drops items through this method instead. */

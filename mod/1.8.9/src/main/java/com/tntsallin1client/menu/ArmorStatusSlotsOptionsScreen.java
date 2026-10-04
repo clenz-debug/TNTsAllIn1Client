@@ -60,10 +60,12 @@ public class ArmorStatusSlotsOptionsScreen extends ClientScreen {
 		}
 		updateLabels();
 
-		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD" directly above "Back".
-		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, x, this.height - 52, ROW_WIDTH, ROW_HEIGHT,
+		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD"
+		// and "Back" continue the column, as in the Fabric versions.
+		y += 4;
+		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, x, y, ROW_WIDTH, ROW_HEIGHT,
 				I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, x, this.height - 28, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
+		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, x, y + ROW_SPACING, ROW_WIDTH, ROW_HEIGHT, I18n.translate("gui.back")));
 	}
 
 	/** The rows stay where they are - after a change of order or a switch each just gets the slot now at its place. */

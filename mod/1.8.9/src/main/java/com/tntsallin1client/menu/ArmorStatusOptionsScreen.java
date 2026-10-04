@@ -36,8 +36,8 @@ public class ArmorStatusOptionsScreen extends FeatureOptionsScreen {
 		addChoice(KEY + "color_mode", KEY + "color_mode.fixed", KEY + "color_mode.gradient",
 				() -> config.armorStatusColorMode == ArmorStatusColorMode.FIXED,
 				fixed -> config.armorStatusColorMode = fixed ? ArmorStatusColorMode.FIXED : ArmorStatusColorMode.GRADIENT);
-		addLink(KEY + "color_label", () -> new ColorOptionsScreen(this, KEY + "color_label",
-				() -> config.armorStatusColor, argb -> config.armorStatusColor = argb));
+		addHeading(KEY + "color_label");
+		addColor(() -> config.armorStatusColor, argb -> config.armorStatusColor = argb);
 		addChoice(KEY + "layout_mode", KEY + "layout_mode.bundled", KEY + "layout_mode.individual",
 				() -> config.armorStatusLayoutMode == ArmorStatusLayoutMode.BUNDLED,
 				bundled -> {

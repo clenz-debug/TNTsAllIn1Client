@@ -16,6 +16,11 @@ public abstract class HudElement {
 
 	public abstract boolean isEnabled(ClientConfig config);
 
+	/** Whether the HUD editor offers the element - normally exactly when it is switched on. */
+	public boolean isEditable(ClientConfig config) {
+		return isEnabled(config);
+	}
+
 	public abstract HudLayout layout(ClientConfig config);
 
 	/** Unscaled size of what {@link #draw} currently draws. */

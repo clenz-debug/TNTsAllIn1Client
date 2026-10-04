@@ -1,6 +1,7 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.inventory.ContainerClickPacing;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Freecam: keeps the player itself frozen while the camera is elsewhere. */
+/** Freecam: keeps the player itself frozen while the camera is elsewhere. Also sends held-back inventory clicks before a screen closes. */
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin {
 	/**
@@ -22,6 +23,12 @@ public abstract class ClientPlayerEntityMixin {
 		if (FreecamHandler.isActive()) {
 			ci.cancel();
 		}
+	}
+
+	/** The server has to hear of the clicks made in a screen before it hears that the screen was closed. */
+	@Inject(method = "closeHandledScreen()V", at = @At("HEAD"))
+	private void tnt$sendWaitingClicks(CallbackInfo ci) {
+		ContainerClickPacing.flush();
 	}
 
 	/** The drop key in the world. Drops from an inventory screen are blocked in `ClientPlayerInteractionManagerMixin`. */

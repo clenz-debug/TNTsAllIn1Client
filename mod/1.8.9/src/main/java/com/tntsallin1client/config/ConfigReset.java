@@ -29,13 +29,17 @@ public final class ConfigReset {
 		CLOCK("gui.tntsallin1client.menu.clock_hud", "clockHudEnabled", "clock"),
 		KEYSTROKES("gui.tntsallin1client.menu.keystrokes", "keystrokesEnabled", "keystrokes"),
 		ARMOR_STATUS("gui.tntsallin1client.menu.armor_status", "armorStatusEnabled", "armorStatus"),
+		F3_QUICK_INFO("gui.tntsallin1client.menu.f3_quick_info", "f3QuickInfoEnabled", "f3QuickInfo", "systemInfo"),
 		ZOOM("gui.tntsallin1client.menu.zoom", "zoomEnabled", "zoom"),
 		FREECAM("gui.tntsallin1client.menu.freecam", "freecamEnabled", "freecam"),
 		CROSSHAIR("gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair"),
+		NO_FOG("gui.tntsallin1client.menu.no_fog", "noFogEnabled", "noFog"),
 		SPAWN_OVERLAY("gui.tntsallin1client.menu.spawn_overlay", "spawnOverlayEnabled", "spawnOverlay"),
 		HITBOX_COLOR("gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
 		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline"),
-		WAYPOINTS("gui.tntsallin1client.menu.waypoints", "waypointsEnabled", "waypoint");
+		WAYPOINTS("gui.tntsallin1client.menu.waypoints", "waypointsEnabled", "waypoint"),
+		QUICK_SORT("gui.tntsallin1client.menu.quick_sort", "quickSortEnabled", "quickSort"),
+		DISCORD_PRESENCE("gui.tntsallin1client.menu.discord_presence", "discordPresenceEnabled", "discordPresence");
 
 		public final String labelKey;
 		private final String switchField;

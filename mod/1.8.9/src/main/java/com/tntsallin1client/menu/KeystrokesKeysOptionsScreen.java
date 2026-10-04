@@ -24,7 +24,7 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 	private static final int BOX_COLOR_OFF = 0x80333333;
 	private static final int TEXT_COLOR_ON = 0xFFFFFF;
 	private static final int TEXT_COLOR_OFF = 0x999999;
-	private static final int BUTTON_WIDTH = 210;
+	private static final int BUTTON_WIDTH = 150;
 	private static final int BUTTON_HEIGHT = 20;
 	private static final int BACK_BUTTON_ID = 0;
 	private static final int HUD_EDITOR_BUTTON_ID = 1;
@@ -50,10 +50,12 @@ public class KeystrokesKeysOptionsScreen extends ClientScreen {
 			rowY += BOX_HEIGHT + GAP;
 		}
 
-		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD" directly above "Back".
-		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, this.height - 52, BUTTON_WIDTH, BUTTON_HEIGHT,
+		// Like on the other options screens of a feature with something on the HUD: "Move / Resize HUD"
+		// and "Back" follow below the keys, as in the Fabric versions.
+		int buttonY = rowY + 6;
+		this.buttons.add(new ButtonWidget(HUD_EDITOR_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT,
 				I18n.translate("gui.tntsallin1client.menu.hud_editor_button")));
-		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, this.height - 28, BUTTON_WIDTH, BUTTON_HEIGHT,
+		this.buttons.add(new ButtonWidget(BACK_BUTTON_ID, (this.width - BUTTON_WIDTH) / 2, buttonY + BUTTON_HEIGHT + GAP, BUTTON_WIDTH, BUTTON_HEIGHT,
 				I18n.translate("gui.back")));
 	}
 

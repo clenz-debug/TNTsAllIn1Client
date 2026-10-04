@@ -1,7 +1,14 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.friends.ActivityReporter;
 import com.tntsallin1client.friends.ClientUserBadges;
+import com.tntsallin1client.friends.FriendsBridge;
+import com.tntsallin1client.debug.SystemInfoHud;
+import com.tntsallin1client.discord.DiscordPresenceManager;
+import com.tntsallin1client.inventory.ContainerClickPacing;
+import com.tntsallin1client.screenshot.ScreenshotWatcher;
+import org.lwjgl.input.Keyboard;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import com.tntsallin1client.menu.ClientMenuScreen;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
@@ -35,6 +42,17 @@ public abstract class MinecraftClientMixin {
 		FreecamHandler.tick((MinecraftClient) (Object) this);
 		WaypointMenuIntegration.tick((MinecraftClient) (Object) this);
 		SpawnOverlayRenderer.tick((MinecraftClient) (Object) this);
+		ContainerClickPacing.tick((MinecraftClient) (Object) this);
+		ScreenshotWatcher.tick((MinecraftClient) (Object) this);
+		ActivityReporter.tick((MinecraftClient) (Object) this);
+		FriendsBridge.tick((MinecraftClient) (Object) this);
+		DiscordPresenceManager.tick((MinecraftClient) (Object) this);
+		while (ModKeyBindings.SYSTEM_INFO.wasPressed()) {
+			// Only together with F3, like the game's own debug key combinations.
+			if (Keyboard.isKeyDown(Keyboard.KEY_F3)) {
+				SystemInfoHud.visible = !SystemInfoHud.visible;
+			}
+		}
 		while (ModKeyBindings.OPEN_MENU.wasPressed()) {
 			// Only from gameplay - with a screen open the key belongs to that screen.
 			if (this.currentScreen == null) {

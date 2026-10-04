@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.debug.SystemInfoHud;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.waypoint.WaypointArrowHud;
 import net.minecraft.client.MinecraftClient;
@@ -31,6 +32,7 @@ public final class HudElements {
 		for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
 			elements.add(new ArmorStatusSlotHud(slot));
 		}
+		elements.add(new SystemInfoHud());
 		return elements;
 	}
 

@@ -1,14 +1,17 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.fog.NoFog;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.player.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -18,11 +21,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * The renderer reads the field of view, the mouse sensitivity and the brightness from the game's
  * settings as it goes - where one of our features wants another value, it gets ours instead. It is
  * also where the mouse turns the player and where the first-person hand is drawn, both of which the
- * freecam takes over, and where the waypoints and the light level overlay get drawn into the finished world.
+ * freecam takes over, where the waypoints and the light level overlay get drawn into the finished
+ * world, and where the fog is set up that "No fog" takes away again.
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
 	private static final float FULLBRIGHT_GAMMA = 100.0F;
+
+	@Shadow
+	private MinecraftClient client;
+
+	/** Set while the camera is inside a cloud. */
+	@Shadow
+	private boolean thickFog;
+
+	/** No fog: the game has just set up the fog for the next part of the world it draws. */
+	@Inject(method = "renderFog(IF)V", at = @At("RETURN"))
+	private void tnt$removeFog(int pass, float tickDelta, CallbackInfo ci) {
+		NoFog.apply(this.client, this.thickFog, pass, tickDelta);
+	}
 
 	/** Only the world's field of view comes from the settings; the hand is drawn with a fixed one and stays as it is. */
 	@Redirect(method = "getFov(FZ)F", at = @At(value = "FIELD", target = "Lnet/minecraft/client/option/GameOptions;fov:F"))
