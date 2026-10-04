@@ -691,6 +691,11 @@ select option {
   margin: 0 0 0.5rem;
 }
 
+/* Switches stacked directly below each other (Settings) - without this they touch. */
+.instances-section > .checkbox-label + .checkbox-label {
+  margin-top: 0.5rem;
+}
+
 .instance-create-form {
   display: flex;
   flex-wrap: wrap;
