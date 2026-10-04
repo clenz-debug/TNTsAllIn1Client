@@ -10,6 +10,7 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
   - [ ] Fabric-Versionen zwischen 1.14 und 1.21.10: starten mit Fabric, aber ohne unsere Mod
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
+- [ ] Patikel an und ausschaltbar machen (jeden einzelnt)
 
 ## 2. Noch von dir zu prüfen (mit 0.1.8 schon veröffentlicht)
 Derzeit nichts offen. Der installierte Launcher 0.1.8 und 1.8.9 mit den Client-Features sind von dir getestet und bestätigt (2026-10-04).
