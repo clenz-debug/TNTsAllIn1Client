@@ -12,7 +12,7 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
 - [ ] Linux und macOS
 
 ## 2. Noch von dir zu prüfen (mit 0.1.8 schon veröffentlicht)
-- [ ] Den installierten Launcher 0.1.8 einmal ansehen: kommt das Auto-Update an, und startet 1.8.9 dort mit den Client-Features? Die 1.8.9-Mod steckt nur im Installer (kein Manifest-Eintrag), der gepackte Installer wurde vor der Veröffentlichung nicht installiert getestet
+Derzeit nichts offen. Der installierte Launcher 0.1.8 und 1.8.9 mit den Client-Features sind von dir getestet und bestätigt (2026-10-04).
 
 ## 2a. Bestätigt, wartet auf das nächste Release
 Derzeit nichts offen.
@@ -20,12 +20,8 @@ Derzeit nichts offen.
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
 - [ ] Multiplayer-Test mit einem zweiten Client-Nutzer auf demselben Server, beides in einem Durchgang:
-  - [ ] Capes, in allen Versionen (1.8.9, 1.21.11, 26.1.2, 26.3): sehen beide gegenseitig ihre Capes? Für 1.8.9 seit 0.1.8 möglich
-  - [ ] Logo am Nametag, in allen Versionen (in 1.21.11, 26.1.2 und 26.3 mit 0.1.7 veröffentlicht; in 1.8.9 mit 0.1.8 veröffentlicht, bisher ungesehen): sehen beide das Client-Logo am Namen des anderen, stehend und geduckt, in den richtigen Farben?
-- [ ] Freunde in 1.8.9 mit einem zweiten Konto (am 2026-10-04 gebaut, allein nicht testbar). Seit 0.1.8 möglich:
-  - [ ] Sieht der Freund im Launcher, wo du in 1.8.9 bist (Hauptmenü, Einzelspieler, Server)?
-  - [ ] Einladung aus einer Fabric-Welt: Chat-Zeile mit Versionshinweis, Zähler am „Freunde“-Button, Hinweis „Braucht Minecraft X“ im Bildschirm, „Ablehnen“ nimmt sie weg
-  - [ ] „Server beitreten“ aus dem Launcher verbindet 1.8.9 mit der Adresse
+  - [ ] Capes (1.21.11, 26.1.2, 26.3): sehen beide gegenseitig ihre Capes?
+  - [ ] Logo am Nametag (1.21.11, 26.1.2, 26.3): sehen beide das Client-Logo am Namen des anderen, stehend und geduckt, in den richtigen Farben?
 
 ## 3. Vor einer öffentlichen Veröffentlichung
 Derzeit nichts offen. Code-Signing steht unter „4. Eventuell“.
