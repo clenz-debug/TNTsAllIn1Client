@@ -1460,3 +1460,19 @@ Nutzerwunsch: die Anzeige war ein Debug-Feature aus Phase 2 ("TNT's All-In-1 Cli
 **Launcher (`styles/global.css`, bestätigt):** Schalter, die in einem Einstellungs-Abschnitt direkt untereinander stehen, haben jetzt Abstand (betraf die zwei unter "Instanzen").
 
 `gradlew build` für 1.8.9 grün (20 Mixin-Ziele), Launcher-Typecheck grün. Für 1.8.9 noch offen: Tour im Spiel, Client-Design in Stufen.
+
+## 1.8.9: Dark Mode und 3D-Blockmodelle (2026-10-04, vom Nutzer im Spiel bestätigt, nicht veröffentlicht)
+
+Nutzerwunsch: die Texturenpakete vor Tour und Client-Design, damit beides später nicht noch einmal angefasst werden muss.
+
+**Dark Mode (`launcher/src/main/launch/legacyDarkModePack.ts`, `mod/1.8.9/.../resourcepack/DarkMode.java`, bestätigt: "darkmode funktioniert"):** Der Bundle-Sync des Launchers läuft für Legacy-Versionen nicht, deshalb baut der Launcher das Pack wie "Neue Texturen" beim Start selbst aus der 1.8.9-Spieldatei (Ordner-Pack `TNT Dark Mode`, Marker `tnt-dark-mode.json` mit Regel-Revision). Dieselben Paletten wie `resourcepacks/dark-mode/build.py` - von Hand synchron halten. Weil 1.8.9 Buttons und Hotbar in `widgets.png` und Flamme/Pfeil neben dem Ofen-Panel hat, arbeiten die Regeln auf Bildbereichen. Die Mod schaltet das Pack (`LauncherPacks`, gemeinsam mit "Neue Texturen") und zeichnet Beschriftungen in der Farbe aus `dark_mode.json` (`TextRendererMixin`).
+
+**3D-Blockmodelle (`resourcepacks/3d-blocks/legacy.py`, `mod/1.8.9/.../resourcepack/Blocks3d.java`, bestätigt: "jawohl jetzt passt es"):** dieselben Modelle wie in den Fabric-Versionen für Leiter, Schienen, Eisengitter, Ranken, Seerose, Zuckerrohr, Pilze, Bücherregal, Türen und Falltüren. `legacy.py` lässt die Generatoren aus `models3d.py` mit den Masken des jeweiligen Texturensatzes laufen und benennt das Ergebnis auf die Modelldateien von 1.8.9 um; Leiter, Gitter und Ranken haben eigene Generatoren, weil 1.8.9 sie anders zusammensetzt. Zwei Packs (alte Texturen / "Neue Texturen"), nur eigene JSON-Dateien, liegen als Zip in den Mod-Ressourcen (`assets/tntsallin1client/packs/`) und werden beim Spielstart nach `resourcepacks/` kopiert; die Mod wählt das passende und tauscht es beim Umschalten von "Neue Texturen" im selben Ladevorgang. Vorschau: `legacy_preview.py`. Nicht dabei: Redstone-Staub (andere Bilder/Modelle vor 1.16) und 3D-Items.
+
+Fallstricke aus den Testrunden:
+- 1.8.9 löst keinen Textur-Eintrag auf, der auf einen anderen Eintrag desselben Modells zeigt ("upward reference") - sonst sind die Abbau-Partikel die fehlende Textur.
+- 1.8.9 rückt den Bildausschnitt einer Fläche nicht selbst ein; ohne `legacy.inset` (0,02 Pixel) bleibt rund um Türfenster eine pixelbreite Linie zum Durchschauen.
+- Die alten Türbilder haben Scharniere, Griffe, Bänder und (Dunkeleiche) Kassetten auf denselben Pixeln wie die neuen; die Tabellen aus `models3d.py` gelten bis auf zwei Einträge.
+- Im gemeinsamen Generator (`models3d.within_slab`): der herausstehende Teil einer Beschlag-Seitenfläche an der Türkante verschwindet nicht mehr neben einem vollen Block. Die Fabric-Packs wurden damit nicht neu erzeugt; der Nutzer hat dort nie einen solchen Fehler gesehen.
+
+Launcher-Typecheck grün, `gradlew build` für 1.8.9 grün (21 Mixin-Ziele). Für 1.8.9 noch offen: Tour im Spiel, Client-Design in Stufen.
