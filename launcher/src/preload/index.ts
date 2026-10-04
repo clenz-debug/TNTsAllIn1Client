@@ -125,6 +125,8 @@ const api = {
   applyModBundleUpdate: (versionId: string): Promise<LauncherSettings> =>
     ipcRenderer.invoke(IpcChannel.ModBundleApplyUpdate, versionId),
   listBundleCompatibleVersions: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.ModBundleListCompatibleVersions),
+  /** Legacy versions (before 1.14) that start with our own mod - the client's features without a mod bundle. */
+  listLegacyClientVersions: (): Promise<string[]> => ipcRenderer.invoke(IpcChannel.LegacyListClientVersions),
   getStorageInfo: (): Promise<StorageInfo> => ipcRenderer.invoke(IpcChannel.StorageInfo),
   changeStorageLocation: (): Promise<{ path: string } | null> => ipcRenderer.invoke(IpcChannel.StorageChangeLocation),
   getSystemMemoryInfo: (): Promise<SystemMemoryInfo> => ipcRenderer.invoke(IpcChannel.SystemMemoryInfo),

@@ -40,6 +40,8 @@ interface Props {
   /** Which Minecraft versions currently have bundle content available (dynamic, manifest-driven -
    * see `bundleCompat.ts`), replacing the old single hardcoded `MINECRAFT_VERSION` check. */
   bundleCompatibleVersions: string[]
+  /** Whether our own mod runs in this version - true for a legacy version too where it exists (see `PlayScreen#hasClientMod`). */
+  hasClientMod: boolean
   onToggleBundledMod: (fileName: string, enabled: boolean) => void
   onClose: () => void
 }
@@ -50,6 +52,7 @@ export function ModsScreen({
   enabledBundledMods,
   disabledBundledMods,
   bundleCompatibleVersions,
+  hasClientMod,
   onToggleBundledMod,
   onClose
 }: Props) {
@@ -208,7 +211,8 @@ export function ModsScreen({
     }
   }
 
-  // A legacy version starts without a mod loader - nothing on this screen could take effect.
+  // A legacy version starts without a mod loader - nothing on this screen could take effect. Where our
+  // own mod exists for it, the note says that the client's own mods are there all the same.
   if (isLegacyVersion(versionId)) {
     return (
       <div className="mods-screen">
@@ -218,7 +222,7 @@ export function ModsScreen({
             {t.common.back}
           </button>
         </header>
-        <p className="version-warning">{t.mods.legacyNoMods(versionId)}</p>
+        <p className="version-warning" data-tour="mods-legacy">{hasClientMod ? t.mods.legacyClientModsOnly(versionId) : t.mods.legacyNoMods(versionId)}</p>
       </div>
     )
   }

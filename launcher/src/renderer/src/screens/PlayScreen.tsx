@@ -111,6 +111,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   // alongside settings/versions below; a version added to the manifest while the launcher is
   // already running only shows up after the next restart (see `bundleCompat.ts`'s own doc comment).
   const [bundleCompatibleVersions, setBundleCompatibleVersions] = useState<string[]>([])
+  const [legacyClientVersions, setLegacyClientVersions] = useState<string[]>([])
 
   const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
 
@@ -149,8 +150,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
       .catch((err) => {
         if (!profile.offline) setVersionsError(formatError(err, t))
       })
-    Promise.all([window.api.loadSettings(), window.api.listBundleCompatibleVersions()])
-      .then(([settings, bundleVersions]) => {
+    Promise.all([window.api.loadSettings(), window.api.listBundleCompatibleVersions(), window.api.listLegacyClientVersions()])
+      .then(([settings, bundleVersions, legacyVersions]) => {
+        setLegacyClientVersions(legacyVersions)
         setShowSnapshots(settings.showSnapshots)
         setShowClientSupportMarks(settings.showClientSupportMarks)
         setInstances(settings.instances)
@@ -212,7 +214,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   ])
 
   // --- Guided tour (own user request) - see tour/tourSteps.ts for the steps and their order. ---
-  const tourContext: TourContext = { online: !profile.offline, friendsReady: friendsState !== null && friendsState.prefs.enabled, hasInstance: selectedInstance !== null }
+  const tourContext: TourContext = { online: !profile.offline, friendsReady: friendsState !== null && friendsState.prefs.enabled, hasInstance: selectedInstance !== null, legacyInstance: selectedInstance !== null && isLegacyVersion(selectedInstance.versionId) }
   const tourStep = TOUR_STEPS.find((step) => step.id === tourStepId) ?? null
   const availableTourSteps = TOUR_STEPS.filter((step) => isTourStepAvailable(step, tourContext))
 
@@ -251,10 +253,14 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
     openTourScreen('play')
   }
 
+  /** Whether our mod runs in that version: it has the client bundle, or it is a legacy version our own mod exists for. */
+  function hasClientMod(versionId: string): boolean {
+    return isBundleCompatibleVersion(versionId, bundleCompatibleVersions) || legacyClientVersions.includes(versionId)
+  }
+
   // The tour's last step offers to go on in the game's own menus (own user request) - only where our
-  // mod runs, i.e. an instance whose version has the client bundle.
-  const canContinueTourInGame =
-    !busy && selectedInstance !== null && isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions)
+  // mod runs.
+  const canContinueTourInGame = !busy && selectedInstance !== null && hasClientMod(selectedInstance.versionId)
 
   function continueTourInGame(): void {
     const instance = selectedInstance
@@ -508,6 +514,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           enabledBundledMods={selectedInstance.enabledBundledMods}
           disabledBundledMods={selectedInstance.disabledBundledMods}
           bundleCompatibleVersions={bundleCompatibleVersions}
+          hasClientMod={hasClientMod(selectedInstance.versionId)}
           onToggleBundledMod={handleToggleBundledMod}
           onClose={() => setShowMods(false)}
         />
@@ -666,7 +673,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
                     value: instance.id,
                     label: `${instance.name} (${instance.versionId})`,
                     icon:
-                      showClientSupportMarks && isBundleCompatibleVersion(instance.versionId, bundleCompatibleVersions) ? (
+                      showClientSupportMarks && hasClientMod(instance.versionId) ? (
                         <ClientSupportMark />
                       ) : undefined
                   }))
@@ -686,12 +693,16 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           </button>
           {versionsError && <span className="error">{t.play.versionListError(versionsError)}</span>}
           {instances.length === 0 && <span className="version-warning">{t.play.noInstanceWarning}</span>}
-          {selectedInstance && !isBundleCompatibleVersion(selectedInstance.versionId, bundleCompatibleVersions) && (
+          {selectedInstance && !hasClientMod(selectedInstance.versionId) && (
             <span className="version-warning">
               {isLegacyVersion(selectedInstance.versionId)
                 ? t.play.legacyWarning(selectedInstance.versionId)
                 : t.play.bundleIncompatibleWarning(selectedInstance.versionId)}
             </span>
+          )}
+          {/* A legacy version our own mod exists for: no mod loader, but the client's own mods (own user request for this wording). */}
+          {selectedInstance && isLegacyVersion(selectedInstance.versionId) && hasClientMod(selectedInstance.versionId) && (
+            <span className="version-warning">{t.play.legacyClientNote(selectedInstance.versionId)}</span>
           )}
         </div>
 

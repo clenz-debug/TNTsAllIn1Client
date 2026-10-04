@@ -5,7 +5,7 @@ import { totalmem } from 'node:os'
 import { basename, join } from 'node:path'
 import { describeError, localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
-import { isLegacyVersion } from '../../shared/legacyVersions'
+import { isLegacyVersion, LEGACY_VERSIONS } from '../../shared/legacyVersions'
 import {
   type CapeLibraryEntry,
   type CapeUploadResult,
@@ -68,7 +68,7 @@ import { buildLaunchArgs } from '../launch/launchArgs'
 import { installLegacyClientEntry } from '../launch/legacyClientEntry'
 import { ensureLegacyDarkModePack } from '../launch/legacyDarkModePack'
 import { ensureNewTexturesPack } from '../launch/newTexturesPack'
-import { writeLegacyLogConfig } from '../launch/legacyLogging'
+import { needsLog4jProtection, writeLegacyLogConfig } from '../launch/legacyLogging'
 import { applyModBundleUpdate, checkForModBundleUpdate, ensureLocalBundle } from '../launch/modBundleUpdater'
 import { addCustomMods, listCustomMods, listToggleableBundledMods, removeCustomMod, setCustomModEnabled } from '../launch/modsManager'
 import { addResourcepacks, listResourcepacks, removeAllResourcepacks, removeResourcepack } from '../launch/resourcepacksManager'
@@ -444,6 +444,13 @@ export function registerIpcHandlers(): void {
     ...(await getBundleCompatibleVersions())
   ])
 
+  // The legacy versions (before 1.14, no mod loader) our own mod exists for - there the game starts
+  // through our own entry with the client's features (see legacyClientEntry.ts).
+  ipcMain.handle(IpcChannel.LegacyListClientVersions, async (): Promise<string[]> => {
+    const found = await Promise.all(LEGACY_VERSIONS.map(async (versionId) => ((await findOwnModJar(versionId)) ? versionId : null)))
+    return found.filter((versionId): versionId is string => versionId !== null)
+  })
+
   ipcMain.handle(IpcChannel.SystemMemoryInfo, (): SystemMemoryInfo => ({
     totalMb: Math.round(totalmem() / (1024 * 1024))
   }))
@@ -571,7 +578,8 @@ export function registerIpcHandlers(): void {
           profile,
           maxMemoryMb: settings.maxMemoryMb,
           quickPlayMultiplayer: joinAddress,
-          legacyLogConfigPath: legacy ? await writeLegacyLogConfig(installed.instanceDir) : undefined
+          legacyLogConfigPath:
+            legacy || needsLog4jProtection(vanilla.detail.releaseTime) ? await writeLegacyLogConfig(installed.instanceDir) : undefined
         })
 
         const gameDir = join(installed.instanceDir, 'game')

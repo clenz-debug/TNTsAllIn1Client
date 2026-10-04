@@ -7,20 +7,38 @@ import { openPromise } from 'yauzl'
 import type { ResourcepackEntry } from '../../shared/types'
 import { loadLauncherSettings } from '../launcherSettings'
 import { instanceDir } from './installer'
+import { LEGACY_DARK_MODE_PACK_NAME } from './legacyDarkModePack'
+import { NEW_TEXTURES_PACK_NAME } from './newTexturesPack'
 import { bundledResourcepacksDir } from './resourcePaths'
 
 function resourcepacksDir(instanceId: string): string {
   return join(instanceDir(instanceId), 'game', 'resourcepacks')
 }
 
-/** Filenames in this instance's version bundle (`resourcepacks-bundle/<versionId>/`) - those are
- * synced in on every launch (`bundleSync.ts`) and pinned by our mod, so they're never listed or
- * removable here: removing one would only last until the next launch anyway. */
+/**
+ * The client's own packs in a legacy instance (before 1.14), which has no version bundle: the two the
+ * launcher builds on launch (`newTexturesPack.ts`, `legacyDarkModePack.ts`) and the two our mod puts
+ * there from its own jar when the game starts (`Blocks3d.java` in `mod/1.8.9` - keep the names in
+ * step). The mod's switches for new textures, dark mode and 3D block models need them.
+ */
+const LEGACY_CLIENT_PACK_NAMES = [
+  NEW_TEXTURES_PACK_NAME,
+  LEGACY_DARK_MODE_PACK_NAME,
+  'TNT 3D Blocks.zip',
+  'TNT 3D Blocks - New Textures.zip'
+]
+
+/** The packs that belong to the client itself: the filenames in this instance's version bundle
+ * (`resourcepacks-bundle/<versionId>/`), synced in on every launch (`bundleSync.ts`) and pinned by
+ * our mod, and the legacy instances' own ({@link LEGACY_CLIENT_PACK_NAMES}). They're never listed
+ * or removable here (own user request for the legacy ones: removing a pack the client's features
+ * need would be counterproductive) - a removal would only last until the next launch anyway. */
 async function bundledNames(instanceId: string): Promise<Set<string>> {
   const settings = await loadLauncherSettings()
   const instance = settings.instances.find((candidate) => candidate.id === instanceId)
-  if (!instance) return new Set()
-  return new Set(await readdir(bundledResourcepacksDir(instance.versionId)).catch(() => []))
+  if (!instance) return new Set(LEGACY_CLIENT_PACK_NAMES)
+  const bundled = await readdir(bundledResourcepacksDir(instance.versionId)).catch(() => [] as string[])
+  return new Set([...bundled, ...LEGACY_CLIENT_PACK_NAMES])
 }
 
 async function streamToBuffer(stream: Readable): Promise<Buffer> {

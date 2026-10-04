@@ -156,6 +156,10 @@ export const en: typeof de = {
         title: 'Browse mods',
         text: 'Browse thousands of mods from Modrinth here. “Install” automatically downloads the right version for your instance.'
       },
+      modsLegacy: {
+        title: 'Mods in this version',
+        text: 'Minecraft versions before 1.14 launch without external mods - so nothing can be added here. Where the client mods exist for the version (for example 1.8.9), they are in the game under “Client Mods”.'
+      },
       modsOwn: {
         title: 'Your mods',
         text: 'Already have a mod file (.jar) on your PC? Add it here. Every mod can be switched off and on or removed on its own.'
@@ -220,6 +224,7 @@ export const en: typeof de = {
       `${versionId} has no bundled mods/resource packs (Sodium, Lithium, our own client mod, …) — launches as plain Fabric+vanilla without mods.`,
     legacyWarning: (versionId: string) =>
       `${versionId} launches as plain Minecraft — without mods and without the client features.`,
+    legacyClientNote: (versionId: string) => `${versionId} launches without external mods — the client mods are available though.`,
     play: 'Play',
     playing: 'Running…',
     cancel: 'Cancel Launch'
@@ -261,6 +266,8 @@ export const en: typeof de = {
     bundleIncompatible: (versionId: string) => `Has no effect right now - ${versionId} has no mod bundle, so it launches without bundled mods anyway.`,
     legacyNoMods: (versionId: string) =>
       `${versionId} launches as plain Minecraft without a mod loader - mods can't be used here for versions before 1.14.`,
+    legacyClientModsOnly: (versionId: string) =>
+      `${versionId} launches without external mods - none can be added here for versions before 1.14. The client mods are available though: you'll find them in the game under “Client Mods”.`,
     bundledSource:
       'The launcher downloads the bundled mods straight from Modrinth - the first launch of a version needs an internet connection for that. Please report problems with these mods (e.g. Sodium) to us, not to their developers: they don\'t give support for clients like this one.',
     bundledLoading: 'Downloading the bundled mods from Modrinth…',

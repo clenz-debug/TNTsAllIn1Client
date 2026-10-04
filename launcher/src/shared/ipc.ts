@@ -66,6 +66,7 @@ export const IpcChannel = {
   ModBundleCheckUpdate: 'mod-bundle:check-update',
   ModBundleApplyUpdate: 'mod-bundle:apply-update',
   ModBundleListCompatibleVersions: 'mod-bundle:list-compatible-versions',
+  LegacyListClientVersions: 'legacy:list-client-versions',
   SystemMemoryInfo: 'system:memory-info',
   ConsoleWindowOpen: 'console-window:open',
   FriendsStart: 'friends:start',

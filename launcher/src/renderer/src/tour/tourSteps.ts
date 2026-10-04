@@ -16,8 +16,11 @@ export interface TourStep {
   /** "Weiter" stays disabled until this happened (the step still offers to skip it). */
   waitFor?: 'instanceCreated'
   /** Steps that make no sense in the current state are skipped: friends need an online profile
-   * (and a loaded friends list to open the screen), mods/worlds/resource packs need an instance. */
-  needs?: 'online' | 'friends' | 'instance'
+   * (and a loaded friends list to open the screen), mods/worlds/resource packs need an instance. The
+   * mods screen's sections only exist for an instance with a mod loader; a legacy instance (before
+   * 1.14) shows a note there instead, which gets a step of its own (own user report: the bundled
+   * mods step stood over an empty screen). */
+  needs?: 'online' | 'friends' | 'instance' | 'modLoaderInstance' | 'legacyInstance'
 }
 
 const tour = (name: string): string => `[data-tour="${name}"]`
@@ -57,9 +60,10 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'instancePicker', screen: 'play', targets: ['label[for="instance-select"]', '#instance-select'] },
 
   { id: 'modsButton', screen: 'play', targets: [tour('mods-button')] },
-  { id: 'modsBundled', screen: 'mods', targets: [tour('mods-bundled')], needs: 'instance' },
-  { id: 'modsSearch', screen: 'mods', targets: [tour('mods-search')], needs: 'instance' },
-  { id: 'modsOwn', screen: 'mods', targets: [tour('mods-own')], needs: 'instance' },
+  { id: 'modsBundled', screen: 'mods', targets: [tour('mods-bundled')], needs: 'modLoaderInstance' },
+  { id: 'modsSearch', screen: 'mods', targets: [tour('mods-search')], needs: 'modLoaderInstance' },
+  { id: 'modsOwn', screen: 'mods', targets: [tour('mods-own')], needs: 'modLoaderInstance' },
+  { id: 'modsLegacy', screen: 'mods', targets: [tour('mods-legacy')], needs: 'legacyInstance' },
 
   { id: 'worldsButton', screen: 'play', targets: [tour('worlds-button')] },
   { id: 'worlds', screen: 'worlds', targets: [tour('worlds-main')], needs: 'instance' },
@@ -74,6 +78,8 @@ export interface TourContext {
   online: boolean
   friendsReady: boolean
   hasInstance: boolean
+  /** The selected instance is a legacy version (before 1.14, no mod loader). */
+  legacyInstance: boolean
 }
 
 export function isTourStepAvailable(step: TourStep, context: TourContext): boolean {
@@ -84,6 +90,10 @@ export function isTourStepAvailable(step: TourStep, context: TourContext): boole
       return context.online && context.friendsReady
     case 'instance':
       return context.hasInstance
+    case 'modLoaderInstance':
+      return context.hasInstance && !context.legacyInstance
+    case 'legacyInstance':
+      return context.hasInstance && context.legacyInstance
     default:
       return true
   }

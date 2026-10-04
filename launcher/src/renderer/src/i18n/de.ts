@@ -162,6 +162,10 @@ export const de = {
         title: 'Mods durchsuchen',
         text: 'Hier stöberst du durch tausende Mods von Modrinth. „Installieren“ lädt automatisch die passende Version für deine Instanz herunter.'
       },
+      modsLegacy: {
+        title: 'Mods in dieser Version',
+        text: 'Minecraft-Versionen vor 1.14 starten ohne externe Mods - hier lässt sich deshalb nichts hinzufügen. Gibt es die Client Mods für die Version (zum Beispiel 1.8.9), findest du sie im Spiel unter „Client Mods“.'
+      },
       modsOwn: {
         title: 'Eigene Mods',
         text: 'Hast du eine Mod-Datei (.jar) schon auf dem PC, fügst du sie hier hinzu. Jede Mod kannst du einzeln aus- und einschalten oder entfernen.'
@@ -226,6 +230,7 @@ export const de = {
       `${versionId} hat keine gebündelten Mods/Resourcepacks (Sodium, Lithium, eigener Client-Mod, …) — startet als reines Fabric+Vanilla ohne Mods.`,
     legacyWarning: (versionId: string) =>
       `${versionId} startet als reines Minecraft — ohne Mods und ohne die Client-Features.`,
+    legacyClientNote: (versionId: string) => `${versionId} startet ohne externe Mods — die Client Mods sind aber verfügbar.`,
     play: 'Spielen',
     playing: 'Läuft…',
     cancel: 'Start abbrechen'
@@ -268,6 +273,8 @@ export const de = {
       `Wirkt sich aktuell nicht aus - ${versionId} hat kein Mod-Bundle, startet ohnehin ohne gebündelte Mods.`,
     legacyNoMods: (versionId: string) =>
       `${versionId} startet als reines Minecraft ohne Mod-Loader - Mods lassen sich für Versionen vor 1.14 hier nicht verwenden.`,
+    legacyClientModsOnly: (versionId: string) =>
+      `${versionId} startet ohne externe Mods - für Versionen vor 1.14 lassen sich hier keine hinzufügen. Die Client Mods sind aber verfügbar: Du findest sie im Spiel unter „Client Mods“.`,
     bundledSource:
       'Die gebündelten Mods lädt der Launcher direkt von Modrinth herunter - beim ersten Start einer Version braucht das eine Internetverbindung. Bei Problemen mit diesen Mods (z. B. Sodium) bitte bei uns melden, nicht bei deren Entwicklern: Sie geben für Clients wie diesen keinen Support.',
     bundledLoading: 'Gebündelte Mods werden von Modrinth geladen…',
