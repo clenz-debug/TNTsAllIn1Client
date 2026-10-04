@@ -66,6 +66,7 @@ import {
 import { ensureJavaRuntime } from '../launch/javaRuntime'
 import { buildLaunchArgs } from '../launch/launchArgs'
 import { installLegacyClientEntry } from '../launch/legacyClientEntry'
+import { ensureLegacyDarkModePack } from '../launch/legacyDarkModePack'
 import { ensureNewTexturesPack } from '../launch/newTexturesPack'
 import { writeLegacyLogConfig } from '../launch/legacyLogging'
 import { applyModBundleUpdate, checkForModBundleUpdate, ensureLocalBundle } from '../launch/modBundleUpdater'
@@ -574,9 +575,11 @@ export function registerIpcHandlers(): void {
         })
 
         const gameDir = join(installed.instanceDir, 'game')
-        // Legacy versions with our mod: the pack its "New Textures" switch turns on (see newTexturesPack.ts).
+        // Legacy versions with our mod: the packs its "New Textures" and "Dark Mode" switches turn on
+        // (see newTexturesPack.ts, legacyDarkModePack.ts).
         if (legacyOwnModJar) {
           await ensureNewTexturesPack(gameDir, versionId, vanilla.clientJarPath, sendProgress, sendLog, signal)
+          await ensureLegacyDarkModePack(gameDir, versionId, vanilla.clientJarPath, sendProgress, sendLog)
         }
         // Carries options.txt (graphics/controls/sound/...) and the multiplayer server list across
         // instances, same reasoning as before the instance system existed when this carried settings

@@ -26,7 +26,7 @@ export interface BuildResult {
 }
 
 /** Every file of a jar whose name `wanted` accepts, read into memory. */
-async function readEntries(jarPath: string, wanted: (name: string) => boolean): Promise<Map<string, Buffer>> {
+export async function readEntries(jarPath: string, wanted: (name: string) => boolean): Promise<Map<string, Buffer>> {
   const entries = new Map<string, Buffer>()
   const zipfile = await openPromise(jarPath, { lazyEntries: true, autoClose: true })
   try {
