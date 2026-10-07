@@ -7,6 +7,8 @@ import java.util.List;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.tour.TourOverlay;
+import com.tntsallin1client.recipe.PinnedRecipeHud;
 import com.tntsallin1client.waypoint.WaypointArrowHud;
 import net.minecraft.client.Minecraft;
 
@@ -30,6 +32,7 @@ public final class HudElements {
 		for (ArmorStatusSlot slot : ArmorStatusSlot.values()) {
 			elements.add(new ArmorStatusSlotHud(slot));
 		}
+		elements.add(new PinnedRecipeHud());
 		return elements;
 	}
 
@@ -43,6 +46,7 @@ public final class HudElements {
 		}
 		WaypointArrowHud.render(client, config, width, height);
 		FreecamHandler.renderHint(client, width);
+		TourOverlay.renderHud(client);
 		// Drawing text leaves its color set - whatever the game draws next would be tinted with it.
 		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 	}

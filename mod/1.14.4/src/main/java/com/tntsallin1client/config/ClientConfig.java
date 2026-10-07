@@ -26,6 +26,7 @@ import com.tntsallin1client.hud.ArmorStatusIconPosition;
 import com.tntsallin1client.hud.ArmorStatusLayoutMode;
 import com.tntsallin1client.hud.ArmorStatusSlot;
 import com.tntsallin1client.hud.HudLayout;
+import com.tntsallin1client.recipe.PinnedRecipe;
 import com.tntsallin1client.waypoint.Waypoint;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
@@ -207,6 +208,23 @@ public class ClientConfig {
 	// Quick sort: a "Sort" button and key on the inventory screen (see InventorySorter).
 	public boolean quickSortEnabled = false;
 	public boolean quickSortGroupByCategory = false;
+
+	// Shulker box preview: hold a key over a shulker box to see all of its contents (see ShulkerPreviewRenderer).
+	public boolean shulkerPreviewEnabled = false;
+
+	// Pinned recipes: recipes pinned from the recipe book, shown as a movable HUD reminder (see
+	// PinnedRecipeManager). The list itself is what the player pinned, not a setting - a reset leaves it.
+	public boolean pinnedRecipeEnabled = false;
+	public List<PinnedRecipe> pinnedRecipes = new ArrayList<PinnedRecipe>();
+	public HudLayout pinnedRecipeHudLayout = new HudLayout();
+	public int pinnedRecipeArrowColor = 0xFFFFFFFF;
+	// The counts on the ingredient and result icons.
+	public int pinnedRecipeCountColor = 0xFFFFFFFF;
+	// Each craftable ingredient gets its own ingredients in miniature underneath it.
+	public boolean pinnedRecipeShowSubIngredients = false;
+	public int pinnedRecipeSubIngredientCountColor = 0xFFFFFFFF;
+	// Off: ingredients count down against the inventory and drop out once the player has enough. On: always the full amount.
+	public boolean pinnedRecipeShowFullAmounts = false;
 
 	// How many inventory click packets leave per game tick (see ContainerClickPacing) - a burst of
 	// them, as the quick sort makes, can trip a server's packet limit. 1-20, clamped where it is used.

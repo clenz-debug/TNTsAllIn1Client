@@ -1,11 +1,15 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.freecam.FreecamHandler;
+import com.tntsallin1client.friends.ClientUserBadges;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
+import com.tntsallin1client.tour.TourOverlay;
 import com.tntsallin1client.waypoint.WaypointRenderer;
 import com.tntsallin1client.zoom.ZoomHandler;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,6 +44,25 @@ public abstract class GameRendererMixin {
 		// The overlay first: it lies on the ground, the waypoints show through everything.
 		SpawnOverlayRenderer.render();
 		WaypointRenderer.render();
+	}
+
+	/**
+	 * Nametag logo for players who use our client (see {@link ClientUserBadges}): this draws every
+	 * text above an entity - right before it takes its position and scale down again, the logo goes
+	 * next to the name. `yOffset` is where the text's top is; the game draws one name ten units higher.
+	 */
+	@Inject(method = "renderNameTagInWorld",
+			at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;popMatrix()V"))
+	private static void tntsallin1client$drawClientBadge(Font font, String text, float x, float y, float z, int yOffset, float yaw, float pitch,
+			boolean sneaking, CallbackInfo ci) {
+		ClientUserBadges.drawBesideCurrentName(font.width(text), yOffset, sneaking);
+	}
+
+	/** The in-game tour: its explanation goes on top of whatever screen the game has just drawn. */
+	@Inject(method = "render(FJZ)V",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;render(IIF)V", shift = At.Shift.AFTER))
+	private void tntsallin1client$drawTourOverScreen(float partialTick, long nanoTime, boolean renderLevel, CallbackInfo ci) {
+		TourOverlay.renderScreen(Minecraft.getInstance().screen);
 	}
 
 	@Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)

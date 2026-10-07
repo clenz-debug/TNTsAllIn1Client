@@ -15,10 +15,8 @@ import com.tntsallin1client.config.ConfigReset;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -252,7 +250,7 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 
 	/** Asks first. Either way the player is back on this screen afterwards. */
 	private void askReset() {
-		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+		this.minecraft.setScreen(new ThemedConfirmScreen(confirmed -> {
 			if (confirmed) {
 				ConfigReset.reset(this.resetFeature);
 				for (Option option : this.shown) {
@@ -263,8 +261,8 @@ public abstract class FeatureOptionsScreen extends ClientScreen {
 				}
 			}
 			this.minecraft.setScreen(this);
-		}, new TextComponent(I18n.get("gui.tntsallin1client.reset.confirm_title", I18n.get(this.resetFeature.labelKey))),
-				new TextComponent(I18n.get("gui.tntsallin1client.reset.confirm_message"))));
+		}, I18n.get("gui.tntsallin1client.reset.confirm_title", I18n.get(this.resetFeature.labelKey)),
+				I18n.get("gui.tntsallin1client.reset.confirm_message")));
 	}
 
 	private void openHudEditor() {

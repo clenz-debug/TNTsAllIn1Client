@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.tour.TourRect;
+import com.tntsallin1client.tour.TourTargets;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -25,7 +27,7 @@ import org.lwjgl.glfw.GLFW;
  * {@link ScrollPane}). Typing into the search field leaves only the rows whose name contains the
  * text; a section none of whose rows are left drops its heading too.
  */
-public class ClientMenuScreen extends ClientScreen implements FeatureSink {
+public class ClientMenuScreen extends ClientScreen implements FeatureSink, TourTargets {
 	private static final int ROW_WIDTH = 210;
 	private static final int ROW_HEIGHT = 20;
 	private static final int ROW_SPACING = 24;
@@ -138,6 +140,56 @@ public class ClientMenuScreen extends ClientScreen implements FeatureSink {
 		}
 		int x = (this.width - ROW_WIDTH) / 2;
 		this.pane.layout(VIEWPORT_TOP, this.height - VIEWPORT_BOTTOM_MARGIN, x + ROW_WIDTH + ScrollPane.SCROLLBAR_GAP, contentHeight);
+	}
+
+	// --- In-game tour ------------------------------------------------------------------------
+
+	@Override
+	public TourRect tourTarget(String name) {
+		if (this.searchField == null) {
+			return null;
+		}
+		if (name.equals(SEARCH)) {
+			return new TourRect(this.searchField.x - 1, this.searchField.y - 1, ROW_WIDTH, ROW_HEIGHT);
+		}
+		if (name.equals(HUD_EDITOR)) {
+			return rowBounds("gui.tntsallin1client.menu.hud_editor_button", null);
+		}
+		if (name.startsWith(FEATURE_OPTIONS)) {
+			return rowBounds(name.substring(FEATURE_OPTIONS.length()), Boolean.FALSE);
+		}
+		if (name.startsWith(FEATURE_SWITCH)) {
+			return rowBounds(name.substring(FEATURE_SWITCH.length()), Boolean.TRUE);
+		}
+		if (name.startsWith(FEATURE)) {
+			return rowBounds(name.substring(FEATURE.length()), null);
+		}
+		return null;
+	}
+
+	/**
+	 * A row (by its translation key) - `part` true: its switch, false: its Options button, null: all
+	 * of it. A row outside the viewport gets scrolled to instead.
+	 */
+	private TourRect rowBounds(String labelKey, Boolean part) {
+		for (Row row : this.rows) {
+			if (!row.labelKey.equals(labelKey) || !row.visible || row.isHeader()) {
+				continue;
+			}
+			int top = screenY(row);
+			if (top < VIEWPORT_TOP || top + ROW_HEIGHT > this.height - VIEWPORT_BOTTOM_MARGIN) {
+				this.pane.scrollTo(row.y);
+				return null;
+			}
+			Button button = part == null ? null : part ? row.toggle : row.open;
+			if (part != null && button == null) {
+				return null;
+			}
+			return button != null
+					? new TourRect(button.x, top, button.getWidth(), ROW_HEIGHT)
+					: new TourRect((this.width - ROW_WIDTH) / 2, top, ROW_WIDTH, ROW_HEIGHT);
+		}
+		return null;
 	}
 
 	private void placeRows() {

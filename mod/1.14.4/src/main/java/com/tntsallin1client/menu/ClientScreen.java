@@ -1,5 +1,6 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.tour.TourScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -8,7 +9,7 @@ import net.minecraft.network.chat.TranslatableComponent;
  * Base of the mod's own screens: a title on top, and Escape leads back to the screen it was opened
  * from (vanilla's default closes straight into the game).
  */
-public abstract class ClientScreen extends Screen {
+public abstract class ClientScreen extends Screen implements TourScreen.Closable {
 	private static final int TITLE_Y = 14;
 
 	protected final Screen parent;
@@ -22,6 +23,11 @@ public abstract class ClientScreen extends Screen {
 
 	protected void back() {
 		this.minecraft.setScreen(this.parent);
+	}
+
+	@Override
+	public void closeForTour() {
+		back();
 	}
 
 	/** What Escape does. */

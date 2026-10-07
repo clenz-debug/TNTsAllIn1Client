@@ -7,10 +7,8 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.waypoint.Waypoint;
 import com.tntsallin1client.waypoint.WaypointDimensions;
 import com.tntsallin1client.waypoint.WaypointScope;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
 
 /**
  * One waypoint's own screen: name, position, color, visible or not, beam/marker/distance/fading -
@@ -65,14 +63,14 @@ public class WaypointEditScreen extends FeatureOptionsScreen {
 	private void delete() {
 		if (ClientConfig.get().waypointConfirmDelete) {
 			// Asks first; a no leads back here.
-			this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+			this.minecraft.setScreen(new ThemedConfirmScreen(confirmed -> {
 				if (confirmed) {
 					deleteWaypoint();
 				} else {
 					this.minecraft.setScreen(this);
 				}
-			}, new TextComponent(I18n.get(KEY + "delete_confirm_title")),
-					new TextComponent(I18n.get(KEY + "delete_confirm_message", this.waypoint.name))));
+			}, I18n.get(KEY + "delete_confirm_title"),
+					I18n.get(KEY + "delete_confirm_message", this.waypoint.name)));
 		} else {
 			deleteWaypoint();
 		}

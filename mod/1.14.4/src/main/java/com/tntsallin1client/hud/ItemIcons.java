@@ -6,14 +6,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 
 /** Draws item icons on the HUD. */
-final class ItemIcons {
-	static final int SIZE = 16;
+public final class ItemIcons {
+	public static final int SIZE = 16;
 
 	private ItemIcons() {
 	}
 
 	/** Draws an item the way the hotbar does, with its top left corner at `x`/`y`. Nothing for null or an empty stack. */
-	static void draw(Minecraft client, ItemStack stack, int x, int y) {
+	public static void draw(Minecraft client, ItemStack stack, int x, int y) {
 		if (stack == null || stack.isEmpty()) {
 			return;
 		}

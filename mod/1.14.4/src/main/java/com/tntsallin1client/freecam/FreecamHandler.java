@@ -27,6 +27,11 @@ public final class FreecamHandler {
 	private FreecamHandler() {
 	}
 
+	/** Whether this is the freecam's own figure rather than a player. */
+	public static boolean isCamera(Object entity) {
+		return entity instanceof FreecamCamera;
+	}
+
 	public static boolean isActive() {
 		return camera != null;
 	}

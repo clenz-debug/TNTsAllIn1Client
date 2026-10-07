@@ -1,6 +1,6 @@
 package com.tntsallin1client.menu;
 
-import com.tntsallin1client.design.ThemedUi;
+import com.tntsallin1client.design.ClientDesign;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
 
@@ -21,7 +21,7 @@ final class TopBar {
 	}
 
 	static boolean inUse() {
-		return ThemedUi.active();
+		return ClientDesign.isClient();
 	}
 
 	/** The left edge of a button `width` wide in the top right corner. */

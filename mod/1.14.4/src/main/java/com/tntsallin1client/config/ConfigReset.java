@@ -41,6 +41,7 @@ public final class ConfigReset {
 		WAYPOINTS("gui.tntsallin1client.menu.waypoints", "waypointsEnabled", "waypoint"),
 		SKIN_LAYERS_3D("gui.tntsallin1client.menu.skin_layers_3d", "skinLayers3dEnabled", "skinLayers3d"),
 		QUICK_SORT("gui.tntsallin1client.menu.quick_sort", "quickSortEnabled", "quickSort"),
+		PINNED_RECIPE("gui.tntsallin1client.menu.pinned_recipe", "pinnedRecipeEnabled", "pinnedRecipe"),
 		DISCORD_PRESENCE("gui.tntsallin1client.menu.discord_presence", "discordPresenceEnabled", "discordPresence");
 
 		public final String labelKey;

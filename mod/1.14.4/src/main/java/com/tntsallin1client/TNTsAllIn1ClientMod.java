@@ -3,11 +3,18 @@ package com.tntsallin1client;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.inventory.ContainerClickPacing;
 import com.tntsallin1client.keybind.ModKeyBindings;
+import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.menu.ClientMenus;
+import com.tntsallin1client.menu.PinnedRecipeListScreen;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import net.fabricmc.api.ClientModInitializer;
+import com.tntsallin1client.discord.DiscordPresenceManager;
+import com.tntsallin1client.friends.ActivityReporter;
+import com.tntsallin1client.friends.ClientUserBadges;
+import com.tntsallin1client.friends.FriendsBridge;
+import com.tntsallin1client.tour.InGameTour;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +37,17 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 			SpawnOverlayRenderer.tick(client);
 			ContainerClickPacing.tick(client);
 			ScreenshotWatcher.tick(client);
+			ActivityReporter.tick(client);
+			FriendsBridge.tick(client);
+			ClientUserBadges.tick(client);
+			DiscordPresenceManager.tick(client);
+			InGameTour.tick(client);
+			while (ModKeyBindings.OPEN_PINNED_RECIPES.consumeClick()) {
+				// Only from gameplay, and only while the feature is on - switching it off switches its key off too.
+				if (client.screen == null && ClientConfig.get().pinnedRecipeEnabled) {
+					client.setScreen(new PinnedRecipeListScreen(null));
+				}
+			}
 			while (ModKeyBindings.OPEN_MENU.consumeClick()) {
 				// Only from gameplay - with a screen open the key belongs to that screen.
 				if (client.screen == null) {

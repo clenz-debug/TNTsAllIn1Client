@@ -31,6 +31,15 @@ public final class ModKeyBindings {
 	// Sorts the inventory while the inventory screen is open, like its Sort button. Unbound by default as well.
 	public static final KeyMapping SORT_INVENTORY = new KeyMapping("key.tntsallin1client.sort_inventory", UNBOUND, CATEGORY);
 
+	// Held over a shulker box in an inventory: shows what is in it. Unbound by default as well - also settable in the preview options screen.
+	public static final KeyMapping SHULKER_PREVIEW = new KeyMapping("key.tntsallin1client.shulker_preview", UNBOUND, CATEGORY);
+
+	// Pressed over a recipe in the recipe book: pins it to the HUD, or unpins it. Unbound by default as well.
+	public static final KeyMapping PIN_RECIPE = new KeyMapping("key.tntsallin1client.pin_recipe", UNBOUND, CATEGORY);
+
+	// Opens the list of pinned recipes directly from gameplay. Unbound by default as well.
+	public static final KeyMapping OPEN_PINNED_RECIPES = new KeyMapping("key.tntsallin1client.open_pinned_recipes", UNBOUND, CATEGORY);
+
 	private ModKeyBindings() {
 	}
 
@@ -43,5 +52,8 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(CREATE_WAYPOINT);
 		KeyBindingHelper.registerKeyBinding(SPAWN_OVERLAY);
 		KeyBindingHelper.registerKeyBinding(SORT_INVENTORY);
+		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
+		KeyBindingHelper.registerKeyBinding(PIN_RECIPE);
+		KeyBindingHelper.registerKeyBinding(OPEN_PINNED_RECIPES);
 	}
 }

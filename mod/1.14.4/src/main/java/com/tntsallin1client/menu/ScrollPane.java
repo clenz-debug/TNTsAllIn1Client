@@ -1,6 +1,8 @@
 package com.tntsallin1client.menu;
 
 import com.mojang.blaze3d.platform.Window;
+import com.tntsallin1client.design.ClientTheme;
+import com.tntsallin1client.design.ThemedUi;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.util.Mth;
@@ -118,13 +120,19 @@ final class ScrollPane {
 		GL11.glDisable(GL11.GL_SCISSOR_TEST);
 	}
 
-	/** Same look as the scrollbar of the game's own lists; nothing if everything fits. */
+	/** Same look as the scrollbar of the game's own lists - in the client design a flat track with an accent thumb; nothing if everything fits. */
 	void renderScrollbar() {
 		if (this.maxScroll <= 0) {
 			return;
 		}
 		int thumbY = thumbY();
 		int thumbHeight = thumbHeight();
+		if (ThemedUi.active()) {
+			ClientTheme theme = ClientTheme.get();
+			GuiComponent.fill(this.scrollbarX, this.top, this.scrollbarX + SCROLLBAR_WIDTH, this.bottom, theme.background2);
+			GuiComponent.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, theme.accent3);
+			return;
+		}
 		GuiComponent.fill(this.scrollbarX, this.top, this.scrollbarX + SCROLLBAR_WIDTH, this.bottom, 0xFF000000);
 		GuiComponent.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, 0xFF808080);
 		GuiComponent.fill(this.scrollbarX, thumbY, this.scrollbarX + SCROLLBAR_WIDTH - 1, thumbY + thumbHeight - 1, 0xFFC0C0C0);

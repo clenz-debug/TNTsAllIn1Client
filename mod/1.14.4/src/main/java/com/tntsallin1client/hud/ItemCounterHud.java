@@ -106,16 +106,21 @@ public final class ItemCounterHud extends HudElement {
 		if (tracked == null) {
 			return null;
 		}
+		return new ItemStack(tracked).getHoverName().getString() + ": " + countInInventory(player, tracked);
+	}
+
+	/** How many of the item the player carries: main inventory, hotbar and off hand. Also what the pinned recipes count down against. */
+	public static int countInInventory(Player player, Item item) {
 		int total = 0;
 		for (ItemStack stack : player.inventory.items) {
-			if (stack.getItem() == tracked) {
+			if (stack.getItem() == item) {
 				total += stack.getCount();
 			}
 		}
 		ItemStack offhand = player.getOffhandItem();
-		if (offhand.getItem() == tracked) {
+		if (offhand.getItem() == item) {
 			total += offhand.getCount();
 		}
-		return new ItemStack(tracked).getHoverName().getString() + ": " + total;
+		return total;
 	}
 }

@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.tntsallin1client.config.ClientConfig;
+import com.tntsallin1client.design.ClientFont;
+import com.tntsallin1client.design.ThemedUi;
 import com.tntsallin1client.waypoint.Waypoint;
 import com.tntsallin1client.waypoint.WaypointDimensions;
 import com.tntsallin1client.waypoint.WaypointScope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
 
 /**
  * The list of waypoints of the world or server the player is in, reached from the waypoint options
@@ -85,15 +85,15 @@ public class WaypointListScreen extends ClientScreen {
 	 * can't be taken back. Either way the player is back on this screen afterwards.
 	 */
 	private void askDeleteAll() {
-		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+		this.minecraft.setScreen(new ThemedConfirmScreen(confirmed -> {
 			if (confirmed && this.worldKey != null) {
 				ClientConfig config = ClientConfig.get();
 				config.waypointsFor(this.worldKey).clear();
 				config.save();
 			}
 			this.minecraft.setScreen(this);
-		}, new TextComponent(I18n.get(KEY + "delete_all_confirm_title")),
-				new TextComponent(I18n.get(KEY + "delete_all_confirm_message", this.waypoints.size()))));
+		}, I18n.get(KEY + "delete_all_confirm_title"),
+				I18n.get(KEY + "delete_all_confirm_message", this.waypoints.size())));
 	}
 
 	private void buildRows(int x) {
@@ -278,6 +278,12 @@ public class WaypointListScreen extends ClientScreen {
 		@Override
 		public void renderButton(int mouseX, int mouseY, float partialTick) {
 			super.renderButton(mouseX, mouseY, partialTick);
+			if (ThemedUi.active()) {
+				// The waypoint's own color, in the client design's font.
+				ClientFont.drawCentered(ClientFont.fit(this.text, this.width - 2 * TEXT_MARGIN), this.x + this.width / 2.0F,
+						this.y + (this.height - ClientFont.HEIGHT) / 2.0F, 0xFF000000 | this.color);
+				return;
+			}
 			Font font = Minecraft.getInstance().font;
 			String shown = font.substrByWidth(this.text, this.width - 2 * TEXT_MARGIN);
 			this.drawCenteredString(font, shown, this.x + this.width / 2, this.y + (this.height - 8) / 2, this.color);

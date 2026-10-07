@@ -3,10 +3,8 @@ package com.tntsallin1client.menu;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TextComponent;
 
 /**
  * Every feature the Client Mods menu offers (on/off switch, optional options screen) plus its extra
@@ -62,17 +60,26 @@ final class ClientMenuFeatures {
 		sink.beginSection("gui.tntsallin1client.menu.section_inventory");
 		sink.addFeature("gui.tntsallin1client.menu.quick_sort", () -> config.quickSortEnabled, value -> config.quickSortEnabled = value,
 				() -> new QuickSortOptionsScreen(screen));
+		sink.addFeature("gui.tntsallin1client.menu.shulker_preview", () -> config.shulkerPreviewEnabled, value -> config.shulkerPreviewEnabled = value,
+				() -> new ShulkerPreviewOptionsScreen(screen));
 		sink.addFeature("gui.tntsallin1client.menu.screenshot_toast", () -> config.screenshotToastEnabled, value -> config.screenshotToastEnabled = value, null);
+		sink.addFeature("gui.tntsallin1client.menu.pinned_recipe", () -> config.pinnedRecipeEnabled, value -> config.pinnedRecipeEnabled = value,
+				() -> new PinnedRecipeOptionsScreen(screen));
 
 		sink.beginSection("gui.tntsallin1client.menu.section_misc");
+		sink.addFeature("gui.tntsallin1client.menu.skin_layers_3d", () -> config.skinLayers3dEnabled, value -> config.skinLayers3dEnabled = value,
+				() -> new SkinLayers3dOptionsScreen(screen));
+		sink.addFeature("gui.tntsallin1client.menu.discord_presence", () -> config.discordPresenceEnabled, value -> config.discordPresenceEnabled = value,
+				() -> new DiscordPresenceOptionsScreen(screen));
+		sink.addFeature("gui.tntsallin1client.menu.client_capes", () -> config.clientCapesEnabled, value -> config.clientCapesEnabled = value, null);
 		sink.addLink(FeatureSink.LinkRole.HUD_EDITOR, "gui.tntsallin1client.menu.hud_editor_button", () -> new HudEditorScreen(screen));
 		// Asks first. Either way the player is back in the menu afterwards.
-		sink.addLink(FeatureSink.LinkRole.RESET_ALL, "gui.tntsallin1client.menu.reset_all_button", () -> new ConfirmScreen(confirmed -> {
+		sink.addLink(FeatureSink.LinkRole.RESET_ALL, "gui.tntsallin1client.menu.reset_all_button", () -> new ThemedConfirmScreen(confirmed -> {
 			if (confirmed) {
 				ConfigReset.resetAll();
 			}
 			Minecraft.getInstance().setScreen(screen);
-		}, new TextComponent(I18n.get("gui.tntsallin1client.reset.confirm_all_title")),
-				new TextComponent(I18n.get("gui.tntsallin1client.reset.confirm_all_message"))));
+		}, I18n.get("gui.tntsallin1client.reset.confirm_all_title"),
+				I18n.get("gui.tntsallin1client.reset.confirm_all_message")));
 	}
 }
