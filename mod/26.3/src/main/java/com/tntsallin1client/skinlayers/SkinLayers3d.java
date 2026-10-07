@@ -26,7 +26,11 @@ import net.minecraft.world.entity.EquipmentSlot;
  * closer to the body than the 3D layer would.
  */
 public final class SkinLayers3d {
-	public static final int MIN_DEPTH_PERCENT = 25;
+	/**
+	 * Low enough for a layer that barely stands off (own user request). Not lower: the parts differ
+	 * by a few hundredths of a pixel in how far they stand off, and every one has to stay above zero.
+	 */
+	public static final int MIN_DEPTH_PERCENT = 10;
 	public static final int MAX_DEPTH_PERCENT = 100;
 	public static final int MIN_DISTANCE = 4;
 	public static final int MAX_DISTANCE = 64;
