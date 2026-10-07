@@ -1,0 +1,30 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.tntsallin1client.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"client": [
+		"AbstractContainerScreenMixin",
+		"EntityRenderDispatcherMixin",
+		"FireworkStarterMixin",
+		"FogRendererMixin",
+		"GameRendererMixin",
+		"GuiMixin",
+		"ItemEntityRendererMixin",
+		"LevelRendererMixin",
+		"LightTextureMixin",
+		"LivingEntityRendererMixin",
+		"LocalPlayerMixin",
+		"MinecraftMixin",
+		"MouseHandlerMixin",
+		"MultiPlayerGameModeMixin",
+		"ParticleEngineMixin",
+		"PauseScreenMixin",
+		"PlayerRendererMixin",
+		"ScreenMixin",
+		"TitleScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
