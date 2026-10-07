@@ -13,10 +13,19 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
     - [x] Fundament – von dir bestätigt (2026-10-07): Einstellungen, Taste fürs Mod-Menü, Mod-Menü (Listenansicht mit Suche) mit Optionsmenüs samt Farbwähler, Knopf „Client Mods“ im Pause- und Titelmenü, Zurücksetzen (einzeln und alle), Sprachdateien
     - [x] HUD – von dir bestätigt (2026-10-07): Koordinaten, FPS, Latenz, Uhr, Keystrokes, Rüstungs-Status, Item-Zähler, HUD-Editor
     - [x] Rendering – von dir bestätigt (2026-10-07): Zoom, Freecam (mit sichtbarem Körper in F5), Fadenkreuz, Fullbright, Kein Nebel, Partikel-Filter, Spawn-Overlay, Hitbox- und Blockumriss-Farbe, Itemphysics, Wegpunkte
-    - [ ] Inventar: Schnellsortieren und Screenshot-Nachricht von dir bestätigt (2026-10-07); offen: Shulker-Vorschau, angepinnte Rezepte (prüfen, ob in 1.14.4 machbar)
-      - [ ] Bug (von dir gemeldet 2026-10-07, mit Screenshot): Darstellungsfehler im Inventar, wenn viele Trankeffekte gleichzeitig aktiv sind – noch nicht untersucht; den Screenshot im `screenshots`-Ordner der 1.14.4-Instanz unter `A:\instances` ansehen
+    - [x] Inventar – von dir bestätigt (2026-10-07/08): Schnellsortieren, Shulker-Vorschau, Screenshot-Nachricht, angepinnte Rezepte
+      - [x] Gemeldet 2026-10-07 (überlappende Trankeffekt-Einträge neben dem Inventar bei mehr als 5 Effekten): kein Fehler der Mod – 1.14.4 staucht die Liste selbst so zusammen (im Bytecode geprüft, 2026-10-08)
     - [ ] Zu prüfen in 1.21.11, 26.1.2 und 26.3: funktioniert „[Kopieren]“ in der Screenshot-Nachricht? Das Spiel sperrt dort Javas Zwischenablage für Bilder (Headless-Modus); falls nicht, den PowerShell-Weg aus 1.14.4 nachziehen
-    - [ ] Client-Design (Titelbildschirm, Kartenmenü, Schrift), Tour, Discord, Freunde, Capes, 3D-Skin-Layer
+    - [x] Client-Design (Titelbildschirm, Pausenmenü, Kartenmenü, Schrift, Knöpfe/Regler/Textfelder im Design) – von dir im Spiel bestätigt 2026-10-07
+    - [x] Tour im Spiel inkl. Freunde-Schritte – von dir bestätigt 2026-10-07 (Design-Wechsel nach Start im Client-Design nachgebessert)
+    - [x] Freunde-Menü (Knopf auf Titelbildschirm und im Pausenmenü, Freunde-Bildschirm, Einladungs-Hinweis, Aktivität für den Launcher) – von dir bestätigt 2026-10-07; Umfang wie 1.8.9: Einladungen nur ablehnbar, in die eigene Welt einladen geht nicht (e4mc gibt es erst ab 1.17)
+    - [x] Client-Logo am Namensschild von Client-Nutzern – am eigenen Namen von dir bestätigt 2026-10-07; bei anderen Spielern erst mit zweitem Client-Nutzer prüfbar (wie in den anderen Versionen, einer der letzten Schritte vor 1.0)
+    - [x] Discord-Aktivität (mit Optionen) – von dir bestätigt 2026-10-07; wie in 1.8.9 nur unter Windows
+    - [x] Capes (Client-Capes mit Schalter, eigener Skin/Cape im Offline-Modus) – von dir pauschal bestätigt 2026-10-08 („was wir gemacht hatten passt“)
+      - [x] Elytra bei Client-Cape (gemeldet 2026-10-07: einfarbig graue Elytra): in 1.14.4 behält die Elytra jetzt ihr eigenes Aussehen, wenn der Elytra-Bereich des Capes nur eine Farbe hat (so füllt ihn der Cape-Konverter) – von dir im Spiel gesehen 2026-10-07 (Vanilla-Elytra)
+      - [x] 1.21.11, 26.1.2 und 26.3: dort gibt die mitgelieferte Cape-Provider-Mod der Elytra jedes 2:1-Cape-Bild (im Bytecode geprüft) – dieselbe Regel wie in 1.14.4 eingebaut 2026-10-07 (`CapeProviderElytraMixin`), von dir pauschal bestätigt 2026-10-08
+    - [x] 3D-Skin-Layer (mit Optionen: Teile, Tiefe, Entfernung; 3D-Ärmel am Arm in der Ich-Ansicht) – von dir pauschal bestätigt 2026-10-08
+      - [x] Tiefe der 3D-Skin-Layer lässt sich jetzt ab 10 % statt ab 25 % einstellen – in allen fünf Versionen geändert, von dir bestätigt 2026-10-08
     - [ ] Eigene Ressourcenpakete für 1.14.4 und Drittanbieter-Mods klären (welche der gebündelten Mods es für 1.14.4 überhaupt gibt), danach Manifest-Eintrag und Release
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
