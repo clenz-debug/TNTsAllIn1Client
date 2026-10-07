@@ -1,48 +1,88 @@
 package com.tntsallin1client.freecam;
 
+import java.util.UUID;
+
+import com.mojang.authlib.GameProfile;
 import com.tntsallin1client.config.ClientConfig;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.client.render.entity.PlayerModelPart;
+import net.minecraft.entity.player.ClientPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 /**
- * What the game's camera follows while freecam is active: an entity of our own that exists only
- * here - it is never added to the world, so the server never hears of it and nothing in the world
- * reacts to it. The game can point its camera at any entity (spectating works that way), and
- * everything that depends on where the camera is - which chunks are drawn, fog, the view itself -
- * follows from that by itself.
+ * What the game's camera follows while freecam is active: a player body of our own that exists only
+ * on this client - the server never hears of it. The game can point its camera at any entity
+ * (spectating works that way), and everything that depends on where the camera is - which chunks
+ * are drawn, fog, the view itself - follows from that by itself.
  *
- * <p>A small box with the eye in its middle, moved by the movement keys against the world's
- * collision (see {@link FreecamCollision}).
+ * <p>A body like in the other versions of the mod (own user request: the same everywhere): in third
+ * person (F5) it shows with the player's own skin, without a cape. It is in the client's world so
+ * the game draws it, and the world ticks it - that tick is nothing but its movement by the movement
+ * keys, held back by walls (see {@link FreecamCollision}).
  */
-final class FreecamCamera extends Entity {
-	static final float SIZE = 0.6F;
+final class FreecamCamera extends AbstractClientPlayerEntity {
+	/** Negative, so it can never be the id of an entity the server sends (those count up from 1). */
+	static final int ENTITY_ID = -7326;
 	private static final double SPRINT_MULTIPLIER = 3.0;
 	private static final float DEGREES_TO_RADIANS = (float) Math.PI / 180.0F;
 
 	FreecamCamera(World world) {
-		super(world);
-		setBounds(SIZE, SIZE);
+		super(world, new GameProfile(UUID.randomUUID(), "Freecam"));
+		this.abilities.flying = true;
+	}
+
+	/**
+	 * The skin - despite the name this name table gives the method (see
+	 * `AbstractClientPlayerEntityMixin`). This body is nobody the server knows, so it would get a
+	 * default skin; it wears the player's own instead, whatever that one's comes from.
+	 */
+	@Override
+	public Identifier getCapeId() {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		return player != null ? player.getCapeId() : super.getCapeId();
+	}
+
+	/**
+	 * The cape, again despite the name - none: it hangs by how the body moved over the last ticks,
+	 * which this one, flying about, has no sensible values for.
+	 */
+	@Override
+	public Identifier getSkinId() {
+		return null;
 	}
 
 	@Override
-	protected void initDataTracker() {
+	public boolean canRenderCapeTexture() {
+		return false;
+	}
+
+	/** Wide or slim arms - they have to match the skin. */
+	@Override
+	public String getModel() {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		return player != null ? player.getModel() : super.getModel();
+	}
+
+	/** Hat, jacket, sleeves, trouser legs: as the player has them set, not all hidden as on a new entity. */
+	@Override
+	public boolean isPartVisible(PlayerModelPart part) {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		return player != null ? player.isPartVisible(part) : super.isPartVisible(part);
 	}
 
 	@Override
-	protected void readCustomDataFromNbt(NbtCompound nbt) {
+	public boolean isSpectator() {
+		return false;
 	}
 
+	/** Nothing in the world shoves the camera around. */
 	@Override
-	protected void writeCustomDataToNbt(NbtCompound nbt) {
-	}
-
-	@Override
-	public float getEyeHeight() {
-		return SIZE / 2.0F;
+	public boolean isPushable() {
+		return false;
 	}
 
 	/** Puts the camera somewhere without the game drawing a glide from where it was before. */
@@ -54,9 +94,10 @@ final class FreecamCamera extends Entity {
 		// one would have the view spin through all of them, every tick.
 		this.prevYaw = this.yaw;
 		this.prevPitch = this.pitch;
+		faceWhereItLooks();
 	}
 
-	/** The game draws an entity between where it was a tick ago and where it is now - normally the world keeps these up to date. */
+	/** The game draws an entity between where it was a tick ago and where it is now. */
 	private void rememberPosition() {
 		this.prevX = this.x;
 		this.prevY = this.y;
@@ -66,10 +107,36 @@ final class FreecamCamera extends Entity {
 		this.prevTickZ = this.z;
 	}
 
-	/** One game tick of movement. */
-	void move(MinecraftClient client) {
-		rememberPosition();
+	/**
+	 * Head and body turn with the view at once. The game lets them catch up over several ticks in the
+	 * living entity's own tick, which this body never runs - left alone they would stay where they
+	 * were while the view turns.
+	 */
+	private void faceWhereItLooks() {
+		this.headYaw = this.yaw;
+		this.bodyYaw = this.yaw;
+		this.prevHeadYaw = this.prevYaw;
+		this.prevBodyYaw = this.prevYaw;
+	}
 
+	/** The mouse, already turned into degrees by the game. */
+	void turn(float yawChange, float pitchChange) {
+		increaseTransforms(yawChange, pitchChange);
+		faceWhereItLooks();
+	}
+
+	/**
+	 * One game tick - nothing of a player's own tick (hunger, drowning, falling, sounds), only the
+	 * movement by the keys.
+	 */
+	@Override
+	public void tick() {
+		rememberPosition();
+		faceWhereItLooks();
+		MinecraftClient client = MinecraftClient.getInstance();
+		if (client.player == null) {
+			return;
+		}
 		GameOptions options = client.options;
 		double forward = (options.forwardKey.isPressed() ? 1 : 0) - (options.backKey.isPressed() ? 1 : 0);
 		double strafe = (options.rightKey.isPressed() ? 1 : 0) - (options.leftKey.isPressed() ? 1 : 0);

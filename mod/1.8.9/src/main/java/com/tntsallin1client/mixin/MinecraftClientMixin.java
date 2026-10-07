@@ -17,7 +17,9 @@ import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import net.minecraft.client.MinecraftClient;
 import com.tntsallin1client.zoom.ZoomHandler;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.entity.player.PlayerInventory;
 import org.lwjgl.input.Mouse;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -63,10 +65,23 @@ public abstract class MinecraftClientMixin {
 		}
 	}
 
-	/** While zooming the mouse wheel changes the zoom level - the game must not switch the hotbar slot with it too. */
+	/**
+	 * While zooming the mouse wheel changes the zoom level - the game must not switch the hotbar slot
+	 * with it too. Nor while freecam is active: the frozen player keeps the item in its hand. (Screens
+	 * read the wheel themselves, this is only the wheel in the world.)
+	 */
 	@Redirect(method = "tick()V", at = @At(value = "INVOKE", target = "Lorg/lwjgl/input/Mouse;getEventDWheel()I", remap = false))
 	private int tnt$zoomWithWheel() {
-		return ZoomHandler.handleWheel(Mouse.getEventDWheel());
+		int wheel = ZoomHandler.handleWheel(Mouse.getEventDWheel());
+		return FreecamHandler.isActive() ? 0 : wheel;
+	}
+
+	/** Freecam: the hotbar keys (1-9) write the slot straight into the inventory - the only such write in `tick`. */
+	@Redirect(method = "tick()V", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", opcode = Opcodes.PUTFIELD))
+	private void tnt$blockHotbarKeysWhileFreecam(PlayerInventory inventory, int slot) {
+		if (!FreecamHandler.isActive()) {
+			inventory.selectedSlot = slot;
+		}
 	}
 
 	// Freecam: everything the player does to the world with the mouse starts in one of these four

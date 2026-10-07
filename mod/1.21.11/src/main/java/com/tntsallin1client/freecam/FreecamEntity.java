@@ -61,9 +61,17 @@ public class FreecamEntity extends AbstractClientPlayer {
 	 * constructed entity. The real player's byte only ever gets populated via the normal
 	 * client-information/network round trip, which this locally-created entity never goes through.
 	 * Delegating to the real player's own value instead, same pattern as {@link #getSkin}.
+	 *
+	 * <p>Except the cape, which this body never wears: {@code AvatarRenderer#extractRenderState}
+	 * takes {@code showCape} from this very method, and {@code CapeLayer} draws nothing without it.
+	 * The cape hangs by how the body moved over the last ticks, which this entity, flying about
+	 * without ever running the player tick, has no sensible values for - it hung crooked.
 	 */
 	@Override
 	public boolean isModelPartShown(PlayerModelPart part) {
+		if (part == PlayerModelPart.CAPE) {
+			return false;
+		}
 		LocalPlayer player = Minecraft.getInstance().player;
 		return player != null ? player.isModelPartShown(part) : super.isModelPartShown(part);
 	}

@@ -1,8 +1,10 @@
 package com.tntsallin1client.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.skinlayers.SkinLayers3d;
 import com.tntsallin1client.skinlayers.SkinLayers3dLayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.player.PlayerModel;
@@ -17,12 +19,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Own 3D skin layers, see {@link SkinLayers3d}: adds the layer that draws them, decides per player
- * which parts it draws, and gives the first-person arm its 3D sleeve.
+ * which parts it draws, and gives the first-person arm its 3D sleeve. Also keeps the player's cape
+ * still while freecam has frozen them, see {@link #tntsallin1client$steadyFlightDataWhileFrozen}.
  */
 @Mixin(AvatarRenderer.class)
 public abstract class AvatarRendererMixin<AvatarlikeEntity extends Avatar & ClientAvatarEntity>
@@ -47,6 +51,23 @@ public abstract class AvatarRendererMixin<AvatarlikeEntity extends Avatar & Clie
 			at = @At("TAIL"))
 	private void tntsallin1client$prepareSkinLayers3d(Avatar entity, AvatarRenderState state, float partialTick, CallbackInfo ci) {
 		SkinLayers3d.prepare(state, this.getModel());
+	}
+
+	/**
+	 * Freecam: {@code extractFlightData} stores "fall flying ticks + partial tick", and the cape's
+	 * lean is then scaled by {@code 1 - (that)^2 / 100} ({@code AvatarRenderState#fallFlyingScale},
+	 * read in {@code extractCapeState}, bytecode-verified). For a player not gliding that is up to
+	 * 1 % less lean within every tick, jumping back at the next one - unnoticeable on a moving
+	 * player, a slight twitch on the frozen one. The same partial tick blends the previous and
+	 * current velocity for a gliding player's body roll. A fixed one keeps both still.
+	 */
+	@ModifyArg(
+			method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
+			at = @At(value = "INVOKE",
+					target = "Lnet/minecraft/client/renderer/entity/player/AvatarRenderer;extractFlightData(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V"),
+			index = 2)
+	private float tntsallin1client$steadyFlightDataWhileFrozen(Avatar entity, AvatarRenderState state, float partialTick) {
+		return FreecamHandler.isActive() && entity == Minecraft.getInstance().player ? 0.0F : partialTick;
 	}
 
 	/**

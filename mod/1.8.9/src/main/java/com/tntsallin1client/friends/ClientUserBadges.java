@@ -1,5 +1,6 @@
 package com.tntsallin1client.friends;
 
+import com.tntsallin1client.freecam.FreecamHandler;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +109,9 @@ public final class ClientUserBadges {
 		Set<String> ids = new TreeSet<String>();
 		if (client.world != null) {
 			for (PlayerEntity player : client.world.playerEntities) {
-				ids.add(undashed(player.getUuid()));
+				if (!FreecamHandler.isCamera(player)) {
+					ids.add(undashed(player.getUuid()));
+				}
 			}
 		}
 		JsonArray array = new JsonArray();

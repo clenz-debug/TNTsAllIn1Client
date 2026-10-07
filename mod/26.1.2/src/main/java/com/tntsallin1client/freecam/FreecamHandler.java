@@ -2,6 +2,7 @@ package com.tntsallin1client.freecam;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
+import com.tntsallin1client.mixin.ClientAvatarStateAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -55,6 +56,24 @@ public final class FreecamHandler {
 				tryEnter(client);
 			}
 		}
+		if (active && client.player != null) {
+			playOutHurt(client.player);
+		}
+	}
+
+	/**
+	 * A hit taken while frozen still arrives ({@code LivingEntity#handleDamageEvent} sets
+	 * {@code hurtTime} to 10 and the walk animation's speed to 1.5), but both are only ever run
+	 * down again by the player's own tick, which is cancelled. Left alone the body stays red for
+	 * good ({@code hurtTime > 0}) and its legs jerk once per tick, the renderer blending toward a
+	 * speed that never decays. Run down here instead, the same way the tick does for a body
+	 * standing still.
+	 */
+	private static void playOutHurt(LocalPlayer player) {
+		if (player.hurtTime > 0) {
+			player.hurtTime--;
+		}
+		player.walkAnimation.update(0.0f, 0.4f, 1.0f);
 	}
 
 	private static void tryEnter(Minecraft client) {
@@ -100,6 +119,15 @@ public final class FreecamHandler {
 		player.yHeadRotO = player.getYHeadRot();
 		player.yBodyRotO = player.yBodyRot;
 		player.walkAnimation.stop();
+		// The cape is drawn from "old" and current values as well: where it hangs, how far the
+		// player has walked and how much it bobs. Left unequal, the cape would twitch on the
+		// frozen body.
+		ClientAvatarStateAccessor avatarState = (ClientAvatarStateAccessor) player.avatarState();
+		avatarState.tntsallin1client$setXCloakO(avatarState.tntsallin1client$getXCloak());
+		avatarState.tntsallin1client$setYCloakO(avatarState.tntsallin1client$getYCloak());
+		avatarState.tntsallin1client$setZCloakO(avatarState.tntsallin1client$getZCloak());
+		avatarState.tntsallin1client$setBobO(avatarState.tntsallin1client$getBob());
+		avatarState.tntsallin1client$setWalkDistO(avatarState.tntsallin1client$getWalkDist());
 
 		// Kept as a safety net from the earlier camera-override approach - not yet re-verified
 		// whether it's still needed now that the camera follows a real entity, but it's harmless

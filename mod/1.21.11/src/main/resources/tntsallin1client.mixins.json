@@ -16,6 +16,8 @@
 		"AvatarRendererMixin",
 		"BlockOutlineMixin",
 		"ChatScreenMixin",
+		"ClientAvatarStateAccessor",
+		"CreativeModeInventoryScreenMixin",
 		"E4mcChatMixin",
 		"EditBoxThemeMixin",
 		"EntityHitboxDebugRendererMixin",

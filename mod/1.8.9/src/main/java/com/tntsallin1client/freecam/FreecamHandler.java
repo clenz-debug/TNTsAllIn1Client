@@ -4,11 +4,13 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.keybind.ModKeyBindings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ClientPlayerEntity;
 
 /**
  * Freecam: a key detaches the camera from the player and lets it fly around on its own, held back
- * by walls ({@link FreecamCollision}). The game's camera follows a {@link FreecamCamera} for as long.
+ * by walls ({@link FreecamCollision}). The game's camera follows a {@link FreecamCamera} for as long,
+ * which the world moves once per tick.
  *
  * <p>The player stays completely frozen meanwhile - no movement, no turning, nothing sent to the
  * server about either - and attacking, mining, placing, using and dropping items are blocked (see
@@ -27,6 +29,11 @@ public final class FreecamHandler {
 
 	public static boolean isActive() {
 		return camera != null;
+	}
+
+	/** Whether the entity is the freecam's own body - a player in the world that is nobody. */
+	public static boolean isCamera(Entity entity) {
+		return entity instanceof FreecamCamera;
 	}
 
 	/** Called every game tick. */
@@ -50,9 +57,24 @@ public final class FreecamHandler {
 			if (client.player == null || camera.world != client.world) {
 				exit(client);
 			} else {
-				camera.move(client);
+				playOutHurt(client.player);
 			}
 		}
+	}
+
+	/**
+	 * A hit taken while frozen still arrives (`hurtTime` set to 10, the limb swing amount to 1.5),
+	 * but both are only ever run down again by the player's own tick, which is skipped. Left alone
+	 * the body stays red for good and its legs jerk once per tick. Run down here instead, the same
+	 * way the tick does for a body standing still.
+	 */
+	private static void playOutHurt(ClientPlayerEntity player) {
+		if (player.hurtTime > 0) {
+			player.hurtTime--;
+		}
+		player.field_6748 = player.field_6749;
+		player.field_6749 -= player.field_6749 * 0.4F;
+		player.field_6750 += player.field_6749;
 	}
 
 	private static void tryEnter(MinecraftClient client) {
@@ -61,9 +83,10 @@ public final class FreecamHandler {
 			return;
 		}
 
-		// Starts exactly where the player's eyes are, looking the same way.
+		// Starts with its eyes exactly where the player's are, looking the same way.
 		FreecamCamera newCamera = new FreecamCamera(client.world);
-		newCamera.placeAt(player.x, player.y + player.getEyeHeight() - FreecamCamera.SIZE / 2.0F, player.z, player.yaw, player.pitch);
+		newCamera.placeAt(player.x, player.y + player.getEyeHeight() - newCamera.getEyeHeight(), player.z, player.yaw, player.pitch);
+		client.world.addEntity(FreecamCamera.ENTITY_ID, newCamera);
 		camera = newCamera;
 		client.setCameraEntity(newCamera);
 
@@ -104,9 +127,14 @@ public final class FreecamHandler {
 		if (camera == null) {
 			return;
 		}
+		FreecamCamera old = camera;
 		camera = null;
 		if (client.player != null) {
 			client.setCameraEntity(client.player);
+		}
+		// Out of the world it was put into - unless that world is gone already.
+		if (client.world != null && client.world == old.world) {
+			client.world.removeEntity(FreecamCamera.ENTITY_ID);
 		}
 	}
 
@@ -117,7 +145,7 @@ public final class FreecamHandler {
 	public static void turn(float yawChange, float pitchChange) {
 		if (camera != null) {
 			float factor = ClientConfig.get().freecamSensitivityPercent / 100.0F;
-			camera.increaseTransforms(yawChange * factor, pitchChange * factor);
+			camera.turn(yawChange * factor, pitchChange * factor);
 		}
 	}
 

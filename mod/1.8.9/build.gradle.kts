@@ -48,7 +48,10 @@ repositories {
 	maven {
 		name = "MojangLibraries"
 		url = uri("https://libraries.minecraft.net/")
-		content { includeGroup("net.minecraft") }
+		content {
+			includeGroup("net.minecraft")
+			includeGroup("com.mojang")
+		}
 	}
 	maven {
 		name = "LegacyFabric"
@@ -161,6 +164,8 @@ dependencies {
 	compileOnly("com.google.code.gson:gson:2.2.4")
 	compileOnly("com.google.guava:guava:17.0")
 	compileOnly("org.apache.logging.log4j:log4j-api:2.0-beta9")
+	// Player profiles (name and id) - the freecam body is a player and needs one.
+	compileOnly("com.mojang:authlib:1.5.21") { isTransitive = false }
 	// The game runs on a nightly build of this that only Mojang's server has; the parts we use are the same.
 	compileOnly("org.lwjgl.lwjgl:lwjgl:2.9.3") { isTransitive = false }
 	// On the classpath through the launcher (for Mixin) - `VerifyMain` uses it.
