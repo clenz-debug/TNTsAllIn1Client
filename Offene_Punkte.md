@@ -8,15 +8,26 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
   - [ ] Fabric-Versionen zwischen 1.14 und 1.21.10: starten mit Fabric, aber ohne unsere Mod
+  - [ ] 1.14.4-Port (begonnen 2026-10-07, `mod/1.14.4/`: Fabric, Mojang-Namen, Java 8). Reihenfolge:
+    - [x] Grundgerüst: baut und lädt – Start im Launcher von dir bestätigt (2026-10-07)
+    - [x] Fundament – von dir bestätigt (2026-10-07): Einstellungen, Taste fürs Mod-Menü, Mod-Menü (Listenansicht mit Suche) mit Optionsmenüs samt Farbwähler, Knopf „Client Mods“ im Pause- und Titelmenü, Zurücksetzen (einzeln und alle), Sprachdateien
+    - [x] HUD – von dir bestätigt (2026-10-07): Koordinaten, FPS, Latenz, Uhr, Keystrokes, Rüstungs-Status, Item-Zähler, HUD-Editor
+    - [x] Rendering – von dir bestätigt (2026-10-07): Zoom, Freecam (mit sichtbarem Körper in F5), Fadenkreuz, Fullbright, Kein Nebel, Partikel-Filter, Spawn-Overlay, Hitbox- und Blockumriss-Farbe, Itemphysics, Wegpunkte
+    - [ ] Inventar: Schnellsortieren und Screenshot-Nachricht von dir bestätigt (2026-10-07); offen: Shulker-Vorschau, angepinnte Rezepte (prüfen, ob in 1.14.4 machbar)
+      - [ ] Bug (von dir gemeldet 2026-10-07, mit Screenshot): Darstellungsfehler im Inventar, wenn viele Trankeffekte gleichzeitig aktiv sind – noch nicht untersucht; den Screenshot im `screenshots`-Ordner der 1.14.4-Instanz unter `A:\instances` ansehen
+    - [ ] Zu prüfen in 1.21.11, 26.1.2 und 26.3: funktioniert „[Kopieren]“ in der Screenshot-Nachricht? Das Spiel sperrt dort Javas Zwischenablage für Bilder (Headless-Modus); falls nicht, den PowerShell-Weg aus 1.14.4 nachziehen
+    - [ ] Client-Design (Titelbildschirm, Kartenmenü, Schrift), Tour, Discord, Freunde, Capes, 3D-Skin-Layer
+    - [ ] Eigene Ressourcenpakete für 1.14.4 und Drittanbieter-Mods klären (welche der gebündelten Mods es für 1.14.4 überhaupt gibt), danach Manifest-Eintrag und Release
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
-- [ ] Patikel an und ausschaltbar machen (jeden einzelnt)
 
 ## 2. Noch von dir zu prüfen (mit 0.1.8 schon veröffentlicht)
 Derzeit nichts offen. Der installierte Launcher 0.1.8 und 1.8.9 mit den Client-Features sind von dir getestet und bestätigt (2026-10-04).
 
 ## 2a. Bestätigt, wartet auf das nächste Release
-Derzeit nichts offen.
+- [x] Partikel-Filter: jeder Partikel einzeln an- und ausschaltbar (alle vier Mod-Versionen), von dir bestätigt am 2026-10-07
+- [x] Freecam in 1.8.9: sichtbarer Körper wie in den neuen Versionen (in F5, eigener Skin, ohne Cape) statt unsichtbarer Kamera, von dir bestätigt am 2026-10-07
+- [x] Freecam: Spieler bleibt nach einem Treffer nicht mehr rot und zuckend (alle vier Mod-Versionen); Freecam-Körper ohne Cape (1.21.11, 26.1.2, 26.3), von dir bestätigt am 2026-10-07
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
