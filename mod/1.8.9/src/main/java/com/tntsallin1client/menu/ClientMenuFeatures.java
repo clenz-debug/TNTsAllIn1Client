@@ -48,6 +48,8 @@ final class ClientMenuFeatures {
 		sink.addFeature("gui.tntsallin1client.menu.fullbright", () -> config.fullbrightEnabled, value -> config.fullbrightEnabled = value, null);
 		sink.addFeature("gui.tntsallin1client.menu.no_fog", () -> config.noFogEnabled, value -> config.noFogEnabled = value,
 				() -> new NoFogOptionsScreen(screen));
+		sink.addFeature("gui.tntsallin1client.menu.particle_filter", () -> config.particleFilterEnabled, value -> config.particleFilterEnabled = value,
+				() -> new ParticleFilterOptionsScreen(screen));
 		sink.addFeature("gui.tntsallin1client.menu.spawn_overlay", () -> config.spawnOverlayEnabled, value -> config.spawnOverlayEnabled = value,
 				() -> new SpawnOverlayOptionsScreen(screen));
 		sink.addFeature("gui.tntsallin1client.menu.hitbox_color", () -> config.customHitboxColorEnabled, value -> config.customHitboxColorEnabled = value,

@@ -46,6 +46,7 @@ public final class FeatureIcons {
 		ICONS.put(MENU + "crosshair", FeatureIcons::crosshair);
 		ICONS.put(MENU + "fullbright", FeatureIcons::lightBulb);
 		ICONS.put(MENU + "no_fog", FeatureIcons::fogCrossedOut);
+		ICONS.put(MENU + "particle_filter", FeatureIcons::sparks);
 		ICONS.put(MENU + "spawn_overlay", FeatureIcons::lightLevelGrid);
 		ICONS.put(MENU + "hitbox_color", FeatureIcons::hitbox);
 		ICONS.put(MENU + "block_outline_color", FeatureIcons::blockOutline);
@@ -339,6 +340,22 @@ public final class FeatureIcons {
 		s.stroke(rect(38, 74, 62, 90), w, t.text);
 		s.line(38, 82, 62, 82, 4 * s.unit, t.text);
 		s.fill(rect(45, 90, 55, 96), t.text);
+	}
+
+	/** Particle filter: three sparks of different sizes, the largest in the accent color. */
+	private static void sparks(Shapes s, ClientTheme t) {
+		spark(s, 40, 56, 30, 7 * s.unit, t.accent4);
+		spark(s, 74, 28, 16, 5 * s.unit, t.text);
+		spark(s, 76, 78, 11, 4 * s.unit, t.text);
+	}
+
+	/** A spark: a cross with shorter diagonals. */
+	private static void spark(Shapes s, float cx, float cy, float r, float width, int color) {
+		s.line(cx - r, cy, cx + r, cy, width, color);
+		s.line(cx, cy - r, cx, cy + r, width, color);
+		float d = r * 0.4f;
+		s.line(cx - d, cy - d, cx + d, cy + d, width, color);
+		s.line(cx - d, cy + d, cx + d, cy - d, width, color);
 	}
 
 	/** No fog (own design): three wavy fog bands, struck through diagonally. */

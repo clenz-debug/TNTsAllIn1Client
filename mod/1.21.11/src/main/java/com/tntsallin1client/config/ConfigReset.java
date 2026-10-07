@@ -15,6 +15,7 @@ import com.tntsallin1client.menu.ItemCounterOptionsScreen;
 import com.tntsallin1client.menu.KeystrokesOptionsScreen;
 import com.tntsallin1client.menu.LatencyOptionsScreen;
 import com.tntsallin1client.menu.NoFogOptionsScreen;
+import com.tntsallin1client.menu.ParticleFilterOptionsScreen;
 import com.tntsallin1client.menu.PinnedRecipeOptionsScreen;
 import com.tntsallin1client.menu.QuickSortOptionsScreen;
 import com.tntsallin1client.menu.SkinLayers3dOptionsScreen;
@@ -57,6 +58,7 @@ public final class ConfigReset {
 		FREECAM(FreecamOptionsScreen.class, "gui.tntsallin1client.menu.freecam", "freecamEnabled", "freecam"),
 		CROSSHAIR(CrosshairOptionsScreen.class, "gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair"),
 		NO_FOG(NoFogOptionsScreen.class, "gui.tntsallin1client.menu.no_fog", "noFogEnabled", "noFog"),
+		PARTICLE_FILTER(ParticleFilterOptionsScreen.class, "gui.tntsallin1client.menu.particle_filter", "particleFilterEnabled", "particleFilter"),
 		SPAWN_OVERLAY(SpawnOverlayOptionsScreen.class, "gui.tntsallin1client.menu.spawn_overlay", "spawnOverlayEnabled", "spawnOverlay"),
 		HITBOX_COLOR(HitboxColorOptionsScreen.class, "gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
 		BLOCK_OUTLINE_COLOR(BlockOutlineColorOptionsScreen.class, "gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline"),

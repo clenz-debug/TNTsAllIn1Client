@@ -34,6 +34,7 @@ public final class ConfigReset {
 		FREECAM("gui.tntsallin1client.menu.freecam", "freecamEnabled", "freecam"),
 		CROSSHAIR("gui.tntsallin1client.menu.crosshair", "customCrosshairEnabled", "customCrosshair", "crosshair"),
 		NO_FOG("gui.tntsallin1client.menu.no_fog", "noFogEnabled", "noFog"),
+		PARTICLE_FILTER("gui.tntsallin1client.menu.particle_filter", "particleFilterEnabled", "particleFilter"),
 		SPAWN_OVERLAY("gui.tntsallin1client.menu.spawn_overlay", "spawnOverlayEnabled", "spawnOverlay"),
 		HITBOX_COLOR("gui.tntsallin1client.menu.hitbox_color", "customHitboxColorEnabled", "customHitbox"),
 		BLOCK_OUTLINE_COLOR("gui.tntsallin1client.menu.block_outline_color", "customBlockOutlineColorEnabled", "customBlockOutline"),

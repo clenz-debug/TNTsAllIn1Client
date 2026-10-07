@@ -125,6 +125,13 @@ public final class ClientMenuFeatures {
 				},
 				() -> new NoFogOptionsScreen(parent));
 
+		sink.addToggleRow(config.particleFilterEnabled, Component.translatable("gui.tntsallin1client.menu.particle_filter"),
+				value -> {
+					config.particleFilterEnabled = value;
+					config.save();
+				},
+				() -> new ParticleFilterOptionsScreen(parent));
+
 		// Sodium's own Video-Einstellungen screen replaces vanilla's entirely and doesn't carry this
 		// option over (checked directly against the bundled Sodium jar - no "View Bobbing"/"bobView"
 		// string anywhere in it), so with Sodium active there's no menu left to reach it from at all.

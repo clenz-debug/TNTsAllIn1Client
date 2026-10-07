@@ -9,8 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -196,6 +198,11 @@ public class ClientConfig {
 	public boolean noFogDistance = true;
 	public boolean noFogWater = false;
 	public boolean noFogLava = false;
+
+	// Particle filter (see ParticleFilter): the particle types that are switched off, by the name
+	// of their constant. None by default, so turning the feature on changes nothing until one is picked.
+	public boolean particleFilterEnabled = false;
+	public Set<String> particleFilterHidden = new HashSet<String>();
 
 	// Quick sort: a "Sort" button and key on the inventory screen (see InventorySorter).
 	public boolean quickSortEnabled = false;

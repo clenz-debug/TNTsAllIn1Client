@@ -24,8 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Simple JSON-backed config so each Phase 5 feature can be toggled independently
@@ -143,6 +145,11 @@ public class ClientConfig {
 	public boolean noFogWater = false;
 	public boolean noFogLava = false;
 	public boolean noFogPowderSnow = false;
+
+	// Particle filter (see ParticleFilter): the ids of the particle types that are switched off.
+	// None by default, so turning the feature on changes nothing until one is picked.
+	public boolean particleFilterEnabled = false;
+	public Set<String> particleFilterHidden = new HashSet<>();
 
 	// Own 3D skin layers (see SkinLayers3d), which replaced the bundled 3D Skin Layers mod. On by
 	// default, unlike the other own features: that mod was always on, so an update shouldn't
