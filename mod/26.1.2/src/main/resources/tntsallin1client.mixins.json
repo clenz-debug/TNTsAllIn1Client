@@ -15,6 +15,7 @@
 		"AvatarRenderStateMixin",
 		"AvatarRendererMixin",
 		"BlockOutlineMixin",
+		"CapeProviderElytraMixin",
 		"ChatScreenMixin",
 		"ClientAvatarStateAccessor",
 		"ClientLevelMixin",
