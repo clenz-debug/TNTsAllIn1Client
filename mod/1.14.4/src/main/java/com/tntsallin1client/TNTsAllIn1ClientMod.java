@@ -1,5 +1,7 @@
 package com.tntsallin1client;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import com.tntsallin1client.debug.SystemInfoHud;
 import com.tntsallin1client.freecam.FreecamHandler;
 import com.tntsallin1client.inventory.ContainerClickPacing;
 import com.tntsallin1client.keybind.ModKeyBindings;
@@ -7,6 +9,7 @@ import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.menu.ClientMenus;
 import com.tntsallin1client.menu.PinnedRecipeListScreen;
 import com.tntsallin1client.menu.WaypointMenuIntegration;
+import com.tntsallin1client.mixin.KeyboardHandlerAccessor;
 import com.tntsallin1client.screenshot.ScreenshotWatcher;
 import com.tntsallin1client.spawnoverlay.SpawnOverlayRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -15,9 +18,13 @@ import com.tntsallin1client.friends.ActivityReporter;
 import com.tntsallin1client.friends.ClientUserBadges;
 import com.tntsallin1client.friends.FriendsBridge;
 import com.tntsallin1client.tour.InGameTour;
+import com.tntsallin1client.resourcepack.Items3d;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
+import net.fabricmc.fabric.api.client.render.ColorProviderRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Entry point of the 1.14.4 port. The features of the other versions are brought over one by one;
@@ -31,6 +38,9 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 	public void onInitializeClient() {
 		ModKeyBindings.register();
 
+		// "3D items in inventory & hand": the second model of every item the 3D pack changes.
+		ModelLoadingRegistry.INSTANCE.registerAppender(Items3d::appendModels);
+		ColorProviderRegistry.ITEM.register(Items3d::tint, Items3d.tintableItems());
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			FreecamHandler.tick(client);
 			WaypointMenuIntegration.tick(client);
@@ -42,6 +52,14 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 			ClientUserBadges.tick(client);
 			DiscordPresenceManager.tick(client);
 			InGameTour.tick(client);
+			while (ModKeyBindings.SYSTEM_INFO.consumeClick()) {
+				// Only together with F3, like the game's own debug key combinations - and like those it
+				// keeps the debug screen from opening or closing when F3 is let go.
+				if (InputConstants.isKeyDown(client.window.getWindow(), GLFW.GLFW_KEY_F3)) {
+					SystemInfoHud.visible = !SystemInfoHud.visible;
+					((KeyboardHandlerAccessor) client.keyboardHandler).tntsallin1client$setHandledDebugKey(true);
+				}
+			}
 			while (ModKeyBindings.OPEN_PINNED_RECIPES.consumeClick()) {
 				// Only from gameplay, and only while the feature is on - switching it off switches its key off too.
 				if (client.screen == null && ClientConfig.get().pinnedRecipeEnabled) {

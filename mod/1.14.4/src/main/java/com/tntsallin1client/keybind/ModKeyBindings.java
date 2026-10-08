@@ -3,6 +3,7 @@ package com.tntsallin1client.keybind;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
+import org.lwjgl.glfw.GLFW;
 
 public final class ModKeyBindings {
 	private static final String CATEGORY = "key.category.tntsallin1client.main";
@@ -40,6 +41,9 @@ public final class ModKeyBindings {
 	// Opens the list of pinned recipes directly from gameplay. Unbound by default as well.
 	public static final KeyMapping OPEN_PINNED_RECIPES = new KeyMapping("key.tntsallin1client.open_pinned_recipes", UNBOUND, CATEGORY);
 
+	// Pressed with F3 held: shows or hides the system info page. "K" like in the other versions - none of the game's own F3 combinations uses it.
+	public static final KeyMapping SYSTEM_INFO = new KeyMapping("key.tntsallin1client.system_info", GLFW.GLFW_KEY_K, CATEGORY);
+
 	private ModKeyBindings() {
 	}
 
@@ -55,5 +59,6 @@ public final class ModKeyBindings {
 		KeyBindingHelper.registerKeyBinding(SHULKER_PREVIEW);
 		KeyBindingHelper.registerKeyBinding(PIN_RECIPE);
 		KeyBindingHelper.registerKeyBinding(OPEN_PINNED_RECIPES);
+		KeyBindingHelper.registerKeyBinding(SYSTEM_INFO);
 	}
 }

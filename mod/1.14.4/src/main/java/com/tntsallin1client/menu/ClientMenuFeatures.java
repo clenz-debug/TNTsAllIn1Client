@@ -2,6 +2,8 @@ package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.config.ConfigReset;
+import com.tntsallin1client.resourcepack.Blocks3d;
+import com.tntsallin1client.resourcepack.DarkMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
@@ -34,6 +36,8 @@ final class ClientMenuFeatures {
 				() -> new KeystrokesOptionsScreen(screen));
 		sink.addFeature("gui.tntsallin1client.menu.armor_status", () -> config.armorStatusEnabled, value -> config.armorStatusEnabled = value,
 				() -> new ArmorStatusOptionsScreen(screen));
+		sink.addFeature("gui.tntsallin1client.menu.f3_quick_info", () -> config.f3QuickInfoEnabled, value -> config.f3QuickInfoEnabled = value,
+				() -> new F3OptionsScreen(screen));
 
 		sink.beginSection("gui.tntsallin1client.menu.section_rendering");
 		sink.addFeature("gui.tntsallin1client.menu.zoom", () -> config.zoomEnabled, value -> config.zoomEnabled = value,
@@ -67,6 +71,14 @@ final class ClientMenuFeatures {
 				() -> new PinnedRecipeOptionsScreen(screen));
 
 		sink.beginSection("gui.tntsallin1client.menu.section_misc");
+		// Each only with its pack in the instance - the launcher puts them there.
+		if (Blocks3d.isAvailable()) {
+			sink.addFeature("gui.tntsallin1client.menu.block_models_3d", Blocks3d::isEnabled, Blocks3d::setEnabled,
+					() -> new BlockModels3dOptionsScreen(screen));
+		}
+		if (DarkMode.isAvailable()) {
+			sink.addFeature("gui.tntsallin1client.menu.dark_mode", DarkMode::isEnabled, DarkMode::setEnabled, null);
+		}
 		sink.addFeature("gui.tntsallin1client.menu.skin_layers_3d", () -> config.skinLayers3dEnabled, value -> config.skinLayers3dEnabled = value,
 				() -> new SkinLayers3dOptionsScreen(screen));
 		sink.addFeature("gui.tntsallin1client.menu.discord_presence", () -> config.discordPresenceEnabled, value -> config.discordPresenceEnabled = value,
@@ -81,5 +93,6 @@ final class ClientMenuFeatures {
 			Minecraft.getInstance().setScreen(screen);
 		}, I18n.get("gui.tntsallin1client.reset.confirm_all_title"),
 				I18n.get("gui.tntsallin1client.reset.confirm_all_message")));
+		sink.addLink(FeatureSink.LinkRole.OTHER, "gui.tntsallin1client.menu.credits_button", () -> new CreditsScreen(screen));
 	}
 }

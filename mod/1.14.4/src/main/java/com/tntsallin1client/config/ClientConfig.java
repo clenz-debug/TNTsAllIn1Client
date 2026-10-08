@@ -180,6 +180,8 @@ public class ClientConfig {
 	// 3D block models: whether the inventory and the hand show their items in 3D too (see Items3d).
 	// The row's own switch isn't here - it is whether the pack is among the game's active ones.
 	public boolean blockModels3dItems = true;
+	// Whether the "3D Block Models" row switches the third-party Bushy Vegetation pack along with ours.
+	public boolean blockModels3dBushyVegetation = true;
 
 	// Own 3D skin layers (see SkinLayers3d). On unless switched off, as in the Fabric versions.
 	// Depth is how far the layer stands off the body, in percent of a model pixel; distance is in

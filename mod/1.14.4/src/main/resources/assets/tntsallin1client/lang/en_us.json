@@ -307,6 +307,7 @@
   "gui.tntsallin1client.menu.block_models_3d": "3D Block Models",
   "gui.tntsallin1client.block_models_3d_options.title": "3D Block Models Options",
   "gui.tntsallin1client.menu.items_3d_inventory": "3D Items in Inventory & Hand",
+  "gui.tntsallin1client.menu.bushy_vegetation": "Bushy Vegetation (Grass & Leaves)",
   "gui.tntsallin1client.tour.counter": "Step %s of %s",
   "gui.tntsallin1client.tour.next": "Next",
   "gui.tntsallin1client.tour.end": "End tour",
