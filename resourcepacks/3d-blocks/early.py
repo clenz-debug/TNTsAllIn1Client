@@ -1,5 +1,5 @@
 """Builds the TNT 3D Blocks pack for the Fabric versions before item definitions (1.21.4) - so far
-1.14.4 and 1.21.1: the same 3D models as build.py makes for the newer ones, for the blocks that version
+1.14.4, 1.20.6 and 1.21.1: the same 3D models as build.py makes for the newer ones, for the blocks that version
 has, under the names it asks for.
 
 Usage: python early.py [output folder] [--jar <version>=<client jar>] [--new-jar <newest version's client jar>]
@@ -14,14 +14,14 @@ What differs, and what this file does about it:
   if every picture it wears and the model it builds on exist in that version's client jar.
 - A door is four models in 1.14.4 (bottom and top, each as it is and mirrored for the other hinge
   side; the blockstate turns them for an open door) where today's versions have sixteen - the two
-  closed ones per half are taken under those names. 1.21.1 has today's sixteen.
+  closed ones per half are taken under those names. 1.20.6 and 1.21.1 have today's sixteen.
 - The chain block and its picture were just "chain" before there were copper chains.
 - Where today's versions share one template between several blocks and build.py replaces the
   template (bars, lanterns), these versions have the block's models stand alone: each one is put
   together from the template and the pictures today's version of that model names.
 - A vine is one model per combination of sides in 1.14.4, not parts a blockstate assembles: built
   from the same piece by legacy.py's code, which makes the same models for 1.8.9. Where the game's
-  own blockstate already assembles it from parts (1.21.1), ours is used as it is.
+  own blockstate already assembles it from parts (1.20.6, 1.21.1), ours is used as it is.
 - No item definitions: an item's model is just models/item/<name>.json. No atlas file in 1.14.4
   either - a picture a model names is put on the block atlas without being told; versions that have
   the file get build.py's, for the entity pictures the entity-shaped items wear.
@@ -48,9 +48,9 @@ import legacy
 import models3d
 from build import BUSHES_DESCRIPTION, DESCRIPTION, TIMESTAMP, for_version, overlapping_faces, validate
 
-PACK_FORMATS = {"1.14.4": 4, "1.21.1": 34}
+PACK_FORMATS = {"1.14.4": 4, "1.20.6": 32, "1.21.1": 34}
 # Versions whose mod offers the bushes as a switch of their own, like the newest ones
-BUSHES_APART = {"1.21.1"}
+BUSHES_APART = {"1.20.6", "1.21.1"}
 LOOM = pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom"
 NEW_VERSION = "26.3"
 
