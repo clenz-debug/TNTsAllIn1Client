@@ -181,9 +181,6 @@ public final class ShulkerPreviewRenderer {
 
 	/** Called from {@link com.tntsallin1client.mixin.ScreenMixin} after the vanilla tooltip has already drawn. */
 	private static final float TOOLTIP_Z = 400.0F;
-	/** A header brighter than this gets the dark title - of the boxes only the white one's is. */
-	private static final int LIGHT_HEADER_BRIGHTNESS = 175;
-	private static final int TITLE_ON_LIGHT_COLOR = 0xFF2B2B2B;
 
 	public static void drawIfPending(GuiGraphics guiGraphics) {
 		if (pendingStack == null) {
@@ -197,11 +194,12 @@ public final class ShulkerPreviewRenderer {
 		}
 
 		Palette palette = palette(pendingStack);
-		// One more than the slots: the line closing the last column and the last row. Without it that
-		// line sat in the frame, which was a pixel thinner on the right and at the bottom than on the
-		// left and at the top - plain to see on the white box, whose lines have the frame's color.
-		int gridWidth = COLUMNS * SLOT_SIZE + 1;
-		int gridHeight = ROWS * SLOT_SIZE + 1;
+		// The frame closes the grid on the left, the right and at the bottom - no grid lines of its own
+		// there. With them the frame looked a pixel thicker around the grid than around the title and
+		// at the top, a step plain to see on the white box, whose lines have the frame's color (own
+		// user report).
+		int gridWidth = COLUMNS * SLOT_SIZE;
+		int gridHeight = ROWS * SLOT_SIZE;
 		Font font = Minecraft.getInstance().font;
 		Component title = pendingStack.getHoverName();
 		int headerHeight = font.lineHeight + HEADER_PADDING;
@@ -220,12 +218,9 @@ public final class ShulkerPreviewRenderer {
 		// look instead of "neutral GUI, colored grid".
 		guiGraphics.fill(x, y, x + gridWidth + 2 * BORDER_THICKNESS, y + headerHeight + gridHeight + 2 * BORDER_THICKNESS, palette.border());
 		guiGraphics.fill(contentX, contentY, contentX + gridWidth, contentY + headerHeight, palette.header());
-		// White with a shadow on a light header (the white box) left little more than the shadow to
-		// read - its first letter looked like a dent in the frame (own user report). Dark and without
-		// shadow there.
-		boolean lightHeader = brightness(palette.header()) > LIGHT_HEADER_BRIGHTNESS;
-		guiGraphics.drawString(font, title, contentX + 2, contentY + HEADER_PADDING / 2,
-				lightHeader ? TITLE_ON_LIGHT_COLOR : 0xFFFFFFFF, !lightHeader);
+		// White with a shadow on every box, the white one included (own user request - the dark title
+		// it had for a while is gone again).
+		guiGraphics.drawString(font, title, contentX + 2, contentY + HEADER_PADDING / 2, 0xFFFFFFFF, true);
 
 		int gridY = contentY + headerHeight;
 		guiGraphics.fill(contentX, gridY, contentX + gridWidth, gridY + gridHeight, palette.gridFill());
@@ -233,11 +228,11 @@ public final class ShulkerPreviewRenderer {
 		// Slot separator lines, a darker shade of the box's own color rather than a fixed gray -
 		// the fill above is now the box color itself (not a constant dark background), so a fixed
 		// line color would read fine against light boxes but vanish against dark ones.
-		for (int col = 0; col <= COLUMNS; col++) {
+		for (int col = 1; col < COLUMNS; col++) {
 			int lineX = contentX + col * SLOT_SIZE;
 			guiGraphics.fill(lineX, gridY, lineX + 1, gridY + gridHeight, palette.gridLine());
 		}
-		for (int row = 0; row <= ROWS; row++) {
+		for (int row = 0; row < ROWS; row++) {
 			int lineY = gridY + row * SLOT_SIZE;
 			guiGraphics.fill(contentX, lineY, contentX + gridWidth, lineY + 1, palette.gridLine());
 		}
@@ -295,11 +290,6 @@ public final class ShulkerPreviewRenderer {
 			}
 		}
 		return shaded(DEFAULT_COLOR);
-	}
-
-	/** How bright {@code color} looks, 0 to 255 (the usual weighting of red, green and blue). */
-	private static int brightness(int color) {
-		return (FastColor.ARGB32.red(color) * 299 + FastColor.ARGB32.green(color) * 587 + FastColor.ARGB32.blue(color) * 114) / 1000;
 	}
 
 	/** {@code color} with its red, green and blue darkened (or lightened) by {@code factor}, alpha kept. */
