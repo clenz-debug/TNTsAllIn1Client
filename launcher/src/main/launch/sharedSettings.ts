@@ -44,7 +44,7 @@ export async function applySharedOptions(gameDir: string, versionId: string): Pr
     await mkdir(gameDir, { recursive: true })
     const shared = await readFile(sharedOptionsPath(versionId), 'utf8')
     const own = await readFile(join(gameDir, 'options.txt'), 'utf8').catch(() => '')
-    await writeFile(join(gameDir, 'options.txt'), keepInstanceOptions(shared, own), 'utf8')
+    await writeFile(join(gameDir, 'options.txt'), keepInstanceOptions(shared, own, versionId), 'utf8')
   } catch {
     // No shared options yet (very first launch ever) - the instance just keeps Minecraft's own
     // built-in defaults, and whatever it writes becomes the shared baseline once this session ends.
@@ -66,9 +66,16 @@ function optionKey(line: string): string {
  */
 const PER_INSTANCE_OPTIONS = new Set(['resourcePacks', 'incompatibleResourcePacks'])
 
+/** Our own packs carry the Minecraft version in their file name: `file/TNT-3D-Blocks-1.21.1.zip`. */
+const OWN_VERSIONED_PACK = /file\/TNT-([A-Za-z0-9-]+?)-\d+(?:\.\d+)+\.zip/g
+
 /** The shared options, but with the instance's own values for {@link PER_INSTANCE_OPTIONS} where it
- * has them - a brand-new instance starts from the shared (last used) pack selection. */
-export function keepInstanceOptions(shared: string, own: string): string {
+ * has them - a brand-new instance starts from the shared (last used) pack selection. In that
+ * selection our own packs are named after the version they were last used in, so they are renamed
+ * to this instance's: left as they were, the game dropped them as missing while a pack with the same
+ * name everywhere (Bushy Vegetation) stayed on, and the mod's "3D block models" switch showed "on"
+ * without our 3D pack (own user report). */
+export function keepInstanceOptions(shared: string, own: string, versionId: string): string {
   const ownValues = new Map(
     own
       .split(/\r?\n/)
@@ -78,7 +85,11 @@ export function keepInstanceOptions(shared: string, own: string): string {
   const lines = shared
     .split(/\r?\n/)
     .filter((line) => line.length > 0)
-    .map((line) => ownValues.get(optionKey(line)) ?? line)
+    .map(
+      (line) =>
+        ownValues.get(optionKey(line)) ??
+        (PER_INSTANCE_OPTIONS.has(optionKey(line)) ? line.replace(OWN_VERSIONED_PACK, `file/TNT-$1-${versionId}.zip`) : line)
+    )
   const present = new Set(lines.map(optionKey))
   for (const [key, line] of ownValues) {
     if (!present.has(key)) lines.push(line)
