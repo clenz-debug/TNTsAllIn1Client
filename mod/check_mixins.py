@@ -12,8 +12,8 @@ starts. This reads the mixin sources and looks every target up with javap:
   - that an @Inject handler takes the target method's parameters, and a @Redirect handler the
     redirected call's (compared by type name)
 Targets in other mods' classes (Sodium, e4mc, ...) are not in the Minecraft jar and are listed as
-"not checked". Works for versions with Mojang's own names (26.x); 1.21.11's jar is remapped by Loom
-and sits elsewhere.
+"not checked". Works for versions with Mojang's own names (26.x) and for the 1.21.x versions, whose
+jar Loom remaps to those names and keeps elsewhere.
 """
 import pathlib
 import re
@@ -21,7 +21,15 @@ import subprocess
 import sys
 
 version = sys.argv[1]
-JAR = pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom" / version / "minecraft-merged.jar"
+LOOM = pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom"
+JAR = LOOM / version / "minecraft-merged.jar"
+if not JAR.exists() or version.startswith("1."):
+    # Obfuscated versions: the jar Loom remapped to Mojang's names.
+    remapped = sorted((LOOM / "minecraftMaven" / "net" / "minecraft" / "minecraft-merged").glob(
+        f"{version}-loom.mappings.*/minecraft-merged-{version}-loom.mappings.*[!s].jar"))
+    remapped = [jar for jar in remapped if not jar.name.endswith("-sources.jar")]
+    if remapped:
+        JAR = remapped[-1]
 SRC = pathlib.Path(__file__).parent / version / "src" / "main" / "java"
 
 _cache = {}

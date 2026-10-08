@@ -17,7 +17,7 @@ The name is settled; the project's identity is comfort features bundled in one p
 
 | Path | What |
 |---|---|
-| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.21.11` = Java 21, `26.1.2` and `26.3` = Java 25). Exception: legacy versions (before 1.14, so far `1.8.9`) have no Fabric - plain Gradle, own entry through LaunchWrapper + Mixin, Legacy Yarn names |
+| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.14.4` = Java 8, `1.21.1` and `1.21.11` = Java 21, `26.1.2` and `26.3` = Java 25). Exception: legacy versions (before 1.14, so far `1.8.9`) have no Fabric - plain Gradle, own entry through LaunchWrapper + Mixin, Legacy Yarn names |
 | `launcher/` | Electron + React + TypeScript launcher (electron-vite); `src/main`, `src/preload`, `src/renderer`, `src/shared` |
 | `backend/` | Small Node service for custom capes and the friends system, runs on a server the user does not own |
 | `designs/` | Branding (logo SVG, color palette) |
@@ -48,7 +48,7 @@ login, skin upload and multiplayer are live.
   and wording. Deviate only where a version cannot do it, and say so.
 - After mod changes, finish with `./gradlew build` (not just `compileJava`) in every touched version dir.
   The launcher copies the jar from `build/libs/`, so a stale jar means the user tests old code.
-- After touching a mixin in a 26.x version, run `python mod/check_mixins.py <version>` - it checks every mixin
+- After touching a mixin in a 1.21.x or 26.x version, run `python mod/check_mixins.py <version>` - it checks every mixin
   target against that version's Minecraft jar without starting the game.
 - In a legacy version (`mod/1.8.9/`) that check is part of `./gradlew build` (`verifyMixins`): it loads
   every mixin target through our own entry against the real obfuscated game, no game window. Code there

@@ -1,25 +1,30 @@
-"""Builds the TNT 3D Blocks pack for the early Fabric versions - so far 1.14.4: the same 3D models as
-build.py makes for the newer ones, for the blocks that version has, under the names it asks for.
+"""Builds the TNT 3D Blocks pack for the Fabric versions before item definitions (1.21.4) - so far
+1.14.4 and 1.21.1: the same 3D models as build.py makes for the newer ones, for the blocks that version
+has, under the names it asks for.
 
 Usage: python early.py [output folder] [--jar <version>=<client jar>] [--new-jar <newest version's client jar>]
        (default output: dist/ next to this file; default jars: Loom's cache)
 
-Writes TNT-3D-Blocks-<version>.zip. These versions are past "the flattening" (blocks, pictures and
+Writes TNT-3D-Blocks-<version>.zip, and for the versions in BUSHES_APART the bushes as a pack of
+their own (TNT-3D-Bushes-<version>.zip), as build.py does. These versions are past "the flattening" (blocks, pictures and
 most model files already have today's names), so nearly everything is models3d.py's output as it is.
 What differs, and what this file does about it:
 
 - Blocks that came later (chains, amethyst, dripstone, copper, ...) are left out: a model stays only
   if every picture it wears and the model it builds on exist in that version's client jar.
-- A door is four models there (bottom and top, each as it is and mirrored for the other hinge side;
-  the blockstate turns them for an open door) where today's versions have sixteen - the two closed
-  ones per half are taken under those names.
+- A door is four models in 1.14.4 (bottom and top, each as it is and mirrored for the other hinge
+  side; the blockstate turns them for an open door) where today's versions have sixteen - the two
+  closed ones per half are taken under those names. 1.21.1 has today's sixteen.
+- The chain block and its picture were just "chain" before there were copper chains.
 - Where today's versions share one template between several blocks and build.py replaces the
   template (bars, lanterns), these versions have the block's models stand alone: each one is put
   together from the template and the pictures today's version of that model names.
-- A vine is one model per combination of sides there, not parts a blockstate assembles: built from
-  the same piece by legacy.py's code, which makes the same models for 1.8.9.
-- No item definitions and no atlas file: an item's model is just models/item/<name>.json, and a
-  picture a model names is put on the block atlas without being told.
+- A vine is one model per combination of sides in 1.14.4, not parts a blockstate assembles: built
+  from the same piece by legacy.py's code, which makes the same models for 1.8.9. Where the game's
+  own blockstate already assembles it from parts (1.21.1), ours is used as it is.
+- No item definitions: an item's model is just models/item/<name>.json. No atlas file in 1.14.4
+  either - a picture a model names is put on the block atlas without being told; versions that have
+  the file get build.py's, for the entity pictures the entity-shaped items wear.
 
 The items of these blocks are 3D models too. These versions have one model per item, for every place
 it is shown in, so the "3D items in inventory & hand" switch is the mod's (Items3d.java in
@@ -38,11 +43,14 @@ import re
 import sys
 import zipfile
 
+import entity_items
 import legacy
 import models3d
-from build import DESCRIPTION, TIMESTAMP, for_version, overlapping_faces, validate
+from build import BUSHES_DESCRIPTION, DESCRIPTION, TIMESTAMP, for_version, overlapping_faces, validate
 
-PACK_FORMATS = {"1.14.4": 4}
+PACK_FORMATS = {"1.14.4": 4, "1.21.1": 34}
+# Versions whose mod offers the bushes as a switch of their own, like the newest ones
+BUSHES_APART = {"1.21.1"}
 LOOM = pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom"
 NEW_VERSION = "26.3"
 
@@ -56,7 +64,11 @@ MODELS_DIR = "assets/minecraft/models/"
 GAME_BLOCKSTATES = {"vine"}
 
 # A model's name in these versions -> its name today, where that changed
-RENAMED_SINCE = {"block/hanging_lantern": "block/lantern_hanging"}
+RENAMED_SINCE = {"block/hanging_lantern": "block/lantern_hanging", "block/chain": "block/iron_chain"}
+# The same for item models (today's name -> the name in these versions) and for pictures
+ITEM_MODELS_BEFORE = {"item/iron_chain": "item/chain"}
+PICTURES_BEFORE = {"block/iron_chain": "block/chain"}
+ATLAS_FILE = "assets/minecraft/atlases/blocks.json"
 
 DOOR = re.compile(r"block/(\w+_door)_(top|bottom)_(left|right)(_open)?")
 # A closed left-hinged door shows the picture as it is, a right-hinged one mirrored
@@ -104,6 +116,10 @@ class Jar:
     def has_blockstate(self, block: str) -> bool:
         return f"assets/minecraft/blockstates/{block}.json" in self.names
 
+    def assembles_vine(self) -> bool:
+        """Whether the vine's blockstate puts it together from parts, as today's does."""
+        return "multipart" in json.loads(self.zip.read("assets/minecraft/blockstates/vine.json"))
+
 
 def vine_models(jar_path: pathlib.Path) -> dict:
     """The vine, one model per combination of sides - legacy.py's, shaped after this version's picture."""
@@ -122,10 +138,13 @@ def candidates(pack_format: int, old: Jar, new: Jar, jar_path: pathlib.Path) -> 
     made = {}
     for path, data in models3d.MODELS.items():
         door = DOOR.fullmatch(path)
-        if door:
+        if door and not old.has_model(f"block/{door.group(1)}_bottom_left"):
             if door.group(4):
                 continue  # an open door is the closed one turned
             path = f"block/{door.group(1)}_{door.group(2)}{DOOR_SUFFIX[door.group(3)]}"
+        before = ITEM_MODELS_BEFORE.get(path)
+        if before and old.has_model(before) and not old.has_model(path):
+            path = before
         made[path] = for_version(data, pack_format)
 
     # A block's own model where today's is a child of a template build.py replaces
@@ -140,8 +159,22 @@ def candidates(pack_format: int, old: Jar, new: Jar, jar_path: pathlib.Path) -> 
             textures = {key: plain(value["sprite"] if isinstance(value, dict) else value) for key, value in child.get("textures", {}).items()}
             made[name] = {**copy.deepcopy(template), "textures": {**template.get("textures", {}), **textures}}
 
-    made.update(vine_models(jar_path))
-    return {path: without_own_references(data) for path, data in made.items()}
+    if not old.assembles_vine():
+        made.update(vine_models(jar_path))
+    return {path: without_own_references(pictures_of(data, old)) for path, data in made.items()}
+
+
+def pictures_of(data: dict, old: Jar) -> dict:
+    """A picture this version has under an earlier name is asked for by that name."""
+    textures = data.get("textures")
+    if not textures or not any(plain(value) in PICTURES_BEFORE for value in textures.values()):
+        return data
+
+    def before(value: str) -> str:
+        earlier = PICTURES_BEFORE.get(plain(value))
+        return earlier if earlier and old.has_picture(earlier) and not old.has_picture(value) else value
+
+    return {**data, "textures": {key: before(value) for key, value in textures.items()}}
 
 
 def without_own_references(data: dict) -> dict:
@@ -226,8 +259,9 @@ def build(version: str, pack_format: int, jar_path: pathlib.Path, new_jar_path: 
     old, new = Jar(jar_path), Jar(new_jar_path)
     made = candidates(pack_format, old, new, jar_path)
     kept = fitting(made, old)
+    game_blockstates = set() if old.assembles_vine() else GAME_BLOCKSTATES
     blockstates = {block: state for block, state in models3d.BLOCKSTATES.items()
-                   if old.has_blockstate(block) and block not in GAME_BLOCKSTATES
+                   if old.has_blockstate(block) and block not in game_blockstates
                    and all(plain(variant["model"]) in kept for variants in state.get("variants", {}).values()
                            for variant in (variants if isinstance(variants, list) else [variants]))}
     models = in_use(kept, blockstates, old)
@@ -243,12 +277,24 @@ def build(version: str, pack_format: int, jar_path: pathlib.Path, new_jar_path: 
 
     items, copies = flat_copies(models, old)
     out_dir.mkdir(parents=True, exist_ok=True)
+    bushes = {name: models.pop(name) for name in sorted(models3d.BUSH_MODELS & set(models))} if version in BUSHES_APART else {}
+    if bushes:
+        bushes_path = out_dir / f"TNT-3D-Bushes-{version}.zip"
+        with zipfile.ZipFile(bushes_path, "w") as zf:
+            pack = {"pack": {"pack_format": pack_format, "description": BUSHES_DESCRIPTION}}
+            write(zf, "pack.mcmeta", json.dumps(pack, indent=2, ensure_ascii=False))
+            for name in sorted(bushes):
+                write(zf, f"{MODELS_DIR}{name}.json", json.dumps(bushes[name], indent=1))
+        print(f"{bushes_path.name}: {len(bushes)} models, {bushes_path.stat().st_size // 1024} KB")
     path = out_dir / f"TNT-3D-Blocks-{version}.zip"
     with zipfile.ZipFile(path, "w") as zf:
         pack = {"pack": {"pack_format": pack_format, "description": DESCRIPTION}}
         write(zf, "pack.mcmeta", json.dumps(pack, indent=2, ensure_ascii=False))
         for name in sorted(models):
             write(zf, f"{MODELS_DIR}{name}.json", json.dumps(models[name], indent=1))
+        if ATLAS_FILE in old.names:
+            # Entity textures for the entity-shaped items, added to the block texture atlas
+            write(zf, ATLAS_FILE, json.dumps(entity_items.atlas_sources(pack_format), indent=1))
         for block in sorted(blockstates):
             write(zf, f"assets/minecraft/blockstates/{block}.json", json.dumps(blockstates[block], indent=1))
         for name in sorted(copies):

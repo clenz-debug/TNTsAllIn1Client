@@ -1599,3 +1599,31 @@ Zusammen mit dem Port in allen Versionen geändert und bestätigt:
 - Elytra mit Client-Cape: hat der Elytra-Bereich des Capes nur eine Farbe (so füllt ihn der Cape-Konverter), behält die Elytra ihr eigenes Aussehen - in 1.14.4 in der Mod selbst, in 1.21.11, 26.1.2 und 26.3 über einen Eingriff in die Cape-Provider-Mod (`CapeProviderElytraMixin`).
 - „[Kopieren]“ in der Screenshot-Nachricht ging in 1.21.11, 26.1.2 und 26.3 nicht (das Spiel sperrt Javas Zwischenablage für sich selbst); dort läuft es jetzt wie in 1.14.4 über PowerShell.
 - Nach dem Release bestätigt: Auto-Update von 0.1.8 auf 0.1.9, und ein installierter Launcher lädt das 1.14.4-Bundle übers Manifest (Instanz startet, die Schalter für die Ressourcenpakete funktionieren).
+
+## 1.21.1-Port (2026-10-08, gebaut, vom Nutzer noch nicht im Spiel gestartet, nicht veröffentlicht)
+
+`mod/1.21.1/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.11-Code portiert (nicht aus 1.14.4 - Menüs, Einstellungen und Sprachdateien sind dadurch dieselben wie in 1.21.11). `gradlew build` läuft durch, `python mod/check_mixins.py 1.21.1` meldet 123 geprüfte Ziele ohne Problem (das Skript kann seitdem auch die 1.21.x-Versionen). **Im Spiel gelaufen ist davon noch nichts** - der erste Start ist der Test.
+
+Zwischen 1.21.1 und 1.21.11 hat Mojang fast alles umgebaut, was die Mod anfasst. Was deshalb in 1.21.1 anders gebaut ist als in 1.21.11:
+
+- **Eingaben und Oberfläche:** Maus- und Tastenereignisse sind noch einzelne Zahlen statt Ereignis-Objekte, die Zeichenfläche rechnet noch in 3D (`PoseStack`). Alles, was über Items gezeichnet wird (Shulker-Vorschau, Zähler der angepinnten Rezepte, Tour-Rahmen), wird dafür ausdrücklich nach vorn geschoben.
+- **HUD:** Fabric hat für 1.21.1 noch keine HUD-Liste; die eigene Klasse `hud/HudElements` hängt alle Elemente an Fabrics älteren `HudRenderCallback` und blendet sie bei F1 selbst aus.
+- **F3-Schnellinfo:** kein Eintrags-System im Debug-Bildschirm - die Zeilen werden wie in 1.14.4 in die zwei Textspalten eingefügt (`debug/QuickInfo`, `DebugScreenOverlayMixin`), die Systeminfo-Seite (F3+K) stellt ihre Zeilen selbst zusammen.
+- **Wegpunkte, Spawn-Overlay:** keine „Gizmos“ - eigene Zeichenhilfe `render/WorldShapes` (Linien, Flächen, Text in der Welt).
+- **Hitbox- und Blockumriss-Farbe, Nebel, Namensschild-Logo, Freecam, Itemphysics:** jeweils neue Eingriffe an den Stellen, die es in 1.21.1 dafür gibt (`EntityRenderDispatcherMixin`, `BlockOutlineMixin`, `FogRendererMixin`, `EntityRendererNameTagMixin`, `LevelRendererMixin`, `ItemEntityRendererMixin`). Der Nebel ist dort eine einzige Stelle statt je einer pro Nebelart; die Schalter (Sichtweite, Wasser, Lava, Pulverschnee) sind dieselben.
+- **3D-Skin-Layer:** als Zeichen-Ebene am Spieler-Renderer (`PlayerRendererMixin`); die Skin-Pixel werden wie in 1.14.4 aus der Grafikkarte zurückgelesen, weil heruntergeladene Skins in 1.21.1 ihre Pixel nicht behalten. Dafür hat die Mod dort eine kleine Zugriffsfreigabe (`tntsallin1client.accesswidener`).
+- **Angepinnte Rezepte:** direkt aus den Rezepten, die der Server dem Client in 1.21.1 noch vollständig schickt (in 1.21.11 nur noch Anzeige-Daten).
+- **Hängeschild-Ketten in 3D:** über `SignRendererMixin` und `HangingSignModelMixin`.
+- **Offline-Skin:** die Launcher-Kopie wird dem Spiel als „schon heruntergeladen“ untergeschoben.
+- **Screenshot „[Kopieren]“:** als abgefangener Pseudo-Befehl wie in 1.14.4 (eigene Klick-Ereignisse gibt es erst ab 1.21.5).
+- **Freecam:** Maus-X umkehren gibt es in 1.21.1 nicht als Einstellung, nur Y.
+
+**Ressourcenpakete** (Pack-Format 34):
+
+- Dark Mode: `resourcepacks/dark-mode/build.py` baut `TNT-Dark-Mode-1.21.1.zip` (172 Bilder).
+- 3D-Blöcke: 1.21.1 hat noch keine Item-Definitionen (erst ab 1.21.4), ein Item hat also nur ein Modell für alle Stellen. Deshalb baut wie bei 1.14.4 `resourcepacks/3d-blocks/early.py` das Paket (271 Block-, 145 Item-Modelle, 11 Blockstates) samt flacher Kopien der Original-Items, und „3D-Items in Inventar & Hand“ ist ein Schalter der Mod (`resourcepack/Items3d`) statt eines zweiten Pakets. Ketten und Eisengitter bekommen ihre Modelle unter den alten Namen; was es in 1.21.1 noch nicht gibt (Blasseiche, Kupferketten und -gitter, Glühwürmchenbusch ...), fehlt. Die Büsche sind wie in 1.21.11 ein eigenes Paket (`TNT-3D-Bushes-1.21.1.zip`).
+- Die Pakete der anderen Versionen sind dabei byte-gleich geblieben (per Prüfsumme verglichen).
+
+**Fremd-Mods für 1.21.1** (Modrinth, liegen im Dev-Bundle `launcher/mods-bundle/1.21.1/`): Fabric API 0.116.17, Sodium 0.8.13, Lithium 0.15.4, Continuity 3.0.0, Cape Provider 5.0.0.0-legacy, e4mc 6.2.1 (dieselbe Datei wie bei 1.21.11); dazu Bushy Vegetation 3.3.2 bei den Paketen.
+
+**Offen:** dein Test im Spiel (Liste in `Offene_Punkte.md`), danach Manifest-Eintrag und Release - beides nur mit deinem OK.
