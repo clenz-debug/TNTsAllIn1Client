@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-08 (Launcher und Mod 0.1.9). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-08 (Launcher und Mod 0.1.10). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -21,6 +21,7 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 |---|---|---|---|
 | 1.8.9 | 2015-12-03 | Legacy (nur im Installer, kein Manifest-Eintrag) | 0.1.8 |
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
+| 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
 | 26.1.2 | 2026-04-09 | Fabric | von Anfang an |
 | 26.3 | 2026-09-15 | Fabric | 0.1.7 |
@@ -58,7 +59,6 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.18.2 (2022-02-28)
 - [ ] 1.19.4 (2023-03-14)
 - [ ] 1.20.6 (2024-04-29)
-- [ ] 1.21.1 (2024-08-08) – Mod und Pakete gebaut (2026-10-08), warten auf deinen Test und das Release
 
 Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: für Modpacks sind
 1.20.1 (statt 1.20.6) und 1.19.2 (statt 1.19.4) verbreiteter. 1.20.5 hat die Items intern umgebaut,
@@ -69,7 +69,6 @@ Welche der mitgelieferten Fremd-Mods es für eine Auswahl dieser Versionen gibt 
 
 | Version | Fabric API | Sodium | Lithium | Continuity | Cape Provider | e4mc | Bushy Vegetation |
 |---|---|---|---|---|---|---|---|
-| 1.21.1 | ja | ja | ja | ja | ja | ja | ja |
 | 1.20.1 | ja | ja | ja | ja | nein | ja | ja |
 | 1.19.4 | ja | ja | ja | ja | nein | ja | ja |
 | 1.18.2 | ja | ja | ja | ja | nein | ja | ja |
@@ -103,5 +102,5 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-33 Versionen nach den Regeln oben: 5 unterstützt, 28 offen (8 ab 1.21.2, 7 ältere mit Fabric,
+33 Versionen nach den Regeln oben: 6 unterstützt, 27 offen (8 ab 1.21.2, 6 ältere mit Fabric,
 6 startbare Legacy-Versionen, 7 noch nicht startbare).

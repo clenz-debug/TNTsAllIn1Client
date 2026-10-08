@@ -1600,9 +1600,9 @@ Zusammen mit dem Port in allen Versionen geändert und bestätigt:
 - „[Kopieren]“ in der Screenshot-Nachricht ging in 1.21.11, 26.1.2 und 26.3 nicht (das Spiel sperrt Javas Zwischenablage für sich selbst); dort läuft es jetzt wie in 1.14.4 über PowerShell.
 - Nach dem Release bestätigt: Auto-Update von 0.1.8 auf 0.1.9, und ein installierter Launcher lädt das 1.14.4-Bundle übers Manifest (Instanz startet, die Schalter für die Ressourcenpakete funktionieren).
 
-## 1.21.1-Port (2026-10-08, gebaut, vom Nutzer noch nicht im Spiel gestartet, nicht veröffentlicht)
+## 1.21.1-Port (2026-10-08, vom Nutzer im Spiel bestätigt: „ok es passt alles“, veröffentlicht mit 0.1.10)
 
-`mod/1.21.1/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.11-Code portiert (nicht aus 1.14.4 - Menüs, Einstellungen und Sprachdateien sind dadurch dieselben wie in 1.21.11). `gradlew build` läuft durch, `python mod/check_mixins.py 1.21.1` meldet 123 geprüfte Ziele ohne Problem (das Skript kann seitdem auch die 1.21.x-Versionen). **Im Spiel gelaufen ist davon noch nichts** - der erste Start ist der Test.
+`mod/1.21.1/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.11-Code portiert (nicht aus 1.14.4 - Menüs, Einstellungen und Sprachdateien sind dadurch dieselben wie in 1.21.11). `gradlew build` läuft durch, `python mod/check_mixins.py 1.21.1` meldet 123 geprüfte Ziele ohne Problem (das Skript kann seitdem auch die 1.21.x-Versionen). Der Nutzer hat die Instanz im Dev-Launcher getestet; was dabei auffiel, steht unten.
 
 Zwischen 1.21.1 und 1.21.11 hat Mojang fast alles umgebaut, was die Mod anfasst. Was deshalb in 1.21.1 anders gebaut ist als in 1.21.11:
 
@@ -1626,4 +1626,25 @@ Zwischen 1.21.1 und 1.21.11 hat Mojang fast alles umgebaut, was die Mod anfasst.
 
 **Fremd-Mods für 1.21.1** (Modrinth, liegen im Dev-Bundle `launcher/mods-bundle/1.21.1/`): Fabric API 0.116.17, Sodium 0.8.13, Lithium 0.15.4, Continuity 3.0.0, Cape Provider 5.0.0.0-legacy, e4mc 6.2.1 (dieselbe Datei wie bei 1.21.11); dazu Bushy Vegetation 3.3.2 bei den Paketen.
 
-**Offen:** dein Test im Spiel (Liste in `Offene_Punkte.md`), danach Manifest-Eintrag und Release - beides nur mit deinem OK.
+**Beim Test des Nutzers gefunden und behoben** (alles von ihm bestätigt, sofern nicht anders vermerkt):
+
+- Karten im Kartenmenü fehlten: 1.21.1 zeichnet den Hintergrund innerhalb von `Screen#render`, also nach unseren Karten - `ClientModsCardScreen` füllt ihn jetzt selbst zuerst.
+- „Verbundene Texturen“ tat nichts: Continuitys zwei eigene Pakete waren in der Instanz nicht ausgewählt. Die Mod wählt sie einmalig beim ersten Start und beim Einschalten des Schalters aus (`compat/ContinuityPacks`).
+- Shulker-Vorschau nur bei den Farben mit fester Palette: `DyeColor#getTextColor` kommt in 1.21.1 ohne Deckkraft zurück.
+- Helligkeit: mit Fullbright verwarf das Spiel beim Speichern die Helligkeits-Zeile („Error saving option Brightness“). 1.21.1 und 1.21.11 haben jetzt denselben Schutz wie 26.x (`OptionsSaveMixin`) - gebaut, vom Nutzer nicht eigens geprüft.
+- Shulker-Vorschau, alle Versionen mit Vorschau: Rahmen rechts und unten einen Pixel dünner als links und oben; Titel der weißen Box kaum lesbar (weiß mit Schatten auf heller Kopfzeile) - jetzt dunkel ohne Schatten. In 1.21.1 bestätigt, in 1.14.4, 1.21.11, 26.1.2 und 26.3 ungetestet übertragen.
+- Kein Fehler der Mod: überlappende Trankeffekt-Einträge bei mehr als fünf Effekten - Vanilla staucht die Liste selbst (im Bytecode geprüft), wie in 1.14.4.
+
+## Launcher: Hinweis bei ersetzten Minecraft-Versionen (2026-10-08, veröffentlicht mit 0.1.10, im Fenster noch nicht angesehen)
+
+Entscheidung des Nutzers: 1.21.2, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene Mod-Version - ihre Fehlerbehebungen 1.21.3, 1.21.10 und 26.1.2 kamen kurz danach ohne neuen Inhalt. Der Launcher zeigt bei diesen vier Versionen einen Hinweis (beim Anlegen einer Instanz und auf dem Startbildschirm), Wortlaut vom Nutzer: „Wir empfehlen, die Version X zu nehmen, da diese stabiler läuft und deshalb vom Client unterstützt wird.“ Die Zuordnung steht in `SUPERSEDED_MINECRAFT_VERSIONS` (`launcher/src/shared/types.ts`).
+
+## Release 0.1.10 (2026-10-08, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers („comitt, push, release“). Ablauf wie bei 0.1.9 nach Runbook C: Launcher und alle sechs Mods auf 0.1.10, alle sechs mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win` gepackt, Commit `cf74458`, Tag `v0.1.10`, Release mit allen Dateien in einem Schritt, Prüfsummen aller hochgeladenen Dateien gegen das Manifest geprüft, erst dann `main` gepusht.
+
+- **Neu: Minecraft 1.21.1 mit unserer Mod** - Manifest-Eintrag mit eigener Mod, Fabric API, Sodium, Lithium, Continuity, Cape Provider und e4mc; Bushy Vegetation 3.3.2 als Modrinth-Download, `TNT-3D-Blocks-1.21.1.zip`, `TNT-3D-Bushes-1.21.1.zip` und `TNT-Dark-Mode-1.21.1.zip` als Release-Dateien.
+- **Dateien:** Installer, Blockmap, `latest.yml`, fünf Mod-Jars (1.14.4, 1.21.1, 1.21.11, 26.1.2, 26.3) und die drei Pakete für 1.21.1. Die Pakete der anderen Versionen sind unverändert, ihre Manifest-Einträge zeigen weiter auf ältere Releases.
+- **1.8.9:** die Mod (0.1.10, inhaltlich unverändert) steckt weiter nur im Installer.
+- **Launcher-Code:** neu ist nur der Hinweis bei den ersetzten Versionen.
+- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, und ein installierter Launcher hat das 1.21.1-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
