@@ -9,12 +9,14 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
 import javax.imageio.ImageIO;
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Phase 5n, rebuilt on user feedback: a chat message with two colored,
@@ -34,6 +36,8 @@ import java.util.Optional;
  * through a server packet, useless here).
  */
 public final class ScreenshotChatLink {
+	private static final int POWERSHELL_TIMEOUT_SECONDS = 15;
+
 	public static final Identifier COPY_CLICK_ID = Identifier.fromNamespaceAndPath(TNTsAllIn1ClientMod.MOD_ID, "screenshot_copy");
 
 	private ScreenshotChatLink() {
@@ -57,17 +61,65 @@ public final class ScreenshotChatLink {
 				.withStyle(style -> style.withColor(color).withUnderlined(true).withClickEvent(clickEvent));
 	}
 
+	/**
+	 * Puts the picture itself on the clipboard, off the game's own thread - reading it and waiting
+	 * for PowerShell both take a moment.
+	 *
+	 * <p>That is Java's desktop toolkit's job, which the game switches off for itself at its start
+	 * ("headless") - asking it anyway only throws (own user report: "[Copy]" did nothing). Where the
+	 * toolkit is off, Windows is asked through PowerShell instead; on other systems there is no way
+	 * left, which the log then says.
+	 */
 	public static void copyToClipboard(File file) {
+		Thread thread = new Thread(() -> copy(file), "TNT screenshot copy");
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	private static void copy(File file) {
 		try {
-			BufferedImage image = ImageIO.read(file);
-			if (image == null) {
-				TNTsAllIn1ClientMod.LOGGER.warn("[{}] Couldn't read screenshot for clipboard copy: {}", TNTsAllIn1ClientMod.MOD_ID, file);
-				return;
+			if (!GraphicsEnvironment.isHeadless()) {
+				BufferedImage image = ImageIO.read(file);
+				if (image == null) {
+					TNTsAllIn1ClientMod.LOGGER.warn("[{}] Couldn't read screenshot for clipboard copy: {}", TNTsAllIn1ClientMod.MOD_ID, file);
+					return;
+				}
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new ImageTransferable(image), null);
+			} else if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win")) {
+				copyThroughPowerShell(file);
+			} else {
+				TNTsAllIn1ClientMod.LOGGER.warn("[{}] Copying a screenshot to the clipboard is not possible on this system.", TNTsAllIn1ClientMod.MOD_ID);
 			}
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			clipboard.setContents(new ImageTransferable(image), null);
-		} catch (IOException e) {
+		} catch (IOException | RuntimeException e) {
 			TNTsAllIn1ClientMod.LOGGER.warn("[{}] Failed to copy screenshot to clipboard.", TNTsAllIn1ClientMod.MOD_ID, e);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	/**
+	 * Lets Windows load the picture and put it on the clipboard. The path goes in as a single-quoted
+	 * PowerShell text - a quote inside it is written twice. The clipboard needs the single-threaded
+	 * mode ("-STA").
+	 */
+	private static void copyThroughPowerShell(File file) throws IOException, InterruptedException {
+		String path = file.getAbsolutePath().replace("'", "''");
+		String script = "Add-Type -AssemblyName System.Windows.Forms,System.Drawing; "
+				+ "$image = [System.Drawing.Image]::FromFile('" + path + "'); "
+				+ "[System.Windows.Forms.Clipboard]::SetImage($image); "
+				+ "$image.Dispose()";
+		Process process = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command", script)
+				.redirectErrorStream(true)
+				.start();
+		// Nothing is written to it, and what it prints is of no use - closed, so it can't wait on either.
+		process.getOutputStream().close();
+		process.getInputStream().close();
+		if (!process.waitFor(POWERSHELL_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+			process.destroyForcibly();
+			TNTsAllIn1ClientMod.LOGGER.warn("[{}] Copying the screenshot {} to the clipboard took too long.", TNTsAllIn1ClientMod.MOD_ID, file);
+		} else if (process.exitValue() != 0) {
+			TNTsAllIn1ClientMod.LOGGER.warn("[{}] Copying the screenshot {} to the clipboard failed (PowerShell exit code {}).",
+					TNTsAllIn1ClientMod.MOD_ID, file, process.exitValue());
 		}
 	}
 }
