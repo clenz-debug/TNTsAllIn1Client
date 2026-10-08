@@ -107,6 +107,8 @@ export function isBundleCompatibleVersion(versionId: string, bundleCompatibleVer
  * the launcher says so wherever such a version is picked. */
 export const SUPERSEDED_MINECRAFT_VERSIONS: Readonly<Record<string, string>> = {
   '1.21.2': '1.21.3',
+  '1.21.6': '1.21.8',
+  '1.21.7': '1.21.8',
   '1.21.9': '1.21.10',
   '26.1': '26.1.2',
   '26.1.1': '26.1.2'
