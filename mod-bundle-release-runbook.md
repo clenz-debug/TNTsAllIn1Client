@@ -126,8 +126,12 @@ nicht beim Sprung auf 1.0.
 **Einmalig:** GitHub CLI installieren (`winget install GitHub.cli`) und `gh auth login` (Browser).
 
 1. `launcher/package.json`: `version` hochsetzen (z.B. `0.1.0` → `0.1.1`).
-2. Beide Mods frisch bauen (`gradlew build` in `mod/1.21.11` und `mod/26.1.2`) - der Installer
-   bündelt deren `build/libs` (`electron-builder.yml`, `extraResources`).
+2. Alle Mods frisch bauen: `gradlew clean build` in **jedem** `mod/<version>/` (derzeit `1.8.9`,
+   `1.14.4`, `1.21.11`, `26.1.2`, `26.3`). `clean`, weil nach einem Versionssprung sonst der alte
+   Jar neben dem neuen in `build/libs` liegt. Der Installer bündelt `build/libs` der Versionen, die
+   in `electron-builder.yml` unter `extraResources` stehen (derzeit `1.21.11`, `26.1.2` und `1.8.9`
+   - die 1.8.9-Mod kommt **nur** auf diesem Weg zu den Leuten); die Jars der übrigen Versionen
+   gehen als Release-Dateien übers Manifest (Schritt 5).
 3. Soll das Release auch neue Mod-Jars ausliefern: SHA-1 berechnen und `mod-bundle-manifest.json`
    **vor** dem Installer-Bau anpassen (Abschnitt B, Schritte 3-6) - der Installer legt eine Kopie des
    Manifests als `seed-manifest.json` bei, damit ein frisch installierter Launcher seine gebündelten
