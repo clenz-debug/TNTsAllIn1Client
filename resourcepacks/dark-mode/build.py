@@ -8,6 +8,11 @@ pack (CC-BY-NC-SA): nothing is taken from that pack. Every picture is made here 
 GUI textures in the client jar, by recoloring their neutral greys with the palette below - so a new
 Minecraft version gets its dark screens by running this again, new screens included.
 
+Versions before 1.20.2 (pack format 18) keep what the newer ones have as single sprites in a few big
+sheets - buttons and hotbar in widgets.png, a furnace's flame and arrow beside its panel. For those
+SHEET_RULES below work on parts of a picture; the same rules, for the same reason, as the launcher's
+dark mode for the versions without a mod loader (launcher/src/main/launch/legacyDarkModePack.ts).
+
 What gets recolored: the container screens (inventory, chests, furnace, ...), their sprites, the
 recipe book, the advancements window, the menu buttons and sliders (options, pause menu, ...) and
 the hotbar's frame.
@@ -31,6 +36,7 @@ import zipfile
 from PIL import Image
 
 PACK_FORMATS = {
+    "1.14.4": 4,
     "1.21.11": 75,
     "26.1.2": 84,
     "26.3": 97,
@@ -127,6 +133,52 @@ COLOR_SWAPS = {
 }
 
 
+# From this pack format on the GUI is single sprites (INCLUDE and friends above); before it, sheets.
+SPRITES_SINCE = 18
+
+TEXTURES = "assets/minecraft/textures/"
+
+# Sheet versions: (path below textures/, palette, regions, colour swaps) - first match wins.
+# A region is (left, top, right, bottom, palette or None, tinted); right and bottom are exclusive, the
+# first region a pixel lies in counts, None leaves it as it is. "tinted" is for a part that is
+# coloured rather than grey: every pixel is darkened by as much as a grey of its brightness would be.
+BESIDE_PANEL = (176, 0, 256, 256, None, False)
+SHEET_RULES = [
+    # The flame, the bubbles and the progress arrows lie right of the panel and are meant to stand out - white stays white.
+    ("gui/container/furnace.png", "panel", [BESIDE_PANEL], {}),
+    ("gui/container/blast_furnace.png", "panel", [BESIDE_PANEL], {}),
+    ("gui/container/smoker.png", "panel", [BESIDE_PANEL], {}),
+    ("gui/container/brewing_stand.png", "panel", [BESIDE_PANEL], {}),
+    # Below the panel: the padlock of a locked map, an icon drawn in greys that would turn into a dark blob.
+    ("gui/container/cartography_table.png", "panel", [(0, 214, 256, 228, None, False)], {}),
+    # Below the panel: the villager's experience bar, which stays as it is like the progress arrows.
+    ("gui/container/villager2.png", "panel", [(0, 181, 512, 196, None, False)], {}),
+    # The "destroy item" slot's reddish fill would stay as bright as it is - a dark red, as in COLOR_SWAPS.
+    ("gui/container/creative_inventory/tab_inventory.png", "panel", [], {(0xAB, 0x7F, 0x7F): (0x4A, 0x24, 0x24)}),
+    # Slots with little pictures drawn in greys on them, for the statistics screen - not a container.
+    ("gui/container/stats_icons.png", None, [], {}),
+    ("gui/container/*.png", "panel", [], {}),
+    ("gui/container/creative_inventory/*.png", "panel", [], {}),
+    # Right of the book: buttons with an icon drawn in greys on them - only a panel's exact greys change there.
+    ("gui/recipe_book.png", "panel", [(150, 0, 256, 256, "panel_only", False)], {}),
+    ("gui/advancements/window.png", "panel", [], {}),
+    ("gui/advancements/widgets.png", "panel", [], {}),
+    ("gui/advancements/tabs.png", "panel", [], {}),
+    ("gui/widgets.png", "widget", [
+        # The white frame around the selected hotbar slot.
+        (0, 22, 24, 46, None, False),
+        # The hotbar's frame and the off-hand slot beside it; the half see-through inside is no opaque grey and stays anyway.
+        (0, 0, 182, 22, "hotbar", False),
+        (24, 22, 82, 46, "hotbar", False),
+        # A button under the cursor is bluish in these versions.
+        (0, 86, 200, 106, "widget", True),
+    ], {}),
+    ("gui/spectator_widgets.png", "hotbar", [(0, 22, 24, 46, None, False)], {}),
+    # The helmet, chestplate, ... outlines in the empty armor slots.
+    ("item/empty_armor_slot_*.png", "silhouette", [], {}),
+]
+
+
 def find_jar(version: str) -> pathlib.Path:
     """The client jar Loom downloaded for this version's mod project."""
     return pathlib.Path.home() / ".gradle" / "caches" / "fabric-loom" / version / "minecraft-client.jar"
@@ -172,6 +224,58 @@ def level_map_for(relative: str):
     if matches(relative, ICON_BUTTONS):
         return panel_only
     return CURVE.__getitem__
+
+
+SHEET_MAPS = {
+    "panel": CURVE.__getitem__,
+    "widget": WIDGET_CURVE.__getitem__,
+    "hotbar": HOTBAR_CURVE.__getitem__,
+    "silhouette": silhouette,
+    "panel_only": panel_only,
+}
+
+
+def sheet_rule_for(relative: str):
+    """The rule for the picture at this path (below textures/) in a sheet version, or None."""
+    return next((rule for rule in SHEET_RULES if fnmatch.fnmatchcase(relative, rule[0])), None)
+
+
+def recolor_sheet(data: bytes, rule: tuple) -> bytes | None:
+    """A sheet with its greys run through its rule's palettes, part by part - None if no pixel changed."""
+    _, default, regions, swaps = rule
+    image = Image.open(io.BytesIO(data)).convert("RGBA")
+    pixels = image.load()
+    changed = False
+    for y in range(image.height):
+        for x in range(image.width):
+            r, g, b, a = pixels[x, y]
+            if a != 255:
+                continue
+            region = next((region for region in regions if region[0] <= x < region[2] and region[1] <= y < region[3]), None)
+            name = region[4] if region else default
+            if name is None:
+                continue
+            if (r, g, b) in swaps:
+                pixels[x, y] = (*swaps[(r, g, b)], a)
+                changed = True
+                continue
+            level_map = SHEET_MAPS[name]
+            level = round((r + g + b) / 3)
+            if region and region[5]:
+                factor = 1 if level == 0 else level_map(level) / level
+                new = (round(r * factor), round(g * factor), round(b * factor))
+            else:
+                if max(r, g, b) - min(r, g, b) > MAX_CHROMA:
+                    continue
+                new = (level_map(level),) * 3
+            if new != (r, g, b):
+                pixels[x, y] = (*new, a)
+                changed = True
+    if not changed:
+        return None
+    out = io.BytesIO()
+    image.save(out, "PNG", optimize=True)
+    return out.getvalue()
 
 
 def color_swaps_for(relative: str) -> dict:
@@ -234,6 +338,9 @@ def pack_icon() -> bytes:
 
 
 def mcmeta(pack_format: int) -> dict:
+    if pack_format < SPRITES_SINCE:
+        # The form these versions know - they have no use for a range of formats.
+        return {"pack": {"pack_format": pack_format, "description": DESCRIPTION}}
     pack = {"min_format": pack_format, "max_format": pack_format, "description": DESCRIPTION}
     if pack_format < 84:
         pack["pack_format"] = pack_format
@@ -254,7 +361,17 @@ def build(version: str, pack_format: int, jar: pathlib.Path, target: pathlib.Pat
         write(zf, "pack.png", pack_icon())
         write(zf, "assets/tntsallin1client/dark_mode.json", json.dumps({"label_color": LABEL_COLOR}, indent=2))
         names = set(source.namelist())
-        for name in sorted(names):
+        for name in sorted(names) if pack_format < SPRITES_SINCE else ():
+            if not name.startswith(TEXTURES) or not name.endswith(".png"):
+                continue
+            rule = sheet_rule_for(name[len(TEXTURES):])
+            if rule is None or rule[1] is None:
+                continue
+            data = recolor_sheet(source.read(name), rule)
+            if data is not None:
+                write(zf, name, data)
+                recolored += 1
+        for name in sorted(names) if pack_format >= SPRITES_SINCE else ():
             if not name.startswith(GUI) or not name.endswith(".png"):
                 continue
             relative = name[len(GUI):]
