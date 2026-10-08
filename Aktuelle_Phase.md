@@ -1563,3 +1563,13 @@ Auf ausdrückliche Freigabe des Nutzers („ja du kannst veröffentlichen“, 1.
 - **Vorher geklärt:** LaunchWrapper (keine Lizenz bei Mojang; wir geben es nicht weiter, der Launcher lädt es von Mojangs Server - nie in den Installer packen). Starttest einer 1.16.5-Instanz mit der neuen log4j-Konfiguration bestanden; die rote Zeile „ScriptEngineManager … NashornScriptEngineFactory not found“ kommt von Java und steht auch mit 0.1.7 da.
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet. Der Nutzer wollte veröffentlichen und Fehler bei Bedarf mit einem schnellen Update beheben.
 - Build-Skript 1.8.9: `verifyMixins` legt seinen Arbeitsordner jetzt selbst an (ein `clean build` scheiterte sonst).
+
+## Release 0.1.9 (2026-10-08, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers („comitten pushen und release“). Ablauf nach Runbook C: Versionen hochgesetzt (Launcher und alle fünf Mods 0.1.9), alle fünf Mods mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win` gepackt, Commit `f9c9028`, Tag `v0.1.9` gepusht, Release in einem Schritt mit allen Dateien angelegt, geprüft (ein Release zum Tag, SHA-1 der hochgeladenen Jars und Zips gegen das Manifest, öffentliche `latest.yml`), danach `main` gepusht.
+
+- **Neu: Minecraft 1.14.4 mit unserer Mod** (`mod/1.14.4`, Fabric, aus dem 1.8.9-Code portiert) - der erste Manifest-Eintrag ohne e4mc, Sodium, Lithium, Continuity und Cape Provider: für 1.14.4 gibt es von den gebündelten Fremd-Mods nur Fabric API (Modrinth). Capes, Freunde-Anzeige und 3D-Skin-Layer bringt die Mod dort selbst mit.
+- **Dateien:** Installer, Blockmap, `latest.yml`, vier Mod-Jars (1.14.4, 1.21.11, 26.1.2, 26.3), `TNT-3D-Blocks-1.14.4.zip` (aus `resourcepacks/3d-blocks/early.py`) und `TNT-Dark-Mode-1.14.4.zip`. Bushy Vegetation 3.1.0 für 1.14.4 steht im Manifest als Modrinth-Download. Die Packs der anderen Versionen sind unverändert (Manifest zeigt weiter auf die alten Releases).
+- **1.8.9:** die Mod steckt weiter nur im Installer; ihr Stand 0.1.9 (Partikel-Schalter, Freecam-Körper, 10 % Mindesttiefe der 3D-Skin-Layer) kommt mit diesem Launcher-Update.
+- **Launcher-Code:** seit 0.1.8 unverändert.
+- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, und der Weg, auf dem ein installierter Launcher das 1.14.4-Bundle übers Manifest lädt, lief noch nie - getestet wurde 1.14.4 nur im Dev-Launcher mit lokal befülltem Bundle.

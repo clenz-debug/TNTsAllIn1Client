@@ -7,8 +7,8 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
-  - [ ] Fabric-Versionen zwischen 1.14 und 1.21.10: starten mit Fabric, aber ohne unsere Mod
-  - [ ] 1.14.4-Port (begonnen 2026-10-07, `mod/1.14.4/`: Fabric, Mojang-Namen, Java 8). Reihenfolge:
+  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9)
+  - [x] 1.14.4-Port (begonnen 2026-10-07, veröffentlicht mit 0.1.9 am 2026-10-08; `mod/1.14.4/`: Fabric, Mojang-Namen, Java 8). Reihenfolge:
     - [x] Grundgerüst: baut und lädt – Start im Launcher von dir bestätigt (2026-10-07)
     - [x] Fundament – von dir bestätigt (2026-10-07): Einstellungen, Taste fürs Mod-Menü, Mod-Menü (Listenansicht mit Suche) mit Optionsmenüs samt Farbwähler, Knopf „Client Mods“ im Pause- und Titelmenü, Zurücksetzen (einzeln und alle), Sprachdateien
     - [x] HUD – von dir bestätigt (2026-10-07): Koordinaten, FPS, Latenz, Uhr, Keystrokes, Rüstungs-Status, Item-Zähler, HUD-Editor
@@ -34,7 +34,8 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
       - [x] Gemeldet 2026-10-08: Abbau-Partikel von Türen, Gittern und Laternen zeigten die Fehlertextur – behoben im Paket (kein Verweis mehr von einem Modell-Eintrag auf einen anderen desselben Modells)
       - [x] Gemeldet 2026-10-08: Zuckerrohr-Item blasser als das gesetzte Zuckerrohr – das 3D-Item wird jetzt wie in den neueren Versionen grasgrün eingefärbt; von dir bestätigt 2026-10-08
     - [x] Bushy Vegetation für 1.14.4 (von dir gewünscht 2026-10-08, Lizenz BSD-3-Clause wie in den neueren Versionen): Version 3.1.0 im Entwicklungs-Bundle, in der Mod als abschaltbare Option der 3D-Blockmodelle und in den Credits – von dir bestätigt 2026-10-08. Das Paket ist für das Format von 1.15 gemacht; die Paketliste des Spiels zeigt es deshalb als „für eine neuere Version“ an
-    - [ ] Danach Manifest-Eintrag und Release (nur mit deinem OK)
+    - [x] Manifest-Eintrag und Release: mit 0.1.9 am 2026-10-08 veröffentlicht
+    - [ ] Noch nie gelaufen: ein installierter Launcher lädt das 1.14.4-Bundle übers Manifest (bisher nur im Dev-Launcher getestet) - nach dem Update einmal eine 1.14.4-Instanz im installierten Launcher starten
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
 
