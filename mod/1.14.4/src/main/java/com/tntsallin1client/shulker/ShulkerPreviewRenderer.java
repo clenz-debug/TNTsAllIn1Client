@@ -42,6 +42,9 @@ public final class ShulkerPreviewRenderer {
 	private static final int OFFSET_Y = 24;
 	private static final int HEADER_PADDING = 4;
 	private static final int BORDER_THICKNESS = 2;
+	/** A header brighter than this gets the dark title - of the boxes only the white one's is. */
+	private static final int LIGHT_HEADER_BRIGHTNESS = 175;
+	private static final int TITLE_ON_LIGHT_COLOR = 0x2B2B2B;
 	private static final int DEFAULT_COLOR = 0xFF8B5FBF;
 	private static final float BORDER_SHADE = 0.25F;
 	private static final float HEADER_SHADE = 0.35F;
@@ -94,8 +97,11 @@ public final class ShulkerPreviewRenderer {
 		}
 
 		int[] palette = palette(box);
-		int gridWidth = COLUMNS * SLOT_SIZE;
-		int gridHeight = ROWS * SLOT_SIZE;
+		// One more than the slots: the line closing the last column and the last row. Without it that
+		// line sat in the frame, which was a pixel thinner on the right and at the bottom than on the
+		// left and at the top - plain to see on the white box, whose lines have the frame's color.
+		int gridWidth = COLUMNS * SLOT_SIZE + 1;
+		int gridHeight = ROWS * SLOT_SIZE + 1;
 		Minecraft client = Minecraft.getInstance();
 		Font font = client.font;
 		int headerHeight = font.lineHeight + HEADER_PADDING;
@@ -112,7 +118,15 @@ public final class ShulkerPreviewRenderer {
 
 		GuiComponent.fill(x, y, x + gridWidth + 2 * BORDER_THICKNESS, y + headerHeight + gridHeight + 2 * BORDER_THICKNESS, palette[BORDER]);
 		GuiComponent.fill(contentX, contentY, contentX + gridWidth, contentY + headerHeight, palette[HEADER]);
-		font.drawShadow(box.getHoverName().getColoredString(), contentX + 2, contentY + HEADER_PADDING / 2, 0xFFFFFF);
+		// White with a shadow on a light header (the white box) left little more than the shadow to
+		// read - its first letter looked like a dent in the frame (own user report). Dark and without
+		// shadow there.
+		String title = box.getHoverName().getColoredString();
+		if (brightness(palette[HEADER]) > LIGHT_HEADER_BRIGHTNESS) {
+			font.draw(title, contentX + 2, contentY + HEADER_PADDING / 2, TITLE_ON_LIGHT_COLOR);
+		} else {
+			font.drawShadow(title, contentX + 2, contentY + HEADER_PADDING / 2, 0xFFFFFF);
+		}
 
 		int gridY = contentY + headerHeight;
 		GuiComponent.fill(contentX, gridY, contentX + gridWidth, gridY + gridHeight, palette[GRID_FILL]);
@@ -187,6 +201,11 @@ public final class ShulkerPreviewRenderer {
 
 	private static int[] shaded(int color) {
 		return new int[] {scale(color, BORDER_SHADE), scale(color, HEADER_SHADE), scale(color, GRID_FILL_SHADE), scale(color, GRID_LINE_SHADE)};
+	}
+
+	/** How bright {@code color} looks, 0 to 255 (the usual weighting of red, green and blue). */
+	private static int brightness(int color) {
+		return ((color >> 16 & 0xFF) * 299 + (color >> 8 & 0xFF) * 587 + (color & 0xFF) * 114) / 1000;
 	}
 
 	/** The color darkened to the given share of its brightness, fully opaque. */
