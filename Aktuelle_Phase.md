@@ -1635,6 +1635,34 @@ Zwischen 1.21.1 und 1.21.11 hat Mojang fast alles umgebaut, was die Mod anfasst.
 - Shulker-Vorschau, alle Versionen mit Vorschau: Rahmen rechts und unten einen Pixel dünner als links und oben; Titel der weißen Box kaum lesbar (weiß mit Schatten auf heller Kopfzeile) - jetzt dunkel ohne Schatten. In 1.21.1 bestätigt, in 1.14.4, 1.21.11, 26.1.2 und 26.3 ungetestet übertragen.
 - Kein Fehler der Mod: überlappende Trankeffekt-Einträge bei mehr als fünf Effekten - Vanilla staucht die Liste selbst (im Bytecode geprüft), wie in 1.14.4.
 
+## 1.20.6-Port (2026-10-08, vom Nutzer im Dev-Launcher gestartet und angetestet, nicht veröffentlicht)
+
+Auf Wunsch des Nutzers („mach die 1.20 Unterstützung“); 1.20.6 statt 1.20.1 nach der Regel „letzte Unterversion“ (seine Entscheidung auf Nachfrage). `mod/1.20.6/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.1-Code portiert - Menüs, Einstellungen und Sprachdateien sind dieselben. `gradlew build` läuft durch, `python mod/check_mixins.py 1.20.6` meldet 128 geprüfte Ziele ohne Problem. Der Nutzer hat die Instanz am selben Tag im Dev-Launcher gestartet; was dabei auffiel, steht unten. Was er noch nicht ausdrücklich bestätigt hat, steht in `Offene_Punkte.md` 1a.
+
+1.20.6 liegt nah an 1.21.1 (Items schon im neuen Format, HUD-Ebenen, dieselben Bildschirme). Was dort anders gebaut ist:
+
+- **Zeichnen:** die ältere Zeichen-Schnittstelle (`vertex(...).color(...).endVertex()`, `Tesselator#getBuilder`) in `render/WorldShapes`, `skinlayers/SkinLayerMesh` und der Hitbox-Blickrichtung.
+- **HUD:** die Elemente bekommen den Zwischenschritt als Zahl statt als `DeltaTracker`.
+- **Kamera:** 1.21 hat die Kamera-Drehung umgedreht. Text in der Welt (Wegpunkt-Namen) wird in 1.20.6 deshalb in x gespiegelt gezeichnet, so wie das Spiel es dort bei Namensschildern tut. Die Blickrichtungs-Vektoren der Kamera sind in beiden Versionen gleich.
+- **Hitbox-Farbe:** `renderHitbox` hat in 1.20.6 keine Farb-Parameter; der Eingriff greift dort immer.
+- **Capes:** für 1.20.6 gibt es kein Cape Provider (Modrinth, 2026-10-08: keine 1.20.x-Version). Die Mod holt die Capes deshalb selbst von `nxlc.de/tntcapes/<id>.png` (`cape/ClientCapes`, `AbstractClientPlayerMixin` an `getSkin`), wie in 1.14.4; der Schalter „Client-Capes“ ist dort eine eigene Einstellung (`clientCapesEnabled`, an). Die Elytra-Regel (einfarbiger Elytra-Teil = eigenes Aussehen der Elytra) sitzt in `ElytraLayerMixin`. Im Offline-Start wird nichts abgerufen, das Cape aus der Launcher-Kopie bleibt.
+- **Sodium:** 0.5.11 statt 0.8 - der Knopf unter „Externe Mods“ öffnet `SodiumOptionsGUI`.
+- Kleinkram: `ResourceLocation` noch mit Konstruktor, `Mth.hsvToRgb` ohne Deckkraft, Bildschirme noch nicht im Unterpaket `options`.
+
+Geprüft wurde zusätzlich per Bytecode-Vergleich 1.21.1 gegen 1.20.6: alle Zielmethoden der Mixins (nur die oben genannten weichen ab) und alle 523 Spielmethoden, die die Mod aufruft (34 weichen ab, bis auf die Kamera-Drehung alles Zeichen-Interna oder ohne Wirkung auf uns).
+
+**Ressourcenpakete** (Pack-Format 32): `early.py` und `dark-mode/build.py` kennen 1.20.6 jetzt; `TNT-3D-Blocks-1.20.6.zip` (271 Block-, 145 Item-Modelle, 11 Blockstates), `TNT-3D-Bushes-1.20.6.zip`, `TNT-Dark-Mode-1.20.6.zip` (172 Bilder). Die Pakete der anderen Versionen sind byte-gleich geblieben (per Prüfsumme verglichen).
+
+**Fremd-Mods für 1.20.6** (Modrinth, liegen im Dev-Bundle `launcher/mods-bundle/1.20.6/`): Indium 1.0.36 (`nQHYSjxO`, Apache-2.0 - ohne sie zeichnet Sodium 0.5 Continuitys verbundene Texturen nicht; Sodium kann das erst ab 0.6 selbst), Fabric API 0.100.8 (`ocg4hG3t`), Sodium 0.5.11 (`OwLQelEI`), Lithium 0.12.5 (`5a3sPIH2`), Continuity 3.0.0+1.20.5 (`RXCRb59j`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie bei 1.21.1); dazu Bushy Vegetation 3.3.2 bei den Paketen. Kein Manifest-Eintrag - der und ein Release brauchen das ausdrückliche OK des Nutzers.
+
+**Beim Test des Nutzers gefunden und behoben** (2026-10-08; bestätigt nur, wo es dasteht):
+
+- Scrollende Einstellungsseiten in einer Welt: der schwarze Hintergrund des Client-Designs war nur im Scroll-Ausschnitt da, oben und unten schien die Welt durch - die Seiten beschneiden alles auf den Ausschnitt, auch den Hintergrund. `ScreenThemeMixin` zeichnet ihn jetzt unbeschnitten. Derselbe Code steckt in 1.21.1 (dort fällt es nur vom Hauptmenü aus nicht auf), deshalb auch dort eingebaut. 1.21.11 und 26.x nicht angefasst.
+- Verbundene Texturen gingen nicht: Sodium 0.5 zeichnet Continuitys Texturen nur mit der Zusatz-Mod Indium. Indium 1.0.36 liegt im Dev-Bundle und steht in den Credits.
+- „3D-Blockmodelle“ stand beim ersten Start auf an, unser 3D-Paket war aber aus: eine neue Instanz übernahm die zuletzt benutzte Paket-Auswahl mit den Paketnamen der anderen Version (`TNT-3D-Blocks-1.21.1.zip`), die das Spiel als fehlend strich, während Bushy Vegetation an blieb. Der Launcher benennt unsere Pakete in der übernommenen Auswahl jetzt auf die Version der Instanz um (`sharedSettings.ts`, `keepInstanceOptions`). Betraf jede neue Instanz in einer anderen Version als der zuletzt gespielten.
+- Angepinnte Rezepte mit Unter-Zutaten: die Streifen benachbarter Zutaten liefen ineinander. Jede Zutat bekommt jetzt eine Spalte so breit wie ihr Streifen (`PinnedRecipeHud.columnWidth`) - in allen sechs Versionen mit angepinnten Rezepten.
+- Shulker-Vorschau, alle sechs Versionen (in 1.20.6 vom Nutzer bestätigt: „passt“): der Rahmen war um das Raster 3 Pixel dick, oben und neben der Titelzeile 2 - das Raster hat an den Außenkanten jetzt keine eigenen Linien mehr, der Rahmen ist rundum 2 Pixel. Der Titel ist auf Wunsch des Nutzers auch auf der weißen Box wieder weiß mit Schatten; die Sonderregel aus 0.1.10 (dunkler Titel) ist wieder raus.
+
 ## Launcher: Hinweis bei ersetzten Minecraft-Versionen (2026-10-08, veröffentlicht mit 0.1.10, im Fenster noch nicht angesehen)
 
 Entscheidung des Nutzers: 1.21.2, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene Mod-Version - ihre Fehlerbehebungen 1.21.3, 1.21.10 und 26.1.2 kamen kurz danach ohne neuen Inhalt. Der Launcher zeigt bei diesen vier Versionen einen Hinweis (beim Anlegen einer Instanz und auf dem Startbildschirm), Wortlaut vom Nutzer: „Wir empfehlen, die Version X zu nehmen, da diese stabiler läuft und deshalb vom Client unterstützt wird.“ Die Zuordnung steht in `SUPERSEDED_MINECRAFT_VERSIONS` (`launcher/src/shared/types.ts`).
