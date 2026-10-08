@@ -1573,3 +1573,29 @@ Auf ausdrückliche Anweisung des Nutzers („comitten pushen und release“). Ab
 - **1.8.9:** die Mod steckt weiter nur im Installer; ihr Stand 0.1.9 (Partikel-Schalter, Freecam-Körper, 10 % Mindesttiefe der 3D-Skin-Layer) kommt mit diesem Launcher-Update.
 - **Launcher-Code:** seit 0.1.8 unverändert.
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, und der Weg, auf dem ein installierter Launcher das 1.14.4-Bundle übers Manifest lädt, lief noch nie - getestet wurde 1.14.4 nur im Dev-Launcher mit lokal befülltem Bundle.
+
+## 1.14.4-Port (2026-10-07/08, veröffentlicht mit 0.1.9)
+
+`mod/1.14.4/`: Fabric, Mojang-Namen, Java 8, aus dem 1.8.9-Code portiert. Alles unten Genannte ist vom Nutzer im Spiel bestätigt (stufenweise am 2026-10-07 und 2026-10-08, der Rest am 2026-10-08 pauschal mit „was wir gemacht hatten passt“ und „dann passt das jetzt alles“).
+
+- **Fundament:** Einstellungen, Taste fürs Mod-Menü, Mod-Menü (Listenansicht mit Suche) mit Optionsmenüs samt Farbwähler, Knopf „Client Mods“ im Pause- und Titelmenü, Zurücksetzen (einzeln und alle), Sprachdateien.
+- **HUD:** Koordinaten, FPS, Latenz, Uhr, Keystrokes, Rüstungs-Status, Item-Zähler, HUD-Editor, F3-Schnellinfo mit Systeminfo-Seite (F3+K).
+- **Rendering:** Zoom, Freecam (mit sichtbarem Körper in F5), Fadenkreuz, Fullbright, Kein Nebel, Partikel-Filter, Spawn-Overlay, Hitbox- und Blockumriss-Farbe, Itemphysics, Wegpunkte, 3D-Skin-Layer (Teile, Tiefe, Entfernung; 3D-Ärmel in der Ich-Ansicht).
+- **Inventar:** Schnellsortieren, Shulker-Vorschau, Screenshot-Nachricht mit „[Kopieren]“, angepinnte Rezepte.
+- **Client-Design:** Titelbildschirm, Pausenmenü, Kartenmenü, Schrift, Knöpfe/Regler/Textfelder im Design; Tour im Spiel inklusive der Freunde-Schritte.
+- **Freunde:** Knopf auf Titelbildschirm und im Pausenmenü, Freunde-Bildschirm, Einladungs-Hinweis, Aktivität für den Launcher, Client-Logo am Namensschild. Umfang wie 1.8.9: Einladungen nur ablehnbar, in die eigene Welt einladen geht nicht (e4mc gibt es erst ab 1.17).
+- **Discord-Aktivität** mit Optionen - wie in 1.8.9 nur unter Windows.
+- **Capes:** Client-Capes mit Schalter, eigener Skin und eigenes Cape im Offline-Modus.
+- **Ressourcenpakete:** Dark Mode (`resourcepacks/dark-mode/build.py` kann jetzt auch das alte Format mit Sammelbildern), 3D-Blöcke (`resourcepacks/3d-blocks/early.py`: 106 Block- und 73 Item-Modelle - Leitern, Schienen, Türen, Falltüren, Gitter, Laterne, Ranken, Seerose, Zuckerrohr, Pilze, Bücherregal, Steinsäge, Beerenbusch, Redstone-Staub; alles Spätere wie Ketten, Amethyst, Kupfer fehlt, weil es die Blöcke nicht gibt) mit der Option „3D-Items in Inventar & Hand“, dazu Bushy Vegetation 3.1.0 (BSD-3-Clause) als abschaltbare Option. Bushy Vegetation ist für das Format von 1.15 gemacht; die Paketliste des Spiels zeigt es deshalb als „für eine neuere Version“ an.
+- **Fremd-Mods:** für 1.14.4 gibt es laut Modrinth nur Fabric API; Sodium, Lithium, Continuity, Cape Provider und e4mc gibt es dort nicht.
+- **Kein Fehler der Mod:** überlappende Trankeffekt-Einträge neben dem Inventar bei mehr als fünf Effekten - 1.14.4 staucht die Liste selbst so zusammen (im Bytecode geprüft).
+- **Erst mit zweitem Client-Nutzer prüfbar:** Capes und Namensschild-Logo bei anderen Spielern (steht in `Offene_Punkte.md` unter „Vor der 1.0 zu testen“).
+
+Zusammen mit dem Port in allen Versionen geändert und bestätigt:
+
+- Partikel-Filter: jeder Partikel einzeln an- und ausschaltbar.
+- Freecam: sichtbarer Körper in jeder Version (in F5, eigener Skin, ohne Cape); nach einem Treffer bleibt der Spieler nicht mehr rot und zuckend.
+- 3D-Skin-Layer: Tiefe ab 10 % statt ab 25 % einstellbar.
+- Elytra mit Client-Cape: hat der Elytra-Bereich des Capes nur eine Farbe (so füllt ihn der Cape-Konverter), behält die Elytra ihr eigenes Aussehen - in 1.14.4 in der Mod selbst, in 1.21.11, 26.1.2 und 26.3 über einen Eingriff in die Cape-Provider-Mod (`CapeProviderElytraMixin`).
+- „[Kopieren]“ in der Screenshot-Nachricht ging in 1.21.11, 26.1.2 und 26.3 nicht (das Spiel sperrt Javas Zwischenablage für sich selbst); dort läuft es jetzt wie in 1.14.4 über PowerShell.
+- Nach dem Release bestätigt: Auto-Update von 0.1.8 auf 0.1.9, und ein installierter Launcher lädt das 1.14.4-Bundle übers Manifest (Instanz startet, die Schalter für die Ressourcenpakete funktionieren).
