@@ -4,7 +4,7 @@ import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { ClientSupportMark } from '../ClientSupportMark'
-import { isBundleCompatibleVersion, type GameVersionSummary, type Instance } from '../../../shared/types'
+import { isBundleCompatibleVersion, supersedingVersion, type GameVersionSummary, type Instance } from '../../../shared/types'
 
 interface Props {
   instances: Instance[]
@@ -67,6 +67,7 @@ export function InstancesScreen({
 
   const [newName, setNewName] = useState('')
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
+  const newVersionFixedBy = supersedingVersion(newVersion)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Own themed replacement for window.confirm() (ConfirmDialog) - holds which instance is pending
@@ -249,6 +250,7 @@ export function InstancesScreen({
             {importBusy ? t.instances.importing : t.instances.importFromClient}
           </button>
         </div>
+        {newVersionFixedBy && <p className="version-warning">{t.instances.supersededVersionHint(newVersion, newVersionFixedBy)}</p>}
         <p className="version-warning">{t.instances.importedSettingsWarning}</p>
         {importResult && <span className="status">{importResult}</span>}
         {versionsError && <span className="error">{t.instances.versionListError(versionsError)}</span>}

@@ -102,6 +102,21 @@ export function isBundleCompatibleVersion(versionId: string, bundleCompatibleVer
   return bundleCompatibleVersions.includes(versionId)
 }
 
+/** Versions Mojang replaced within days by a bug-fix release without new content, mapped to that
+ * release. Own user decision (2026-10-08): the client mods only ever come for the fixed one, and
+ * the launcher says so wherever such a version is picked. */
+export const SUPERSEDED_MINECRAFT_VERSIONS: Readonly<Record<string, string>> = {
+  '1.21.2': '1.21.3',
+  '1.21.9': '1.21.10',
+  '26.1': '26.1.2',
+  '26.1.1': '26.1.2'
+}
+
+/** The bug-fix release to use instead of `versionId`, if it is one of the superseded versions. */
+export function supersedingVersion(versionId: string): string | undefined {
+  return Object.hasOwn(SUPERSEDED_MINECRAFT_VERSIONS, versionId) ? SUPERSEDED_MINECRAFT_VERSIONS[versionId] : undefined
+}
+
 export type GameVersionType = 'release' | 'snapshot'
 
 export interface GameVersionSummary {

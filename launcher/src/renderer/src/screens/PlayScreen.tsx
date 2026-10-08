@@ -24,7 +24,7 @@ import type {
   ThemeColors,
   UpdateStatus
 } from '../../../shared/types'
-import { isBundleCompatibleVersion } from '../../../shared/types'
+import { isBundleCompatibleVersion, supersedingVersion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { FriendsScreen, InviteBanner } from './FriendsScreen'
 import { InstancesScreen } from './InstancesScreen'
@@ -114,6 +114,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
   const [legacyClientVersions, setLegacyClientVersions] = useState<string[]>([])
 
   const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
+  const selectedFixedBy = selectedInstance ? supersedingVersion(selectedInstance.versionId) : undefined
 
   const [headTextureDataUri, setHeadTextureDataUri] = useState<string | null>(null)
 
@@ -700,6 +701,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
                 ? t.play.legacyWarning(selectedInstance.versionId)
                 : t.play.bundleIncompatibleWarning(selectedInstance.versionId)}
             </span>
+          )}
+          {selectedInstance && selectedFixedBy && (
+            <span className="version-warning">{t.instances.supersededVersionHint(selectedInstance.versionId, selectedFixedBy)}</span>
           )}
           {/* A legacy version our own mod exists for: no mod loader, but the client's own mods (own user request for this wording). */}
           {selectedInstance && isLegacyVersion(selectedInstance.versionId) && hasClientMod(selectedInstance.versionId) && (

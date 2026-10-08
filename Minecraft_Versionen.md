@@ -31,23 +31,22 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 
 Starten heute schon mit Fabric, aber ohne unsere Mod.
 
-- [ ] 1.21.2 (2024-10-22)
-- [ ] 1.21.3 (2024-10-23) – erschien einen Tag nach 1.21.2 als Fehlerbehebung
+- [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt)
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
 - [ ] 1.21.6 (2025-06-17)
 - [ ] 1.21.7 (2025-06-30)
 - [ ] 1.21.8 (2025-07-17)
-- [ ] 1.21.9 (2025-09-30)
-- [ ] 1.21.10 (2025-10-07) – erschien eine Woche nach 1.21.9 als Fehlerbehebung
-- [ ] 26.1 (2026-03-24)
-- [ ] 26.1.1 (2026-04-01)
+- [ ] 1.21.10 (2025-10-07) – deckt 1.21.9 mit ab (Fehlerbehebung eine Woche später, kein neuer Inhalt)
 - [ ] 26.2 (2026-06-16)
 
-Von 26.1 unterstützen wir bisher nur die letzte Fehlerbehebung 26.1.2. Ob die unmittelbaren Vorgänger
-einer Fehlerbehebung (1.21.2, 1.21.9, 26.1, 26.1.1 – und je nach Sicht 1.21.6 und 1.21.7) eigene
-Mod-Versionen bekommen sollen oder mit ihrem Nachfolger als erledigt gelten, ist noch nicht
-entschieden.
+Entschieden am 2026-10-08: 1.21.2, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene Mod-Version – ihre
+Fehlerbehebungen 1.21.3, 1.21.10 und 26.1.2 kamen kurz danach ohne neuen Inhalt und gelten als
+dieselbe Version. Der Launcher weist bei diesen vier Versionen darauf hin
+(`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`).
+
+Ob 1.21.6 und 1.21.7 eigene Mod-Versionen bekommen sollen oder mit 1.21.8 als erledigt gelten, ist
+noch nicht entschieden.
 
 ### Vor 1.21.2 mit Fabric – letzte Unterversion je Hauptversion
 
@@ -59,7 +58,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.18.2 (2022-02-28)
 - [ ] 1.19.4 (2023-03-14)
 - [ ] 1.20.6 (2024-04-29)
-- [ ] 1.21.1 (2024-08-08)
+- [ ] 1.21.1 (2024-08-08) – Mod und Pakete gebaut (2026-10-08), warten auf deinen Test und das Release
 
 Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: für Modpacks sind
 1.20.1 (statt 1.20.6) und 1.19.2 (statt 1.19.4) verbreiteter. 1.20.5 hat die Items intern umgebaut,
@@ -104,5 +103,5 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-37 Versionen nach den Regeln oben: 5 unterstützt, 32 offen (12 ab 1.21.2, 7 ältere mit Fabric,
+33 Versionen nach den Regeln oben: 5 unterstützt, 28 offen (8 ab 1.21.2, 7 ältere mit Fabric,
 6 startbare Legacy-Versionen, 7 noch nicht startbare).

@@ -255,6 +255,8 @@ export const de = {
     existingHeading: 'Vorhandene Instanzen',
     active: 'Aktiv',
     clientSupported: 'Diese Version wird vom Client unterstützt',
+    supersededVersionHint: (versionId: string, fixedVersion: string) =>
+      `${versionId} ist eine fehlerhafte Version, die Mojang kurz darauf durch ${fixedVersion} ersetzt hat. Wir empfehlen, die Version ${fixedVersion} zu nehmen, da diese stabiler läuft und deshalb vom Client unterstützt wird.`,
     select: 'Auswählen',
     rename: 'Umbenennen',
     cloning: 'Dupliziert…',

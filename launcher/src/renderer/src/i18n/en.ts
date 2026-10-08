@@ -249,6 +249,8 @@ export const en: typeof de = {
     existingHeading: 'Existing instances',
     active: 'Active',
     clientSupported: 'This version is supported by the client',
+    supersededVersionHint: (versionId: string, fixedVersion: string) =>
+      `${versionId} is a faulty version that Mojang replaced with ${fixedVersion} shortly afterwards. We recommend using version ${fixedVersion}, as it runs more stably and is therefore the one the client supports.`,
     select: 'Select',
     rename: 'Rename',
     cloning: 'Duplicating…',
