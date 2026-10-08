@@ -1655,7 +1655,7 @@ Geprüft wurde zusätzlich per Bytecode-Vergleich 1.21.1 gegen 1.20.6: alle Ziel
 
 **Fremd-Mods für 1.20.6** (Modrinth, liegen im Dev-Bundle `launcher/mods-bundle/1.20.6/`): Indium 1.0.36 (`nQHYSjxO`, Apache-2.0 - ohne sie zeichnet Sodium 0.5 Continuitys verbundene Texturen nicht; Sodium kann das erst ab 0.6 selbst), Fabric API 0.100.8 (`ocg4hG3t`), Sodium 0.5.11 (`OwLQelEI`), Lithium 0.12.5 (`5a3sPIH2`), Continuity 3.0.0+1.20.5 (`RXCRb59j`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie bei 1.21.1); dazu Bushy Vegetation 3.3.2 bei den Paketen. Kein Manifest-Eintrag - der und ein Release brauchen das ausdrückliche OK des Nutzers.
 
-**Beim Test des Nutzers gefunden und behoben** (2026-10-08, in 1.20.6 alles von ihm bestätigt; in die anderen Versionen ungetestet übertragen):
+**Beim Test des Nutzers gefunden und behoben** (2026-10-08, alles von ihm bestätigt: „alles passt“ - auf Nachfrage auch für die anderen Versionen und den Launcher-Fix):
 
 - Scrollende Einstellungsseiten in einer Welt: der schwarze Hintergrund des Client-Designs war nur im Scroll-Ausschnitt da, oben und unten schien die Welt durch - die Seiten beschneiden alles auf den Ausschnitt, auch den Hintergrund. `ScreenThemeMixin` zeichnet ihn jetzt unbeschnitten. Derselbe Code steckt in 1.21.1 (dort fällt es nur vom Hauptmenü aus nicht auf), deshalb auch dort eingebaut. 1.21.11 und 26.x nicht angefasst.
 - Verbundene Texturen gingen nicht: Sodium 0.5 zeichnet Continuitys Texturen nur mit der Zusatz-Mod Indium. Indium 1.0.36 liegt im Dev-Bundle und steht in den Credits.

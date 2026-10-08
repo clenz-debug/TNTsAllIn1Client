@@ -22,12 +22,8 @@ Von dir am 2026-10-08 im Dev-Launcher getestet und bestätigt („passt“, auf 
 - [ ] Helligkeit mit Fullbright in 1.21.1 und 1.21.11: Fullbright einschalten, Spiel beenden, neu starten und Fullbright ausschalten - die eigene Helligkeit muss noch dieselbe sein, im Log kein „Error saving option Brightness“ mehr
 
 ## 2a. Wartet auf das nächste Release
+Von dir am 2026-10-08 bestätigt („alles passt“) und deshalb nicht mehr einzeln aufgeführt: die Fehlerbehebungen an Shulker-Vorschau, angepinnten Rezepten und scrollenden Einstellungsseiten in allen betroffenen Versionen sowie die Paket-Auswahl neuer Instanzen im Launcher - sie gehen mit dem nächsten Release raus (Einzelheiten in `Aktuelle_Phase.md`, „1.20.6-Port“).
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - eingebaut am 2026-10-08 nach 0.1.10, im Fenster noch nicht angesehen
-- [ ] Neue Instanz übernimmt die zuletzt benutzte Paket-Auswahl jetzt mit den Paketnamen ihrer eigenen Version (vorher: „3D-Blockmodelle“ stand beim ersten Start auf an, unser 3D-Paket war aber aus) - Launcher-Fix vom 2026-10-08, mit einer frisch angelegten Instanz noch nicht geprüft
-- [ ] Fehlerbehebungen vom 2026-10-08, in 1.20.6 von dir bestätigt, in die anderen Versionen ungetestet übertragen:
-  - [ ] Shulker-Vorschau (Rahmen rundum 2 Pixel, Titel überall weiß mit Schatten) in 1.14.4, 1.21.1, 1.21.11, 26.1.2 und 26.3
-  - [ ] Angepinnte Rezepte mit „Unter-Zutaten anzeigen“ (Streifen laufen nicht mehr ineinander) in 1.14.4, 1.21.1, 1.21.11, 26.1.2 und 26.3
-  - [ ] Scrollende Einstellungsseiten in einer Welt (Hintergrund auf dem ganzen Bildschirm) in 1.21.1
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
