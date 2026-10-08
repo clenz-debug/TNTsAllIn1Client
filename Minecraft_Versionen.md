@@ -57,7 +57,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.17.1 (2021-07-06)
 - [ ] 1.18.2 (2022-02-28)
 - [ ] 1.19.4 (2023-03-14)
-- [ ] 1.20.6 (2024-04-29) – gebaut am 2026-10-08 (`mod/1.20.6/`), von dir noch nicht im Spiel geprüft, nicht veröffentlicht
+- [ ] 1.20.6 (2024-04-29) – gebaut am 2026-10-08 (`mod/1.20.6/`), von dir im Spiel bestätigt, noch nicht veröffentlicht
 
 Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: für Modpacks sind
 1.20.1 (statt 1.20.6) und 1.19.2 (statt 1.19.4) verbreiteter. 1.20.5 hat die Items intern umgebaut,
