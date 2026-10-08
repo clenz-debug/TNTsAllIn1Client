@@ -15,7 +15,7 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
     - [x] Rendering – von dir bestätigt (2026-10-07): Zoom, Freecam (mit sichtbarem Körper in F5), Fadenkreuz, Fullbright, Kein Nebel, Partikel-Filter, Spawn-Overlay, Hitbox- und Blockumriss-Farbe, Itemphysics, Wegpunkte
     - [x] Inventar – von dir bestätigt (2026-10-07/08): Schnellsortieren, Shulker-Vorschau, Screenshot-Nachricht, angepinnte Rezepte
       - [x] Gemeldet 2026-10-07 (überlappende Trankeffekt-Einträge neben dem Inventar bei mehr als 5 Effekten): kein Fehler der Mod – 1.14.4 staucht die Liste selbst so zusammen (im Bytecode geprüft, 2026-10-08)
-    - [ ] Zu prüfen in 1.21.11, 26.1.2 und 26.3: funktioniert „[Kopieren]“ in der Screenshot-Nachricht? Das Spiel sperrt dort Javas Zwischenablage für Bilder (Headless-Modus); falls nicht, den PowerShell-Weg aus 1.14.4 nachziehen
+    - [x] „[Kopieren]“ in der Screenshot-Nachricht ging in 1.21.11, 26.1.2 und 26.3 nicht (von dir gemeldet 2026-10-08; in 1.14.4 geht es): der PowerShell-Weg aus 1.14.4 ist dort jetzt nachgezogen – von dir bestätigt 2026-10-08
     - [x] Client-Design (Titelbildschirm, Pausenmenü, Kartenmenü, Schrift, Knöpfe/Regler/Textfelder im Design) – von dir im Spiel bestätigt 2026-10-07
     - [x] Tour im Spiel inkl. Freunde-Schritte – von dir bestätigt 2026-10-07 (Design-Wechsel nach Start im Client-Design nachgebessert)
     - [x] Freunde-Menü (Knopf auf Titelbildschirm und im Pausenmenü, Freunde-Bildschirm, Einladungs-Hinweis, Aktivität für den Launcher) – von dir bestätigt 2026-10-07; Umfang wie 1.8.9: Einladungen nur ablehnbar, in die eigene Welt einladen geht nicht (e4mc gibt es erst ab 1.17)
@@ -26,7 +26,15 @@ Stand der Veröffentlichung: 0.1.8 (2026-10-04); was danach gebaut wird, kommt u
       - [x] 1.21.11, 26.1.2 und 26.3: dort gibt die mitgelieferte Cape-Provider-Mod der Elytra jedes 2:1-Cape-Bild (im Bytecode geprüft) – dieselbe Regel wie in 1.14.4 eingebaut 2026-10-07 (`CapeProviderElytraMixin`), von dir pauschal bestätigt 2026-10-08
     - [x] 3D-Skin-Layer (mit Optionen: Teile, Tiefe, Entfernung; 3D-Ärmel am Arm in der Ich-Ansicht) – von dir pauschal bestätigt 2026-10-08
       - [x] Tiefe der 3D-Skin-Layer lässt sich jetzt ab 10 % statt ab 25 % einstellen – in allen fünf Versionen geändert, von dir bestätigt 2026-10-08
-    - [ ] Eigene Ressourcenpakete für 1.14.4 und Drittanbieter-Mods klären (welche der gebündelten Mods es für 1.14.4 überhaupt gibt), danach Manifest-Eintrag und Release
+    - [x] F3-Schnellinfo mit Systeminfo-Seite (F3+K) und Credits – fehlten noch, gebaut und von dir bestätigt 2026-10-08
+    - [x] Drittanbieter-Mods für 1.14.4 geklärt (2026-10-08, Modrinth): es gibt nur Fabric API; Sodium, Lithium, Continuity, Cape Provider und e4mc gibt es für 1.14.4 nicht
+    - [x] Dark Mode für 1.14.4 (Paket aus `resourcepacks/dark-mode/build.py`, das jetzt auch das alte Format mit Sammelbildern kann; Schalter „Dark Mode“ in der Mod) – gebaut und von dir bestätigt 2026-10-08
+    - [x] 3D-Blöcke für 1.14.4 (Entscheidung von dir 2026-10-08: 1.14.4 wird erst mit ihnen veröffentlicht) – von dir bestätigt 2026-10-08: Paket aus `resourcepacks/3d-blocks/early.py` (106 Block- und 73 Item-Modelle: Leitern, Schienen, Türen, Falltüren, Gitter, Laterne, Ranken, Seerose, Zuckerrohr, Pilze, Bücherregal, Steinsäge, Beerenbusch, Redstone-Staub; alles Spätere wie Ketten, Amethyst, Kupfer fehlt, weil es die Blöcke nicht gibt), Schalter „3D-Blockmodelle“ mit Option „3D-Items in Inventar & Hand“
+      - [x] Gemeldet 2026-10-08: Lagerfeuer-Item im Inventar zu dunkel (wie früher in den neueren Versionen) – 1.14.4 kennt deren Modell-Einstellung dafür nicht, die Mod zeichnet es dort jetzt wie ein flaches Item ohne Seitenlicht; von dir bestätigt 2026-10-08
+      - [x] Gemeldet 2026-10-08: Abbau-Partikel von Türen, Gittern und Laternen zeigten die Fehlertextur – behoben im Paket (kein Verweis mehr von einem Modell-Eintrag auf einen anderen desselben Modells)
+      - [x] Gemeldet 2026-10-08: Zuckerrohr-Item blasser als das gesetzte Zuckerrohr – das 3D-Item wird jetzt wie in den neueren Versionen grasgrün eingefärbt; von dir bestätigt 2026-10-08
+    - [x] Bushy Vegetation für 1.14.4 (von dir gewünscht 2026-10-08, Lizenz BSD-3-Clause wie in den neueren Versionen): Version 3.1.0 im Entwicklungs-Bundle, in der Mod als abschaltbare Option der 3D-Blockmodelle und in den Credits – von dir bestätigt 2026-10-08. Das Paket ist für das Format von 1.15 gemacht; die Paketliste des Spiels zeigt es deshalb als „für eine neuere Version“ an
+    - [ ] Danach Manifest-Eintrag und Release (nur mit deinem OK)
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
 
