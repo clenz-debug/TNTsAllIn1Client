@@ -140,7 +140,7 @@ public final class PinnedRecipeHud extends HudElement {
 			if (showSub && !ingredient.subIngredients.isEmpty()) {
 				drawSubIcons(client, ingredient.subIngredients, cursorX, rowY + ICON_SIZE + SUB_ROW_GAP, config.pinnedRecipeSubIngredientCountColor);
 			}
-			cursorX += ICON_SIZE + ICON_GAP;
+			cursorX += columnWidth(font, ingredient, showSub);
 		}
 		font.drawShadow(ARROW, cursorX, rowY + (ICON_SIZE - font.lineHeight) / 2, config.pinnedRecipeArrowColor);
 		cursorX += font.width(ARROW);
@@ -206,9 +206,22 @@ public final class PinnedRecipeHud extends HudElement {
 			if (showSub) {
 				maxExtent = Math.max(maxExtent, cursorX + subIconsWidth(font, ingredient.subIngredients));
 			}
-			cursorX += ICON_SIZE + ICON_GAP;
+			cursorX += columnWidth(font, ingredient, showSub);
 		}
 		return Math.max(maxExtent, cursorX + font.width(ARROW) + ICON_SIZE);
+	}
+
+	/**
+	 * How far one ingredient's column reaches: its icon, or its strip of sub-ingredients where that is
+	 * wider. With every column one icon wide, a wide strip ran into the next ingredient's strip and
+	 * the two were drawn over each other (own user report).
+	 */
+	private static int columnWidth(Font font, RowIngredient ingredient, boolean showSub) {
+		int width = ICON_SIZE + ICON_GAP;
+		if (showSub && !ingredient.subIngredients.isEmpty()) {
+			width = Math.max(width, subIconsWidth(font, ingredient.subIngredients));
+		}
+		return width;
 	}
 
 	private static int subIconsWidth(Font font, List<PinnedIngredient> subIngredients) {
