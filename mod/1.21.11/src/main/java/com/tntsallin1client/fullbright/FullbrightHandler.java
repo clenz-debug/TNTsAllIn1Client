@@ -3,6 +3,7 @@ package com.tntsallin1client.fullbright;
 import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.mixin.OptionInstanceAccessor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 
 /**
  * Phase 5j: forces the world to render at full brightness regardless of the
@@ -19,6 +20,14 @@ import net.minecraft.client.Minecraft;
  * manually drags the vanilla Brightness slider while this is active, that
  * legitimate {@code set()} call overwrites our forced value and fullbright
  * silently stops until toggled off and back on.
+ *
+ * <p>{@code restoreRealGammaForSave}/{@code reapplyBypassAfterSave} exist for
+ * {@code OptionsSaveMixin}: {@code Options#save()} validates every option against its ValueSet
+ * before writing, logs "Error saving option Brightness: ..." for the out-of-range bypass value and
+ * leaves the line out of options.txt - the player's own brightness was gone after the next start
+ * (own user report from the log). Happens on *any* options save while fullbright is active, not
+ * just a gamma change. Swapping back to the real value for just the duration of that one call
+ * keeps options.txt always valid without weakening the bypass itself.
  */
 public final class FullbrightHandler {
 	private static final double FULLBRIGHT_GAMMA = 100.0;
@@ -33,7 +42,7 @@ public final class FullbrightHandler {
 		boolean enabled = ClientConfig.get().fullbrightEnabled;
 		if (enabled && !active) {
 			previousGamma = client.options.gamma().get();
-			setGammaBypassingValidation(client, FULLBRIGHT_GAMMA);
+			setGamma(client.options, FULLBRIGHT_GAMMA);
 			active = true;
 		} else if (!enabled && active) {
 			client.options.gamma().set(previousGamma);
@@ -41,8 +50,20 @@ public final class FullbrightHandler {
 		}
 	}
 
+	public static boolean isActive() {
+		return active;
+	}
+
+	public static void restoreRealGammaForSave(Options options) {
+		setGamma(options, previousGamma);
+	}
+
+	public static void reapplyBypassAfterSave(Options options) {
+		setGamma(options, FULLBRIGHT_GAMMA);
+	}
+
 	@SuppressWarnings("unchecked")
-	private static void setGammaBypassingValidation(Minecraft client, double value) {
-		((OptionInstanceAccessor<Double>) (Object) client.options.gamma()).tntsallin1client$setValue(value);
+	private static void setGamma(Options options, double value) {
+		((OptionInstanceAccessor<Double>) (Object) options.gamma()).tntsallin1client$setValue(value);
 	}
 }

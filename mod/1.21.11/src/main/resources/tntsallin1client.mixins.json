@@ -45,6 +45,7 @@
 		"MultiPlayerGameModeMixin",
 		"OptionInstanceAccessor",
 		"OptionsResourcePacksMixin",
+		"OptionsSaveMixin",
 		"PackMixin",
 		"PackRepositoryMixin",
 		"PackSelectionEntryMixin",
