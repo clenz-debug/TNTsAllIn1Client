@@ -21,6 +21,7 @@ PACK_FORMATS = {
     "1.21.10": 69,
     "1.21.11": 75,
     "26.1.2": 84,
+    "26.2": 88,
     "26.3": 97,
 }
 
@@ -159,16 +160,16 @@ def for_version(data: dict, pack_format: int) -> dict:
 
 
 # Blocks that only exist from this pack format on - their models stay out of older versions' packs.
-NEW_BLOCKS = {"sulfur_spike": 97, "poplar": 97, "red_shrub": 97}
+NEW_BLOCKS = {"sulfur_spike": 88, "poplar": 97, "red_shrub": 97}
 
 
 def in_version(model_path: str, pack_format: int) -> bool:
-    """26.3 turned signs into plain block models with textures of their own (block/<wood>_sign): the
-    entity textures our 3D sign items are cut from are gone there, so those items keep their flat
-    vanilla look in 26.3 until they are rebuilt on the new models."""
+    """26.2 turned signs into plain block models with textures of their own (block/<wood>_sign): the
+    entity textures our 3D sign items are cut from are gone there, so those items are left out from
+    then on - models3d.MODELS_SINCE has them rebuilt on the new models."""
     if any(block in model_path and pack_format < since for block, since in NEW_BLOCKS.items()):
         return False
-    return not (pack_format >= 97 and model_path.startswith("item/") and model_path.endswith("_sign"))
+    return not (pack_format >= 88 and model_path.startswith("item/") and model_path.endswith("_sign"))
 
 
 def mcmeta(pack_format: int, description: str = DESCRIPTION) -> dict:
@@ -204,6 +205,8 @@ def build(out_dir: pathlib.Path) -> list:
                 write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(data, indent=1))
             for since, models in sorted(models3d.MODELS_SINCE.items()):
                 for model_path in sorted(models) if pack_format >= since else ():
+                    if any(block in model_path and pack_format < new for block, new in NEW_BLOCKS.items()):
+                        continue
                     write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(for_version(models[model_path], pack_format), indent=1))
             for block in sorted(models3d.BLOCKSTATES):
                 write(zf, f"assets/minecraft/blockstates/{block}.json", json.dumps(models3d.BLOCKSTATES[block], indent=1))

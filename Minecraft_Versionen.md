@@ -38,12 +38,18 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
 - [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach)
-- [ ] 26.2 (2026-06-16)
+- [ ] 26.2 (2026-06-16) – gebaut am 2026-10-09 (`mod/26.2/`, Mods und Pakete im Dev-Bundle), vom Nutzer am
+  2026-10-09 im Dev-Launcher bestätigt, noch nicht veröffentlicht
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
 (`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
+
+Fremd-Mods für 26.2 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.161.0 (`ewUK83HI`), Sodium 0.9.2
+(`xJZxADzI`), Lithium 0.25.3 (`f7vZ0VWU`), Continuity 3.0.1 (`mgUN5Xz2`), Cape Provider 5.5.1 (`Puw7YiUS`) und
+e4mc 6.2.2 (`AouleFRY`, dieselbe Datei wie für 26.3) – alles da. Bushy Vegetation gibt es für 26.2 nicht; die
+26er-Versionen haben ohnehin nur unsere eigenen Büsche.
 
 Fremd-Mods für 1.21.8 (Modrinth, 2026-10-08): Fabric API 0.136.1, Sodium 0.7.3, Lithium 0.18.1,
 Continuity 3.0.1-beta.1, Cape Provider 4.0.2, e4mc 6.2.3 und Bushy Vegetation 3.4.2 – alles da.

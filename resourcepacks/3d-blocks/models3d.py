@@ -338,7 +338,7 @@ DRIPSTONE_SLICES = {
 }
 
 
-# The sulfur spike (26.3): the same block in sulfur, its outline more jagged - slices after its own pictures.
+# The sulfur spike (26.2): the same block in sulfur, its outline more jagged - slices after its own pictures.
 SULFUR_SPIKE_SLICES = {
     "tip": [(0, 4, 9), (4, 5, 7), (5, 8, 5), (8, 11, 4), (11, 12, 2)],
     "frustum": [(0, 3, 12), (3, 5, 11), (5, 10, 9), (10, 16, 8)],
@@ -1752,15 +1752,15 @@ def entity_items_3d() -> None:
 
 entity_items_3d()
 
-# --- Hanging signs from 26.3 on -------------------------------------------------------------------
-# Since 26.3 a hanging sign is a plain block model - before, the game drew it in code, and so did our
+# --- Hanging signs from 26.2 on -------------------------------------------------------------------
+# Since 26.2 a hanging sign is a plain block model - before, the game drew it in code, and so did our
 # mod for its 3D chains (HangingSignChains.java in mod/1.21.11 and mod/26.1.2). There the pack takes
 # over: the sign templates again, with the same chain links made of small bars in place of the flat
 # crossed chain pictures. Every wood's models are children of these templates, so all of them follow.
-# Only in packs for 26.3 and later (MODELS_SINCE, by resource pack format): older games never load
+# Only in packs for 26.2 and later (MODELS_SINCE, by resource pack format): older games never load
 # these models, and only 26.x takes element rotations by any angle and around several axes.
 
-MODELS_SINCE: dict = {97: {}}
+MODELS_SINCE: dict = {88: {}}
 
 SIGN_CHAIN_TEXTURE = "minecraft:block/iron_chain"
 # Solid pixels of the chain picture: a lighter one for a link's long sides, a darker one for its ends
@@ -1854,7 +1854,7 @@ def middle_chains(turn: float) -> list:
 
 
 def sign_template(name: str, elements: list) -> None:
-    MODELS_SINCE[97][f"block/{name}"] = {"parent": "block/block", "ambientocclusion": False,
+    MODELS_SINCE[88][f"block/{name}"] = {"parent": "block/block", "ambientocclusion": False,
                                          "textures": {"chain": SIGN_CHAIN_TEXTURE}, "elements": elements}
 
 
@@ -1873,7 +1873,7 @@ def hanging_signs() -> None:
 
 
 def standing_sign() -> list:
-    """A sign on its post, where and with the picture regions the game's own has since 26.3."""
+    """A sign on its post, where and with the picture regions the game's own has since 26.2."""
     third = 16 / 12  # one pixel of the sign's picture: its board is 12 of them wide and fills the block's width
     post = box([8 - third / 2, 0, 8 - third / 2], [8 + third / 2, 7 * third, 8 + third / 2], {
         "north": face([14, 8, 15, 15], "#all"), "east": face([15, 0, 16, 7], "#all"),
@@ -1887,13 +1887,13 @@ def standing_sign() -> list:
 
 
 def sign_items() -> None:
-    """The sign items in 3D for 26.3 and later: the entity pictures the older versions' items are cut
+    """The sign items in 3D for 26.2 and later: the entity pictures the older versions' items are cut
     from (entity_items.py) are gone there, the signs' pictures now are block textures."""
     for wood in entity_items.SIGN_WOODS:
         planks = f"minecraft:block/{wood}_planks"
-        MODELS_SINCE[97][f"item/{wood}_sign"] = item_model(
+        MODELS_SINCE[88][f"item/{wood}_sign"] = item_model(
             standing_sign(), {"all": f"minecraft:block/{wood}_sign", "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
-        MODELS_SINCE[97][f"item/{wood}_hanging_sign"] = item_model(
+        MODELS_SINCE[88][f"item/{wood}_hanging_sign"] = item_model(
             [sign_board()] + side_chains(),
             {"all": f"minecraft:block/{wood}_hanging_sign", "chain": SIGN_CHAIN_TEXTURE, "particle": planks}, FLAT_DISPLAY, SIGN_GUI_FILL)
 
