@@ -1545,6 +1545,16 @@ VANILLA_3D_ITEMS = {
 }
 # The tripwire hook and the item frames hang on a wall facing north: turned round so their front faces the slot
 VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0], "item_frame": [20, 160, 0], "glow_item_frame": [20, 160, 0]}
+# The item frames hang flat on their block's back wall, half a block from the middle a held item turns
+# around, front to the north. Held like a block they sat askew beside the hand (own user report: "they
+# look odd, turned strangely") - so they are held like a flat item, moved to that middle first and
+# turned half round, so the front is the side the player sees. No left-hand entries: the game mirrors
+# the right hand's.
+VANILLA_3D_HELD_FLAT = {"item_frame", "glow_item_frame"}
+HELD_FLAT_FRONT_NORTH = {
+    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
+    "firstperson_righthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+}
 # Lit from the front in the inventory, like flat items (own user feedback: the campfires' upright
 # fire got little of the inventory's side light and looked dark there; gui_light only acts there)
 VANILLA_3D_FRONT_LIT = {"campfire", "soul_campfire"}
@@ -1560,14 +1570,20 @@ def turned(rotation: list, vector: list) -> list:
     return [x, y, z]
 
 
-def vanilla_3d_item(parent: str, low, high, gui_rotation: list) -> dict:
+def vanilla_3d_item(parent: str, low, high, gui_rotation: list, held_flat: bool = False) -> dict:
     """An item model on a vanilla block model, its middle moved to the slot's middle (translation is
     applied after turning and scaling, so the offset is turned and scaled first)."""
     longest = max(h - l for l, h in zip(low, high))
     scale = round(min(GUI_MAX_SCALE, BLOCK_DISPLAY["gui"]["scale"][0] * GUI_FILL / longest), 3)
     offset = turned(gui_rotation, [scale * ((l + h) / 2 - 8) for l, h in zip(low, high)])
     gui = {"rotation": gui_rotation, "translation": [round(-offset[0], 3), round(-offset[1], 3), 0], "scale": [scale] * 3}
-    return {"parent": f"minecraft:{parent}", "display": {**BLOCK_DISPLAY, "gui": gui}}
+    display = {**BLOCK_DISPLAY, "gui": gui}
+    if held_flat:
+        display = {key: value for key, value in display.items() if not key.endswith("hand")}
+        for hand, held in HELD_FLAT_FRONT_NORTH.items():
+            way = turned(held["rotation"], [held["scale"][0] * ((l + h) / 2 - 8) for l, h in zip(low, high)])
+            display[hand] = {**held, "translation": [round(base - moved_by, 3) + 0.0 for base, moved_by in zip(held["translation"], way)]}
+    return {"parent": f"minecraft:{parent}", "display": display}
 
 
 # Items whose flat vanilla picture carries its own color while our 3D model is tinted like the block:
@@ -1615,7 +1631,8 @@ def items_3d() -> None:
     MODELS["item/bamboo"] = item_model(elements, {"particle": "minecraft:block/bamboo_stalk", "stalk": "minecraft:block/bamboo_stalk",
                                                   "leaves": "minecraft:block/bamboo_small_leaves"}, BLOCK_DISPLAY)
     for item, (parent, low, high) in VANILLA_3D_ITEMS.items():
-        MODELS[f"item/{item}"] = vanilla_3d_item(parent, low, high, VANILLA_3D_GUI_TURN.get(item, BLOCK_DISPLAY["gui"]["rotation"]))
+        MODELS[f"item/{item}"] = vanilla_3d_item(parent, low, high, VANILLA_3D_GUI_TURN.get(item, BLOCK_DISPLAY["gui"]["rotation"]),
+                                                 held_flat=item in VANILLA_3D_HELD_FLAT)
         if item in VANILLA_3D_FRONT_LIT:
             MODELS[f"item/{item}"]["gui_light"] = "front"
     # Glass panes: a straight piece of pane, glass on its faces, the pane's edge picture around it -
