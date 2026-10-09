@@ -1,5 +1,5 @@
 import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { LaunchStage } from '../../shared/types'
 import { libraryDestinationPath } from './classpath'
 import { downloadAll, type DownloadTask } from './downloader'
@@ -64,6 +64,19 @@ export async function installFabricLoader(
           }
         : undefined
     },
-    libraryPaths: [...vanilla.libraryPaths, ...libraryPaths]
+    libraryPaths: [...withoutArtifactsOf(vanilla.libraryPaths, libraryPaths), ...libraryPaths]
   }
+}
+
+/** A library's folder without its version: `<libraries>/org/ow2/asm/asm`. */
+function artifactDir(libraryPath: string): string {
+  return dirname(dirname(libraryPath))
+}
+
+/** The game's own libraries minus those Fabric brings in a version of its own. 1.21.9 and 1.21.10
+ * ship ASM themselves (9.6, next to Fabric's newer one), and Fabric Loader refuses to start with
+ * two copies on the classpath: "duplicate ASM classes found". */
+function withoutArtifactsOf(vanillaPaths: string[], fabricPaths: string[]): string[] {
+  const fabricArtifacts = new Set(fabricPaths.map(artifactDir))
+  return vanillaPaths.filter((path) => !fabricArtifacts.has(artifactDir(path)))
 }
