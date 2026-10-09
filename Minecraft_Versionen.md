@@ -37,7 +37,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
 - [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach)
-- [ ] 1.21.10 (2025-10-07) – deckt 1.21.9 mit ab (Fehlerbehebung eine Woche später, kein neuer Inhalt)
+- [ ] 1.21.10 (2025-10-07) – deckt 1.21.9 mit ab (Fehlerbehebung eine Woche später, kein neuer Inhalt) – gebaut am 2026-10-09 (`mod/1.21.10/`), von dir im Spiel bestätigt, noch nicht veröffentlicht
 - [ ] 26.2 (2026-06-16)
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
@@ -106,3 +106,7 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 31 Versionen nach den Regeln oben: 6 unterstützt, 25 offen (6 ab 1.21.2, 6 ältere mit Fabric,
 6 startbare Legacy-Versionen, 7 noch nicht startbare).
+
+Fremd-Mods für 1.21.10 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3
+(`sFfidWgd`), Lithium 0.20.1 (`NsswKiwi`), Continuity 3.0.1-beta.2 (`7JbPpQnu`), Cape Provider
+4.3.1.0-legacy (`rxDooCVe`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy Vegetation 3.5.2 (`2VhYpHqk`) – alles da.

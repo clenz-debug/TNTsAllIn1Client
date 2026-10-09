@@ -11,6 +11,10 @@ Stand der Veröffentlichung: 0.1.11 (2026-10-09); was danach gebaut wird, kommt 
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
 
+## 1a. 1.21.10-Port: wartet auf Manifest und Release
+Von dir am 2026-10-09 im Dev-Launcher getestet und bestätigt („alles somit getestet und funktionstüchtig“, die verbundenen Texturen nach dem Fix eingeschlossen) - Einzelheiten in `Aktuelle_Phase.md`.
+- [ ] Nur mit deinem OK: Manifest-Eintrag für 1.21.10 und Release
+
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
 - [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast
@@ -21,7 +25,8 @@ Stand der Veröffentlichung: 0.1.11 (2026-10-09); was danach gebaut wird, kommt 
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen
 
 ## 2a. Wartet auf das nächste Release
-Nichts - mit 0.1.11 ist alles Gebaute veröffentlicht.
+- [ ] Launcher startet 1.21.9 und 1.21.10 mit Fabric (gebaut am 2026-10-09, von dir noch nicht geprüft): bisher brach Fabric dort mit „duplicate ASM classes“ ab, auch ohne unsere Mod - Einzelheiten in `Aktuelle_Phase.md`, „1.21.10-Port“
+- [ ] Neue Instanz startet ohne unsere Ressourcenpakete (gebaut am 2026-10-09 nach 0.1.11, von dir noch nicht geprüft): bisher übernahm sie die Paket-Auswahl der zuletzt gespielten Instanz, eine neue 1.20.6-Instanz kam deshalb im Dark Mode hoch, weil 26.3 ihn an hatte. Zum Prüfen: neue Instanz anlegen und starten - Dark Mode, 3D-Blöcke, 3D-Büsche und Bushy Vegetation müssen aus sein; in bestehenden Instanzen bleibt die Auswahl, wie sie ist
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).

@@ -18,6 +18,7 @@ import entity_items
 import models3d
 
 PACK_FORMATS = {
+    "1.21.10": 69,
     "1.21.11": 75,
     "26.1.2": 84,
     "26.3": 97,
