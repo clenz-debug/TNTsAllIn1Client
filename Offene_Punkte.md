@@ -18,10 +18,6 @@ Stand der Veröffentlichung: 0.1.12 (2026-10-09); was danach gebaut wird, kommt 
 - [ ] Hinweis im Launcher bei 1.21.2, 1.21.9, 26.1 und 26.1.1 (beim Anlegen einer Instanz und auf dem Startbildschirm) - gebaut, im Fenster noch von niemandem angesehen
 - [ ] Helligkeit mit Fullbright in 1.21.1 und 1.21.11: Fullbright einschalten, Spiel beenden, neu starten und Fullbright ausschalten - die eigene Helligkeit muss noch dieselbe sein, im Log kein „Error saving option Brightness“ mehr
 
-- [ ] Auto-Update des installierten Launchers auf 0.1.12
-- [ ] Eine 1.21.10-Instanz im installierten Launcher (0.1.12): lädt er das Bundle übers Manifest, startet sie? Getestet war 1.21.10 bisher nur im Dev-Launcher mit lokal befülltem Bundle
-- [ ] Neue Instanz startet ohne unsere Ressourcenpakete (seit 0.1.12): neue Instanz anlegen und starten - Dark Mode, 3D-Blöcke, 3D-Büsche und Bushy Vegetation müssen aus sein; in bestehenden Instanzen bleibt die Auswahl, wie sie ist
-- [ ] 1.21.9 mit Fabric startet (seit 0.1.12; 1.21.10 hast du gestartet, 1.21.9 hat denselben Fehler gehabt und denselben Fix)
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen
 
 ## 2a. Wartet auf das nächste Release

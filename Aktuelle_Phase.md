@@ -1724,7 +1724,7 @@ Geprüft per Bytecode-Vergleich 1.21.10 gegen 1.21.11: alle Zielmethoden der Mix
 
 **Fremd-Mods für 1.21.10** (Modrinth, im Dev-Bundle `launcher/mods-bundle/1.21.10/`): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3 (`sFfidWgd`), Lithium 0.20.1 (`NsswKiwi`), Continuity 3.0.1-beta.2 (`7JbPpQnu`), Cape Provider 4.3.1.0-legacy (`rxDooCVe`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie bei 1.21.11); Bushy Vegetation 3.5.2 (`2VhYpHqk`) bei den Paketen. Keine neue Fremd-Mod, also keine neue Lizenz. Kein Manifest-Eintrag - der und ein Release brauchen das ausdrückliche OK des Nutzers.
 
-## Release 0.1.12 (2026-10-09, veröffentlicht)
+## Release 0.1.12 (2026-10-09, veröffentlicht, vom Nutzer im installierten Launcher bestätigt)
 
 Auf ausdrückliche Anweisung des Nutzers („go im manifest eintragen, comitt, push, release und dann aufräumen“). Ablauf wie bei 0.1.11 nach Runbook C: Launcher und alle acht Mods auf 0.1.12, alle acht mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win` gepackt, Commit `7e6f8e5`, Tag `v0.1.12`, Release mit allen Dateien in einem Schritt, Prüfsummen aller hochgeladenen Dateien gegen das Manifest geprüft, erst dann `main` gepusht.
 
@@ -1733,3 +1733,4 @@ Auf ausdrückliche Anweisung des Nutzers („go im manifest eintragen, comitt, p
 - **1.8.9:** die Mod (0.1.12, inhaltlich unverändert) steckt weiter nur im Installer.
 - **Launcher-Code:** 1.21.9/1.21.10 starten mit Fabric (doppeltes ASM), neue Instanzen starten ohne unsere Pakete. Ein Launcher bis 0.1.11 kann 1.21.10 trotz Manifest-Eintrag nicht starten, bis er sich aktualisiert hat - das konnte er vorher auch nicht.
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 1.21.10-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
+- **Bestätigung des Nutzers (2026-10-09):** „startet, launcher hat die richtige version und der rest passt auch“ - das Auto-Update auf 0.1.12 und der Start der 1.21.10-Instanz im installierten Launcher ausdrücklich; „der Rest“ habe ich auf die übrigen Prüfpunkte dieses Releases bezogen (neue Instanz ohne unsere Pakete, 1.21.9 mit Fabric) und sie aus `Offene_Punkte.md` genommen. Ob er 1.21.9 eigens gestartet hat, hat er nicht gesagt.
