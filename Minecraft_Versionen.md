@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-09 (Launcher und Mod 0.1.11). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-09 (Launcher und Mod 0.1.12). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -23,6 +23,7 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
 | 1.20.6 | 2024-04-29 | Fabric | 0.1.11 |
 | 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
+| 1.21.10 | 2025-10-07 | Fabric (deckt 1.21.9 mit ab) | 0.1.12 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
 | 26.1.2 | 2026-04-09 | Fabric | von Anfang an |
 | 26.3 | 2026-09-15 | Fabric | 0.1.7 |
@@ -37,7 +38,6 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
 - [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach)
-- [ ] 1.21.10 (2025-10-07) – deckt 1.21.9 mit ab (Fehlerbehebung eine Woche später, kein neuer Inhalt) – gebaut am 2026-10-09 (`mod/1.21.10/`), von dir im Spiel bestätigt, noch nicht veröffentlicht
 - [ ] 26.2 (2026-06-16)
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene

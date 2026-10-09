@@ -1689,11 +1689,11 @@ Auf ausdrückliche Anweisung des Nutzers („pass das manifest an comitt push re
 - **In den Mods:** die Fehlerbehebungen aus dem 1.20.6-Test (scrollende Einstellungsseiten in 1.21.1, angepinnte Rezepte, Shulker-Vorschau).
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 1.20.6-Bundle noch nie übers Manifest geladen, und die Indium-Änderung hat der Nutzer nicht gesehen - steht in `Offene_Punkte.md` unter 2.
 
-## Launcher: neue Instanz startet ohne unsere Pakete (2026-10-09, nach 0.1.11, nicht veröffentlicht, vom Nutzer noch nicht geprüft)
+## Launcher: neue Instanz startet ohne unsere Pakete (2026-10-09, veröffentlicht mit 0.1.12, vom Nutzer nicht einzeln bestätigt)
 
 Meldung des Nutzers nach 0.1.11: eine neue 1.20.6-Instanz im installierten Launcher kam im Dark Mode hoch, er sollte aus sein. Ursache war die Umbenennung aus 0.1.11 (`keepInstanceOptions` in `sharedSettings.ts`): eine neue Instanz übernahm die Paket-Auswahl der zuletzt gespielten und benannte unsere Pakete auf ihre Version um - in der geteilten `options.txt` stand `TNT-Dark-Mode-26.3.zip`, daraus wurde `TNT-Dark-Mode-1.20.6.zip`. Jetzt übernimmt eine neue Instanz die Paket-Auswahl gar nicht mehr und startet mit den Vorgaben des Spiels, also ohne unsere Pakete - so wie alle Schalter der Mod aus sind. Die Umbenennung ist wieder raus. Bestehende Instanzen behalten ihre Auswahl. Geht mit dem nächsten Release raus (Wunsch des Nutzers: zusammen mit der nächsten Versions-Unterstützung).
 
-## 1.21.10-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt: „alles somit getestet und funktionstüchtig“; nicht veröffentlicht)
+## 1.21.10-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt: „alles somit getestet und funktionstüchtig“; veröffentlicht mit 0.1.12)
 
 Auf Anweisung des Nutzers („dann kannst du 1.21.10 direkt porten“) nach meinem Vorschlag. `mod/1.21.10/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.11-Code portiert - Menüs, Einstellungen und Sprachdateien sind dieselben. `gradlew clean build` läuft durch, `python mod/check_mixins.py 1.21.10` meldet 134 geprüfte Ziele ohne Problem. Der Nutzer hat die Instanz am selben Tag gestartet und getestet; was dabei auffiel, steht unten. Offen: `Offene_Punkte.md` 1a. Nicht committet.
 
@@ -1723,3 +1723,13 @@ Geprüft per Bytecode-Vergleich 1.21.10 gegen 1.21.11: alle Zielmethoden der Mix
 **Ressourcenpakete** (Pack-Format 69): `"1.21.10": 69` in `resourcepacks/3d-blocks/build.py` und `resourcepacks/dark-mode/build.py`; `TNT-3D-Blocks-1.21.10.zip`, `TNT-3D-Bushes-1.21.10.zip`, `TNT-Dark-Mode-1.21.10.zip` (204 Dateien) und `TNT-Flat-Inventory-Icons-1.21.10.zip` (per `generate_flat_icons_pack.py`). Alle überschriebenen Modelle und Texturen gibt es im 1.21.10-Jar; die Pakete der anderen Versionen sind byte-gleich geblieben (per Prüfsumme verglichen).
 
 **Fremd-Mods für 1.21.10** (Modrinth, im Dev-Bundle `launcher/mods-bundle/1.21.10/`): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3 (`sFfidWgd`), Lithium 0.20.1 (`NsswKiwi`), Continuity 3.0.1-beta.2 (`7JbPpQnu`), Cape Provider 4.3.1.0-legacy (`rxDooCVe`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie bei 1.21.11); Bushy Vegetation 3.5.2 (`2VhYpHqk`) bei den Paketen. Keine neue Fremd-Mod, also keine neue Lizenz. Kein Manifest-Eintrag - der und ein Release brauchen das ausdrückliche OK des Nutzers.
+
+## Release 0.1.12 (2026-10-09, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers („go im manifest eintragen, comitt, push, release und dann aufräumen“). Ablauf wie bei 0.1.11 nach Runbook C: Launcher und alle acht Mods auf 0.1.12, alle acht mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win` gepackt, Commit `7e6f8e5`, Tag `v0.1.12`, Release mit allen Dateien in einem Schritt, Prüfsummen aller hochgeladenen Dateien gegen das Manifest geprüft, erst dann `main` gepusht.
+
+- **Neu: Minecraft 1.21.10 mit unserer Mod** - Manifest-Eintrag mit eigener Mod, Fabric API, Sodium 0.7.3, Lithium, Continuity, Cape Provider 4.3.1.0-legacy und e4mc; Bushy Vegetation 3.5.2 als Modrinth-Download, `TNT-3D-Blocks-1.21.10.zip`, `TNT-3D-Bushes-1.21.10.zip`, `TNT-Dark-Mode-1.21.10.zip` und `TNT-Flat-Inventory-Icons-1.21.10.zip` als Release-Dateien.
+- **Dateien:** Installer, Blockmap, `latest.yml`, sieben Mod-Jars (1.14.4, 1.20.6, 1.21.1, 1.21.10, 1.21.11, 26.1.2, 26.3) und die vier Pakete für 1.21.10. Die Pakete der anderen Versionen sind unverändert, ihre Manifest-Einträge zeigen weiter auf ältere Releases.
+- **1.8.9:** die Mod (0.1.12, inhaltlich unverändert) steckt weiter nur im Installer.
+- **Launcher-Code:** 1.21.9/1.21.10 starten mit Fabric (doppeltes ASM), neue Instanzen starten ohne unsere Pakete. Ein Launcher bis 0.1.11 kann 1.21.10 trotz Manifest-Eintrag nicht starten, bis er sich aktualisiert hat - das konnte er vorher auch nicht.
+- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 1.21.10-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.

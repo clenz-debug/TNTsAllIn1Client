@@ -1,19 +1,15 @@
 # Offene Punkte (ohne 3D-Modelle)
 
 Stand 2026-10-09. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
-Stand der Veröffentlichung: 0.1.11 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
+Stand der Veröffentlichung: 0.1.12 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion. Die vollständige Liste aller Versionen mit ihrem Stand steht in `Minecraft_Versionen.md`
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
-  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11)
+  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12)
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
-
-## 1a. 1.21.10-Port: wartet auf Manifest und Release
-Von dir am 2026-10-09 im Dev-Launcher getestet und bestätigt („alles somit getestet und funktionstüchtig“, die verbundenen Texturen nach dem Fix eingeschlossen) - Einzelheiten in `Aktuelle_Phase.md`.
-- [ ] Nur mit deinem OK: Manifest-Eintrag für 1.21.10 und Release
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
@@ -22,11 +18,14 @@ Von dir am 2026-10-09 im Dev-Launcher getestet und bestätigt („alles somit ge
 - [ ] Hinweis im Launcher bei 1.21.2, 1.21.9, 26.1 und 26.1.1 (beim Anlegen einer Instanz und auf dem Startbildschirm) - gebaut, im Fenster noch von niemandem angesehen
 - [ ] Helligkeit mit Fullbright in 1.21.1 und 1.21.11: Fullbright einschalten, Spiel beenden, neu starten und Fullbright ausschalten - die eigene Helligkeit muss noch dieselbe sein, im Log kein „Error saving option Brightness“ mehr
 
+- [ ] Auto-Update des installierten Launchers auf 0.1.12
+- [ ] Eine 1.21.10-Instanz im installierten Launcher (0.1.12): lädt er das Bundle übers Manifest, startet sie? Getestet war 1.21.10 bisher nur im Dev-Launcher mit lokal befülltem Bundle
+- [ ] Neue Instanz startet ohne unsere Ressourcenpakete (seit 0.1.12): neue Instanz anlegen und starten - Dark Mode, 3D-Blöcke, 3D-Büsche und Bushy Vegetation müssen aus sein; in bestehenden Instanzen bleibt die Auswahl, wie sie ist
+- [ ] 1.21.9 mit Fabric startet (seit 0.1.12; 1.21.10 hast du gestartet, 1.21.9 hat denselben Fehler gehabt und denselben Fix)
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen
 
 ## 2a. Wartet auf das nächste Release
-- [ ] Launcher startet 1.21.9 und 1.21.10 mit Fabric (gebaut am 2026-10-09, von dir noch nicht geprüft): bisher brach Fabric dort mit „duplicate ASM classes“ ab, auch ohne unsere Mod - Einzelheiten in `Aktuelle_Phase.md`, „1.21.10-Port“
-- [ ] Neue Instanz startet ohne unsere Ressourcenpakete (gebaut am 2026-10-09 nach 0.1.11, von dir noch nicht geprüft): bisher übernahm sie die Paket-Auswahl der zuletzt gespielten Instanz, eine neue 1.20.6-Instanz kam deshalb im Dark Mode hoch, weil 26.3 ihn an hatte. Zum Prüfen: neue Instanz anlegen und starten - Dark Mode, 3D-Blöcke, 3D-Büsche und Bushy Vegetation müssen aus sein; in bestehenden Instanzen bleibt die Auswahl, wie sie ist
+Nichts - mit 0.1.12 ist alles Gebaute veröffentlicht.
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
