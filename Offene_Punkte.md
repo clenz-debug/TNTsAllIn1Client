@@ -1,7 +1,7 @@
 # Offene Punkte (ohne 3D-Modelle)
 
 Stand 2026-10-09. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
-Stand der Veröffentlichung: 0.1.14 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
+Stand der Veröffentlichung: Launcher 0.14.1, Mod 0.1.14 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion. Die vollständige Liste aller Versionen mit ihrem Stand steht in `Minecraft_Versionen.md`
@@ -18,7 +18,7 @@ Stand der Veröffentlichung: 0.1.14 (2026-10-09); was danach gebaut wird, kommt 
 - [ ] Hinweis im Launcher bei 1.21.2, 1.21.9, 26.1 und 26.1.1 (beim Anlegen einer Instanz und auf dem Startbildschirm) - gebaut, im Fenster noch von niemandem angesehen
 - [ ] Helligkeit mit Fullbright in 1.21.1 und 1.21.11: Fullbright einschalten, Spiel beenden, neu starten und Fullbright ausschalten - die eigene Helligkeit muss noch dieselbe sein, im Log kein „Error saving option Brightness“ mehr
 
-- [ ] Auto-Update des installierten Launchers auf 0.1.14
+- [ ] Auto-Update des installierten Launchers auf 0.14.1 (Hotfix): kommt es an, und bleibst du nach mehreren Starts hintereinander angemeldet? Die Änderung an der Anmeldung hast du im Fenster noch nicht gesehen
 - [ ] Eine 1.21.8-Instanz im installierten Launcher (0.1.14): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete) und startet sie? Getestet war 1.21.8 bisher nur im Dev-Launcher mit lokal befülltem Bundle
 - [ ] Neues 3D-Blöcke-Paket in einer schon vorhandenen Instanz: bietet der installierte Launcher das Paket als Update an, und liegt der Item-Rahmen danach flach in der Hand?
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen

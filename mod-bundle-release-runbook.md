@@ -125,7 +125,10 @@ nicht beim Sprung auf 1.0.
 
 **Einmalig:** GitHub CLI installieren (`winget install GitHub.cli`) und `gh auth login` (Browser).
 
-1. `launcher/package.json`: `version` hochsetzen (z.B. `0.1.0` → `0.1.1`).
+1. `launcher/package.json`: `version` hochsetzen. Zählweise seit 2026-10-09 (Entscheidung des Nutzers, „so wie mc das macht“): neue
+   Inhalte erhöhen die mittlere Zahl (`0.14.1` → `0.15.0`), ein Hotfix dazwischen die letzte (`0.14.1` → `0.14.2`).
+   Die alte Reihe endete mit `0.1.14`; `0.14.1` war ihr erster Hotfix. Ein reiner Launcher-Hotfix lässt Mods und Manifest
+   unberührt (keine Mod neu bauen - der Installer packt die Jars aus `build/libs` ein, und die müssen die aus dem Manifest bleiben).
 2. Alle Mods frisch bauen: `gradlew clean build` in **jedem** `mod/<version>/` (derzeit `1.8.9`,
    `1.14.4`, `1.20.6`, `1.21.1`, `1.21.8`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`, `26.3`). `clean`, weil nach einem Versionssprung sonst der alte
    Jar neben dem neuen in `build/libs` liegt. Der Installer bündelt `build/libs` der Versionen, die

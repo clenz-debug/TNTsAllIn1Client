@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-09 (Launcher und Mod 0.1.14). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-09 (Launcher 0.14.1, Mod 0.1.14). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
