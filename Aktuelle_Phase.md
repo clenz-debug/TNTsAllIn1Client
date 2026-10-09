@@ -1759,7 +1759,7 @@ Geprüft per Bytecode-Vergleich der Zielmethoden aller Mixins gegen die Version,
 
 **Bestätigung des Nutzers (2026-10-09):** „alles passt auch deine änderungen die du auf mein nachricht geschrieben hast“ - der 26.2-Port samt Testliste und die verbundenen Texturen in 26.2 sind damit bestätigt. Die nachgezogene Absicherung in 1.21.11, 26.1.2 und 26.3 habe ich als mitbestätigt verstanden (meine Auslegung von „deine Änderungen“; welche Instanzen er dafür gestartet hat, hat er nicht gesagt). Offen: Commit, Manifest-Eintrag `versions.26.2` und Release, jeweils auf ausdrückliches OK.
 
-## Release 0.1.13 (2026-10-09, veröffentlicht)
+## Release 0.1.13 (2026-10-09, veröffentlicht, vom Nutzer im installierten Launcher bestätigt)
 
 Auf ausdrückliche Anweisung des Nutzers (Rückfrage „soll ich jetzt auch 0.1.13 veröffentlichen?“ - Antwort „0.1.13 jetzt veröffentlichen“). Ablauf wie bei 0.1.12 nach Runbook C: Launcher und alle neun Mods auf 0.1.13, alle neun mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win`, Tag `v0.1.13` gepusht, Release in einem Schritt mit allen Dateien angelegt, geprüft, erst danach `main` gepusht.
 
@@ -1769,4 +1769,5 @@ Auf ausdrückliche Anweisung des Nutzers (Rückfrage „soll ich jetzt auch 0.1.
 - **1.8.9:** die Mod (0.1.13, inhaltlich unverändert) steckt weiter nur im Installer.
 - **Launcher-Code:** unverändert, nur die Versionsnummer.
 - **Geprüft:** ein Release zum Tag, als „Latest“ markiert, kein Entwurf; SHA-1 aller zwölf Manifest-Downloads aus diesem Release stimmt mit dem Manifest überein; das öffentliche `latest.yml` nennt 0.1.13 und ist dieselbe Datei wie lokal (SHA-512 des Installers nachgerechnet); das Manifest auf `main` nennt 26.2.
-- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 26.2-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
+- **Zum Release-Zeitpunkt nicht geprüft:** der gepackte Installer war nicht installiert und gestartet, ein installierter Launcher hatte das 26.2-Bundle noch nie übers Manifest geladen.
+- **Bestätigung des Nutzers (2026-10-09):** „update hatt alles geklappt its gestartet un connectetd textures sind da“ - Auto-Update auf 0.1.13, Start und verbundene Texturen. Dass damit die 26.2-Instanz im installierten Launcher gemeint ist, ist meine Auslegung; beide Punkte sind aus `Offene_Punkte.md` 2 gestrichen.

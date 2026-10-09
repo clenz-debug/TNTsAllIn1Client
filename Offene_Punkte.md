@@ -12,8 +12,6 @@ Stand der Veröffentlichung: 0.1.13 (2026-10-09); was danach gebaut wird, kommt 
 - [ ] Linux und macOS
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
-- [ ] Auto-Update des installierten Launchers auf 0.1.13
-- [ ] Eine 26.2-Instanz im installierten Launcher (0.1.13): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie? Getestet war 26.2 bisher nur im Dev-Launcher mit lokal befülltem Bundle
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
 - [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast
 - [ ] Eine 1.21.1-Instanz im installierten Launcher: lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, funktionieren die Schalter? Getestet war 1.21.1 bisher nur im Dev-Launcher mit lokal befülltem Bundle
