@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-09 (Launcher und Mod 0.1.13). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-09 (Launcher und Mod 0.1.14). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -23,6 +23,7 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
 | 1.20.6 | 2024-04-29 | Fabric | 0.1.11 |
 | 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
+| 1.21.8 | 2025-07-17 | Fabric (deckt 1.21.6 und 1.21.7 mit ab) | 0.1.14 |
 | 1.21.10 | 2025-10-07 | Fabric (deckt 1.21.9 mit ab) | 0.1.12 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
 | 26.1.2 | 2026-04-09 | Fabric | von Anfang an |
@@ -38,7 +39,6 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt)
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
-- [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach). Gebaut und von dir bestätigt am 2026-10-09 (`mod/1.21.8/`), noch nicht veröffentlicht
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
@@ -50,7 +50,7 @@ Fremd-Mods für 26.2 (Modrinth, 2026-10-09, im Manifest seit 0.1.13): Fabric API
 e4mc 6.2.2 (`AouleFRY`, dieselbe Datei wie für 26.3) – alles da. Bushy Vegetation gibt es für 26.2 nicht; die
 26er-Versionen haben ohnehin nur unsere eigenen Büsche.
 
-Fremd-Mods für 1.21.8 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.136.1 (`g58ofrov`), Sodium 0.7.3
+Fremd-Mods für 1.21.8 (Modrinth, 2026-10-09, im Manifest seit 0.1.14): Fabric API 0.136.1 (`g58ofrov`), Sodium 0.7.3
 (`7pwil2dy`), Lithium 0.18.1 (`qxIL7Kb8`), Continuity 3.0.1-beta.1 (`m0cvWhzT`), Cape Provider 4.0.2 (`7FV01Drj`),
 e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie für 1.21.10 und 1.21.11; 6.2.3 gäbe es auch) und Bushy Vegetation 3.4.2
 (`aLE579XT`) – alles da.
@@ -111,7 +111,7 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-31 Versionen nach den Regeln oben: 9 unterstützt, 22 offen (4 ab 1.21.2, 5 ältere mit Fabric,
+31 Versionen nach den Regeln oben: 10 unterstützt, 21 offen (3 ab 1.21.2, 5 ältere mit Fabric,
 6 startbare Legacy-Versionen, 7 noch nicht startbare).
 
 Fremd-Mods für 1.21.10 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3

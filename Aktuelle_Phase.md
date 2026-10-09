@@ -1772,7 +1772,7 @@ Auf ausdrückliche Anweisung des Nutzers (Rückfrage „soll ich jetzt auch 0.1.
 - **Zum Release-Zeitpunkt nicht geprüft:** der gepackte Installer war nicht installiert und gestartet, ein installierter Launcher hatte das 26.2-Bundle noch nie übers Manifest geladen.
 - **Bestätigung des Nutzers (2026-10-09):** „update hatt alles geklappt its gestartet un connectetd textures sind da“ - Auto-Update auf 0.1.13, Start und verbundene Texturen. Dass damit die 26.2-Instanz im installierten Launcher gemeint ist, ist meine Auslegung; beide Punkte sind aus `Offene_Punkte.md` 2 gestrichen.
 
-## 1.21.8-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt; committet, nicht veröffentlicht)
+## 1.21.8-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt; veröffentlicht mit 0.1.14)
 
 Auf Anweisung des Nutzers („ok mach die 1.21.8 fertig, ich mache was anderes und wenn ich damit fertig bin teste ich alles“). `mod/1.21.8/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.10-Stand kopiert; deckt 1.21.6 und 1.21.7 mit ab. Probe-Kompilierung gegen 1.21.8: 398 Fehler, fast alle aus dem, was 1.21.9 umgebaut hat. `gradlew clean build` läuft durch, `python mod/check_mixins.py 1.21.8`: 127 Ziele, 0 Probleme (nicht geprüft: Cape Providers Klasse, siehe unten).
 
@@ -1797,7 +1797,7 @@ Geprüft per Bytecode-Vergleich 1.21.8 gegen 1.21.10: alle Zielmethoden der Mixi
 
 **Offen:** erster Start und Test durch den Nutzer (Liste in `Offene_Punkte.md` 1a), danach Commit, Manifest-Eintrag `versions.1.21.8` und Release - jeweils erst auf ausdrückliches OK.
 
-## Lösch-Abfragen im Client-Design (2026-10-09, vom Nutzer bestätigt; committet, nicht veröffentlicht)
+## Lösch-Abfragen im Client-Design (2026-10-09, vom Nutzer bestätigt; veröffentlicht mit 0.1.14)
 
 Meldung des Nutzers beim Test der 1.21.8: „die delete abfrage im client design ist nicht im design, das hatte ich vergessen bei anderen versionen zu prüfen, das bitte ändern“. In den Fabric-Versionen ab 1.20.6 stellte nur die Reset-Frage sich im Client-Design dar (`ResetButtons.Question`, damals ausdrücklich „nur diese Frage“); die drei Lösch-Fragen öffneten den normalen `ConfirmScreen` des Spiels. 1.8.9 und 1.14.4 hatten dafür schon `ThemedConfirmScreen`.
 
@@ -1807,7 +1807,7 @@ Nicht geändert: die Einladungs-Frage auf dem Titelbildschirm (`FriendsBridge`, 
 
 Die lokalen Jars heißen weiter 0.1.13, sind aber neuer als die veröffentlichten - beim nächsten Release die Mod-Version hochsetzen.
 
-## Item-Rahmen in der Hand (2026-10-09, vom Nutzer bestätigt; committet, nicht veröffentlicht)
+## Item-Rahmen in der Hand (2026-10-09, vom Nutzer bestätigt; veröffentlicht mit 0.1.14)
 
 Meldung des Nutzers beim Test der 1.21.8: „item frame items sehen bei den 3d texturen gehalten auch komisch aus weil sie komisch gedreht werden“. Ursache: das 3D-Item des Rahmens ist das Block-Modell des Spiels (`block/item_frame`, eine flache Platte an der Rückwand des Blocks, Vorderseite nach Norden) und wurde mit `BLOCK_DISPLAY` wie ein Block gehalten - schräg gedreht und einen halben Block neben dem Punkt, um den die Hand ein Item dreht. In 1.8.9 war das schon gelöst (`legacy.py`, `HELD_BY_ITS_MIDDLE`), in den neueren Versionen nie.
 
@@ -1820,3 +1820,15 @@ Für das nächste Release: alle neun 3D-Blöcke-Pakete neu hochladen und ihre SH
 **Bestätigung des Nutzers (2026-10-09):** „passt alles inkl der änderungen die ich wollte“ - der 1.21.8-Port samt Testliste, die Lösch-Abfragen im Client-Design und der Item-Rahmen in der Hand sind damit bestätigt. Gemeldet hatte er beides beim Test der 1.21.8; in welchen der anderen Versionen er die beiden Änderungen angesehen hat, hat er nicht gesagt (dass sie dort mitbestätigt sind, ist meine Auslegung). Offen: Commit, Manifest-Eintrag `versions.1.21.8`, die neun neuen 3D-Blöcke-Pakete im Manifest und das Release - jeweils auf ausdrückliches OK.
 
 **Commit und Push (2026-10-09):** auf Anweisung des Nutzers („manifest anpassen comitten pushen aufräumen“) committet und nach `main` gepusht: die 1.21.8-Mod mit den Paket-Skripten, die Lösch-Abfragen in den sieben anderen Versionen, der Item-Rahmen im 3D-Paket und die Notizen. **Das Manifest ist nicht angepasst:** ein Eintrag `versions.1.21.8` und neue SHA-1 der neun 3D-Blöcke-Pakete müssen auf Release-Dateien zeigen, die es ohne Release nicht gibt - gepusht hätte das bei jedem installierten Launcher die Paket-Downloads gebrochen. Ein Release war nicht angewiesen; es bleibt offen bis zum ausdrücklichen OK.
+
+## Release 0.1.14 (2026-10-09, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers (Rückfrage „Soll ich 0.1.14 jetzt veröffentlichen?“ - Antwort „veröffentliche“). Ablauf wie bei 0.1.13 nach Runbook C: Launcher und alle zehn Mods auf 0.1.14, alle zehn mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win`, Tag `v0.1.14` gepusht, Release in einem Schritt mit allen Dateien angelegt, geprüft, erst danach `main` gepusht (Commit e6b81c2).
+
+- **Neu im Manifest:** `versions.1.21.8` mit eigener Mod, Fabric API 0.136.1, Sodium 0.7.3, Lithium 0.18.1, Continuity 3.0.1-beta.1, Cape Provider 4.0.2, e4mc 6.2.1; Bushy Vegetation 3.4.2 als Modrinth-Download, `TNT-3D-Blocks-`, `TNT-3D-Bushes-`, `TNT-Dark-Mode-` und `TNT-Flat-Inventory-Icons-1.21.8` als Release-Dateien.
+- **Alle Fabric-Versionen:** eigene Mod 0.1.14 (Lösch-Abfragen im Client-Design; in 1.14.4 inhaltlich unverändert) und `TNT-3D-Blocks-<version>` neu mit Versionsangabe 0.1.14 (Item-Rahmen flach in der Hand) - der Launcher erkennt ein geändertes Paket an der Versionsangabe, nicht an der Prüfsumme.
+- **1.8.9:** die Mod (0.1.14, inhaltlich unverändert) steckt weiter nur im Installer.
+- **Launcher:** kein Code geändert, nur die Versionsnummer.
+- **Dateien im Release (24):** Installer, `.blockmap`, `latest.yml`, neun Mod-Jars, neun 3D-Blöcke-Pakete, drei weitere Pakete für 1.21.8.
+- **Geprüft:** ein Release zum Tag, als „Latest“ markiert, kein Entwurf; alle 45 Downloads, auf die das Manifest für eigene Mods und Pakete zeigt, heruntergeladen und ihre SHA-1 mit dem Manifest verglichen - keine Abweichung; das öffentliche `latest.yml` nennt 0.1.14 (SHA-512 des Installers lokal nachgerechnet); `seed-manifest.json` im Installer ist das neue Manifest; das Manifest auf `main` nennt 1.21.8.
+- **Vom Nutzer noch nicht geprüft** (`Offene_Punkte.md` 2): Auto-Update auf 0.1.14, eine 1.21.8-Instanz im installierten Launcher, das neue 3D-Blöcke-Paket als Update in einer vorhandenen Instanz.
