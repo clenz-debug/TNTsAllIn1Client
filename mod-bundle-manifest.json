@@ -2,9 +2,9 @@
   "versions": {
     "1.14.4": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc1.14.4.jar",
-        "sha1": "ef52a796c14b4f26881b97c7e0c3db2fb27e2404"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc1.14.4.jar",
+        "sha1": "ec19b4d43e4bd117e8fbe7901ceffcacaa0b5615"
       },
       "bundledMods": [
         {
@@ -36,9 +36,9 @@
     },
     "1.20.6": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc1.20.6.jar",
-        "sha1": "3b66b193ac6cf84b2797a8d9e749a9cf78a82241"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc1.20.6.jar",
+        "sha1": "0ac42a46b02b31d2ad3a42d5328d124253be2932"
       },
       "bundledMods": [
         {
@@ -101,9 +101,9 @@
     },
     "1.21.1": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc1.21.1.jar",
-        "sha1": "3560f80e6bcacddac0aea9248e144f788cdf7eb2"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc1.21.1.jar",
+        "sha1": "28e8951a1c9bcd913159a3011fb821ac0f6ef83e"
       },
       "bundledMods": [
         {
@@ -166,9 +166,9 @@
     },
     "1.21.10": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc1.21.10.jar",
-        "sha1": "aa2efe1a58839a36865fe73af20aaf6556572866"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc1.21.10.jar",
+        "sha1": "2647d19cb086649b0db38b2de1f03d065bf0d375"
       },
       "bundledMods": [
         {
@@ -237,9 +237,9 @@
     },
     "1.21.11": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc1.21.11.jar",
-        "sha1": "36a0c8a2b356004521bc50c8d9432d05c550219e"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc1.21.11.jar",
+        "sha1": "e8d292821d62d1190f191e103bdccb52946c639f"
       },
       "bundledMods": [
         {
@@ -308,9 +308,9 @@
     },
     "26.1.2": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc26.1.2.jar",
-        "sha1": "ca42b6f3641f72cdc7f4fb43db194617de10ddde"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc26.1.2.jar",
+        "sha1": "4a5d8164facc7813ad3f15f736e40c46da62b59b"
       },
       "bundledMods": [
         {
@@ -371,11 +371,76 @@
         }
       ]
     },
+    "26.2": {
+      "ownMod": {
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc26.2.jar",
+        "sha1": "894447950c26680aefbf45c8024d9a21f4eb261f"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "ewUK83HI"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "xJZxADzI"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "f7vZ0VWU"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "mgUN5Xz2"
+        },
+        {
+          "name": "cape-provider",
+          "modrinthProjectId": "orXAsira",
+          "modrinthVersionId": "Puw7YiUS"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "AouleFRY"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "TNT-3D-Blocks-26.2",
+          "version": "0.1.13",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/TNT-3D-Blocks-26.2.zip",
+          "sha1": "930d4565e43c8bb93c6539fc2c0af20c9289ed1b"
+        },
+        {
+          "name": "TNT-3D-Bushes-26.2",
+          "version": "0.1.13",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/TNT-3D-Bushes-26.2.zip",
+          "sha1": "70ff2a1e166a888174f726c1ebcd771afb386664"
+        },
+        {
+          "name": "TNT-Dark-Mode-26.2",
+          "version": "0.1.13",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/TNT-Dark-Mode-26.2.zip",
+          "sha1": "2b89d8b8d80e35850d943fbef0f244eb03ec0779"
+        },
+        {
+          "name": "TNT-Flat-Inventory-Icons-26.2",
+          "version": "0.1.13",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/TNT-Flat-Inventory-Icons-26.2.zip",
+          "sha1": "951e6936c5bd303a56d202ed10881a3df20015f2"
+        }
+      ]
+    },
     "26.3": {
       "ownMod": {
-        "version": "0.1.12",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.12/tntsallin1client-0.1.12-mc26.3.jar",
-        "sha1": "c488ff4ee8fd9ff5a0ad2e337ee203c30d70fa66"
+        "version": "0.1.13",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.13/tntsallin1client-0.1.13-mc26.3.jar",
+        "sha1": "c18dfa4be2bea516af4c6d029f2850112f7d341e"
       },
       "bundledMods": [
         {
