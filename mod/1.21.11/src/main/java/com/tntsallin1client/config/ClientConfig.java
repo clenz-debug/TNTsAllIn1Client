@@ -349,6 +349,10 @@ public class ClientConfig {
 	public boolean blockModels3dBushes = true;
 	public boolean blockModels3dBushyVegetation = true;
 
+	// Whether Continuity's own packs were switched on once (see ContinuityPacks) - only once, so a
+	// player who takes them out again in the resource pack screen keeps it that way.
+	public boolean continuityPacksSelectedOnce = false;
+
 	// Discord Rich Presence (own user request, see Ideen_für_den_client.md) - shows what this
 	// launcher's mod is doing in the player's Discord status, entirely opt-in. Master toggle off by
 	// default (never suddenly visible to others after an update); every sub-toggle below defaults on

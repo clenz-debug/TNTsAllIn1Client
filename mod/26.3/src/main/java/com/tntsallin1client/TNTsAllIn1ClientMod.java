@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
+import com.tntsallin1client.compat.ContinuityPacks;
 import com.tntsallin1client.compat.EssentialCompat;
+import com.tntsallin1client.config.ClientConfig;
 import com.tntsallin1client.debug.QuickInfoDebugEntry;
 import com.tntsallin1client.debug.SystemInfoOverlay;
 import com.tntsallin1client.discord.DiscordPresenceManager;
@@ -122,6 +124,15 @@ public class TNTsAllIn1ClientMod implements ClientModInitializer {
 			EssentialCompat.unbindNewKeys(client);
 			client.debugEntries.setStatus(quickInfoId, DebugScreenEntryStatus.IN_OVERLAY);
 			QuickInfoDebugEntry.applyVanillaEntryVisibility(client);
+			// Connected textures work from the first start on - see ContinuityPacks.
+			ClientConfig config = ClientConfig.get();
+			if (!config.continuityPacksSelectedOnce) {
+				config.continuityPacksSelectedOnce = true;
+				config.save();
+				if (ContinuityPacks.select(client.getResourcePackRepository())) {
+					client.options.updateResourcePacks(client.getResourcePackRepository());
+				}
+			}
 		});
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.options.keyDebugModifier.isDown() && ModKeyBindings.SYSTEM_INFO.consumeClick()) {
