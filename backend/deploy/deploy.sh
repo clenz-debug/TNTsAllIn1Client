@@ -33,7 +33,8 @@ scp -q package.json "$HOST":tntcapes-backend/package.json
 ssh "$HOST" 'rm -rf ~/tntcapes-backend/dist'
 scp -q -r dist "$HOST":tntcapes-backend/dist
 
-# 3. Apache override for the public cape folder + the user service.
+# 3. Start page, Apache override for the public cape folder + the user service.
+scp -q deploy/www-index.html "$HOST":www/index.html
 scp -q deploy/htaccess-tntcapes "$HOST":www/tntcapes/.htaccess
 scp -q deploy/tntcapes.service "$HOST":.config/systemd/user/tntcapes.service
 ssh "$HOST" 'systemctl --user daemon-reload && systemctl --user enable tntcapes.service >/dev/null 2>&1 && systemctl --user restart tntcapes.service && sleep 1 && systemctl --user is-active tntcapes.service && curl -fsS http://127.0.0.1:1025/health'

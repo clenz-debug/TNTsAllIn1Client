@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- Deployed as ~/www/index.html, the start page of https://nxlc.de/. Colors and logo match the
+     launcher's default dark theme (DEFAULT_THEME_COLORS in launcher/src/shared/types.ts) and
+     designs/branding/N-Logo.svg. German by default, English for every other browser language. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TNT's All-In-1 Client</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .card {
+    background: #1a1a1a;
+    border: 1px solid #6d6d6d;
+    border-radius: 12px;
+    padding: 2.5rem 3rem;
+    text-align: center;
+    max-width: 460px;
+  }
+  .logo { width: 120px; height: auto; margin-bottom: 1.25rem; }
+  h1 { font-size: 1.5rem; margin: 0 0 0.75rem; }
+  p { margin: 0 0 1rem; color: #cccccc; font-size: 0.95rem; line-height: 1.5; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin: 1.5rem 0; }
+  a.button {
+    padding: 0.6rem 1.1rem;
+    border: 1px solid #6d6d6d;
+    border-radius: 8px;
+    background: #3d3d3d;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  a.button:hover, a.button:focus-visible { background: #4d4d4d; }
+  a.button.primary { background: #6d6d6d; }
+  a.button.primary:hover, a.button.primary:focus-visible { background: #5d5d5d; }
+  .note { margin: 0; color: #8a8a8a; font-size: 0.8rem; }
+  .note a { color: #cccccc; }
+  [lang="en"] { display: none; }
+  html[lang="en"] [lang="en"] { display: revert; }
+  html[lang="en"] [lang="de"] { display: none; }
+  @media (max-width: 480px) { .card { padding: 2rem 1.5rem; } }
+</style>
+<script>
+  if (!(navigator.language || 'de').toLowerCase().startsWith('de')) document.documentElement.lang = 'en'
+</script>
+</head>
+<body>
+  <main class="card">
+    <svg class="logo" viewBox="0 0 600 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TNT's All-In-1 Client">
+      <polygon points="200,40 400,40 560,200 560,400 400,560 200,560 40,400 40,200" fill="none" stroke="#ffffff" stroke-width="4"/>
+      <g stroke="#ffffff" stroke-width="3" stroke-linejoin="round">
+        <rect x="150" y="150" width="300" height="50" fill="#3d3d3d"/>
+        <rect x="185" y="200" width="45" height="240" fill="#4d4d4d"/>
+        <rect x="370" y="200" width="45" height="240" fill="#5d5d5d"/>
+        <polygon points="185,200 230,200 415,415 415,440 370,440 185,225" fill="#6d6d6d"/>
+      </g>
+      <text x="300" y="500" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="72" fill="#ffffff">A I <tspan font-size="78">1</tspan></text>
+      <text x="300" y="535" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="4" fill="#ffffff">CLIENT</text>
+    </svg>
+    <h1>TNT's All-In-1 Client</h1>
+
+    <p lang="de">Ein Minecraft-Client für Windows: Launcher und Mod mit Skin-Editor, eigenen Capes, Freundesystem und mehr an einem Ort.</p>
+    <p lang="en">A Minecraft client for Windows: a launcher and a mod with a skin editor, custom capes, a friends system and more in one place.</p>
+
+    <p lang="de">Auf diesem Server laufen die eigenen Capes und das Freundesystem des Clients.</p>
+    <p lang="en">This server runs the client's custom capes and its friends system.</p>
+
+    <div class="buttons">
+      <a class="button primary" href="https://github.com/clenz-debug/TNTsAllIn1Client/releases/latest/download/tntsallin1client-setup.exe">Download</a>
+      <a class="button" href="https://github.com/clenz-debug/TNTsAllIn1Client">GitHub</a>
+      <a class="button" href="https://github.com/clenz-debug/TNTsAllIn1Client/blob/main/PRIVACY.md"><span lang="de">Datenschutz</span><span lang="en">Privacy</span></a>
+    </div>
+
+    <p class="note" lang="de">Hobbyprojekt, nicht mit Mojang oder Microsoft verbunden. Du brauchst ein eigenes Konto für Minecraft: Java Edition.</p>
+    <p class="note" lang="en">A hobby project, not affiliated with Mojang or Microsoft. You need your own Minecraft: Java Edition account.</p>
+  </main>
+</body>
+</html>
