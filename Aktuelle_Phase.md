@@ -1821,7 +1821,7 @@ Für das nächste Release: alle neun 3D-Blöcke-Pakete neu hochladen und ihre SH
 
 **Commit und Push (2026-10-09):** auf Anweisung des Nutzers („manifest anpassen comitten pushen aufräumen“) committet und nach `main` gepusht: die 1.21.8-Mod mit den Paket-Skripten, die Lösch-Abfragen in den sieben anderen Versionen, der Item-Rahmen im 3D-Paket und die Notizen. **Das Manifest ist nicht angepasst:** ein Eintrag `versions.1.21.8` und neue SHA-1 der neun 3D-Blöcke-Pakete müssen auf Release-Dateien zeigen, die es ohne Release nicht gibt - gepusht hätte das bei jedem installierten Launcher die Paket-Downloads gebrochen. Ein Release war nicht angewiesen; es bleibt offen bis zum ausdrücklichen OK.
 
-## Release 0.1.14 (2026-10-09, veröffentlicht)
+## Release 0.1.14 (2026-10-09, veröffentlicht, vom Nutzer im installierten Launcher bestätigt)
 
 Auf ausdrückliche Anweisung des Nutzers (Rückfrage „Soll ich 0.1.14 jetzt veröffentlichen?“ - Antwort „veröffentliche“). Ablauf wie bei 0.1.13 nach Runbook C: Launcher und alle zehn Mods auf 0.1.14, alle zehn mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win`, Tag `v0.1.14` gepusht, Release in einem Schritt mit allen Dateien angelegt, geprüft, erst danach `main` gepusht (Commit e6b81c2).
 
@@ -1833,7 +1833,7 @@ Auf ausdrückliche Anweisung des Nutzers (Rückfrage „Soll ich 0.1.14 jetzt ve
 - **Geprüft:** ein Release zum Tag, als „Latest“ markiert, kein Entwurf; alle 45 Downloads, auf die das Manifest für eigene Mods und Pakete zeigt, heruntergeladen und ihre SHA-1 mit dem Manifest verglichen - keine Abweichung; das öffentliche `latest.yml` nennt 0.1.14 (SHA-512 des Installers lokal nachgerechnet); `seed-manifest.json` im Installer ist das neue Manifest; das Manifest auf `main` nennt 1.21.8.
 - **Vom Nutzer noch nicht geprüft** (`Offene_Punkte.md` 2): Auto-Update auf 0.1.14, eine 1.21.8-Instanz im installierten Launcher, das neue 3D-Blöcke-Paket als Update in einer vorhandenen Instanz.
 
-## Hotfix 0.14.1 (2026-10-09, veröffentlicht): Anmeldung scheiterte mit 429
+## Hotfix 0.14.1 (2026-10-09, veröffentlicht, vom Nutzer bestätigt): Anmeldung scheiterte mit 429
 
 Meldung des Nutzers nach dem Update auf 0.1.14 (Bildschirmfoto): Anmeldebildschirm, „Prüfe Minecraft-Zugriff…“ und darunter roh `MinecraftApiError: i18nError{"code":"auth.minecraftApiFailed","params":{"status":429,…login_with_xbox…}}`. Kurz danach ging die Anmeldung wieder („ok jetzt hat es geklappt trotzdem mal angucken“).
 
@@ -1843,3 +1843,5 @@ Meldung des Nutzers nach dem Update auf 0.1.14 (Bildschirmfoto): Anmeldebildschi
 - **Versionsnummer:** Entscheidung des Nutzers auf meine Rückfrage: „0.14.1 so wie mc das macht … wenn content kommt 0.x um eins erhöhen und .y dranhängen für hotfixes“. Der Launcher heißt damit 0.14.1, das nächste Inhalts-Update 0.15.0. Die Mods bleiben 0.1.14, das Manifest ist unverändert.
 - **Release:** auf „ja bitte als hotfix“. Commits 39ccd8a (Fix) und 14acd30 (Version), Tag `v0.14.1`, drei Dateien (Installer, `.blockmap`, `latest.yml`), danach `main` gepusht. Geprüft: ein Release zum Tag, „Latest“, öffentliches `latest.yml` gleich dem lokalen, SHA-512 des Installers nachgerechnet, im Installer dieselben drei Mod-Jars wie in 0.1.14 und das unveränderte Manifest.
 - **Nicht geprüft:** im Fenster hat die Änderung noch niemand gesehen (Typecheck und Build laufen); Auto-Update von 0.1.14 auf 0.14.1 steht in `Offene_Punkte.md` 2.
+
+**Bestätigung des Nutzers (2026-10-09):** „alles hat gepasst auch die 1.21.8 und deren start“ - als Antwort auf meine Frage nach dem Auto-Update auf 0.14.1 und dem Angemeldet-Bleiben; dazu die 1.21.8-Instanz im installierten Launcher samt Start. Diese Punkte sind aus `Offene_Punkte.md` 2 gestrichen. Das neue 3D-Blöcke-Paket als Update in einer schon vorhandenen Instanz hat er nicht ausdrücklich genannt; der Punkt bleibt stehen.
