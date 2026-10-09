@@ -1,12 +1,7 @@
 package com.tntsallin1client.menu;
 
 import com.tntsallin1client.config.ConfigReset;
-import com.tntsallin1client.design.ClientDesign;
-import com.tntsallin1client.design.ClientFont;
-import com.tntsallin1client.design.ClientTheme;
-import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -31,30 +26,14 @@ public final class ResetButtons {
 	 * The question before a reset. Either answer leads back to {@code returnTo}, which is laid out
 	 * anew on the way and so shows the reset values.
 	 *
-	 * <p>In the client design the question wears that design too (own user request, for this question
-	 * only - the game's other questions keep their look): {@link Question} counts as one of the mod's
-	 * own screens, which gives it the theme's background and buttons, and its two texts - drawn by the
-	 * game's own text widgets, which no theme reaches - are handed over already in the client font
-	 * and the theme's text color.
+	 * <p>In the client design the question wears that design too, see {@link ThemedConfirmScreen}.
 	 */
 	public static Screen confirm(Minecraft client, Screen returnTo, Component title, Component message, Runnable reset) {
-		boolean clientDesign = ClientDesign.isClient();
-		return new Question(confirmed -> {
+		return new ThemedConfirmScreen(confirmed -> {
 			if (confirmed) {
 				reset.run();
 			}
 			client.gui.setScreen(returnTo);
-		}, clientDesign ? themed(title) : title, clientDesign ? themed(message) : message);
-	}
-
-	private static Component themed(Component text) {
-		return ClientFont.of(text).withColor(ClientTheme.get().text & 0xFFFFFF);
-	}
-
-	/** The game's own yes/no screen under a name in this package - which is what makes it a themed screen (see {@code ThemedUi}). */
-	private static final class Question extends ConfirmScreen {
-		Question(BooleanConsumer callback, Component title, Component message) {
-			super(callback, title, message);
-		}
+		}, title, message);
 	}
 }

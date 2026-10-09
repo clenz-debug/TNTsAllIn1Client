@@ -13,7 +13,6 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -111,7 +110,7 @@ public class PinnedRecipeListScreen extends Screen {
 		if (count == 0) {
 			return;
 		}
-		this.minecraft.gui.setScreen(new ConfirmScreen(confirmed -> {
+		this.minecraft.gui.setScreen(new ThemedConfirmScreen(confirmed -> {
 			if (confirmed) {
 				ClientConfig.get().pinnedRecipes.clear();
 				ClientConfig.get().save();

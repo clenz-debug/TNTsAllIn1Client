@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -224,7 +223,7 @@ public class WaypointEditScreen extends Screen {
 
 	/** Vanilla's own "are you sure?" dialog (same one world deletion etc. uses) - "No"/Escape returns here unchanged. */
 	private void confirmDelete() {
-		this.minecraft.setScreen(new ConfirmScreen(confirmed -> {
+		this.minecraft.setScreen(new ThemedConfirmScreen(confirmed -> {
 			if (confirmed) {
 				this.deleteWaypoint();
 			} else {
