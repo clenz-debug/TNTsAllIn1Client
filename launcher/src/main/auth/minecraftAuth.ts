@@ -14,10 +14,19 @@ interface MinecraftProfileResponse {
 }
 
 class MinecraftApiError extends Error {
-  constructor(status: number, body: string) {
-    super(localizedErrorMessage('auth.minecraftApiFailed', { status, detail: body }))
+  constructor(
+    readonly status: number,
+    body: string
+  ) {
+    super(localizedErrorMessage(status === 429 ? 'auth.minecraftRateLimited' : 'auth.minecraftApiFailed', { status, detail: body }))
     this.name = 'MinecraftApiError'
   }
+}
+
+/** Mojang answered "too many requests" - its login endpoint allows only a few logins per account in
+ * a short time, and says nothing about the account itself. */
+export function isRateLimited(err: unknown): boolean {
+  return err instanceof MinecraftApiError && err.status === 429
 }
 
 async function loginWithXbox(xsts: XstsResult): Promise<string> {
@@ -47,7 +56,11 @@ async function fetchProfile(minecraftAccessToken: string): Promise<MinecraftProf
  * the account's profile. Any failure here (e.g. an account that doesn't own Minecraft) propagates
  * to the caller - the login screen shows it as a normal error. */
 export async function completeMinecraftLogin(xsts: XstsResult): Promise<MinecraftProfile> {
-  const accessToken = await loginWithXbox(xsts)
+  return profileForToken(await loginWithXbox(xsts))
+}
+
+/** The account's current profile for a Minecraft access token that is already at hand. */
+export async function profileForToken(accessToken: string): Promise<MinecraftProfile> {
   const profile = await fetchProfile(accessToken)
   return { id: profile.id, name: profile.name, accessToken, skins: profile.skins, capes: profile.capes }
 }

@@ -15,7 +15,8 @@ function resolveErrorEntry(errors: Translations['errors'], code: string): unknow
  * shape on its own. */
 function stripIpcWrapper(err: unknown): string | null {
   if (!(err instanceof Error)) return null
-  return err.message.replace(/^Error invoking remote method '[^']+':\s*(?:Error:\s*)?/, '')
+  // The name in front is the thrown error's own (`Error`, `MinecraftApiError`, ...).
+  return err.message.replace(/^Error invoking remote method '[^']+':\s*(?:\w*Error:\s*)?/, '')
 }
 
 /** The bare `localizedError` code behind a caught IPC error (e.g. `"launch.cancelled"`), or `null`

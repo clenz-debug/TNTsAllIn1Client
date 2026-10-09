@@ -630,7 +630,8 @@ export const de = {
       loginTimeout: 'Microsoft-Anmeldung nach 5 Minuten abgelaufen.',
       loopbackServerFailed: 'Lokaler Server konnte nicht gestartet werden.',
       minecraftApiFailed: (p: { status: number | string; detail: string }) =>
-        `Minecraft-API-Aufruf fehlgeschlagen (${p.status}): ${p.detail}`
+        `Minecraft-API-Aufruf fehlgeschlagen (${p.status}): ${p.detail}`,
+      minecraftRateLimited: 'Mojang lässt gerade keine weitere Anmeldung zu (zu viele Anmeldungen in kurzer Zeit). Bitte ein paar Minuten warten und es dann noch einmal versuchen.'
     },
     image: {
       invalidPng: 'Datei ist kein gültiges PNG.'

@@ -610,7 +610,8 @@ export const en: typeof de = {
         `Microsoft token exchange failed: ${p.status} ${p.detail}`,
       loginTimeout: 'Microsoft login timed out after 5 minutes.',
       loopbackServerFailed: 'Failed to start the local server.',
-      minecraftApiFailed: (p: { status: number | string; detail: string }) => `Minecraft API call failed (${p.status}): ${p.detail}`
+      minecraftApiFailed: (p: { status: number | string; detail: string }) => `Minecraft API call failed (${p.status}): ${p.detail}`,
+      minecraftRateLimited: 'Mojang is not accepting another login right now (too many logins in a short time). Please wait a few minutes and try again.'
     },
     image: {
       invalidPng: 'File is not a valid PNG.'
