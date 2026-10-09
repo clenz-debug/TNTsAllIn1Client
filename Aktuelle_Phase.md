@@ -1635,7 +1635,7 @@ Zwischen 1.21.1 und 1.21.11 hat Mojang fast alles umgebaut, was die Mod anfasst.
 - Shulker-Vorschau, alle Versionen mit Vorschau: Rahmen rechts und unten einen Pixel dünner als links und oben; Titel der weißen Box kaum lesbar (weiß mit Schatten auf heller Kopfzeile) - jetzt dunkel ohne Schatten. In 1.21.1 bestätigt, in 1.14.4, 1.21.11, 26.1.2 und 26.3 ungetestet übertragen.
 - Kein Fehler der Mod: überlappende Trankeffekt-Einträge bei mehr als fünf Effekten - Vanilla staucht die Liste selbst (im Bytecode geprüft), wie in 1.14.4.
 
-## 1.20.6-Port (2026-10-08, vom Nutzer im Dev-Launcher getestet und bestätigt: „passt“, auf alles bezogen; nicht veröffentlicht)
+## 1.20.6-Port (2026-10-08, vom Nutzer im Dev-Launcher getestet und bestätigt: „passt“, auf alles bezogen; veröffentlicht mit 0.1.11)
 
 Auf Wunsch des Nutzers („mach die 1.20 Unterstützung“); 1.20.6 statt 1.20.1 nach der Regel „letzte Unterversion“ (seine Entscheidung auf Nachfrage). `mod/1.20.6/`: Fabric, Mojang-Namen, Java 21, aus dem 1.21.1-Code portiert - Menüs, Einstellungen und Sprachdateien sind dieselben. `gradlew build` läuft durch, `python mod/check_mixins.py 1.20.6` meldet 128 geprüfte Ziele ohne Problem. Der Nutzer hat die Instanz am selben Tag im Dev-Launcher gestartet; was dabei auffiel, steht unten. Danach hat er alles bestätigt; offen sind nur Manifest-Eintrag und Release (`Offene_Punkte.md` 1a).
 
@@ -1676,3 +1676,15 @@ Auf ausdrückliche Anweisung des Nutzers („comitt, push, release“). Ablauf w
 - **1.8.9:** die Mod (0.1.10, inhaltlich unverändert) steckt weiter nur im Installer.
 - **Launcher-Code:** neu ist nur der Hinweis bei den ersetzten Versionen.
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, und ein installierter Launcher hat das 1.21.1-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
+
+## Release 0.1.11 (2026-10-09, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers („pass das manifest an comitt push release“). Ablauf wie bei 0.1.10 nach Runbook C: Launcher und alle sieben Mods auf 0.1.11, alle sieben mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win` gepackt, Commit `a959ee5`, Tag `v0.1.11`, Release mit allen Dateien in einem Schritt, Prüfsummen aller hochgeladenen Dateien gegen das Manifest geprüft, erst dann `main` gepusht.
+
+- **Neu: Minecraft 1.20.6 mit unserer Mod** - Manifest-Eintrag mit eigener Mod, Fabric API, Sodium, Indium, Lithium, Continuity und e4mc (kein Cape Provider, die Mod holt die Capes dort selbst); Bushy Vegetation 3.3.2 als Modrinth-Download, `TNT-3D-Blocks-1.20.6.zip`, `TNT-3D-Bushes-1.20.6.zip` und `TNT-Dark-Mode-1.20.6.zip` als Release-Dateien.
+- **Dateien:** Installer, Blockmap, `latest.yml`, sechs Mod-Jars (1.14.4, 1.20.6, 1.21.1, 1.21.11, 26.1.2, 26.3) und die drei Pakete für 1.20.6. Die Pakete der anderen Versionen sind unverändert, ihre Manifest-Einträge zeigen weiter auf ältere Releases.
+- **1.8.9:** die Mod (0.1.11) steckt weiter nur im Installer.
+- **Indium:** beim Vorbereiten aufgefallen - es stand nicht bei den immer aktiven Mods (`ALWAYS_ENABLED_PREFIXES` in `launcher/src/main/launch/modsManager.ts`) und wäre ein Schalter gewesen, der standardmäßig aus ist; Continuity hätte dann keine Texturen verbunden. Jetzt läuft es immer mit. Lizenztext (`launcher/third-party-licenses/indium.txt`), README dort und der Credits-Screen des Launchers sind ergänzt. Ein Launcher 0.1.10, der sich noch nicht aktualisiert hat, zeigt Indium bei 1.20.6 als ausgeschalteten Schalter.
+- **Sonst im Launcher:** Hinweis auch bei 1.21.6 und 1.21.7, Paket-Auswahl neuer Instanzen (beides oben beschrieben).
+- **In den Mods:** die Fehlerbehebungen aus dem 1.20.6-Test (scrollende Einstellungsseiten in 1.21.1, angepinnte Rezepte, Shulker-Vorschau).
+- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 1.20.6-Bundle noch nie übers Manifest geladen, und die Indium-Änderung hat der Nutzer nicht gesehen - steht in `Offene_Punkte.md` unter 2.

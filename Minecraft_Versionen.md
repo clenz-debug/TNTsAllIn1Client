@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-08 (Launcher und Mod 0.1.10). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-09 (Launcher und Mod 0.1.11). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -21,6 +21,7 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 |---|---|---|---|
 | 1.8.9 | 2015-12-03 | Legacy (nur im Installer, kein Manifest-Eintrag) | 0.1.8 |
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
+| 1.20.6 | 2024-04-29 | Fabric | 0.1.11 |
 | 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
 | 26.1.2 | 2026-04-09 | Fabric | von Anfang an |
@@ -42,8 +43,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
-(`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 erst ab dem
-Release nach 0.1.10).
+(`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
 
 Fremd-Mods für 1.21.8 (Modrinth, 2026-10-08): Fabric API 0.136.1, Sodium 0.7.3, Lithium 0.18.1,
 Continuity 3.0.1-beta.1, Cape Provider 4.0.2, e4mc 6.2.3 und Bushy Vegetation 3.4.2 – alles da.
@@ -57,7 +57,6 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.17.1 (2021-07-06)
 - [ ] 1.18.2 (2022-02-28)
 - [ ] 1.19.4 (2023-03-14)
-- [ ] 1.20.6 (2024-04-29) – gebaut am 2026-10-08 (`mod/1.20.6/`), von dir im Spiel bestätigt, noch nicht veröffentlicht
 
 Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: für Modpacks sind
 1.20.1 (statt 1.20.6) und 1.19.2 (statt 1.19.4) verbreiteter. 1.20.5 hat die Items intern umgebaut,
