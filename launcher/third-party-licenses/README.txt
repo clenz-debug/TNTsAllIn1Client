@@ -12,7 +12,9 @@ Mods (downloaded from Modrinth, installed into the game instance):
   Fabric API          Apache-2.0                  fabric-api.txt        https://github.com/FabricMC/fabric
   Sodium              PolyForm Shield 1.0.0       sodium.txt            https://github.com/CaffeineMC/sodium
                       (+ code it includes from others: sodium-third-party.txt)
-  Lithium             LGPL-3.0-only               lithium.txt           https://github.com/CaffeineMC/lithium-fabric
+  Indium              Apache-2.0                  indium.txt            https://github.com/comp500/Indium
+                      (only with Minecraft 1.20.6)
+  Lithium             LGPL-3.0-only               lithium.txt         https://github.com/CaffeineMC/lithium-fabric
   Continuity          LGPL-3.0-only               continuity.txt        https://github.com/PepperCode1/Continuity
   Cape Provider       LGPL-2.1-or-later           cape-provider.txt     https://github.com/litetex-oss/mcm-cape-provider
   e4mc                MIT                         e4mc.txt              https://github.com/vgskye/e4mc-minecraft-architectury

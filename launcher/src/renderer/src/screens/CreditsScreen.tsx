@@ -19,6 +19,7 @@ const ENTRIES: CreditEntry[] = [
   { name: 'Fabric Loader', license: 'Apache-2.0', url: 'https://github.com/FabricMC/fabric-loader' },
   { name: 'Fabric API', license: 'Apache-2.0', url: 'https://github.com/FabricMC/fabric' },
   { name: 'Sodium', license: 'PolyForm Shield License 1.0.0', url: 'https://github.com/CaffeineMC/sodium' },
+  { name: 'Indium', license: 'Apache-2.0', url: 'https://github.com/comp500/Indium' },
   { name: 'Lithium', license: 'LGPL-3.0-only', url: 'https://github.com/CaffeineMC/lithium-fabric' },
   { name: 'Continuity', license: 'LGPL-3.0-only', url: 'https://github.com/PepperCode1/Continuity' },
   { name: 'Cape Provider', license: 'LGPL-2.1-or-later', url: 'https://github.com/litetex-oss/mcm-cape-provider' },

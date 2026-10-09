@@ -115,6 +115,8 @@ export const OWN_MOD_PREFIX = 'tntsallin1client-'
  *    row), which is the actually meaningful control surface for it. Gating it a second time behind
  *    the launcher's toggle first would just be a redundant, easy-to-forget extra step before the
  *    ingame toggle even becomes reachable.
+ *  - `indium-`: only in the 1.20.6 bundle, where Sodium 0.5 has no Fabric Rendering API - without
+ *    it Continuity loads but connects nothing. Not a feature of its own, so no switch.
  *  - `e4mc-`: world invitations to friends (Phase 8b) depend on it. Our mod keeps its public tunnel
  *    switched off except while inviting (`E4mcControl.java`), so a normal "Open to LAN" stays local.
  *  - `skinlayers3d-fabric-`: 3D Skin Layers left the bundle with 0.1.5 (our mod draws the layers
@@ -132,6 +134,7 @@ const ALWAYS_ENABLED_PREFIXES = [
   'sodium-fabric-',
   'lithium-fabric-',
   'continuity-',
+  'indium-',
   'skinlayers3d-fabric-',
   'e4mc-'
 ]
