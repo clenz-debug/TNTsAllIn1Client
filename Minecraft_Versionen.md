@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-09 (Launcher und Mod 0.1.12). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-09 (Launcher und Mod 0.1.13). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -26,6 +26,7 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 | 1.21.10 | 2025-10-07 | Fabric (deckt 1.21.9 mit ab) | 0.1.12 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
 | 26.1.2 | 2026-04-09 | Fabric | von Anfang an |
+| 26.2 | 2026-06-16 | Fabric | 0.1.13 |
 | 26.3 | 2026-09-15 | Fabric | 0.1.7 |
 
 ## Offen
@@ -38,15 +39,13 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
 - [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach)
-- [ ] 26.2 (2026-06-16) – gebaut am 2026-10-09 (`mod/26.2/`, Mods und Pakete im Dev-Bundle), vom Nutzer am
-  2026-10-09 im Dev-Launcher bestätigt, noch nicht veröffentlicht
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
 (`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
 
-Fremd-Mods für 26.2 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.161.0 (`ewUK83HI`), Sodium 0.9.2
+Fremd-Mods für 26.2 (Modrinth, 2026-10-09, im Manifest seit 0.1.13): Fabric API 0.161.0 (`ewUK83HI`), Sodium 0.9.2
 (`xJZxADzI`), Lithium 0.25.3 (`f7vZ0VWU`), Continuity 3.0.1 (`mgUN5Xz2`), Cape Provider 5.5.1 (`Puw7YiUS`) und
 e4mc 6.2.2 (`AouleFRY`, dieselbe Datei wie für 26.3) – alles da. Bushy Vegetation gibt es für 26.2 nicht; die
 26er-Versionen haben ohnehin nur unsere eigenen Büsche.
@@ -110,7 +109,7 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-31 Versionen nach den Regeln oben: 6 unterstützt, 25 offen (6 ab 1.21.2, 6 ältere mit Fabric,
+31 Versionen nach den Regeln oben: 9 unterstützt, 22 offen (4 ab 1.21.2, 5 ältere mit Fabric,
 6 startbare Legacy-Versionen, 7 noch nicht startbare).
 
 Fremd-Mods für 1.21.10 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3

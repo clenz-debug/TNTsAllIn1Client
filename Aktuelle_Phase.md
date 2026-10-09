@@ -1735,7 +1735,7 @@ Auf ausdrückliche Anweisung des Nutzers („go im manifest eintragen, comitt, p
 - **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 1.21.10-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
 - **Bestätigung des Nutzers (2026-10-09):** „startet, launcher hat die richtige version und der rest passt auch“ - das Auto-Update auf 0.1.12 und der Start der 1.21.10-Instanz im installierten Launcher ausdrücklich; „der Rest“ habe ich auf die übrigen Prüfpunkte dieses Releases bezogen (neue Instanz ohne unsere Pakete, 1.21.9 mit Fabric) und sie aus `Offene_Punkte.md` genommen. Ob er 1.21.9 eigens gestartet hat, hat er nicht gesagt.
 
-## 26.2-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt; nicht committet, nicht veröffentlicht)
+## 26.2-Port (2026-10-09, vom Nutzer im Dev-Launcher getestet und bestätigt; veröffentlicht mit 0.1.13)
 
 Auf Anweisung des Nutzers („als nächstes bitte die unterstützung der 26.2 komplett, dann sind alle neuen versionen der 26 durch“). `mod/26.2/`: Fabric, Mojang-Namen, Java 25, aus dem 26.3-Stand kopiert (Probe-Kompilierung gegen 26.2: 32 Fehler mit dem 26.3-Code, über 100 mit dem 26.1.2-Code). `gradlew clean build` läuft durch, `python mod/check_mixins.py 26.2`: 127 Ziele, 0 Probleme (nicht geprüft: Cape Providers Klasse, siehe unten).
 
@@ -1758,3 +1758,15 @@ Geprüft per Bytecode-Vergleich der Zielmethoden aller Mixins gegen die Version,
 **Meldung des Nutzers nach dem ersten Start (2026-10-09): „wie immer der connectet texturs fehler“.** Die Instanz `A:\instances\26.2` ist eine ältere (Logs seit August), in ihrer `options.txt` waren Continuitys eigene Pakete (`continuity:default`, `continuity:glass_pane_culling_fix`) nicht ausgewählt - Fabric schaltet sie nur beim allerersten Sehen ein. Wie in 1.21.1, 1.20.6 und 1.21.10 wählt die Mod sie jetzt einmalig selbst aus (`compat/ContinuityPacks`, `continuityPacksSelectedOnce` in `ClientConfig`, Aufruf in `CLIENT_STARTED`); neu gebaut. Bestätigung des Nutzers steht aus. Auf sein „ja bitte mach das“ am selben Tag auch in 1.21.11, 26.1.2 und 26.3 nachgezogen (gleiche drei Stellen, alle drei mit `gradlew build` gebaut) - damit haben alle Fabric-Versionen mit Continuity die Absicherung. Die lokalen Jars dieser drei heißen weiter 0.1.12, sind aber neuer als die veröffentlichten; beim nächsten Release die Mod-Version hochsetzen.
 
 **Bestätigung des Nutzers (2026-10-09):** „alles passt auch deine änderungen die du auf mein nachricht geschrieben hast“ - der 26.2-Port samt Testliste und die verbundenen Texturen in 26.2 sind damit bestätigt. Die nachgezogene Absicherung in 1.21.11, 26.1.2 und 26.3 habe ich als mitbestätigt verstanden (meine Auslegung von „deine Änderungen“; welche Instanzen er dafür gestartet hat, hat er nicht gesagt). Offen: Commit, Manifest-Eintrag `versions.26.2` und Release, jeweils auf ausdrückliches OK.
+
+## Release 0.1.13 (2026-10-09, veröffentlicht)
+
+Auf ausdrückliche Anweisung des Nutzers (Rückfrage „soll ich jetzt auch 0.1.13 veröffentlichen?“ - Antwort „0.1.13 jetzt veröffentlichen“). Ablauf wie bei 0.1.12 nach Runbook C: Launcher und alle neun Mods auf 0.1.13, alle neun mit `clean build` gebaut, Manifest lokal angepasst, Installer mit `npm run package:win`, Tag `v0.1.13` gepusht, Release in einem Schritt mit allen Dateien angelegt, geprüft, erst danach `main` gepusht.
+
+- **Neu: Minecraft 26.2 mit unserer Mod** - Manifest-Eintrag mit eigener Mod, Fabric API 0.161.0, Sodium 0.9.2, Lithium 0.25.3, Continuity 3.0.1, Cape Provider 5.5.1 und e4mc 6.2.2; `TNT-3D-Blocks-26.2.zip`, `TNT-3D-Bushes-26.2.zip`, `TNT-Dark-Mode-26.2.zip` und `TNT-Flat-Inventory-Icons-26.2.zip` als Release-Dateien.
+- **Verbundene Texturen:** 1.21.11, 26.1.2, 26.2 und 26.3 wählen Continuitys eigene Pakete einmalig selbst aus (die älteren Versionen taten das schon).
+- **Dateien:** Installer, Blockmap, `latest.yml`, acht Mod-Jars (1.14.4, 1.20.6, 1.21.1, 1.21.10, 1.21.11, 26.1.2, 26.2, 26.3) und die vier Pakete für 26.2 - 15 Dateien. Die Pakete der anderen Versionen sind unverändert, ihre Manifest-Einträge zeigen weiter auf ältere Releases.
+- **1.8.9:** die Mod (0.1.13, inhaltlich unverändert) steckt weiter nur im Installer.
+- **Launcher-Code:** unverändert, nur die Versionsnummer.
+- **Geprüft:** ein Release zum Tag, als „Latest“ markiert, kein Entwurf; SHA-1 aller zwölf Manifest-Downloads aus diesem Release stimmt mit dem Manifest überein; das öffentliche `latest.yml` nennt 0.1.13 und ist dieselbe Datei wie lokal (SHA-512 des Installers nachgerechnet); das Manifest auf `main` nennt 26.2.
+- **Nicht geprüft:** der gepackte Installer wurde nicht installiert und gestartet, ein installierter Launcher hat das 26.2-Bundle noch nie übers Manifest geladen - steht in `Offene_Punkte.md` unter 2.
