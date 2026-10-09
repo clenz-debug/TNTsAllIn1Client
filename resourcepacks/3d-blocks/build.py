@@ -18,6 +18,7 @@ import entity_items
 import models3d
 
 PACK_FORMATS = {
+    "1.21.8": 64,
     "1.21.10": 69,
     "1.21.11": 75,
     "26.1.2": 84,
@@ -160,7 +161,42 @@ def for_version(data: dict, pack_format: int) -> dict:
 
 
 # Blocks that only exist from this pack format on - their models stay out of older versions' packs.
-NEW_BLOCKS = {"sulfur_spike": 88, "poplar": 97, "red_shrub": 97}
+NEW_BLOCKS = {"copper_bars": 69, "copper_chain": 69, "copper_lantern": 69, "copper_torch": 69,
+              "sulfur_spike": 88, "poplar": 97, "red_shrub": 97}
+
+# 1.21.9 (pack format 69) brought copper bars and chains: since then the iron ones are children of
+# shared templates and the chain is called "iron_chain". Before, each of those models was the block's
+# own, with its picture written into it - the same shapes go under those names there.
+COPPER_SINCE = 69
+MODELS_BEFORE_COPPER = {
+    "block/template_chain": "block/chain",
+    "item/iron_chain": "item/chain",
+    **{f"block/template_bars_{part}": f"block/iron_bars_{part}"
+       for part in ("post", "post_ends", "cap", "cap_alt", "side", "side_alt")},
+}
+PICTURES_BEFORE_COPPER = {"minecraft:block/iron_chain": "minecraft:block/chain"}
+# What vanilla's child models filled in from 1.21.9 on
+TEMPLATE_PICTURES = {
+    "block/chain": {"texture": "minecraft:block/chain"},
+    **{f"block/iron_bars_{part}": {"bars": "minecraft:block/iron_bars", "edge": "minecraft:block/iron_bars"}
+       for part in ("post", "post_ends", "cap", "cap_alt", "side", "side_alt")},
+}
+
+
+def path_in_version(model_path: str, pack_format: int) -> str:
+    return MODELS_BEFORE_COPPER.get(model_path, model_path) if pack_format < COPPER_SINCE else model_path
+
+
+def before_copper(model_path: str, data: dict) -> dict:
+    """A model for a version before 1.21.9, model_path being its name there."""
+    data = dict(data)
+    if data.get("parent") in MODELS_BEFORE_COPPER:
+        data["parent"] = MODELS_BEFORE_COPPER[data["parent"]]
+    if "textures" in data:
+        data["textures"] = {key: PICTURES_BEFORE_COPPER.get(value, value) if isinstance(value, str) else value
+                            for key, value in data["textures"].items()}
+        data["textures"] = {**data["textures"], **TEMPLATE_PICTURES.get(model_path, {})}
+    return data
 
 
 def in_version(model_path: str, pack_format: int) -> bool:
@@ -202,6 +238,9 @@ def build(out_dir: pathlib.Path) -> list:
                 if not in_version(model_path, pack_format):
                     continue
                 data = for_version(models3d.MODELS[model_path], pack_format)
+                if pack_format < COPPER_SINCE:
+                    model_path = path_in_version(model_path, pack_format)
+                    data = before_copper(model_path, data)
                 write(zf, f"assets/minecraft/models/{model_path}.json", json.dumps(data, indent=1))
             for since, models in sorted(models3d.MODELS_SINCE.items()):
                 for model_path in sorted(models) if pack_format >= since else ():

@@ -17,7 +17,7 @@ The name is settled; the project's identity is comfort features bundled in one p
 
 | Path | What |
 |---|---|
-| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.14.4` = Java 8, `1.20.6`, `1.21.1`, `1.21.10` and `1.21.11` = Java 21, `26.1.2`, `26.2` and `26.3` = Java 25). Exception: legacy versions (before 1.14, so far `1.8.9`) have no Fabric - plain Gradle, own entry through LaunchWrapper + Mixin, Legacy Yarn names |
+| `mod/<mcVersion>/` | Fabric mod, one **independent** Gradle/Loom project per Minecraft version (`1.14.4` = Java 8, `1.20.6`, `1.21.1`, `1.21.8`, `1.21.10` and `1.21.11` = Java 21, `26.1.2`, `26.2` and `26.3` = Java 25). Exception: legacy versions (before 1.14, so far `1.8.9`) have no Fabric - plain Gradle, own entry through LaunchWrapper + Mixin, Legacy Yarn names |
 | `launcher/` | Electron + React + TypeScript launcher (electron-vite); `src/main`, `src/preload`, `src/renderer`, `src/shared` |
 | `backend/` | Small Node service for custom capes and the friends system, runs on a server the user does not own |
 | `designs/` | Branding (logo SVG, color palette) |

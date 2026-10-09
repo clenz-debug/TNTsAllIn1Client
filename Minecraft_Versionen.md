@@ -38,7 +38,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt)
 - [ ] 1.21.4 (2024-12-03)
 - [ ] 1.21.5 (2025-03-25)
-- [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach)
+- [ ] 1.21.8 (2025-07-17) – deckt 1.21.6 und 1.21.7 mit ab (Inhalts-Update mit zwei Fehlerbehebungen danach). Gebaut und von dir bestätigt am 2026-10-09 (`mod/1.21.8/`), noch nicht veröffentlicht
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
@@ -50,8 +50,10 @@ Fremd-Mods für 26.2 (Modrinth, 2026-10-09, im Manifest seit 0.1.13): Fabric API
 e4mc 6.2.2 (`AouleFRY`, dieselbe Datei wie für 26.3) – alles da. Bushy Vegetation gibt es für 26.2 nicht; die
 26er-Versionen haben ohnehin nur unsere eigenen Büsche.
 
-Fremd-Mods für 1.21.8 (Modrinth, 2026-10-08): Fabric API 0.136.1, Sodium 0.7.3, Lithium 0.18.1,
-Continuity 3.0.1-beta.1, Cape Provider 4.0.2, e4mc 6.2.3 und Bushy Vegetation 3.4.2 – alles da.
+Fremd-Mods für 1.21.8 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.136.1 (`g58ofrov`), Sodium 0.7.3
+(`7pwil2dy`), Lithium 0.18.1 (`qxIL7Kb8`), Continuity 3.0.1-beta.1 (`m0cvWhzT`), Cape Provider 4.0.2 (`7FV01Drj`),
+e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie für 1.21.10 und 1.21.11; 6.2.3 gäbe es auch) und Bushy Vegetation 3.4.2
+(`aLE579XT`) – alles da.
 
 ### Vor 1.21.2 mit Fabric – letzte Unterversion je Hauptversion
 
