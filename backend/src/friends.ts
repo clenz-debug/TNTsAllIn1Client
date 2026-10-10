@@ -1,7 +1,7 @@
-import { mkdirSync } from 'node:fs'
+import { chmodSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { INVITE_TTL_MS, MAX_FRIENDS, MAX_OUTGOING_REQUESTS, PRESENCE_TIMEOUT_MS, config } from './config.js'
+import { INVITE_TTL_MS, MAX_BLOCKED, MAX_FRIENDS, MAX_OUTGOING_REQUESTS, PRESENCE_TIMEOUT_MS, config } from './config.js'
 import type { VerifiedProfile } from './mojang.js'
 
 /**
@@ -67,6 +67,8 @@ export interface FriendsOverview {
   incoming: PlayerSummary[]
   outgoing: PlayerSummary[]
   invites: WorldInvite[]
+  /** Players the caller has blocked - only they see this list. */
+  blocked: PlayerSummary[]
 }
 
 export class FriendsError extends Error {
@@ -79,7 +81,9 @@ export class FriendsError extends Error {
 }
 
 mkdirSync(config.dataDir, { recursive: true })
-const db = new DatabaseSync(join(config.dataDir, 'friends.sqlite'))
+// Other accounts on the same machine have no business reading who is friends with whom
+chmodSync(config.dataDir, 0o700)
+export const db = new DatabaseSync(join(config.dataDir, 'friends.sqlite'))
 db.exec(`
   PRAGMA journal_mode = WAL;
   PRAGMA foreign_keys = ON;
@@ -116,6 +120,31 @@ db.exec(`
     expires   INTEGER NOT NULL,
     PRIMARY KEY (from_uuid, to_uuid)
   );
+  -- A blocked player cannot send the blocker friend requests; blocking also ends a friendship.
+  CREATE TABLE IF NOT EXISTS blocks (
+    blocker TEXT NOT NULL REFERENCES players (uuid),
+    blocked TEXT NOT NULL REFERENCES players (uuid),
+    created INTEGER NOT NULL,
+    PRIMARY KEY (blocker, blocked)
+  );
+  -- Accounts that may not upload capes any more (moderation, see admin.ts). Deliberately without a
+  -- reference to players: the ban has to outlast "delete my data".
+  CREATE TABLE IF NOT EXISTS cape_bans (
+    uuid    TEXT PRIMARY KEY,
+    reason  TEXT NOT NULL,
+    created INTEGER NOT NULL
+  );
+  -- Open reports about capes (moderation.ts): one per reporter and reported cape, gone once decided.
+  CREATE TABLE IF NOT EXISTS cape_reports (
+    reporter    TEXT NOT NULL,
+    target      TEXT NOT NULL,
+    target_name TEXT NOT NULL,
+    reason      TEXT NOT NULL,
+    cape_sha    TEXT NOT NULL,
+    created     INTEGER NOT NULL,
+    PRIMARY KEY (reporter, target, cape_sha)
+  );
+  CREATE INDEX IF NOT EXISTS cape_reports_target ON cape_reports (target);
 `)
 
 // Added after the first deploy - databases created before get the column on startup.
@@ -204,6 +233,10 @@ const selectInvites = db.prepare(`
   WHERE i.to_uuid = ? AND i.expires > ? ORDER BY i.expires DESC
 `)
 const deleteExpiredInvites = db.prepare('DELETE FROM world_invites WHERE expires <= ?')
+const selectBlocked = db.prepare(`
+  SELECT p.uuid, p.name FROM blocks b JOIN players p ON p.uuid = b.blocked
+  WHERE b.blocker = ? ORDER BY p.name_lower
+`)
 
 /** Called periodically by the server - expired invitations are never shown anyway. */
 export function pruneInvites(): void {
@@ -222,7 +255,8 @@ export function overview(uuid: string): FriendsOverview {
     friends,
     incoming: selectIncoming.all(uuid) as unknown as PlayerSummary[],
     outgoing: selectOutgoing.all(uuid) as unknown as PlayerSummary[],
-    invites
+    invites,
+    blocked: selectBlocked.all(uuid) as unknown as PlayerSummary[]
   }
 }
 
@@ -256,6 +290,9 @@ export function sendRequest(fromUuid: string, targetName: string): FriendsOvervi
   const target = findByName.get(targetName.trim().toLowerCase()) as PlayerSummary | undefined
   if (!target) throw new FriendsError(404, 'player_not_found')
   if (target.uuid === fromUuid) throw new FriendsError(400, 'cannot_add_self')
+  // Looks exactly like a player who never used the client - the blocked player is not told
+  if (hasBlock.get(target.uuid, fromUuid)) throw new FriendsError(404, 'player_not_found')
+  if (hasBlock.get(fromUuid, target.uuid)) throw new FriendsError(409, 'unblock_first')
   const [a, b] = pair(fromUuid, target.uuid)
   if (isFriend.get(a, b)) throw new FriendsError(409, 'already_friends')
 
@@ -289,6 +326,96 @@ export function removeRequest(uuid: string, otherUuid: string): FriendsOverview 
 }
 
 const deleteInvite = db.prepare('DELETE FROM world_invites WHERE from_uuid = ? AND to_uuid = ?')
+const hasBlock = db.prepare('SELECT 1 FROM blocks WHERE blocker = ? AND blocked = ?')
+const hasPlayer = db.prepare('SELECT 1 FROM players WHERE uuid = ?')
+const countBlocked = db.prepare('SELECT COUNT(*) AS n FROM blocks WHERE blocker = ?')
+const insertBlock = db.prepare('INSERT OR IGNORE INTO blocks (blocker, blocked, created) VALUES (?, ?, ?)')
+const deleteBlock = db.prepare('DELETE FROM blocks WHERE blocker = ? AND blocked = ?')
+
+/**
+ * Blocks a player: they can no longer send the caller friend requests (theirs just seem to go
+ * nowhere), and whatever connected the two - friendship, open requests, invitations - is removed.
+ */
+export function blockPlayer(uuid: string, otherUuid: string): FriendsOverview {
+  if (otherUuid === uuid) throw new FriendsError(400, 'cannot_add_self')
+  if (!hasPlayer.get(otherUuid)) throw new FriendsError(404, 'player_not_found')
+  transaction(() => {
+    if (!hasBlock.get(uuid, otherUuid) && (countBlocked.get(uuid) as { n: number }).n >= MAX_BLOCKED) {
+      throw new FriendsError(409, 'too_many_blocked')
+    }
+    insertBlock.run(uuid, otherUuid, Date.now())
+    const [a, b] = pair(uuid, otherUuid)
+    deleteFriendship.run(a, b)
+    deleteRequest.run(uuid, otherUuid)
+    deleteRequest.run(otherUuid, uuid)
+    deleteInvite.run(uuid, otherUuid)
+    deleteInvite.run(otherUuid, uuid)
+  })
+  return overview(uuid)
+}
+
+export function unblockPlayer(uuid: string, otherUuid: string): FriendsOverview {
+  deleteBlock.run(uuid, otherUuid)
+  return overview(uuid)
+}
+
+const deleteAccountStatements = [
+  'DELETE FROM world_invites WHERE from_uuid = ? OR to_uuid = ?',
+  'DELETE FROM friend_requests WHERE from_uuid = ? OR to_uuid = ?',
+  'DELETE FROM friendships WHERE a = ? OR b = ?',
+  'DELETE FROM blocks WHERE blocker = ? OR blocked = ?',
+  // Reports the player made, and reports about their cape - which is deleted along with the rest
+  'DELETE FROM cape_reports WHERE reporter = ? OR target = ?'
+].map((sql) => db.prepare(sql))
+const deletePlayer = db.prepare('DELETE FROM players WHERE uuid = ?')
+
+/**
+ * "Delete my data": everything this service knows about the player, including that they ever used
+ * the client. Friends simply no longer have them in their list. A cape upload ban stays (see the
+ * `cape_bans` table) - the cape file itself is removed by the caller.
+ */
+export function deleteAccount(uuid: string): void {
+  transaction(() => {
+    for (const statement of deleteAccountStatements) statement.run(uuid, uuid)
+    deletePlayer.run(uuid)
+  })
+}
+
+// --- Cape moderation (admin.ts) -------------------------------------------------------------------
+
+const selectCapeBan = db.prepare('SELECT 1 FROM cape_bans WHERE uuid = ?')
+const upsertCapeBan = db.prepare(`
+  INSERT INTO cape_bans (uuid, reason, created) VALUES (?, ?, ?)
+  ON CONFLICT (uuid) DO UPDATE SET reason = excluded.reason
+`)
+const deleteCapeBan = db.prepare('DELETE FROM cape_bans WHERE uuid = ?')
+const selectCapeBans = db.prepare(`
+  SELECT b.uuid, p.name, b.reason, b.created FROM cape_bans b LEFT JOIN players p ON p.uuid = b.uuid ORDER BY b.created
+`)
+const findByUuid = db.prepare('SELECT uuid, name FROM players WHERE uuid = ?')
+
+export function isCapeBanned(uuid: string): boolean {
+  return selectCapeBan.get(uuid) !== undefined
+}
+
+export function banCapes(uuid: string, reason: string): void {
+  upsertCapeBan.run(uuid, reason, Date.now())
+}
+
+export function unbanCapes(uuid: string): void {
+  deleteCapeBan.run(uuid)
+}
+
+export function capeBans(): Array<{ uuid: string; name: string | null; reason: string; created: number }> {
+  return selectCapeBans.all() as unknown as Array<{ uuid: string; name: string | null; reason: string; created: number }>
+}
+
+/** A player by Minecraft name or UUID (with or without dashes), `null` if they never used the client. */
+export function findPlayer(nameOrUuid: string): PlayerSummary | null {
+  const hex = nameOrUuid.replace(/-/g, '').toLowerCase()
+  const byUuid = /^[0-9a-f]{32}$/.test(hex) ? (findByUuid.get(hex) as PlayerSummary | undefined) : undefined
+  return byUuid ?? (findByName.get(nameOrUuid.trim().toLowerCase()) as PlayerSummary | undefined) ?? null
+}
 
 export function removeFriend(uuid: string, friendUuid: string): FriendsOverview {
   const [a, b] = pair(uuid, friendUuid)

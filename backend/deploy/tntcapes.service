@@ -8,8 +8,15 @@ After=network-online.target
 [Service]
 ExecStart=%h/.local/node/bin/node %h/tntcapes-backend/dist/server.js
 WorkingDirectory=%h/tntcapes-backend
+# Who sees reported capes in their launcher and decides about them (Minecraft UUIDs, comma-separated)
+Environment=TNTCAPES_MODERATORS=223d51565c7b4193a5c360920f13c591
 Restart=on-failure
 RestartSec=5
+# The service never needs more rights than it starts with, and a runaway must not be able to take
+# the machine's memory or process table with it (the box also runs other people's services).
+NoNewPrivileges=true
+MemoryMax=512M
+TasksMax=64
 
 [Install]
 WantedBy=default.target

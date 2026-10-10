@@ -13,7 +13,18 @@ export const config = {
   capesDir: process.env['TNTCAPES_DIR'] ?? join(homedir(), 'www', 'tntcapes'),
   publicBaseUrl: process.env['TNTCAPES_PUBLIC_BASE_URL'] ?? 'https://nxlc.de/tntcapes',
   /** Friends database (`friends.sqlite`) - outside the deployed code folder so redeploys never touch it. */
-  dataDir: process.env['TNTCAPES_DATA_DIR'] ?? join(homedir(), 'tntcapes-data')
+  dataDir: process.env['TNTCAPES_DATA_DIR'] ?? join(homedir(), 'tntcapes-data'),
+  /** Launchers up to 0.14.1 sign in by sending the player's Minecraft access token. Set
+   * `TNTCAPES_ACCEPT_ACCESS_TOKENS=0` once they have updated - from then on the service never sees one. */
+  acceptAccessTokens: process.env['TNTCAPES_ACCEPT_ACCESS_TOKENS'] !== '0',
+  /** UUIDs (comma-separated in `TNTCAPES_MODERATORS`) of the accounts that see reported capes in
+   * their launcher and decide about them - see `moderation.ts`. Nobody, if unset. */
+  moderators: new Set(
+    (process.env['TNTCAPES_MODERATORS'] ?? '')
+      .split(',')
+      .map((uuid) => uuid.replace(/-/g, '').trim().toLowerCase())
+      .filter((uuid) => /^[0-9a-f]{32}$/.test(uuid))
+  )
 }
 
 /** Own user decision: only the active cape lives on the server, up to 5 MB, 2:1 up to 2048x1024. */
@@ -25,5 +36,6 @@ export const CAPE_MAX_WIDTH = 2048
 export const PRESENCE_TIMEOUT_MS = 60 * 1000
 export const MAX_FRIENDS = 200
 export const MAX_OUTGOING_REQUESTS = 50
+export const MAX_BLOCKED = 500
 /** A world invitation can be accepted this long (Phase 8b) - the host can always send a new one. */
 export const INVITE_TTL_MS = 10 * 60 * 1000

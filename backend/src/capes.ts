@@ -1,4 +1,4 @@
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { config } from './config.js'
 
@@ -27,6 +27,11 @@ export async function saveCape(uuid: string, png: Buffer): Promise<void> {
   const tempPath = join(config.capesDir, `.${dashedUuid(uuid)}.${process.pid}.tmp`)
   await writeFile(tempPath, png, { mode: 0o644 })
   await rename(tempPath, capePath(uuid))
+}
+
+/** The player's active cape as stored, `null` without one. */
+export async function readCape(uuid: string): Promise<Buffer | null> {
+  return readFile(capePath(uuid)).catch(() => null)
 }
 
 export async function deleteCape(uuid: string): Promise<void> {

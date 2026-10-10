@@ -1,5 +1,17 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { capeUrl, deleteCape, saveCape } from './capes.js'
+import {
+  DECISIONS,
+  ModerationError,
+  capeBans,
+  decideReports,
+  openReports,
+  pruneReportedCapes,
+  reportCape,
+  reportedCape,
+  unbanCapes,
+  type Decision
+} from './moderation.js'
 import { CAPE_MAX_BYTES, config } from './config.js'
 import {
   ACTIVITY_KINDS,
@@ -7,9 +19,12 @@ import {
   LOGO_COLOR_KEYS,
   STATUSES,
   acceptRequest,
+  blockPlayer,
   clientUsers,
+  deleteAccount,
   dismissInvite,
   goOffline,
+  isCapeBanned,
   overview,
   pruneInvites,
   registerPlayer,
@@ -20,23 +35,44 @@ import {
   sendRequest,
   setLogoColors,
   setPresence,
+  unblockPlayer,
   type Activity,
   type ActivityKind,
   type LogoColors,
   type Status
 } from './friends.js'
-import { pruneTokenCache, verifyAccessToken, type VerifiedProfile } from './mojang.js'
+import { LookupRefused, hasJoined, pruneTokenCache, verifyAccessToken, type VerifiedProfile } from './mojang.js'
 import { checkCapePng } from './png.js'
 import { RateLimiter } from './rateLimit.js'
+import {
+  SERVER_ID_PATTERN,
+  SESSION_TOKEN_PREFIX,
+  createChallenge,
+  createSession,
+  endSession,
+  endSessionsOf,
+  pruneSessions,
+  sessionProfile,
+  takeChallenge
+} from './sessions.js'
 
 /**
  * Custom-cape upload and friends service. Apache proxies `https://nxlc.de/app/` here (prefix
  * stripped) and serves the cape PNGs itself from `~/www/tntcapes/` - this process only ever writes
- * cape files, it never serves cape images. Routes (all but /health need
- * `Authorization: Bearer <Minecraft access token>`):
+ * cape files, it never serves cape images. Routes (all but /health and the first two /auth ones
+ * need `Authorization: Bearer <session token>`, see `sessions.ts`; launchers up to 0.14.1 send
+ * their Minecraft access token there instead, see {@link authenticate}):
  *   GET    /health                        - liveness check
+ *   POST   /auth/challenge                - returns { serverId } for the sign-in handshake
+ *   POST   /auth/session                  - body: { name, serverId }; returns { token, expires }
+ *   POST   /auth/logout                   - ends the caller's session
  *   PUT    /capes                         - body: PNG; sets the caller's active cape
  *   DELETE /capes                         - removes the caller's active cape
+ *   POST   /capes/report                  - body: { uuid, name, reason }; reports that player's cape
+ *   GET    /admin/reports                 - moderators only: open reports and banned accounts
+ *   GET    /admin/reported-capes/<sha>    - moderators only: the copy of a reported cape (PNG)
+ *   POST   /admin/decide                  - moderators only, body: { target, decision, reason }
+ *   POST   /admin/unban                   - moderators only, body: { uuid }
  *   POST   /presence                      - body: { status, hideServer, activity, logoColors? }; returns the friends overview
  *   POST   /presence/offline              - launcher closing
  *   GET    /friends                       - friends overview (friends with presence, incoming/outgoing requests)
@@ -44,6 +80,9 @@ import { RateLimiter } from './rateLimit.js'
  *   POST   /friends/requests/<uuid>/accept
  *   DELETE /friends/requests/<uuid>       - decline an incoming or withdraw an outgoing request
  *   DELETE /friends/<uuid>                - remove a friend
+ *   POST   /friends/blocks                - body: { uuid }; block a player
+ *   DELETE /friends/blocks/<uuid>         - unblock
+ *   DELETE /account                       - delete everything stored about the caller, cape included
  *   POST   /invites                       - body: { to, address, version }; invite a friend into the caller's world
  *   DELETE /invites                       - withdraw all of the caller's invitations (world closed)
  *   DELETE /invites/<uuid>                - withdraw the invitation to one friend
@@ -60,13 +99,23 @@ const ipLimiter = new RateLimiter(60, 10 * 60 * 1000)
 const friendsLimiter = new RateLimiter(300, 10 * 60 * 1000)
 /** Same per IP, for several players behind one address (a household, a LAN party). */
 const friendsIpLimiter = new RateLimiter(1000, 10 * 60 * 1000)
+/** Sign-in attempts per client IP - a launcher start needs two calls, and each attempt can cost one Mojang request. */
+const authIpLimiter = new RateLimiter(30, 10 * 60 * 1000)
+/** Mojang lookups for access tokens per client IP (launchers up to 0.14.1): a real launcher needs one
+ * every five minutes, the rest is headroom for a household - and a stop for made-up tokens. */
+const tokenLookupLimiter = new RateLimiter(20, 10 * 60 * 1000)
+/** Reports per player - enough for someone who really meets a few bad capes, useless for flooding. */
+const reportLimiter = new RateLimiter(10, 60 * 60 * 1000)
 const JSON_MAX_BYTES = 4 * 1024
+/** Checked loosely - Mojang decides whether the player exists. */
+const PLAYER_NAME_PATTERN = /^[^\u0000- \u007f]{1,32}$/
 const UUID_PATTERN = /^[0-9a-f]{32}$/
 /** Players per nametag-logo lookup - 100 UUIDs still fit into {@link JSON_MAX_BYTES}. */
 const LOOKUP_MAX_UUIDS = 100
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
-/** e4mc hands out host names like `abc-def.eu.e4mc.link`, optionally with a port. */
-const ADDRESS_PATTERN = /^[a-zA-Z0-9.-]{1,253}(:\d{1,5})?$/
+/** e4mc hands out host names like `abc-def.eu.e4mc.link`, optionally with a port. Nothing else is
+ * accepted - an invitation must not be able to send a friend to an arbitrary server. */
+const ADDRESS_PATTERN = /^(?=.{1,253}(?::|$))([a-z0-9-]+\.)+e4mc\.link(:\d{1,5})?$/i
 const VERSION_PATTERN = /^[\w.+-]{1,32}$/
 
 class HttpError extends Error {
@@ -90,22 +139,48 @@ function sendJson(res: ServerResponse, status: number, body: Record<string, unkn
   res.end(payload)
 }
 
-/** Apache's mod_proxy appends the real client address to X-Forwarded-For; the socket is always 127.0.0.1. */
+/**
+ * Apache's mod_proxy appends the real client address to X-Forwarded-For; the socket is always
+ * 127.0.0.1. Only that last entry counts - everything before it was sent by the client itself and
+ * could be made up to dodge the per-IP limits.
+ */
 function clientIp(req: IncomingMessage): string {
   const forwarded = req.headers['x-forwarded-for']
-  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(',')[0]?.trim()
-  return first || req.socket.remoteAddress || 'unknown'
+  const last = (Array.isArray(forwarded) ? forwarded.join(',') : forwarded)?.split(',').pop()?.trim()
+  return last || req.socket.remoteAddress || 'unknown'
 }
 
-async function authenticate(req: IncomingMessage): Promise<VerifiedProfile> {
+function bearerToken(req: IncomingMessage): string {
   const header = req.headers.authorization
-  const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : ''
+  return header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : ''
+}
+
+/** Players who signed in with their Minecraft access token since the last log line - only counted,
+ * to see when that way in can be closed. */
+const accessTokenUsers = new Set<string>()
+
+/**
+ * Who is calling. Current launchers send a session token of ours (`sessions.ts`). Launchers up to
+ * 0.14.1 send the player's Minecraft access token, which we then have to show Mojang - accepted
+ * only while `config.acceptAccessTokens` is on, until those launchers have updated.
+ */
+async function authenticate(req: IncomingMessage): Promise<VerifiedProfile> {
+  const token = bearerToken(req)
   if (!token) throw new HttpError(401, 'unauthorized')
-  const profile = await verifyAccessToken(token).catch((error: unknown) => {
+  if (token.startsWith(SESSION_TOKEN_PREFIX)) {
+    const profile = sessionProfile(token)
+    if (!profile) throw new HttpError(401, 'unauthorized')
+    return profile
+  }
+  if (!config.acceptAccessTokens) throw new HttpError(401, 'unauthorized')
+
+  const profile = await verifyAccessToken(token, () => tokenLookupLimiter.take(clientIp(req))).catch((error: unknown) => {
+    if (error instanceof LookupRefused) throw new HttpError(429, 'rate_limited')
     console.error('[auth] Mojang lookup failed:', error)
     throw new HttpError(502, 'auth_unavailable')
   })
   if (!profile) throw new HttpError(401, 'unauthorized')
+  accessTokenUsers.add(profile.id)
   return profile
 }
 
@@ -134,6 +209,7 @@ async function handleUpload(req: IncomingMessage, res: ServerResponse): Promise<
 
   const profile = await authenticate(req)
   if (!writeLimiter.take(profile.id)) throw new HttpError(429, 'rate_limited')
+  if (isCapeBanned(profile.id)) throw new HttpError(403, 'cape_banned')
 
   const body = await readBody(req, CAPE_MAX_BYTES)
   const check = checkCapePng(body)
@@ -141,8 +217,8 @@ async function handleUpload(req: IncomingMessage, res: ServerResponse): Promise<
     throw new HttpError(400, check.error, { width: check.width, height: check.height })
   }
 
-  await saveCape(profile.id, body)
-  console.log(`[capes] ${profile.name} (${profile.id}) uploaded ${check.width}x${check.height}, ${body.length} bytes`)
+  await saveCape(profile.id, check.png)
+  console.log(`[capes] ${profile.name} (${profile.id}) uploaded ${check.width}x${check.height}, ${check.png.length} bytes`)
   sendJson(res, 200, { url: capeUrl(profile.id), width: check.width, height: check.height })
 }
 
@@ -152,6 +228,59 @@ async function handleDelete(req: IncomingMessage, res: ServerResponse): Promise<
   await deleteCape(profile.id)
   console.log(`[capes] ${profile.name} (${profile.id}) removed their cape`)
   sendJson(res, 200, { ok: true })
+}
+
+/** Free text a moderator will read: one line, bounded, no control characters. */
+function cleanText(value: unknown, maxLength: number): string {
+  return typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, maxLength) : ''
+}
+
+async function handleReport(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const profile = await authenticate(req)
+  if (!reportLimiter.take(profile.id)) throw new HttpError(429, 'rate_limited')
+  const { uuid, name, reason } = await readJson(req)
+  if (typeof uuid !== 'string' || !UUID_PATTERN.test(uuid) || typeof name !== 'string' || !/^\w{1,16}$/.test(name)) {
+    throw new HttpError(400, 'invalid_body')
+  }
+  await reportCape(profile.id, uuid, name, cleanText(reason, 200))
+  sendJson(res, 200, { ok: true })
+}
+
+/** Deciding about reported capes - for the accounts in `config.moderators` only. */
+async function routeAdmin(req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {
+  if (!ipLimiter.take(clientIp(req))) throw new HttpError(429, 'rate_limited')
+  const profile = await authenticate(req)
+  if (!config.moderators.has(profile.id)) throw new HttpError(403, 'forbidden')
+
+  if (path === '/admin/reports' && req.method === 'GET') {
+    return sendJson(res, 200, { reports: await openReports(), bans: capeBans() })
+  }
+  if (path.startsWith('/admin/reported-capes/') && req.method === 'GET') {
+    const png = await reportedCape(path.slice('/admin/reported-capes/'.length))
+    if (!png) throw new HttpError(404, 'not_found')
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': png.length, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' })
+    res.end(png)
+    return
+  }
+  if (path === '/admin/decide' && req.method === 'POST') {
+    const { target, decision, reason } = await readJson(req)
+    if (typeof target !== 'string' || !UUID_PATTERN.test(target) || typeof decision !== 'string' || !(DECISIONS as readonly string[]).includes(decision)) {
+      throw new HttpError(400, 'invalid_body')
+    }
+    const text = cleanText(reason, 200)
+    if (decision === 'ban' && !text) throw new HttpError(400, 'invalid_body')
+    await decideReports(target, decision as Decision, text)
+    console.log(`[moderation] ${profile.name} decided "${decision}" about the cape of ${target}`)
+    return sendJson(res, 200, { reports: await openReports(), bans: capeBans() })
+  }
+  if (path === '/admin/unban' && req.method === 'POST') {
+    const uuid = (await readJson(req))['uuid']
+    if (typeof uuid !== 'string' || !UUID_PATTERN.test(uuid)) throw new HttpError(400, 'invalid_body')
+    unbanCapes(uuid)
+    console.log(`[moderation] ${profile.name} lifted the cape ban of ${uuid}`)
+    return sendJson(res, 200, { reports: await openReports(), bans: capeBans() })
+  }
+  throw new HttpError(404, 'not_found')
 }
 
 async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
@@ -223,6 +352,21 @@ async function routeFriends(req: IncomingMessage, res: ServerResponse, path: str
       if (segments.length === 4 && segments[3] === 'accept' && req.method === 'POST') return sendJson(res, 200, { ...acceptRequest(me, segments[2]) })
       if (segments.length === 3 && req.method === 'DELETE') return sendJson(res, 200, { ...removeRequest(me, segments[2]) })
     }
+    if (path === '/friends/blocks' && req.method === 'POST') {
+      const uuid = (await readJson(req))['uuid']
+      if (typeof uuid !== 'string' || !UUID_PATTERN.test(uuid)) throw new HttpError(400, 'invalid_body')
+      return sendJson(res, 200, { ...blockPlayer(me, uuid) })
+    }
+    if (segments[0] === 'friends' && segments[1] === 'blocks' && segments.length === 3 && UUID_PATTERN.test(segments[2] ?? '') && req.method === 'DELETE') {
+      return sendJson(res, 200, { ...unblockPlayer(me, segments[2] ?? '') })
+    }
+    if (path === '/account' && req.method === 'DELETE') {
+      deleteAccount(me)
+      await deleteCape(me)
+      endSessionsOf(me)
+      console.log(`[account] ${me} deleted their data`)
+      return sendJson(res, 200, { ok: true })
+    }
     if (segments[0] === 'friends' && segments.length === 2 && UUID_PATTERN.test(segments[1]) && req.method === 'DELETE') {
       return sendJson(res, 200, { ...removeFriend(me, segments[1]) })
     }
@@ -254,6 +398,36 @@ async function routeFriends(req: IncomingMessage, res: ServerResponse, path: str
   throw new HttpError(404, 'not_found')
 }
 
+/** The sign-in handshake of `sessions.ts`. */
+async function routeAuth(req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {
+  if (req.method !== 'POST') throw new HttpError(405, 'method_not_allowed')
+  if (path === '/auth/logout') {
+    const token = bearerToken(req)
+    if (token.startsWith(SESSION_TOKEN_PREFIX)) endSession(token)
+    return sendJson(res, 200, { ok: true })
+  }
+  if (!authIpLimiter.take(clientIp(req))) throw new HttpError(429, 'rate_limited')
+  if (path === '/auth/challenge') {
+    const serverId = createChallenge()
+    if (!serverId) throw new HttpError(503, 'busy')
+    return sendJson(res, 200, { serverId })
+  }
+  if (path === '/auth/session') {
+    const { name, serverId } = await readJson(req)
+    if (typeof name !== 'string' || !PLAYER_NAME_PATTERN.test(name) || typeof serverId !== 'string' || !SERVER_ID_PATTERN.test(serverId)) {
+      throw new HttpError(400, 'invalid_body')
+    }
+    if (!takeChallenge(serverId)) throw new HttpError(400, 'invalid_challenge')
+    const profile = await hasJoined(name, serverId).catch((error: unknown) => {
+      console.error('[auth] Mojang hasJoined failed:', error)
+      throw new HttpError(502, 'auth_unavailable')
+    })
+    if (!profile) throw new HttpError(401, 'unauthorized')
+    return sendJson(res, 200, { ...createSession(profile), moderator: config.moderators.has(profile.id) })
+  }
+  throw new HttpError(404, 'not_found')
+}
+
 async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const path = new URL(req.url ?? '/', 'http://localhost').pathname
 
@@ -261,13 +435,19 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
     sendJson(res, 200, { ok: true })
     return
   }
+  if (path.startsWith('/auth/')) return routeAuth(req, res, path)
+  if (path === '/capes/report' && req.method === 'POST') {
+    if (!ipLimiter.take(clientIp(req))) throw new HttpError(429, 'rate_limited')
+    return handleReport(req, res)
+  }
+  if (path.startsWith('/admin/')) return routeAdmin(req, res, path)
   if (path === '/capes') {
     if (!ipLimiter.take(clientIp(req))) throw new HttpError(429, 'rate_limited')
     if (req.method === 'PUT') return handleUpload(req, res)
     if (req.method === 'DELETE') return handleDelete(req, res)
     throw new HttpError(405, 'method_not_allowed')
   }
-  if (['/friends', '/presence', '/invites', '/players'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+  if (['/friends', '/presence', '/invites', '/players', '/account'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
     return routeFriends(req, res, path)
   }
   throw new HttpError(404, 'not_found')
@@ -278,6 +458,8 @@ const server = createServer((req, res) => {
     if (res.headersSent) return
     if (error instanceof HttpError) {
       sendJson(res, error.status, { error: error.code, ...error.details })
+    } else if (error instanceof ModerationError) {
+      sendJson(res, error.status, { error: error.code })
     } else {
       console.error('[server] Unexpected error:', error)
       sendJson(res, 500, { error: 'internal' })
@@ -291,6 +473,15 @@ server.headersTimeout = 15_000
 
 setInterval(() => {
   pruneTokenCache()
+  pruneSessions()
+  authIpLimiter.prune()
+  tokenLookupLimiter.prune()
+  if (accessTokenUsers.size > 0) {
+    console.log(`[auth] ${accessTokenUsers.size} player(s) still signed in with a Minecraft access token (launcher 0.14.1 or older)`)
+    accessTokenUsers.clear()
+  }
+  reportLimiter.prune()
+  pruneReportedCapes()
   writeLimiter.prune()
   ipLimiter.prune()
   friendsLimiter.prune()
