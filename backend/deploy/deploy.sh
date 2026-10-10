@@ -22,6 +22,9 @@ if [ "\$(~/.local/node/bin/node --version 2>/dev/null)" != "${NODE_VERSION}" ]; 
   curl -fsSL "https://nodejs.org/dist/${NODE_VERSION}/SHASUMS256.txt" | grep " ${NODE_DIST}.tar.xz\$" | sha256sum -c -
   rm -rf ~/.local/node && mkdir -p ~/.local
   tar -xJf "${NODE_DIST}.tar.xz" && mv "${NODE_DIST}" ~/.local/node
+  # The service only needs the program itself - npm, headers and docs are another 80 MB on a full disk.
+  rm -rf ~/.local/node/include ~/.local/node/lib ~/.local/node/share ~/.local/node/CHANGELOG.md ~/.local/node/README.md
+  rm -f ~/.local/node/bin/npm ~/.local/node/bin/npx ~/.local/node/bin/corepack
   cd / && rm -rf "\$tmp"
 fi
 ~/.local/node/bin/node --version
