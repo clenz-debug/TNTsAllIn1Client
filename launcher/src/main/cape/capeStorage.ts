@@ -111,6 +111,8 @@ async function throwForResponse(response: Response, fallbackCode: 'cape.uploadFa
       throw localizedError('cape.rateLimited')
     case 'cape_banned':
       throw localizedError('cape.banned')
+    case 'storage_full':
+      throw localizedError('cape.storageFull')
     case 'too_large':
       throw localizedError('cape.tooLarge', { maxMb: CAPE_MAX_BYTES / (1024 * 1024) })
     case 'invalid_png':

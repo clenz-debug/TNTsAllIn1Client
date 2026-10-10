@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto'
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { deleteCape, readCape } from './capes.js'
+import { StorageFullError, deleteCape, readCape } from './capes.js'
 import { config } from './config.js'
 import { banCapes, capeBans, db, unbanCapes } from './friends.js'
+import { hasRoomFor } from './storage.js'
 
 /**
  * Reporting capes and deciding about the reports. Any signed-in player can report another player's
@@ -51,7 +52,11 @@ export async function reportCape(reporterUuid: string, targetUuid: string, targe
   if (!cape) throw new ModerationError(404, 'no_cape')
   if ((countReports.get() as { n: number }).n >= MAX_OPEN_REPORTS) throw new ModerationError(503, 'busy')
   const sha = createHash('sha256').update(cape).digest('hex')
-  writeFileSync(evidencePath(sha), cape, { mode: 0o600 })
+  // A cape that was reported before already has its copy
+  if (!existsSync(evidencePath(sha))) {
+    if (!(await hasRoomFor(evidenceDir, cape.length, config.maxReportedBytes))) throw new StorageFullError()
+    writeFileSync(evidencePath(sha), cape, { mode: 0o600 })
+  }
   insertReport.run(reporterUuid, targetUuid, targetName, reason, sha, Date.now())
 }
 

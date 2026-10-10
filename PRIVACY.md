@@ -62,7 +62,8 @@ Who can see it:
   list of the server you are on, which means their UUIDs are sent to the server too. Online status
   is never part of that answer.
 
-Like any web server, it sees your IP address with each request and may keep standard access logs.
+Like any web server, it sees your IP address with each request. The web server's access logs
+(IP address, time, the address that was requested) are kept for 14 days.
 Cape uploads and removals are logged with player name and UUID, deleting your data with your UUID.
 
 "Delete my data from the server" removes your UUID and name, status, friendships, requests, blocked

@@ -679,6 +679,7 @@ export const en: typeof de = {
       tooLarge: (p: { maxMb: number }) => `The cape is too large - at most ${p.maxMb} MB.`,
       unauthorized: 'Your login has expired - please log out and back in to the launcher.',
       rateLimited: 'Too many cape changes in a short time - please wait a few minutes.',
+      storageFull: "The client's server has no room for this right now. Try again later.",
       banned: 'This account may no longer upload custom capes because an earlier cape broke the rules.',
       libraryEntryNotFound: 'This cape is no longer in your collection.',
       statusLoadFailed: (p: { status: number | string }) => `Could not load cape status (${p.status}).`,

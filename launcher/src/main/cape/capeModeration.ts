@@ -31,6 +31,8 @@ async function call(method: string, path: string, json?: unknown): Promise<Respo
       throw localizedError('capeReport.self')
     case 'rate_limited':
       throw localizedError('capeReport.rateLimited')
+    case 'storage_full':
+      throw localizedError('cape.storageFull')
     case 'unauthorized':
       throw localizedError('cape.unauthorized')
     default:

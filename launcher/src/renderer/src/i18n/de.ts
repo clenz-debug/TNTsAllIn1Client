@@ -699,6 +699,7 @@ export const de = {
       tooLarge: (p: { maxMb: number }) => `Das Cape ist zu groß - höchstens ${p.maxMb} MB.`,
       unauthorized: 'Deine Anmeldung ist abgelaufen - bitte im Launcher ab- und wieder anmelden.',
       rateLimited: 'Zu viele Cape-Änderungen in kurzer Zeit - bitte ein paar Minuten warten.',
+      storageFull: 'Der Server des Clients hat gerade keinen Platz mehr dafür. Versuch es später nochmal.',
       banned: 'Dieses Konto darf keine eigenen Capes mehr hochladen, weil ein früheres Cape gegen die Regeln verstoßen hat.',
       libraryEntryNotFound: 'Dieses Cape ist nicht mehr in deiner Sammlung.',
       statusLoadFailed: (p: { status: number | string }) => `Cape-Status konnte nicht geladen werden (${p.status}).`,

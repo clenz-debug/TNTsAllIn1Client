@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
-import { capeUrl, deleteCape, saveCape } from './capes.js'
+import { StorageFullError, capeUrl, deleteCape, saveCape } from './capes.js'
 import {
   DECISIONS,
   ModerationError,
@@ -460,6 +460,9 @@ const server = createServer((req, res) => {
       sendJson(res, error.status, { error: error.code, ...error.details })
     } else if (error instanceof ModerationError) {
       sendJson(res, error.status, { error: error.code })
+    } else if (error instanceof StorageFullError) {
+      console.error('[storage] Refused to store a file: the disk reserve or the folder limit is reached')
+      sendJson(res, 507, { error: 'storage_full' })
     } else {
       console.error('[server] Unexpected error:', error)
       sendJson(res, 500, { error: 'internal' })

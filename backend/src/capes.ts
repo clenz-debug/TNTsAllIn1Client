@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { config } from './config.js'
+import { hasRoomFor } from './storage.js'
 
 /**
  * Files are named by the *dashed* UUID (`223d5156-5c7b-...png`): Cape Provider's `§idNoHyphen`
@@ -24,10 +25,14 @@ export function capeUrl(uuid: string): string {
 /** Written to a temp file first, then renamed - Apache never serves a half-written PNG. */
 export async function saveCape(uuid: string, png: Buffer): Promise<void> {
   await mkdir(config.capesDir, { recursive: true })
+  if (!(await hasRoomFor(config.capesDir, png.length, config.maxCapesBytes))) throw new StorageFullError()
   const tempPath = join(config.capesDir, `.${dashedUuid(uuid)}.${process.pid}.tmp`)
   await writeFile(tempPath, png, { mode: 0o644 })
   await rename(tempPath, capePath(uuid))
 }
+
+/** The disk or our share of it is used up - see `storage.ts`. */
+export class StorageFullError extends Error {}
 
 /** The player's active cape as stored, `null` without one. */
 export async function readCape(uuid: string): Promise<Buffer | null> {

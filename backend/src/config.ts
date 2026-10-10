@@ -1,6 +1,11 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
+function megabytes(variable: string, fallback: number): number {
+  const value = Number(process.env[variable])
+  return (Number.isFinite(value) && value >= 0 ? value : fallback) * 1024 * 1024
+}
+
 /**
  * Everything deployment-specific, overridable via environment variables (the systemd unit in
  * `deploy/` sets none of them today - these defaults match the live server: Apache proxies
@@ -17,6 +22,13 @@ export const config = {
   /** Launchers up to 0.14.1 sign in by sending the player's Minecraft access token. Set
    * `TNTCAPES_ACCEPT_ACCESS_TOKENS=0` once they have updated - from then on the service never sees one. */
   acceptAccessTokens: process.env['TNTCAPES_ACCEPT_ACCESS_TOKENS'] !== '0',
+  /** Uploads and copies of reported capes are refused once the disk has less than this free
+   * (`TNTCAPES_MIN_FREE_MB`) - see `storage.ts`. */
+  minFreeBytes: megabytes('TNTCAPES_MIN_FREE_MB', 500),
+  /** Ceiling for all active capes together (`TNTCAPES_MAX_CAPES_MB`). */
+  maxCapesBytes: megabytes('TNTCAPES_MAX_CAPES_MB', 1024),
+  /** Ceiling for the copies of reported capes (`TNTCAPES_MAX_REPORTED_MB`). */
+  maxReportedBytes: megabytes('TNTCAPES_MAX_REPORTED_MB', 200),
   /** UUIDs (comma-separated in `TNTCAPES_MODERATORS`) of the accounts that see reported capes in
    * their launcher and decide about them - see `moderation.ts`. Nobody, if unset. */
   moderators: new Set(
