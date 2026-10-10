@@ -22,7 +22,8 @@ export const de = {
   login: {
     title: "TNT's All-In-1 Client",
     subtitle: 'Mit deinem Microsoft-Account anmelden, um zu spielen.',
-    loginButton: 'Mit Microsoft anmelden'
+    loginButton: 'Mit Microsoft anmelden',
+    playOffline: (p: { name: string }) => `Offline spielen als ${p.name}`
   },
   // Own wishlist item ("client setup beim ersten start") - OnboardingScreen.tsx's colors step, the
   // only onboarding step that runs after the language is already picked (welcome/language stay
@@ -117,6 +118,14 @@ export const de = {
       capesCollection: {
         title: 'Meine Capes',
         text: 'Alle deine Capes landen hier. Mit „Aktivieren“ trägst du ein Cape im Spiel - du kannst es jederzeit wieder ablegen oder bearbeiten.'
+      },
+      capesRules: {
+        title: 'Regeln für Capes',
+        text: 'Dein Cape sehen auch andere Spieler. Hier steht, was nicht erlaubt ist - wer sich nicht daran hält, verliert sein Cape und darf keine eigenen Capes mehr hochladen.'
+      },
+      capesReport: {
+        title: 'Cape melden',
+        text: 'Trägt jemand ein Cape, das gegen die Regeln verstößt? Gib hier seinen Minecraft-Namen ein. Das Team des Clients sieht sich das Cape an; der Spieler erfährt nicht, wer ihn gemeldet hat.'
       },
       friendsButton: {
         title: 'Freunde',
@@ -368,6 +377,16 @@ export const de = {
     friendsHeading: (count: number) => `Freunde (${count})`,
     empty: 'Noch keine Freunde - schick oben eine Anfrage.',
     confirmRemove: (name: string) => `${name} aus deiner Freundesliste entfernen?`,
+    block: 'Blockieren',
+    unblock: 'Freigeben',
+    confirmBlock: (name: string) =>
+      `${name} blockieren? Eine Freundschaft und offene Anfragen zwischen euch werden entfernt, und ${name} kann dir keine Anfragen mehr schicken. ${name} erfährt davon nichts.`,
+    blockedHeading: (count: number) => `Blockiert (${count})`,
+    deleteData: 'Meine Daten vom Server löschen…',
+    confirmDeleteData:
+      'Alles löschen, was der Server des Clients über dich gespeichert hat? Das sind deine Freunde, offene Anfragen, blockierte Spieler, dein Status und dein aktives Cape. Das lässt sich nicht rückgängig machen. „Freunde und Online-Status“ wird dabei ausgeschaltet - schaltest du es wieder ein, fängst du mit einer leeren Liste neu an. Deine Cape-Sammlung auf diesem PC bleibt.',
+    deleteDataConfirm: 'Alles löschen',
+    dataDeleted: 'Deine Daten auf dem Server sind gelöscht.',
     join: 'Beitreten',
     joinInGameHint: 'Das Spiel läuft schon - du wirst direkt dorthin verbunden.',
     inviteText: (name: string, version: string) => `${name} lädt dich in seine Welt ein (Minecraft ${version}).`,
@@ -381,6 +400,44 @@ export const de = {
       playing: 'Spielt Minecraft',
       server: (server: string) => `Spielt auf ${server}`
     }
+  },
+  capeRules: {
+    heading: 'Regeln für Capes',
+    intro: 'Dein aktives Cape ist öffentlich: Jeder Spieler mit diesem Client sieht es an dir. Nicht erlaubt sind Capes mit:',
+    items: [
+      'Nacktheit, Pornografie oder anderen sexuellen Inhalten',
+      'Hass, Beleidigungen oder Diskriminierung, etwa wegen Herkunft, Religion, Geschlecht oder Sexualität',
+      'verbotenen Symbolen oder Verherrlichung von Gewalt',
+      'allem, was gegen geltendes Recht verstößt'
+    ],
+    consequence:
+      'Das Team des Clients kann ein Cape nach eigenem Ermessen entfernen und das Konto für weitere Uploads sperren - auch dann, wenn ein Cape keinen dieser Punkte trifft, aber nicht zum Client passt.'
+  },
+  capeReport: {
+    heading: 'Cape melden',
+    info: 'Trägt jemand ein eigenes Cape, das anstößig oder verboten ist? Gib den Minecraft-Namen an. Das Cape wird so gesichert, wie es gerade ist, und vom Team des Clients angesehen. Der gemeldete Spieler erfährt nicht, wer ihn gemeldet hat.',
+    namePlaceholder: 'Minecraft-Name',
+    reasonPlaceholder: 'Was ist das Problem? (freiwillig)',
+    send: 'Melden',
+    sent: (name: string) => `Das Cape von ${name} wurde gemeldet. Danke!`
+  },
+  moderation: {
+    heading: (count: number) => `Gemeldete Capes (${count})`,
+    info: 'Nur für dich als Moderator sichtbar. Gezeigt wird das Cape so, wie es gemeldet wurde.',
+    refresh: 'Neu laden',
+    empty: 'Keine offenen Meldungen.',
+    reportCount: (count: number) => (count === 1 ? '1 Meldung' : `${count} Meldungen`),
+    stillWorn: 'wird noch getragen',
+    replaced: 'inzwischen ersetzt oder entfernt',
+    dismiss: 'Verwerfen',
+    remove: 'Cape entfernen',
+    ban: 'Sperren',
+    unban: 'Entsperren',
+    confirmDismiss: (name: string) => `Die Meldungen zu ${name} verwerfen? Das Cape bleibt.`,
+    confirmRemove: (name: string) => `Das Cape von ${name} entfernen? ${name} kann danach ein neues hochladen.`,
+    confirmBan: (name: string) => `Das Cape von ${name} entfernen und das Konto für Uploads sperren? Der Grund wird gespeichert.`,
+    banReasonPlaceholder: 'Grund der Sperre',
+    bansHeading: (count: number) => `Gesperrte Konten (${count})`
   },
   resourcepacks: {
     title: 'Texturepacks',
@@ -642,10 +699,18 @@ export const de = {
       tooLarge: (p: { maxMb: number }) => `Das Cape ist zu groß - höchstens ${p.maxMb} MB.`,
       unauthorized: 'Deine Anmeldung ist abgelaufen - bitte im Launcher ab- und wieder anmelden.',
       rateLimited: 'Zu viele Cape-Änderungen in kurzer Zeit - bitte ein paar Minuten warten.',
+      banned: 'Dieses Konto darf keine eigenen Capes mehr hochladen, weil ein früheres Cape gegen die Regeln verstoßen hat.',
       libraryEntryNotFound: 'Dieses Cape ist nicht mehr in deiner Sammlung.',
       statusLoadFailed: (p: { status: number | string }) => `Cape-Status konnte nicht geladen werden (${p.status}).`,
       uploadFailed: (p: { status: number | string; detail: string }) => `Cape-Upload fehlgeschlagen (${p.status}): ${p.detail}`,
       deleteFailed: (p: { status: number | string; detail: string }) => `Cape entfernen fehlgeschlagen (${p.status}): ${p.detail}`
+    },
+    capeReport: {
+      noPlayer: 'Einen Spieler mit diesem Namen gibt es nicht.',
+      noCape: 'Dieser Spieler trägt gerade kein eigenes Cape des Clients.',
+      self: 'Du kannst dein eigenes Cape nicht melden.',
+      rateLimited: 'Zu viele Meldungen in kurzer Zeit - bitte später nochmal.',
+      failed: (p: { detail: string }) => `Das hat nicht geklappt (${p.detail}).`
     },
     skin: {
       wrongDimensions: (p: { width: number; height: number }) =>
@@ -672,6 +737,8 @@ export const de = {
       unauthorized: 'Deine Anmeldung ist abgelaufen - bitte ab- und wieder anmelden.',
       unreachable: 'Freunde-Server nicht erreichbar. Es wird automatisch weiter versucht.',
       auth_unavailable: 'Die Anmeldung konnte gerade nicht geprüft werden (Mojang nicht erreichbar). Versuch es gleich nochmal.',
+      multiplayer_blocked:
+        'Dein Minecraft-Konto darf nicht im Mehrspielermodus spielen (in den Xbox-Einstellungen abgeschaltet oder von Mojang gesperrt). Freunde und eigene Capes brauchen diese Freigabe, weil Mojang darüber bestätigt, wer du bist.',
       rate_limited: 'Zu viele Anfragen - warte kurz und versuch es dann nochmal.',
       invalid_name: 'Das ist kein gültiger Minecraft-Name.',
       player_not_found: 'Kein Spieler mit diesem Namen hat den Client bisher benutzt.',
@@ -682,6 +749,8 @@ export const de = {
       too_many_requests: 'Zu viele offene Anfragen (höchstens 50) - warte, bis einige beantwortet sind.',
       request_not_found: 'Diese Anfrage gibt es nicht mehr.',
       not_friends: 'Ihr seid nicht (mehr) befreundet.',
+      unblock_first: 'Du hast diesen Spieler blockiert - gib ihn erst wieder frei.',
+      too_many_blocked: 'Zu viele blockierte Spieler (höchstens 500).',
       invalid_body: 'Ungültige Anfrage an den Freunde-Server.',
       unknown: 'Unbekannter Fehler beim Freunde-Server.'
     },

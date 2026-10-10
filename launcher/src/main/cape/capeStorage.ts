@@ -4,18 +4,18 @@ import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { localizedError } from '../../shared/errorMessages'
 import type { CapeUploadResult, CustomCapeStatus } from '../../shared/types'
-import { readPngDimensions } from '../pngUtils'
+import { BackendError, backendFetch } from '../backend/backendSession'
+import { readPngDimensions, sanitizePng } from '../pngUtils'
 
 /**
  * Custom capes (own cosmetic system, independent of Mojang's capes): the player's *active* cape
  * lives on our own server (`backend/`, deployed to the host behind nxlc.de) as
  * `https://nxlc.de/tntcapes/<dashed-uuid>.png` - exactly the URL template the bundled
  * "Cape Provider" mod looks up for every player it sees. Every other saved cape stays local (see
- * `capeLibrary.ts`), like the skin library. Uploads prove ownership with the player's own Minecraft
- * access token; the server asks Mojang whose token it is and only ever writes that UUID's file, so
- * no shared secret is baked into the launcher.
+ * `capeLibrary.ts`), like the skin library. Uploads go through `backendSession.ts`: Mojang confirms
+ * to the server which player is signed in, and the server only ever writes that UUID's file - no
+ * shared secret is baked into the launcher, and the Minecraft access token never goes to our server.
  */
-const CAPE_API_BASE = 'https://nxlc.de/app'
 const CAPE_PUBLIC_BASE = 'https://nxlc.de/tntcapes'
 
 /** Must match `backend/src/config.ts` - checked here first so an obviously wrong file never gets sent. */
@@ -55,6 +55,18 @@ export function validateCapePng(buffer: Buffer): { width: number; height: number
   return dimensions
 }
 
+/**
+ * The cape reduced to the image itself (no text, metadata or anything appended) - what is uploaded
+ * and what the server stores. Hashes are taken of this form on both sides, so a cape in the
+ * collection is recognised as the active one even if the saved file carries extra chunks.
+ */
+export function cleanCapePng(buffer: Buffer): Buffer {
+  validateCapePng(buffer)
+  const clean = sanitizePng(buffer)
+  if (!clean) throw localizedError('image.invalidPng')
+  return clean
+}
+
 const OPEN_CAPE_PNG_DIALOG: Electron.OpenDialogOptions = {
   title: 'Cape-PNG auswählen',
   properties: ['openFile'],
@@ -72,6 +84,23 @@ export async function loadCapePngForPreview(window: BrowserWindow | null): Promi
   return { buffer, width: dimensions.width, height: dimensions.height }
 }
 
+/** Signing in to the server failed before the cape call itself went out. */
+function signInError(err: unknown, fallbackCode: 'cape.uploadFailed' | 'cape.deleteFailed'): unknown {
+  if (!(err instanceof BackendError)) return err
+  switch (err.code) {
+    case 'not_logged_in':
+    case 'unauthorized':
+      return localizedError('cape.unauthorized')
+    case 'rate_limited':
+      return localizedError('cape.rateLimited')
+    case 'auth_unavailable':
+    case 'multiplayer_blocked':
+      return localizedError(`friends.${err.code}`)
+    default:
+      return localizedError(fallbackCode, { status: '-', detail: err.code })
+  }
+}
+
 /** Maps the server's `{ error: <code> }` answers onto the launcher's own de/en messages. */
 async function throwForResponse(response: Response, fallbackCode: 'cape.uploadFailed' | 'cape.deleteFailed'): Promise<never> {
   const body = (await response.json().catch(() => ({}))) as { error?: string; width?: number; height?: number }
@@ -80,6 +109,8 @@ async function throwForResponse(response: Response, fallbackCode: 'cape.uploadFa
       throw localizedError('cape.unauthorized')
     case 'rate_limited':
       throw localizedError('cape.rateLimited')
+    case 'cape_banned':
+      throw localizedError('cape.banned')
     case 'too_large':
       throw localizedError('cape.tooLarge', { maxMb: CAPE_MAX_BYTES / (1024 * 1024) })
     case 'invalid_png':
@@ -93,22 +124,19 @@ async function throwForResponse(response: Response, fallbackCode: 'cape.uploadFa
 
 /** Makes this PNG the player's active cape on the server (replacing any previous one). Re-validates
  * even though the picker already did - the renderer may hand in any library entry. */
-export async function uploadCustomCape(accessToken: string, uuid: string, pngBuffer: Buffer): Promise<CapeUploadResult> {
-  validateCapePng(pngBuffer)
-  const response = await fetch(`${CAPE_API_BASE}/capes`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'image/png' },
-    body: new Uint8Array(pngBuffer)
+export async function uploadCustomCape(uuid: string, pngBuffer: Buffer): Promise<CapeUploadResult> {
+  const clean = cleanCapePng(pngBuffer)
+  const response = await backendFetch('PUT', '/capes', { body: new Uint8Array(clean), contentType: 'image/png' }).catch((err: unknown) => {
+    throw signInError(err, 'cape.uploadFailed')
   })
   if (!response.ok) await throwForResponse(response, 'cape.uploadFailed')
-  return { url: publicUrlFor(uuid), dataUri: toDataUri(pngBuffer), sha1: capeSha1(pngBuffer) }
+  return { url: publicUrlFor(uuid), dataUri: toDataUri(clean), sha1: capeSha1(clean) }
 }
 
 /** Removes the active cape from the server - the local library copies stay untouched. */
-export async function deleteCustomCape(accessToken: string): Promise<void> {
-  const response = await fetch(`${CAPE_API_BASE}/capes`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${accessToken}` }
+export async function deleteCustomCape(): Promise<void> {
+  const response = await backendFetch('DELETE', '/capes').catch((err: unknown) => {
+    throw signInError(err, 'cape.deleteFailed')
   })
   if (!response.ok) await throwForResponse(response, 'cape.deleteFailed')
 }
@@ -124,5 +152,7 @@ export async function getCustomCapeStatus(uuid: string): Promise<CustomCapeStatu
     throw localizedError('cape.statusLoadFailed', { status: response.status })
   }
   const buffer = Buffer.from(await response.arrayBuffer())
-  return { exists: true, dataUri: toDataUri(buffer), sha1: capeSha1(buffer) }
+  // Hashed in the cleaned form like everything else - a cape uploaded before the server cleaned
+  // uploads may still carry extra chunks there
+  return { exists: true, dataUri: toDataUri(buffer), sha1: capeSha1(sanitizePng(buffer) ?? buffer) }
 }

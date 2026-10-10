@@ -3,6 +3,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { app } from 'electron'
 import type { CapeLibraryEntry } from '../../shared/types'
+import { sanitizePng } from '../pngUtils'
 import { capeSha1, validateCapePng } from './capeStorage'
 
 /**
@@ -44,7 +45,7 @@ async function writeIndex(entries: StoredIndexEntry[]): Promise<void> {
 
 function toEntry(stored: StoredIndexEntry, buffer: Buffer): CapeLibraryEntry {
   const { width, height } = validateCapePng(buffer)
-  return { ...stored, width, height, sha1: capeSha1(buffer), dataUri: `data:image/png;base64,${buffer.toString('base64')}` }
+  return { ...stored, width, height, sha1: capeSha1(sanitizePng(buffer) ?? buffer), dataUri: `data:image/png;base64,${buffer.toString('base64')}` }
 }
 
 /** Every saved cape with its PNG inlined - an index row whose PNG is missing or no longer valid is

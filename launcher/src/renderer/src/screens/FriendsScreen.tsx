@@ -4,7 +4,7 @@ import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { PlayerHeadIcon } from '../PlayerHeadIcon'
-import type { FriendActivity, FriendEntry, FriendsState, FriendsStatus, WorldInvite } from '../../../shared/types'
+import type { FriendActivity, FriendEntry, FriendPlayer, FriendsState, FriendsStatus, WorldInvite } from '../../../shared/types'
 
 /** PlayScreen's `handleJoin` - resolves to an error text, or null once the join is on its way. */
 type JoinHandler = (address: string, invite: WorldInvite | null) => Promise<string | null>
@@ -91,6 +91,8 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
   const [actionError, setActionError] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [pendingRemoval, setPendingRemoval] = useState<FriendEntry | null>(null)
+  const [pendingBlock, setPendingBlock] = useState<FriendPlayer | null>(null)
+  const [confirmDeleteData, setConfirmDeleteData] = useState(false)
   const [skins, setSkins] = useState<Record<string, string | null>>({})
 
   const overview = state.overview
@@ -98,7 +100,7 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
 
   // Head icons, fetched once per player (main caches them too).
   useEffect(() => {
-    const players = [...friends, ...(overview?.incoming ?? []), ...(overview?.outgoing ?? [])]
+    const players = [...friends, ...(overview?.incoming ?? []), ...(overview?.outgoing ?? []), ...(overview?.blocked ?? [])]
     const missing = players.filter((player) => !(player.uuid in skins))
     if (missing.length === 0) return
     setSkins((prev) => ({ ...prev, ...Object.fromEntries(missing.map((player) => [player.uuid, null])) }))
@@ -172,6 +174,11 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
           {t.friends.enabledLabel}
         </label>
         <p className="version-warning">{state.prefs.enabled ? t.friends.enabledInfo : t.friends.disabledInfo}</p>
+        <div>
+          <button className="link-button" disabled={busy} onClick={() => setConfirmDeleteData(true)}>
+            {t.friends.deleteData}
+          </button>
+        </div>
       </section>
 
       {state.prefs.enabled && (
@@ -241,6 +248,9 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
                   <button className="link-button" disabled={busy} onClick={() => void run(() => window.api.removeFriendRequest(player.uuid))}>
                     {t.friends.decline}
                   </button>
+                  <button className="link-button" disabled={busy} onClick={() => setPendingBlock(player)}>
+                    {t.friends.block}
+                  </button>
                 </div>
               </li>
             ))}
@@ -297,12 +307,36 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
                   <button className="link-button" disabled={busy} onClick={() => setPendingRemoval(friend)}>
                     {t.common.remove}
                   </button>
+                  <button className="link-button" disabled={busy} onClick={() => setPendingBlock(friend)}>
+                    {t.friends.block}
+                  </button>
                 </div>
               </li>
             )
           })}
         </ul>
       </section>
+
+      {overview && overview.blocked.length > 0 && (
+        <section className="mods-section">
+          <h3>{t.friends.blockedHeading(overview.blocked.length)}</h3>
+          <ul className="mods-list">
+            {overview.blocked.map((player) => (
+              <li key={player.uuid} className="world-row friend-offline">
+                <PlayerHeadIcon textureDataUri={skins[player.uuid] ?? null} size={32} />
+                <div className="world-info">
+                  <strong>{player.name}</strong>
+                </div>
+                <div className="header-actions">
+                  <button className="link-button" disabled={busy} onClick={() => void run(() => window.api.unblockPlayer(player.uuid))}>
+                    {t.friends.unblock}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
         </>
       )}
 
@@ -319,6 +353,42 @@ export function FriendsScreen({ state, gameRunning, onJoin, onClose }: Props) {
             })
           }
           onCancel={() => setPendingRemoval(null)}
+        />
+      )}
+      {pendingBlock && (
+        <ConfirmDialog
+          message={t.friends.confirmBlock(pendingBlock.name)}
+          confirmLabel={t.friends.block}
+          cancelLabel={t.common.cancel}
+          busy={busy}
+          onConfirm={() =>
+            void run(async () => {
+              await window.api.blockPlayer(pendingBlock.uuid)
+              setPendingBlock(null)
+            })
+          }
+          onCancel={() => setPendingBlock(null)}
+        />
+      )}
+      {confirmDeleteData && (
+        <ConfirmDialog
+          message={t.friends.confirmDeleteData}
+          confirmLabel={t.friends.deleteDataConfirm}
+          cancelLabel={t.common.cancel}
+          busy={busy}
+          onConfirm={() =>
+            void run(
+              async () => {
+                try {
+                  await window.api.deleteServerData()
+                } finally {
+                  setConfirmDeleteData(false)
+                }
+              },
+              () => t.friends.dataDeleted
+            )
+          }
+          onCancel={() => setConfirmDeleteData(false)}
         />
       )}
     </div>

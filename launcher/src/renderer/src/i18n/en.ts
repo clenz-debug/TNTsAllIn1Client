@@ -21,7 +21,8 @@ export const en: typeof de = {
   login: {
     title: "TNT's All-In-1 Client",
     subtitle: 'Sign in with your Microsoft account to play.',
-    loginButton: 'Sign in with Microsoft'
+    loginButton: 'Sign in with Microsoft',
+    playOffline: (p: { name: string }) => `Play offline as ${p.name}`
   },
   onboarding: {
     colorsHeading: 'Customize the colors',
@@ -111,6 +112,14 @@ export const en: typeof de = {
       capesCollection: {
         title: 'My capes',
         text: 'All your capes end up here. “Activate” wears a cape in the game - you can take it off or edit it anytime.'
+      },
+      capesRules: {
+        title: 'Rules for capes',
+        text: 'Other players see your cape too. This is what is not allowed - whoever ignores it loses their cape and may no longer upload custom capes.'
+      },
+      capesReport: {
+        title: 'Report a cape',
+        text: "Is someone wearing a cape that breaks the rules? Enter their Minecraft name here. The client's team looks at the cape; the player is not told who reported them."
       },
       friendsButton: {
         title: 'Friends',
@@ -360,6 +369,16 @@ export const en: typeof de = {
     friendsHeading: (count: number) => `Friends (${count})`,
     empty: 'No friends yet - send a request above.',
     confirmRemove: (name: string) => `Remove ${name} from your friends list?`,
+    block: 'Block',
+    unblock: 'Unblock',
+    confirmBlock: (name: string) =>
+      `Block ${name}? A friendship and open requests between you are removed, and ${name} can no longer send you requests. ${name} is not told about it.`,
+    blockedHeading: (count: number) => `Blocked (${count})`,
+    deleteData: 'Delete my data from the server…',
+    confirmDeleteData:
+      "Delete everything the client's server has stored about you? That is your friends, open requests, blocked players, your status and your active cape. This cannot be undone. \"Friends and online status\" is switched off along with it - if you switch it back on, you start again with an empty list. Your cape collection on this PC stays.",
+    deleteDataConfirm: 'Delete everything',
+    dataDeleted: 'Your data on the server has been deleted.',
     join: 'Join',
     joinInGameHint: 'The game is already running - you get connected there directly.',
     inviteText: (name: string, version: string) => `${name} invites you into their world (Minecraft ${version}).`,
@@ -373,6 +392,44 @@ export const en: typeof de = {
       playing: 'Playing Minecraft',
       server: (server: string) => `Playing on ${server}`
     }
+  },
+  capeRules: {
+    heading: 'Rules for capes',
+    intro: 'Your active cape is public: every player using this client sees it on you. Not allowed are capes with:',
+    items: [
+      'nudity, pornography or other sexual content',
+      'hate, insults or discrimination, for example because of origin, religion, gender or sexuality',
+      'banned symbols or glorification of violence',
+      'anything that breaks the law'
+    ],
+    consequence:
+      "The client's team may remove a cape at its own discretion and ban the account from further uploads - also when a cape matches none of these points but does not fit the client."
+  },
+  capeReport: {
+    heading: 'Report a cape',
+    info: "Is someone wearing a custom cape that is offensive or illegal? Enter their Minecraft name. The cape is saved as it is right now and looked at by the client's team. The reported player is not told who reported them.",
+    namePlaceholder: 'Minecraft name',
+    reasonPlaceholder: 'What is the problem? (optional)',
+    send: 'Report',
+    sent: (name: string) => `The cape of ${name} has been reported. Thank you!`
+  },
+  moderation: {
+    heading: (count: number) => `Reported capes (${count})`,
+    info: 'Only visible to you as a moderator. The cape is shown as it was reported.',
+    refresh: 'Reload',
+    empty: 'No open reports.',
+    reportCount: (count: number) => (count === 1 ? '1 report' : `${count} reports`),
+    stillWorn: 'still worn',
+    replaced: 'replaced or removed since',
+    dismiss: 'Dismiss',
+    remove: 'Remove cape',
+    ban: 'Ban',
+    unban: 'Lift ban',
+    confirmDismiss: (name: string) => `Dismiss the reports about ${name}? The cape stays.`,
+    confirmRemove: (name: string) => `Remove the cape of ${name}? ${name} can upload a new one afterwards.`,
+    confirmBan: (name: string) => `Remove the cape of ${name} and ban the account from uploading? The reason is stored.`,
+    banReasonPlaceholder: 'Reason for the ban',
+    bansHeading: (count: number) => `Banned accounts (${count})`
   },
   resourcepacks: {
     title: 'Resource Packs',
@@ -622,10 +679,18 @@ export const en: typeof de = {
       tooLarge: (p: { maxMb: number }) => `The cape is too large - at most ${p.maxMb} MB.`,
       unauthorized: 'Your login has expired - please log out and back in to the launcher.',
       rateLimited: 'Too many cape changes in a short time - please wait a few minutes.',
+      banned: 'This account may no longer upload custom capes because an earlier cape broke the rules.',
       libraryEntryNotFound: 'This cape is no longer in your collection.',
       statusLoadFailed: (p: { status: number | string }) => `Could not load cape status (${p.status}).`,
       uploadFailed: (p: { status: number | string; detail: string }) => `Cape upload failed (${p.status}): ${p.detail}`,
       deleteFailed: (p: { status: number | string; detail: string }) => `Removing the cape failed (${p.status}): ${p.detail}`
+    },
+    capeReport: {
+      noPlayer: 'There is no player with that name.',
+      noCape: "This player is not wearing a custom cape of the client right now.",
+      self: "You can't report your own cape.",
+      rateLimited: 'Too many reports in a short time - please try again later.',
+      failed: (p: { detail: string }) => `That did not work (${p.detail}).`
     },
     skin: {
       wrongDimensions: (p: { width: number; height: number }) =>
@@ -652,6 +717,8 @@ export const en: typeof de = {
       unauthorized: 'Your login has expired - please log out and in again.',
       unreachable: "Can't reach the friends server. It keeps retrying automatically.",
       auth_unavailable: "Your login couldn't be checked right now (Mojang unreachable). Try again in a moment.",
+      multiplayer_blocked:
+        'Your Minecraft account is not allowed to play multiplayer (switched off in the Xbox settings or banned by Mojang). Friends and custom capes need that permission, because it is how Mojang confirms who you are.',
       rate_limited: 'Too many requests - wait a moment and try again.',
       invalid_name: "That's not a valid Minecraft name.",
       player_not_found: 'No player with that name has used the client yet.',
@@ -662,6 +729,8 @@ export const en: typeof de = {
       too_many_requests: 'Too many open requests (50 at most) - wait until some are answered.',
       request_not_found: 'This request no longer exists.',
       not_friends: "You're not (or no longer) friends.",
+      unblock_first: 'You have blocked this player - unblock them first.',
+      too_many_blocked: 'Too many blocked players (500 at most).',
       invalid_body: 'Invalid request to the friends server.',
       unknown: 'Unknown error from the friends server.'
     },

@@ -6,8 +6,7 @@ import { localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
 import { DEFAULT_THEME_COLORS } from '../../shared/types'
 import type { FriendsOverview, FriendsPrefs, FriendsState, FriendsStatus, ThemeColors } from '../../shared/types'
-import { tryRestoreSession } from '../auth'
-import { loadCachedAuth } from '../auth/tokenCache'
+import { BackendError, backendFetch, endBackendSession } from '../backend/backendSession'
 import {
   currentGameActivity,
   currentGamePlayers,
@@ -23,12 +22,10 @@ import { isNetworkError } from '../offline'
  * Friends and presence (Phase 8, own user request) against our backend (`backend/src/friends.ts`
  * behind `https://nxlc.de/app/`). Lives in the main process so presence keeps going no matter which
  * screen is open: every {@link PING_INTERVAL_MS} it reports status + activity and gets the whole
- * friends overview back in the same answer, which is then pushed to every window. Auth is the
- * cached Minecraft access token; an expired one (24 h) is renewed once through the normal silent
- * re-login.
+ * friends overview back in the same answer, which is then pushed to every window. Signing in is
+ * `backendSession.ts` - the Minecraft access token is never sent to our backend.
  */
 
-const API_BASE = 'https://nxlc.de/app'
 const PING_INTERVAL_MS = 20_000
 const REQUEST_TIMEOUT_MS = 10_000
 const STATUSES: readonly FriendsStatus[] = ['online', 'away', 'dnd', 'invisible']
@@ -81,30 +78,34 @@ class FriendsApiError extends Error {
   }
 }
 
-async function send(token: string, method: string, path: string, body?: unknown): Promise<Response> {
-  return fetch(`${API_BASE}${path}`, {
-    method,
-    headers: { Authorization: `Bearer ${token}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
-  })
-}
-
-/** Calls the backend as the logged-in player; on 401 renews the session once and retries. */
+/** Calls the backend as the logged-in player (signed in through `backendSession.ts`). */
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const cached = await loadCachedAuth()
-  if (!cached) throw new FriendsApiError('not_logged_in')
-  let response = await send(cached.profile.accessToken, method, path, body)
-  if (response.status === 401) {
-    const renewed = await tryRestoreSession()
-    if (!renewed || renewed.offline) throw new FriendsApiError('unauthorized')
-    response = await send(renewed.accessToken, method, path, body)
+  let response: Response
+  try {
+    response = await backendFetch(method, path, { json: body, timeoutMs: REQUEST_TIMEOUT_MS })
+  } catch (err) {
+    throw err instanceof BackendError ? new FriendsApiError(err.code) : err
   }
   const data = (await response.json().catch(() => ({}))) as { error?: unknown }
   if (!response.ok) {
     throw new FriendsApiError(typeof data.error === 'string' ? data.error : `http_${response.status}`)
   }
   return data as T
+}
+
+/** Our server only ever passes on e4mc addresses (`backend/src/server.ts`) - checked here again, so
+ * that not even the server could send a player to a Minecraft server of its choosing. */
+const INVITE_ADDRESS_PATTERN = /^(?=.{1,253}(?::|$))([a-z0-9-]+\.)+e4mc\.link(:\d{1,5})?$/i
+
+/** A call that answers with the friends overview. */
+async function callOverview(method: string, path: string, body?: unknown): Promise<FriendsOverview> {
+  const answer = await call<FriendsOverview>(method, path, body)
+  return {
+    ...answer,
+    invites: (answer.invites ?? []).filter((invite) => INVITE_ADDRESS_PATTERN.test(invite.address)),
+    // A server from before blocking existed does not send the list
+    blocked: answer.blocked ?? []
+  }
 }
 
 /** Every code the renderer has a de/en text for (`errors.friends` in i18n) - anything else is
@@ -114,6 +115,7 @@ const KNOWN_ERROR_CODES = new Set([
   'unauthorized',
   'unreachable',
   'auth_unavailable',
+  'multiplayer_blocked',
   'rate_limited',
   'invalid_name',
   'player_not_found',
@@ -124,6 +126,8 @@ const KNOWN_ERROR_CODES = new Set([
   'too_many_requests',
   'request_not_found',
   'not_friends',
+  'unblock_first',
+  'too_many_blocked',
   'invalid_body',
   'unknown'
 ])
@@ -145,9 +149,12 @@ async function currentLogoColors(): Promise<LogoColors> {
 
 async function ping(): Promise<void> {
   try {
-    const activity = (await currentGameActivity()) ?? { kind: 'launcher' }
+    const current = (await currentGameActivity()) ?? { kind: 'launcher' }
+    // Nobody is shown the server while it is hidden or the player is invisible - so it is not sent either
+    const secret = prefs.hideServer || prefs.status === 'invisible'
+    const activity = secret && current.kind === 'multiplayer' ? { kind: current.kind } : current
     const logoColors = await currentLogoColors()
-    overview = await call<FriendsOverview>('POST', '/presence', { status: prefs.status, hideServer: prefs.hideServer, activity, logoColors })
+    overview = await callOverview('POST', '/presence', { status: prefs.status, hideServer: prefs.hideServer, activity, logoColors })
     error = null
   } catch (err) {
     error = errorCode(err)
@@ -226,7 +233,7 @@ async function bridgeTick(): Promise<void> {
       resetGameInbox()
       if (invitedThisGame) {
         invitedThisGame = false
-        overview = await call<FriendsOverview>('DELETE', '/invites').catch(() => overview)
+        overview = await callOverview('DELETE', '/invites').catch(() => overview)
       }
       return
     }
@@ -235,15 +242,15 @@ async function bridgeTick(): Promise<void> {
     for (const command of commands) {
       try {
         if (command.type === 'invite') {
-          overview = await call<FriendsOverview>('POST', '/invites', { to: command.to, address: command.address, version: command.version })
+          overview = await callOverview('POST', '/invites', { to: command.to, address: command.address, version: command.version })
           invitedThisGame = true
         } else if (command.type === 'revoke') {
-          overview = await call<FriendsOverview>('DELETE', `/invites/${encodeURIComponent(command.to)}`)
+          overview = await callOverview('DELETE', `/invites/${encodeURIComponent(command.to)}`)
         } else if (command.type === 'revokeAll') {
-          overview = await call<FriendsOverview>('DELETE', '/invites')
+          overview = await callOverview('DELETE', '/invites')
           invitedThisGame = false
         } else if (command.type === 'dismiss') {
-          overview = await call<FriendsOverview>('POST', `/invites/${encodeURIComponent(command.from)}/dismiss`)
+          overview = await callOverview('POST', `/invites/${encodeURIComponent(command.from)}/dismiss`)
         }
         results.set(command.id, 'ok')
       } catch (err) {
@@ -273,6 +280,7 @@ async function bridgeTick(): Promise<void> {
 
 /** Friends screen's "join" while the game already runs: the mod connects there itself. */
 export function joinInGame(address: string): void {
+  if (!INVITE_ADDRESS_PATTERN.test(address)) return
   pendingJoin = { id: randomUUID(), address, expires: Date.now() + JOIN_REQUEST_TTL_MS }
   void bridgeTick()
 }
@@ -298,6 +306,7 @@ export async function startFriends(): Promise<void> {
 export async function stopFriends(announce: boolean): Promise<void> {
   wanted = false
   await halt(announce)
+  await endBackendSession()
 }
 
 /** Stops pinging and forgets what we knew. Friends see us as offline once the backend timeout
@@ -349,7 +358,7 @@ export async function setFriendsPrefs(next: FriendsPrefs): Promise<FriendsState>
  * Friends screen shows them next to the action) and don't touch the ping error. */
 async function action(method: string, path: string, body?: unknown): Promise<FriendsState> {
   try {
-    overview = await call<FriendsOverview>(method, path, body)
+    overview = await callOverview(method, path, body)
   } catch (err) {
     throw localizedError(`friends.${errorCode(err)}`)
   }
@@ -371,6 +380,31 @@ export function removeFriendRequest(uuid: string): Promise<FriendsState> {
 
 export function removeFriend(uuid: string): Promise<FriendsState> {
   return action('DELETE', `/friends/${encodeURIComponent(uuid)}`)
+}
+
+/** Blocking also removes the friendship and any open request between the two. */
+export function blockPlayer(uuid: string): Promise<FriendsState> {
+  return action('POST', '/friends/blocks', { uuid })
+}
+
+export function unblockPlayer(uuid: string): Promise<FriendsState> {
+  return action('DELETE', `/friends/blocks/${encodeURIComponent(uuid)}`)
+}
+
+/**
+ * "Delete my data": the server forgets the player completely - friends, requests, blocked players,
+ * status and the active cape. Friends are switched off first and stay off: the next status report
+ * would register the player again right away.
+ */
+export async function deleteServerData(): Promise<FriendsState> {
+  await setFriendsPrefs({ ...prefs, enabled: false })
+  try {
+    await call('DELETE', '/account')
+  } catch (err) {
+    throw localizedError(`friends.${errorCode(err)}`)
+  }
+  await endBackendSession()
+  return getFriendsState()
 }
 
 /** Invited player declines a world invitation - or has just used it to join. */

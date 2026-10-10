@@ -48,6 +48,8 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'capesButton', screen: 'play', targets: [tour('header-capes')] },
   { id: 'capesCreate', screen: 'capes', targets: [tour('capes-main')] },
   { id: 'capesCollection', screen: 'capes', targets: [tour('capes-collection')] },
+  { id: 'capesRules', screen: 'capes', targets: [tour('capes-rules')] },
+  { id: 'capesReport', screen: 'capes', targets: [tour('capes-report')], needs: 'online' },
 
   { id: 'friendsButton', screen: 'play', targets: [tour('header-friends')], needs: 'online' },
   { id: 'friendsOwn', screen: 'friends', targets: [tour('friends-own')], needs: 'friends' },

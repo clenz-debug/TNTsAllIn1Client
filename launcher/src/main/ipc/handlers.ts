@@ -7,6 +7,7 @@ import { describeError, localizedError } from '../../shared/errorMessages'
 import { IpcChannel } from '../../shared/ipc'
 import { isLegacyVersion, LEGACY_VERSIONS } from '../../shared/legacyVersions'
 import {
+  type CapeDecision,
   type CapeLibraryEntry,
   type CapeUploadResult,
   type ClientImportResult,
@@ -28,9 +29,10 @@ import {
 } from '../../shared/types'
 import { performLogin, tryRestoreSession } from '../auth'
 import { fetchTextureDataUri, loadPngFileForEditor, uploadSkinBuffer } from '../auth/skinApi'
-import { updateCachedProfile } from '../auth/tokenCache'
+import { loadSignedOutProfile, signOutCachedAuth, updateCachedProfile } from '../auth/tokenCache'
 import { installUpdateNow } from '../autoUpdate'
 import { deleteCapeFromLibrary, listCapeLibrary, readCapeLibraryPng, saveCapeToLibrary, updateCapeInLibrary } from '../cape/capeLibrary'
+import { decideCapeReports, isCapeModerator, liftCapeBan, listCapeReports, reportCape } from '../cape/capeModeration'
 import { deleteCustomCape, getCustomCapeStatus, loadCapePngForPreview, uploadCustomCape } from '../cape/capeStorage'
 import { openConsoleWindow, sendToConsoleWindow } from '../consoleWindow'
 import { getBundleCompatibleVersions, isVersionBundleCompatible } from '../launch/bundleCompat'
@@ -43,6 +45,9 @@ import {
   dismissInvite,
   getFriendsState,
   joinInGame,
+  blockPlayer,
+  unblockPlayer,
+  deleteServerData,
   removeFriend,
   removeFriendRequest,
   sendFriendRequest,
@@ -132,6 +137,15 @@ function broadcastLaunchBusy(event: IpcMainInvokeEvent, busy: boolean): void {
  * event's own `sender`, so this stays correct even if multiple windows exist. */
 export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.AuthRestore, async () => tryRestoreSession())
+
+  // Friends first: going offline there and ending the session on our server still need the sign-in.
+  // Capped, so that a slow connection cannot delay dropping the tokens into a new login.
+  ipcMain.handle(IpcChannel.AuthLogout, async () => {
+    await Promise.race([stopFriends(true).catch(() => undefined), new Promise((resolve) => setTimeout(resolve, 2_000))])
+    await signOutCachedAuth()
+  })
+
+  ipcMain.handle(IpcChannel.AuthSignedOutProfile, async () => loadSignedOutProfile())
 
   ipcMain.handle(IpcChannel.AuthLogin, async (event: IpcMainInvokeEvent) => {
     // Own follow-up question: "ist die Nachricht immer auf Deutsch?" - the OAuth callback page
@@ -393,13 +407,19 @@ export function registerIpcHandlers(): void {
     IpcChannel.CapeUpload,
     async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, pngDataUri: string): Promise<CapeUploadResult> => {
       const base64 = pngDataUri.split(',')[1] ?? ''
-      return uploadCustomCape(profile.accessToken, profile.id, Buffer.from(base64, 'base64'))
+      return uploadCustomCape(profile.id, Buffer.from(base64, 'base64'))
     }
   )
 
-  ipcMain.handle(IpcChannel.CapeDelete, async (_event: IpcMainInvokeEvent, profile: MinecraftProfile): Promise<void> =>
-    deleteCustomCape(profile.accessToken)
+  ipcMain.handle(IpcChannel.CapeDelete, async (): Promise<void> => deleteCustomCape())
+
+  ipcMain.handle(IpcChannel.CapeReport, async (_event: IpcMainInvokeEvent, name: string, reason: string) => reportCape(name, reason))
+  ipcMain.handle(IpcChannel.CapeModerator, async () => isCapeModerator())
+  ipcMain.handle(IpcChannel.CapeModerationList, async () => listCapeReports())
+  ipcMain.handle(IpcChannel.CapeModerationDecide, async (_event: IpcMainInvokeEvent, target: string, decision: CapeDecision, reason: string) =>
+    decideCapeReports(target, decision, reason)
   )
+  ipcMain.handle(IpcChannel.CapeModerationUnban, async (_event: IpcMainInvokeEvent, uuid: string) => liftCapeBan(uuid))
 
   ipcMain.handle(IpcChannel.CapeLibraryList, async (): Promise<CapeLibraryEntry[]> => listCapeLibrary())
 
@@ -422,7 +442,7 @@ export function registerIpcHandlers(): void {
     async (_event: IpcMainInvokeEvent, profile: MinecraftProfile, id: string): Promise<CapeUploadResult> => {
       const buffer = await readCapeLibraryPng(id)
       if (!buffer) throw localizedError('cape.libraryEntryNotFound')
-      return uploadCustomCape(profile.accessToken, profile.id, buffer)
+      return uploadCustomCape(profile.id, buffer)
     }
   )
 
@@ -668,6 +688,9 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.FriendsAcceptRequest, async (_event: IpcMainInvokeEvent, uuid: string) => acceptFriendRequest(uuid))
   ipcMain.handle(IpcChannel.FriendsRemoveRequest, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriendRequest(uuid))
   ipcMain.handle(IpcChannel.FriendsRemoveFriend, async (_event: IpcMainInvokeEvent, uuid: string) => removeFriend(uuid))
+  ipcMain.handle(IpcChannel.FriendsBlock, async (_event: IpcMainInvokeEvent, uuid: string) => blockPlayer(uuid))
+  ipcMain.handle(IpcChannel.FriendsUnblock, async (_event: IpcMainInvokeEvent, uuid: string) => unblockPlayer(uuid))
+  ipcMain.handle(IpcChannel.FriendsDeleteData, async () => deleteServerData())
   ipcMain.handle(IpcChannel.FriendsHead, async (_event: IpcMainInvokeEvent, uuid: string) => getPlayerSkin(uuid))
   ipcMain.handle(IpcChannel.FriendsDismissInvite, async (_event: IpcMainInvokeEvent, fromUuid: string) => dismissInvite(fromUuid))
   ipcMain.handle(IpcChannel.FriendsJoinInGame, (_event: IpcMainInvokeEvent, address: string) => joinInGame(address))

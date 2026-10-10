@@ -1672,3 +1672,12 @@ body.tour-active .dropdown-menu {
 .tour-offer {
   font-weight: 600;
 }
+
+/* The cape screen's rules: a plain list, sized like the notes (`.version-warning`) around it. */
+.cape-rules {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}

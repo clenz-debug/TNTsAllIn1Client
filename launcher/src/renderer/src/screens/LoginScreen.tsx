@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { Logo } from '../Logo'
@@ -13,6 +13,15 @@ export function LoginScreen({ onLoggedIn }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  /** Whoever logged out on this PC last - can still play offline, see `tokenCache.ts`. */
+  const [offlineProfile, setOfflineProfile] = useState<MinecraftProfile | null>(null)
+
+  useEffect(() => {
+    void window.api
+      .signedOutProfile()
+      .then(setOfflineProfile)
+      .catch(() => undefined)
+  }, [])
 
   async function handleLogin(): Promise<void> {
     setBusy(true)
@@ -38,6 +47,11 @@ export function LoginScreen({ onLoggedIn }: Props) {
       <button className="primary-button" onClick={() => void handleLogin()} disabled={busy}>
         {t.login.loginButton}
       </button>
+      {offlineProfile && (
+        <button className="secondary-button" onClick={() => onLoggedIn(offlineProfile)} disabled={busy}>
+          {t.login.playOffline({ name: offlineProfile.name })}
+        </button>
+      )}
 
       {status && <p className="status">{status}</p>}
       {error && <p className="error">{error}</p>}

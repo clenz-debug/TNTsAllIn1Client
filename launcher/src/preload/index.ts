@@ -2,7 +2,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcChannel } from '../shared/ipc'
 import type {
   AuthProgressEvent,
+  CapeDecision,
   CapeLibraryEntry,
+  CapeModerationState,
   CapeUploadResult,
   ClientImportResult,
   CustomCapeStatus,
@@ -37,6 +39,8 @@ function subscribe<T>(channel: string, callback: (event: T) => void): () => void
 const api = {
   restoreSession: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthRestore),
   login: (): Promise<MinecraftProfile> => ipcRenderer.invoke(IpcChannel.AuthLogin),
+  logout: (): Promise<void> => ipcRenderer.invoke(IpcChannel.AuthLogout),
+  signedOutProfile: (): Promise<MinecraftProfile | null> => ipcRenderer.invoke(IpcChannel.AuthSignedOutProfile),
   /** `joinAddress`: start straight into that server (friends "join", Phase 8). `inGameTour`: the
    * guided tour continues in the game's own menus (launcher tour's last step). */
   play: (profile: MinecraftProfile, instanceId: string, joinAddress?: string, inGameTour?: boolean): Promise<void> =>
@@ -120,6 +124,12 @@ const api = {
     ipcRenderer.invoke(IpcChannel.CapeLibraryUpdate, id, pngDataUri, name),
   activateLibraryCape: (profile: MinecraftProfile, id: string): Promise<CapeUploadResult> =>
     ipcRenderer.invoke(IpcChannel.CapeLibraryActivate, profile, id),
+  reportCape: (name: string, reason: string): Promise<void> => ipcRenderer.invoke(IpcChannel.CapeReport, name, reason),
+  isCapeModerator: (): Promise<boolean> => ipcRenderer.invoke(IpcChannel.CapeModerator),
+  listCapeReports: (): Promise<CapeModerationState> => ipcRenderer.invoke(IpcChannel.CapeModerationList),
+  decideCapeReports: (target: string, decision: CapeDecision, reason: string): Promise<CapeModerationState> =>
+    ipcRenderer.invoke(IpcChannel.CapeModerationDecide, target, decision, reason),
+  liftCapeBan: (uuid: string): Promise<CapeModerationState> => ipcRenderer.invoke(IpcChannel.CapeModerationUnban, uuid),
   checkModBundleUpdate: (versionId: string): Promise<ModBundleUpdateInfo> =>
     ipcRenderer.invoke(IpcChannel.ModBundleCheckUpdate, versionId),
   applyModBundleUpdate: (versionId: string): Promise<LauncherSettings> =>
@@ -140,6 +150,9 @@ const api = {
   acceptFriendRequest: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsAcceptRequest, uuid),
   removeFriendRequest: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveRequest, uuid),
   removeFriend: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsRemoveFriend, uuid),
+  blockPlayer: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsBlock, uuid),
+  unblockPlayer: (uuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsUnblock, uuid),
+  deleteServerData: (): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsDeleteData),
   getFriendSkin: (uuid: string): Promise<string | null> => ipcRenderer.invoke(IpcChannel.FriendsHead, uuid),
   dismissInvite: (fromUuid: string): Promise<FriendsState> => ipcRenderer.invoke(IpcChannel.FriendsDismissInvite, fromUuid),
   joinInGame: (address: string): Promise<void> => ipcRenderer.invoke(IpcChannel.FriendsJoinInGame, address),

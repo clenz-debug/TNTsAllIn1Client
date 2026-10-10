@@ -6,6 +6,7 @@ import type { CapeLibraryEntry, CustomCapeStatus, MinecraftProfile, SkinVariant 
 import { SkinModelPreview } from '../skinEditor/SkinModelPreview'
 import { CapeConverter } from './CapeConverter'
 import { CapeEditorScreen } from './CapeEditorScreen'
+import { CapeModeration, CapeReportForm } from './CapeModeration'
 
 interface Props {
   profile: MinecraftProfile
@@ -39,6 +40,15 @@ export function CapeScreen({ profile, onClose }: Props) {
   const [converterPreview, setConverterPreview] = useState<string | null>(null)
   // Cape editor (own user request: draw capes yourself) - `entry: null` starts a new cape.
   const [editor, setEditor] = useState<{ entry: CapeLibraryEntry | null } | null>(null)
+  const [moderator, setModerator] = useState(false)
+
+  useEffect(() => {
+    if (profile.offline) return
+    void window.api
+      .isCapeModerator()
+      .then(setModerator)
+      .catch(() => undefined)
+  }, [profile.id, profile.offline])
 
   useEffect(() => {
     setSkinPreview(null)
@@ -291,6 +301,20 @@ export function CapeScreen({ profile, onClose }: Props) {
           </>
         )}
       </section>
+
+      <section className="mods-section" data-tour="capes-rules">
+        <h3>{t.capeRules.heading}</h3>
+        <p className="version-warning">{t.capeRules.intro}</p>
+        <ul className="cape-rules">
+          {t.capeRules.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p className="version-warning">{t.capeRules.consequence}</p>
+      </section>
+
+      {!profile.offline && <CapeReportForm />}
+      {moderator && <CapeModeration />}
 
       {pendingDeleteCape && (
         <ConfirmDialog

@@ -93,7 +93,13 @@ export default function App() {
         <PlayScreen
           profile={profile}
           onProfileUpdate={setProfile}
-          onLogout={() => setProfile(null)}
+          onLogout={() => {
+            // Shown only once the tokens are gone - the login screen asks for what is left right away
+            void window.api
+              .logout()
+              .catch(() => undefined)
+              .then(() => setProfile(null))
+          }}
           language={language}
           onLanguageChange={setLanguage}
         />

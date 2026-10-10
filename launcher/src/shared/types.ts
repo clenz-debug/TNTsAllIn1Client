@@ -365,7 +365,39 @@ export interface FriendsOverview {
   incoming: FriendPlayer[]
   outgoing: FriendPlayer[]
   invites: WorldInvite[]
+  /** Players this player has blocked - nobody else sees the list. */
+  blocked: FriendPlayer[]
 }
+
+/** A reported custom cape as the project's moderators see it - mirrors `backend/src/moderation.ts`. */
+export interface CapeReport {
+  target: string
+  name: string
+  /** Identifies the reported picture. */
+  sha: string
+  count: number
+  reasons: string[]
+  created: number
+  /** The player still wears exactly this cape. */
+  current: boolean
+  /** The cape as it was reported, `null` if it could not be loaded. */
+  dataUri: string | null
+}
+
+export interface CapeBan {
+  uuid: string
+  name: string | null
+  reason: string
+  created: number
+}
+
+export interface CapeModerationState {
+  reports: CapeReport[]
+  bans: CapeBan[]
+}
+
+/** `dismiss` leaves the cape, `remove` deletes it, `ban` deletes it and refuses further uploads. */
+export type CapeDecision = 'dismiss' | 'remove' | 'ban'
 
 /** The player's own friends settings - own file (`main/friends/friendsService.ts`), not part of
  * `LauncherSettings`, which PlayScreen always writes back whole. */

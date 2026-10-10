@@ -70,7 +70,8 @@ export function buildLaunchArgs(context: LaunchContext): string[] {
     assets_root: assetsDir,
     assets_index_name: detail.assetIndex.id,
     auth_uuid: profile.id,
-    auth_access_token: profile.accessToken,
+    // Offline after logging out there is none - the game still wants the argument to have a value
+    auth_access_token: profile.accessToken || '0',
     clientid: '',
     auth_xuid: '',
     user_type: 'msa',

@@ -10,9 +10,9 @@ Dieser Installer richtet nur den Launcher ein. Das Spiel, Fabric und die mitgeli
 Es gibt keine Auswertung deiner Nutzung, keine Werbung und keine Absturzberichte.
 
 Freunde und Online-Status (voreingestellt: an)
-Solange du mit deinem Microsoft-Konto angemeldet bist, meldet der Launcher alle 20 Sekunden an den Server des Projekts (nxlc.de): deinen Minecraft-Namen und deine UUID, deinen Status, was du gerade spielst (bei Mehrspieler auch die Server-Adresse) und die Farben deines Launcher-Designs. Zum Nachweis, wer du bist, wird dein Minecraft-Zugangstoken mitgeschickt; der Server prüft es bei Mojang und speichert es nicht. Außerdem fragt der Launcher dort ab, welche Mitspieler den Client nutzen, und schickt dafür deren UUIDs mit.
+Solange du mit deinem Microsoft-Konto angemeldet bist, meldet der Launcher alle 20 Sekunden an den Server des Projekts (nxlc.de): deinen Minecraft-Namen und deine UUID, deinen Status, was du gerade spielst (bei Mehrspieler auch die Server-Adresse, außer du verbirgst sie oder bist "unsichtbar") und die Farben deines Launcher-Designs. Dein Minecraft-Zugangstoken geht dabei nicht an diesen Server: wer du bist, bestätigt ihm Mojang, auf demselben Weg wie beim Betreten eines Minecraft-Servers. Außerdem fragt der Launcher dort ab, welche Mitspieler den Client nutzen, und schickt dafür deren UUIDs mit.
 
-Abschalten: im Launcher unter "Freunde" den Schalter "Freunde und Online-Status" ausschalten. Dann nimmt der Launcher von sich aus keinen Kontakt zu diesem Server auf. Im Offline-Modus geschieht das ebenfalls nicht.
+Abschalten: im Launcher unter "Freunde" den Schalter "Freunde und Online-Status" ausschalten. Dann nimmt der Launcher von sich aus keinen Kontakt zu diesem Server auf. Im Offline-Modus geschieht das ebenfalls nicht. Am selben Ort kannst du alles löschen, was der Server über dich gespeichert hat ("Meine Daten vom Server löschen").
 
 Eigene Capes
 Ein Cape, das du im Launcher hochlädst, ist öffentlich und wird anderen Spielern mit diesem Client angezeigt.
@@ -31,9 +31,9 @@ This installer sets up the launcher only. The game, Fabric and the bundled mods 
 There is no usage tracking, no advertising and no crash reporting.
 
 Friends and online status (on by default)
-While you are signed in with your Microsoft account, the launcher reports to the project's server (nxlc.de) every 20 seconds: your Minecraft name and UUID, your status, what you are playing (for multiplayer including the server address) and the colors of your launcher theme. To prove who you are, your Minecraft access token is sent along; the server checks it with Mojang and does not store it. The launcher also asks that server which of the players around you use the client, and sends their UUIDs for that.
+While you are signed in with your Microsoft account, the launcher reports to the project's server (nxlc.de) every 20 seconds: your Minecraft name and UUID, your status, what you are playing (for multiplayer including the server address, unless you hide it or are "invisible") and the colors of your launcher theme. Your Minecraft access token is not sent to this server: Mojang confirms to it who you are, the same way as when you join a Minecraft server. The launcher also asks that server which of the players around you use the client, and sends their UUIDs for that.
 
-To switch it off: in the launcher, open "Friends" and turn off "Friends and online status". The launcher then never contacts that server on its own. It doesn't in offline mode either.
+To switch it off: in the launcher, open "Friends" and turn off "Friends and online status". The launcher then never contacts that server on its own. It doesn't in offline mode either. In the same place you can delete everything the server has stored about you ("Delete my data from the server").
 
 Custom capes
 A cape you upload in the launcher is public and is shown to other players using this client.
