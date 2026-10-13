@@ -29,7 +29,6 @@ Stand der Veröffentlichung: Launcher 0.15.0 (2026-10-13), Mod 0.1.14 (2026-10-0
   - Datenordner des Dienstes nur noch für den eigenen Benutzer lesbar, Dienst mit Speicher- und Prozessgrenze (`backend/deploy/tntcapes.service`)
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
-- [ ] Auto-Update des installierten Launchers von 0.14.1 auf 0.15.0: bleibt das Konto angemeldet (die Anmeldung wird dabei einmal verschlüsselt neu gespeichert), laden Freunde und Capes über die neue Anmeldung?
 - [ ] Ein Launcher bis 0.14.1 kann die verschlüsselte Anmeldung nicht lesen und zeigt dann den Login – betrifft nur, wer nach dem Update wieder eine alte Version installiert; im Fenster nicht ausprobiert
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
 - [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast
