@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { flushAccessTokenSignIns, noteAccessTokenSignIn } from './accessTokenSignIns.js'
 import { StorageFullError, capeUrl, deleteCape, saveCape } from './capes.js'
 import {
   DECISIONS,
@@ -181,6 +182,7 @@ async function authenticate(req: IncomingMessage): Promise<VerifiedProfile> {
   })
   if (!profile) throw new HttpError(401, 'unauthorized')
   accessTokenUsers.add(profile.id)
+  noteAccessTokenSignIn(profile.id)
   return profile
 }
 
@@ -483,6 +485,7 @@ setInterval(() => {
     console.log(`[auth] ${accessTokenUsers.size} player(s) still signed in with a Minecraft access token (launcher 0.14.1 or older)`)
     accessTokenUsers.clear()
   }
+  flushAccessTokenSignIns()
   reportLimiter.prune()
   pruneReportedCapes()
   writeLimiter.prune()
