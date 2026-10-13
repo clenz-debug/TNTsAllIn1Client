@@ -33,6 +33,8 @@ import java.util.function.Consumer;
  */
 public final class TitleScreenDesign {
 	private static final long TRANSITION_MS = 800;
+	/** Depth of the animation: above widgets and their text, below tooltips. */
+	private static final float TRANSITION_Z = 100.0F;
 	private static final long BUTTON_FADE_MS = 300;
 
 	private static final int BUTTON_WIDTH = 160;
@@ -205,10 +207,15 @@ public final class TitleScreenDesign {
 		}
 		float t = progress();
 		float backgroundAlpha = transitionToClient ? t : 1.0f - t;
+		// Above the screen's widgets: this version's GUI is depth-tested and a button's text sits a little
+		// in front of its plane, so drawn on that same plane the cover would leave the text showing through.
+		graphics.pose().pushPose();
+		graphics.pose().translate(0.0F, 0.0F, TRANSITION_Z);
 		graphics.fill(0, 0, width, height, ClientTheme.withAlpha(ClientTheme.get().background1, backgroundAlpha));
 		Rect to = transitionToClient ? clientLogo : minecraftAnchor(width, height);
 		Rect logo = transitionFrom.lerp(to, t);
 		ClientLogo.draw(graphics, logo.x, logo.y, logo.height, 1.0f);
+		graphics.pose().popPose();
 
 		if (Util.getMillis() - transitionStart < TRANSITION_MS) {
 			return false;
