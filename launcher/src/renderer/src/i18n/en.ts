@@ -81,6 +81,10 @@ export const en: typeof de = {
         title: 'Language, design and this tour',
         text: 'Here you switch the language and choose whether the in-game title screen and Client Mods menu look like regular Minecraft or use the client design in your colors. And this is where you can restart this tour anytime.'
       },
+      settingsServerData: {
+        title: 'Your data on the server',
+        text: "For friends and capes the client's server stores a few things about you: your friends, open requests, blocked players, your status and your active cape. Here you can delete all of it anytime."
+      },
       credits: {
         title: 'Credits',
         text: '“Credits” lists every mod, resource pack and font the client ships with - with its license and a link to the people who made it.'
@@ -651,6 +655,11 @@ export const en: typeof de = {
       heading: 'Guided tour',
       description: 'Shows you every area of the launcher, step by step.',
       start: 'Start tour'
+    },
+    serverData: {
+      heading: 'My data on the server',
+      description:
+        "The client's server only stores what friends and capes need: your friends, open requests, blocked players, your status and your active cape. You can delete all of it here."
     },
     about: {
       heading: 'About',

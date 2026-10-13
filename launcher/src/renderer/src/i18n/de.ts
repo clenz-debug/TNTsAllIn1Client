@@ -87,6 +87,10 @@ export const de = {
         title: 'Sprache, Design und diese Tour',
         text: 'Hier wechselst du die Sprache und wählst, ob der Startbildschirm und das Client-Mods-Menü im Spiel wie normales Minecraft oder im Client-Design in deinen Farben aussehen. Und hier kannst du diese Tour jederzeit wieder starten.'
       },
+      settingsServerData: {
+        title: 'Deine Daten auf dem Server',
+        text: 'Für Freunde und Capes speichert der Server des Clients ein paar Dinge über dich: deine Freunde, offene Anfragen, blockierte Spieler, deinen Status und dein aktives Cape. Hier kannst du das alles jederzeit löschen.'
+      },
       credits: {
         title: 'Credits',
         text: 'Unter „Credits“ findest du alle Mods, Texturepacks und Schriften, die der Client mitbringt - mit ihrer Lizenz und einem Link zu den Leuten, die sie gemacht haben.'
@@ -661,6 +665,11 @@ export const de = {
       heading: 'Einführungstour',
       description: 'Zeigt dir Schritt für Schritt alle Bereiche des Launchers.',
       start: 'Tour starten'
+    },
+    serverData: {
+      heading: 'Meine Daten auf dem Server',
+      description:
+        'Der Server des Clients speichert von dir nur, was Freunde und Capes brauchen: deine Freunde, offene Anfragen, blockierte Spieler, deinen Status und dein aktives Cape. Hier kannst du alles davon löschen.'
     },
     about: {
       heading: 'Über',

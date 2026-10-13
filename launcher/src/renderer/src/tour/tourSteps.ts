@@ -37,6 +37,7 @@ export const TOUR_STEPS: TourStep[] = [
   { id: 'settingsGeneral', screen: 'settings', targets: [tour('settings-snapshots'), tour('settings-console')] },
   { id: 'settingsAppearance', screen: 'settings', targets: [tour('settings-appearance')] },
   { id: 'settingsLanguage', screen: 'settings', targets: [tour('settings-language'), tour('settings-design'), tour('settings-tour')] },
+  { id: 'settingsServerData', screen: 'settings', targets: [tour('settings-server-data')] },
 
   { id: 'credits', screen: 'play', targets: [tour('header-credits')] },
 

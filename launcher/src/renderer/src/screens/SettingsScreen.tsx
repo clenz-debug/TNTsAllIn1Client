@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AppearanceEditor } from '../AppearanceEditor'
+import { ConfirmDialog } from '../ConfirmDialog'
 import { Dropdown } from '../Dropdown'
 import { formatBytes } from '../formatBytes'
 import { formatError } from '../formatError'
@@ -131,6 +132,27 @@ export function SettingsScreen({
   useEffect(() => {
     void window.api.getAppVersion().then(setAppVersion)
   }, [])
+
+  // "Delete my data" - the same action as in the Friends screen, here because people look for it
+  // under the settings (own user request).
+  const [confirmDeleteServerData, setConfirmDeleteServerData] = useState(false)
+  const [deletingServerData, setDeletingServerData] = useState(false)
+  const [serverDataDeleted, setServerDataDeleted] = useState(false)
+
+  async function handleDeleteServerData(): Promise<void> {
+    setDeletingServerData(true)
+    setError(null)
+    setServerDataDeleted(false)
+    try {
+      await window.api.deleteServerData()
+      setServerDataDeleted(true)
+    } catch (err) {
+      setError(formatError(err, t))
+    } finally {
+      setDeletingServerData(false)
+      setConfirmDeleteServerData(false)
+    }
+  }
 
   return (
     <div className="instances-screen">
@@ -275,10 +297,32 @@ export function SettingsScreen({
         </div>
       </section>
 
+      <section className="instances-section" data-tour="settings-server-data">
+        <h3>{t.settings.serverData.heading}</h3>
+        <p className="version-warning">{t.settings.serverData.description}</p>
+        <div>
+          <button className="secondary-button" disabled={deletingServerData} onClick={() => setConfirmDeleteServerData(true)}>
+            {t.friends.deleteData}
+          </button>
+        </div>
+        {serverDataDeleted && <span className="status">{t.friends.dataDeleted}</span>}
+      </section>
+
       <section className="instances-section">
         <h3>{t.settings.about.heading}</h3>
         <p className="version-warning">{appVersion ? t.settings.about.version(appVersion) : t.common.loading}</p>
       </section>
+
+      {confirmDeleteServerData && (
+        <ConfirmDialog
+          message={t.friends.confirmDeleteData}
+          confirmLabel={t.friends.deleteDataConfirm}
+          cancelLabel={t.common.cancel}
+          busy={deletingServerData}
+          onConfirm={() => void handleDeleteServerData()}
+          onCancel={() => setConfirmDeleteServerData(false)}
+        />
+      )}
     </div>
   )
 }
