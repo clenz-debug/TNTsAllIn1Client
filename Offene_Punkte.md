@@ -1,13 +1,13 @@
 # Offene Punkte (ohne 3D-Modelle)
 
-Stand 2026-10-13. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
+Stand 2026-10-14. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
 Stand der Veröffentlichung: Launcher 0.15.0 (2026-10-13), Mod 0.1.14 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion. Die vollständige Liste aller Versionen mit ihrem Stand steht in `Minecraft_Versionen.md`
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
-  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4 und 1.21.3 sind fertig und warten auf das Release, siehe 1a)
+  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 sind fertig und warten auf das Release, siehe 1a)
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
 - [ ] Sicherheit des Backends (Durchsicht vom 2026-10-09, Umbau vom 2026-10-10) – gebaut und lokal geprüft. Das Backend ist seit 2026-10-10 auf dem Server (mit deinem OK; Sicherung von Datenbank, Unit und altem Code in `~/tntcapes-data/backup-2026-10-10/`) und versteht alte und neue Launcher. Der Launcher-Teil ist seit 2026-10-13 mit Launcher 0.15.0 veröffentlicht. Offen bleibt hier nur noch das Abschalten des alten Anmeldewegs (siehe 3.) und die Punkte unter 2. Von dir am 2026-10-10 bestätigt: der installierte Launcher 0.14.1 lädt die Freunde weiter (alter Anmeldeweg), der Dev-Launcher zeigt die echten Freunde über die neue Anmeldung und im Cape-Screen „Gemeldete Capes“. Von dir am 2026-10-13 im Fenster bestätigt, gegen ein lokal gestartetes Backend mit Testdatenbank und drei erfundenen Mitspielern (kein zweites Konto nötig): Blockieren und Freigeben, Cape melden, als Moderator entscheiden, „Meine Daten löschen“. Nicht ausprobiert und nur auf Serverebene geprüft: die Sicht eines blockierten Spielers; „Meine Daten löschen“ gegen den echten Server (bewusst nicht). Das Log des Dienstes ist seit 2026-10-10 lesbar (der Besitzer hat unserem Benutzer die Rechte gegeben): `journalctl --user-unit tntcapes.service`; es reicht nur etwa einen halben Tag zurück:
@@ -34,7 +34,7 @@ Das Release kommt nach deiner Vorgabe als ein großes Update-Paket zusammen mit 
 - [x] 1.21.5
 - [x] 1.21.4 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; Welt-Einladung und Capes aus Sicht eines anderen Spielers stehen unter 2b
 - [x] 1.21.3 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; einzige Meldung war die Scrollleiste der langen Einstellungsseiten im Client-Design (alle Versionen, behoben und von dir bestätigt)
-- [ ] 1.20.1
+- [x] 1.20.1 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt („es passt sowohl das neugemachte als auch das was schon davor gemacht wurde also alles“), samt den Korrekturen für die Knopfschrift und die Textfelder
 - [ ] Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1: dort dieselbe Korrektur wie in 1.21.5 (Knopf-Text schien durch die Animation), von dir dort noch nicht angesehen
 - [ ] Nur mit deinem OK: Release mit den Manifest-Einträgen der neuen Versionen
 

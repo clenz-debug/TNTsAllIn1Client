@@ -85,6 +85,14 @@ Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: f�
 1.20.1 und 1.20.6 wären für die Mod also zwei verschiedene Ports. Entschieden am 2026-10-13: 1.20.1 bekommt eine eigene
 Mod-Version, sie kommt mit 1.21.4 und 1.21.3 in dasselbe Update wie 1.21.5.
 
+- [ ] 1.20.1 (2023-06-12) – Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.20.1`, Java 17), noch nicht veröffentlicht
+
+Fremd-Mods für 1.20.1 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.92.12 (`rvI2dfzR`), Sodium 0.5.13
+(`OihdIimA`), Indium 1.0.36 (`nQHYSjxO`, dieselbe Datei wie für 1.20.6 – Sodium 0.5 hat keine Fabric Rendering API, ohne
+Indium verbindet Continuity nichts), Lithium 0.11.4 (`iEcXOkz4`), Continuity 3.0.0 (`qGTDcjHM`), e4mc 6.2.1 (`k8wW4lF5`,
+dieselbe Datei wie in den anderen Versionen) und Bushy Vegetation 3.2.2 (`tGmPHxzv`, für 1.20.1 gibt es kein 3.3.x). Cape
+Provider gibt es für 1.20.x nicht – die Mod bringt die Capes selbst mit, wie in 1.20.6.
+
 Welche der mitgelieferten Fremd-Mods es für eine Auswahl dieser Versionen gibt (Modrinth, Fabric,
 2026-10-08):
 
