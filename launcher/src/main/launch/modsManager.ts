@@ -115,7 +115,7 @@ export const OWN_MOD_PREFIX = 'tntsallin1client-'
  *    row), which is the actually meaningful control surface for it. Gating it a second time behind
  *    the launcher's toggle first would just be a redundant, easy-to-forget extra step before the
  *    ingame toggle even becomes reachable.
- *  - `indium-`: only in the 1.20.6 bundle, where Sodium 0.5 has no Fabric Rendering API - without
+ *  - `indium-`: only in the 1.20.6 and 1.20.1 bundles, where Sodium 0.5 has no Fabric Rendering API - without
  *    it Continuity loads but connects nothing. Not a feature of its own, so no switch.
  *  - `e4mc-`: world invitations to friends (Phase 8b) depend on it. Our mod keeps its public tunnel
  *    switched off except while inviting (`E4mcControl.java`), so a normal "Open to LAN" stays local.

@@ -37,6 +37,7 @@ from PIL import Image
 
 PACK_FORMATS = {
     "1.14.4": 4,
+    "1.20.1": 15,
     "1.20.6": 32,
     "1.21.1": 34,
     "1.21.3": 42,
@@ -182,6 +183,9 @@ SHEET_RULES = [
         (0, 86, 200, 106, "widget", True),
     ], {}),
     ("gui/spectator_widgets.png", "hotbar", [(0, 22, 24, 46, None, False)], {}),
+    # The sliders' own sheet (1.19.4 to 1.20.1; before that they were drawn from widgets.png): track and
+    # handle, each plain and highlighted, the same greys as the buttons.
+    ("gui/slider.png", "widget", [], {}),
     # The helmet, chestplate, ... outlines in the empty armor slots.
     ("item/empty_armor_slot_*.png", "silhouette", [], {}),
 ]
