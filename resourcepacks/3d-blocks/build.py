@@ -18,6 +18,7 @@ import entity_items
 import models3d
 
 PACK_FORMATS = {
+    "1.21.4": 46,
     "1.21.5": 55,
     "1.21.8": 64,
     "1.21.10": 69,
@@ -162,8 +163,11 @@ def for_version(data: dict, pack_format: int) -> dict:
 
 
 # Blocks that only exist from this pack format on - their models stay out of older versions' packs.
-NEW_BLOCKS = {"copper_bars": 69, "copper_chain": 69, "copper_lantern": 69, "copper_torch": 69,
+NEW_BLOCKS = {"firefly_bush": 55, "copper_bars": 69, "copper_chain": 69, "copper_lantern": 69, "copper_torch": 69,
               "sulfur_spike": 88, "poplar": 97, "red_shrub": 97}
+# The same for blocks whose name is part of an older block's (the bush in the sweet berry bush): only
+# the models of exactly that name.
+NEW_BLOCKS_BY_NAME = {"bush": 55}
 
 # 1.21.9 (pack format 69) brought copper bars and chains: since then the iron ones are children of
 # shared templates and the chain is called "iron_chain". Before, each of those models was the block's
@@ -205,6 +209,8 @@ def in_version(model_path: str, pack_format: int) -> bool:
     entity textures our 3D sign items are cut from are gone there, so those items are left out from
     then on - models3d.MODELS_SINCE has them rebuilt on the new models."""
     if any(block in model_path and pack_format < since for block, since in NEW_BLOCKS.items()):
+        return False
+    if pack_format < NEW_BLOCKS_BY_NAME.get(model_path.split("/", 1)[-1], 0):
         return False
     return not (pack_format >= 88 and model_path.startswith("item/") and model_path.endswith("_sign"))
 
