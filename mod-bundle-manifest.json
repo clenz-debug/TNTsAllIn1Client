@@ -2,9 +2,9 @@
   "versions": {
     "1.14.4": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.14.4.jar",
-        "sha1": "cb46c1f27440728a91f4f66292fb046869e4d38d"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.14.4.jar",
+        "sha1": "03f2d7de0edc9f8f14dc468fbeadfd76d72e98ed"
       },
       "bundledMods": [
         {
@@ -34,11 +34,76 @@
         }
       ]
     },
+    "1.20.1": {
+      "ownMod": {
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.20.1.jar",
+        "sha1": "36ff06811e5e8818b923f7dde05402968c3d41c4"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "rvI2dfzR"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "OihdIimA"
+        },
+        {
+          "name": "indium",
+          "modrinthProjectId": "Orvt0mRa",
+          "modrinthVersionId": "nQHYSjxO"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "iEcXOkz4"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "qGTDcjHM"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "Bushy-Vegetation-3.2.2",
+          "version": "3.2.2",
+          "url": "https://cdn.modrinth.com/data/Yfm2j4w2/versions/tGmPHxzv/bushy_vegetation.zip",
+          "sha1": "e88aa456888a54d23967ec606cd9815853c7812f"
+        },
+        {
+          "name": "TNT-3D-Blocks-1.20.1",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Blocks-1.20.1.zip",
+          "sha1": "6517e8a1284e7e1cb246f1bc76f01edad04365f3"
+        },
+        {
+          "name": "TNT-3D-Bushes-1.20.1",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Bushes-1.20.1.zip",
+          "sha1": "ed2fecce0c48ae5546ab274657c5ca2e99d9e723"
+        },
+        {
+          "name": "TNT-Dark-Mode-1.20.1",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Dark-Mode-1.20.1.zip",
+          "sha1": "7f8061710bab9210e7fb9717c245b779dbcd260a"
+        }
+      ]
+    },
     "1.20.6": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.20.6.jar",
-        "sha1": "11e9f1a0cef7aeff1f6c5a0199a2f8572838036d"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.20.6.jar",
+        "sha1": "ca5342f07e36ce6ff2598b6885b89aa1b020b56c"
       },
       "bundledMods": [
         {
@@ -101,9 +166,9 @@
     },
     "1.21.1": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.21.1.jar",
-        "sha1": "e15a336276aa358473dec88bc586287c9cf2a922"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.1.jar",
+        "sha1": "6525a978fc54c422e25005e2863617e8c68aa8f6"
       },
       "bundledMods": [
         {
@@ -164,11 +229,203 @@
         }
       ]
     },
+    "1.21.3": {
+      "ownMod": {
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.3.jar",
+        "sha1": "9451a8ef2417e2b3c4337d5407961fbec5eca107"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "wLq4rGsB"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "rLBgU2jc"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "W0Cc7ZVd"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "kwuHTVHC"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "Bushy-Vegetation-3.3.2",
+          "version": "3.3.2",
+          "url": "https://cdn.modrinth.com/data/Yfm2j4w2/versions/rIzHhAqW/bushy_vegetation.zip",
+          "sha1": "effb724c6dd3878b4b92f5e6932bb39c9828d2b3"
+        },
+        {
+          "name": "TNT-3D-Blocks-1.21.3",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Blocks-1.21.3.zip",
+          "sha1": "5f2a8ea2e36e3e97472f68edfe663d3e56fe0334"
+        },
+        {
+          "name": "TNT-3D-Bushes-1.21.3",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Bushes-1.21.3.zip",
+          "sha1": "cf2e71456d397a642444110d4f36e94a0e05d736"
+        },
+        {
+          "name": "TNT-Dark-Mode-1.21.3",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Dark-Mode-1.21.3.zip",
+          "sha1": "9ecf96b59e174d8a84fac7f9b94d024a091e87d1"
+        }
+      ]
+    },
+    "1.21.4": {
+      "ownMod": {
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.4.jar",
+        "sha1": "309fbd4f0bcc2af44c26ae5ebf66b8c112d28a57"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "p96k10UR"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "c3YkZvne"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "u8pHPXJl"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "esC1Vejm"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "Bushy-Vegetation-3.3.2",
+          "version": "3.3.2",
+          "url": "https://cdn.modrinth.com/data/Yfm2j4w2/versions/rIzHhAqW/bushy_vegetation.zip",
+          "sha1": "effb724c6dd3878b4b92f5e6932bb39c9828d2b3"
+        },
+        {
+          "name": "TNT-3D-Blocks-1.21.4",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Blocks-1.21.4.zip",
+          "sha1": "74cd63c451e283722376a127f1361650e20f0823"
+        },
+        {
+          "name": "TNT-3D-Bushes-1.21.4",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Bushes-1.21.4.zip",
+          "sha1": "6426405a0b42c4a3ee2c1984852f635fd2148348"
+        },
+        {
+          "name": "TNT-Dark-Mode-1.21.4",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Dark-Mode-1.21.4.zip",
+          "sha1": "85719d9123881df799fa8256a0eae039b03db08a"
+        },
+        {
+          "name": "TNT-Flat-Inventory-Icons-1.21.4",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Flat-Inventory-Icons-1.21.4.zip",
+          "sha1": "323915945e2513fa9ec430885e94d91dc32540ad"
+        }
+      ]
+    },
+    "1.21.5": {
+      "ownMod": {
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.5.jar",
+        "sha1": "2da55884dc854c7584ab302893bcd350af3b93a1"
+      },
+      "bundledMods": [
+        {
+          "name": "fabric-api",
+          "modrinthProjectId": "P7dR8mSH",
+          "modrinthVersionId": "kKEGlsne"
+        },
+        {
+          "name": "sodium",
+          "modrinthProjectId": "AANobbMI",
+          "modrinthVersionId": "DA250htH"
+        },
+        {
+          "name": "lithium",
+          "modrinthProjectId": "gvQqBUqZ",
+          "modrinthVersionId": "xcELvp6R"
+        },
+        {
+          "name": "continuity",
+          "modrinthProjectId": "1IjD5062",
+          "modrinthVersionId": "kravz06U"
+        },
+        {
+          "name": "e4mc",
+          "modrinthProjectId": "qANg5Jrr",
+          "modrinthVersionId": "k8wW4lF5"
+        }
+      ],
+      "bundledResourcepacks": [
+        {
+          "name": "Bushy-Vegetation-3.4.2",
+          "version": "3.4.2",
+          "url": "https://cdn.modrinth.com/data/Yfm2j4w2/versions/aLE579XT/bushy_vegetation.zip",
+          "sha1": "833aeca75903ba781d134e92a7365bc6259f4e50"
+        },
+        {
+          "name": "TNT-3D-Blocks-1.21.5",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Blocks-1.21.5.zip",
+          "sha1": "cc129d4440a11ed7208bec7369155d2b0120316f"
+        },
+        {
+          "name": "TNT-3D-Bushes-1.21.5",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-3D-Bushes-1.21.5.zip",
+          "sha1": "9009713c06755c93337713b1d1f6d0c2580463c9"
+        },
+        {
+          "name": "TNT-Dark-Mode-1.21.5",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Dark-Mode-1.21.5.zip",
+          "sha1": "98e6ba1a23b1d666de1165b61b959bc91ee99510"
+        },
+        {
+          "name": "TNT-Flat-Inventory-Icons-1.21.5",
+          "version": "0.16.0",
+          "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/TNT-Flat-Inventory-Icons-1.21.5.zip",
+          "sha1": "0cb369e7acbdb3a180bd4e11b965cca238025758"
+        }
+      ]
+    },
     "1.21.8": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.21.8.jar",
-        "sha1": "3e66bf8e93253196116b7bac30c283e8a031aa2f"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.8.jar",
+        "sha1": "061884a9665c1c2918c5ea154ecc06a05617fc1e"
       },
       "bundledMods": [
         {
@@ -237,9 +494,9 @@
     },
     "1.21.10": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.21.10.jar",
-        "sha1": "4492868d843b26ef0860a56f97455fe44bacf5bd"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.10.jar",
+        "sha1": "f50f49ec2dded3d43fb6bf954807c31bdad5dd4a"
       },
       "bundledMods": [
         {
@@ -308,9 +565,9 @@
     },
     "1.21.11": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc1.21.11.jar",
-        "sha1": "701ea87e771b273e5d8ca0eab1d6be04fdcbbaa0"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc1.21.11.jar",
+        "sha1": "ef04398398dd5fdd1811cd3de306c6faf25e78df"
       },
       "bundledMods": [
         {
@@ -379,9 +636,9 @@
     },
     "26.1.2": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc26.1.2.jar",
-        "sha1": "c3cf07d083fa5ba66bf029e0de47cb19a3c1704b"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc26.1.2.jar",
+        "sha1": "5529f667bf5a7bd316fa829c2a136dec31f37f62"
       },
       "bundledMods": [
         {
@@ -444,9 +701,9 @@
     },
     "26.2": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc26.2.jar",
-        "sha1": "ba06dd30cbab30ff0ed90c8f107d09b8d87ebf7c"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc26.2.jar",
+        "sha1": "b57dbb1f4398797000ecaa364a31ef4352c1b7eb"
       },
       "bundledMods": [
         {
@@ -509,9 +766,9 @@
     },
     "26.3": {
       "ownMod": {
-        "version": "0.1.14",
-        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.1.14/tntsallin1client-0.1.14-mc26.3.jar",
-        "sha1": "2f7cae7f1f6cf8c103875a50b7bfe37fcc3bd052"
+        "version": "0.16.0",
+        "url": "https://github.com/clenz-debug/TNTsAllIn1Client/releases/download/v0.16.0/tntsallin1client-0.16.0-mc26.3.jar",
+        "sha1": "d1278844ee5488b91fdce6114d70be1c27a38904"
       },
       "bundledMods": [
         {
