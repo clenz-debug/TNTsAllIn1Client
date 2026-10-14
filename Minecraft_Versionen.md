@@ -36,8 +36,8 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 
 Starten heute schon mit Fabric, aber ohne unsere Mod.
 
-- [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt)
-- [ ] 1.21.4 (2024-12-03)
+- [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt); Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.21.3`), noch nicht veröffentlicht
+- [ ] 1.21.4 (2024-12-03) – Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.21.4`), noch nicht veröffentlicht
 - [ ] 1.21.5 (2025-03-25) – Mod fertig und von dir am 2026-10-13 bestätigt (`mod/1.21.5`), noch nicht veröffentlicht
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
@@ -49,6 +49,16 @@ Fremd-Mods für 1.21.5 (Modrinth, 2026-10-13, liegen im Dev-Bundle): Fabric API 
 (`DA250htH`), Lithium 0.16.3 (`xcELvp6R`), Continuity 3.0.1-test.4 (`kravz06U`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy
 Vegetation 3.4.2 (`aLE579XT`, dieselbe Datei wie für 1.21.8). Cape Provider gibt es nur als 1.1.1, die keine Cape-Adresse
 aus einer anderen Mod übernimmt – die Mod bringt die Capes dort selbst mit, wie in 1.20.6.
+
+Fremd-Mods für 1.21.4 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.119.4 (`p96k10UR`), Sodium 0.6.13
+(`c3YkZvne`), Lithium 0.15.3 (`u8pHPXJl`), Continuity 3.0.0 (`esC1Vejm`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy Vegetation 3.3.2
+(`rIzHhAqW`, dieselbe Datei wie für 1.21.1). Cape Provider gibt es nur bis 1.0.2 – die Mod bringt die Capes selbst mit, wie
+in 1.21.5.
+
+Fremd-Mods für 1.21.3 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.114.1 (`wLq4rGsB`), Sodium 0.6.13
+(`rLBgU2jc`), Lithium 0.14.6 (`W0Cc7ZVd`), Continuity 3.0.0 (`kwuHTVHC`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy Vegetation 3.3.2
+(`rIzHhAqW`, dieselbe Datei wie für 1.21.1 und 1.21.4). Cape Provider gibt es für 1.21.3 nicht – die Mod bringt die Capes
+selbst mit, wie in 1.21.4.
 
 Fremd-Mods für 26.2 (Modrinth, 2026-10-09, im Manifest seit 0.1.13): Fabric API 0.161.0 (`ewUK83HI`), Sodium 0.9.2
 (`xJZxADzI`), Lithium 0.25.3 (`f7vZ0VWU`), Continuity 3.0.1 (`mgUN5Xz2`), Cape Provider 5.5.1 (`Puw7YiUS`) und
