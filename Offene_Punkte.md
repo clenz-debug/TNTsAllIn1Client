@@ -33,7 +33,7 @@ Von dir am 2026-10-13 im Dev-Launcher getestet und bestätigt („damit ist alle
 Das Release kommt nach deiner Vorgabe als ein großes Update-Paket zusammen mit den restlichen 1.21er-Versionen und der 1.20.1:
 - [x] 1.21.5
 - [x] 1.21.4 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; Welt-Einladung und Capes aus Sicht eines anderen Spielers stehen unter 2b
-- [x] 1.21.3 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; einzige Meldung war die Scrollleiste der langen Einstellungsseiten im Client-Design (alle Versionen, siehe 2a)
+- [x] 1.21.3 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; einzige Meldung war die Scrollleiste der langen Einstellungsseiten im Client-Design (alle Versionen, behoben und von dir bestätigt)
 - [ ] 1.20.1
 - [ ] Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1: dort dieselbe Korrektur wie in 1.21.5 (Knopf-Text schien durch die Animation), von dir dort noch nicht angesehen
 - [ ] Nur mit deinem OK: Release mit den Manifest-Einträgen der neuen Versionen
@@ -50,9 +50,7 @@ Das Release kommt nach deiner Vorgabe als ein großes Update-Paket zusammen mit 
 - [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen
 
 ## 2a. Wartet auf das nächste Release
-- [ ] Scrollleiste der langen Einstellungsseiten im Client-Design (Fadenkreuz, Tastenanzeige, Rüstungsanzeige, Wegpunkte, ...): flache Leiste in den Theme-Farben statt der Vanilla-Grafik - geändert in allen elf Fabric-Versionen von 1.20.6 bis 26.3, von dir noch nicht angesehen
-
-Der Stolperdraht-Haken wird mit 3D-Items weiter wie ein Block gehalten (der Item-Rahmen seit 0.1.14 flach) - sag Bescheid, falls der auch stört.
+Derzeit nichts. Der Stolperdraht-Haken wird mit 3D-Items weiter wie ein Block gehalten (der Item-Rahmen seit 0.1.14 flach) - sag Bescheid, falls der auch stört.
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
