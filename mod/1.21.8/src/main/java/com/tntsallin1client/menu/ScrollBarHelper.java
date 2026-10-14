@@ -1,5 +1,7 @@
 package com.tntsallin1client.menu;
 
+import com.tntsallin1client.design.ClientTheme;
+import com.tntsallin1client.design.ThemedUi;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -12,7 +14,8 @@ import java.util.function.IntSupplier;
 /**
  * Draws (and drag-scrolls) a vertical scrollbar, matching vanilla's own
  * list-widget scrollbar look (same sprites {@link AbstractScrollArea} uses
- * and the same size/position math) - for screens that scroll a handful of
+ * and the same size/position math) - in the client design ({@link ThemedUi}) the
+ * themed lists' flat track and accent thumb instead - for screens that scroll a handful of
  * hand-positioned widgets ({@link CrosshairOptionsScreen},
  * {@link KeystrokesOptionsScreen}) instead of a real
  * {@code ContainerObjectSelectionList} like {@link ClientMenuScreen}'s own
@@ -73,6 +76,14 @@ public class ScrollBarHelper {
 			return;
 		}
 		int thumbHeight = thumbHeight();
+		if (ThemedUi.active()) {
+			// Client design: the same flat track and accent thumb as the themed lists and the card menu
+			ClientTheme theme = ClientTheme.get();
+			int thumbY = thumbY(thumbHeight);
+			guiGraphics.fill(this.x, this.viewportTop, this.x + WIDTH, this.viewportTop + this.viewportHeight, theme.background2);
+			guiGraphics.fill(this.x, thumbY, this.x + WIDTH, thumbY + thumbHeight, theme.accent3);
+			return;
+		}
 		guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLLER_BACKGROUND_SPRITE, this.x, this.viewportTop, WIDTH, this.viewportHeight);
 		guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLLER_SPRITE, this.x, thumbY(thumbHeight), WIDTH, thumbHeight);
 	}
