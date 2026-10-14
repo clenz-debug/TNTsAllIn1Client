@@ -1,13 +1,13 @@
 # Offene Punkte (ohne 3D-Modelle)
 
 Stand 2026-10-14. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
-Stand der Veröffentlichung: Launcher 0.15.0 (2026-10-13), Mod 0.1.14 (2026-10-09); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
+Stand der Veröffentlichung: Launcher und Mod 0.16.0 (2026-10-14); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion. Die vollständige Liste aller Versionen mit ihrem Stand steht in `Minecraft_Versionen.md`
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
-  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 sind fertig und warten auf das Release, siehe 1a)
+  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 seit 0.16.0)
 - [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
 - [ ] Linux und macOS
 - [ ] Sicherheit des Backends (Durchsicht vom 2026-10-09, Umbau vom 2026-10-10) – gebaut und lokal geprüft. Das Backend ist seit 2026-10-10 auf dem Server (mit deinem OK; Sicherung von Datenbank, Unit und altem Code in `~/tntcapes-data/backup-2026-10-10/`) und versteht alte und neue Launcher. Der Launcher-Teil ist seit 2026-10-13 mit Launcher 0.15.0 veröffentlicht. Offen bleibt hier nur noch das Abschalten des alten Anmeldewegs (siehe 3.) und die Punkte unter 2. Von dir am 2026-10-10 bestätigt: der installierte Launcher 0.14.1 lädt die Freunde weiter (alter Anmeldeweg), der Dev-Launcher zeigt die echten Freunde über die neue Anmeldung und im Cape-Screen „Gemeldete Capes“. Von dir am 2026-10-13 im Fenster bestätigt, gegen ein lokal gestartetes Backend mit Testdatenbank und drei erfundenen Mitspielern (kein zweites Konto nötig): Blockieren und Freigeben, Cape melden, als Moderator entscheiden, „Meine Daten löschen“. Nicht ausprobiert und nur auf Serverebene geprüft: die Sicht eines blockierten Spielers; „Meine Daten löschen“ gegen den echten Server (bewusst nicht). Das Log des Dienstes ist seit 2026-10-10 lesbar (der Besitzer hat unserem Benutzer die Rechte gegeben): `journalctl --user-unit tntcapes.service`; es reicht nur etwa einen halben Tag zurück:
@@ -28,17 +28,9 @@ Stand der Veröffentlichung: Launcher 0.15.0 (2026-10-13), Mod 0.1.14 (2026-10-0
   - Platzbremse (dein Wunsch vom 2026-10-10, seit dem zweiten Deploy am selben Tag auf dem Server; Sicherung davor in `~/tntcapes-data/backup-2026-10-10-b/`): keine Uploads und keine Kopien gemeldeter Capes mehr, sobald auf der Platte weniger als 500 MB frei sind; alle Capes zusammen höchstens 1 GB, die Kopien höchstens 200 MB (`backend/src/storage.ts`, per Umgebungsvariable änderbar). Die Cape-Grenze bleibt bei 5 MB – erst senken, falls die Nutzerzahlen es nötig machen. Stand der Platte am 2026-10-10: 2,6 GB von 50 GB frei. Wir belegen 132 MB, seit du Node.js auf das Programm selbst gekürzt und die Sicherung vom 01.10. gelöscht hast (vorher 216 MB); `deploy.sh` kürzt eine künftige Node.js-Installation gleich mit
   - Datenordner des Dienstes nur noch für den eigenen Benutzer lesbar, Dienst mit Speicher- und Prozessgrenze (`backend/deploy/tntcapes.service`)
 
-## 1a. 1.21.5-Port: wartet auf das Sammel-Release
-Von dir am 2026-10-13 im Dev-Launcher getestet und bestätigt („damit ist alles getestet, es hat alles geklappt“) - Einzelheiten in `Aktuelle_Phase.md`. Committet und gepusht am 2026-10-13, ohne Manifest-Eintrag.
-Das Release kommt nach deiner Vorgabe als ein großes Update-Paket zusammen mit den restlichen 1.21er-Versionen und der 1.20.1:
-- [x] 1.21.5
-- [x] 1.21.4 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; Welt-Einladung und Capes aus Sicht eines anderen Spielers stehen unter 2b
-- [x] 1.21.3 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt; einzige Meldung war die Scrollleiste der langen Einstellungsseiten im Client-Design (alle Versionen, behoben und von dir bestätigt)
-- [x] 1.20.1 – von dir am 2026-10-14 im Dev-Launcher getestet und bestätigt („es passt sowohl das neugemachte als auch das was schon davor gemacht wurde also alles“), samt den Korrekturen für die Knopfschrift und die Textfelder
-- [ ] Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1: dort dieselbe Korrektur wie in 1.21.5 (Knopf-Text schien durch die Animation), von dir dort noch nicht angesehen
-- [ ] Nur mit deinem OK: Release mit den Manifest-Einträgen der neuen Versionen
-
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
+- [ ] Release 0.16.0 (2026-10-14, Sammel-Update): Auto-Update des installierten Launchers auf 0.16.0; eine 1.20.1-, 1.21.3-, 1.21.4- und 1.21.5-Instanz im installierten Launcher – lädt er Mods und Pakete übers Manifest, startet sie, steht das Client-Logo davor? Getestet waren die vier bisher nur im Dev-Launcher mit lokal befülltem Bundle
+- [ ] Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1: dort dieselbe Korrektur wie in 1.21.5 (Knopf-Text schien durch die Animation), von dir dort noch nicht angesehen
 - [ ] Ein Launcher bis 0.14.1 kann die verschlüsselte Anmeldung nicht lesen und zeigt dann den Login – betrifft nur, wer nach dem Update wieder eine alte Version installiert; im Fenster nicht ausprobiert
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
 - [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast

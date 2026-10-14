@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-09 (Launcher 0.14.1, Mod 0.1.14). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-10-14 (Launcher und Mod 0.16.0). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -21,8 +21,12 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 |---|---|---|---|
 | 1.8.9 | 2015-12-03 | Legacy (nur im Installer, kein Manifest-Eintrag) | 0.1.8 |
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
+| 1.20.1 | 2023-06-12 | Fabric (Modpack-Version, neben 1.20.6) | 0.16.0 |
 | 1.20.6 | 2024-04-29 | Fabric | 0.1.11 |
 | 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
+| 1.21.3 | 2024-10-23 | Fabric (deckt 1.21.2 mit ab) | 0.16.0 |
+| 1.21.4 | 2024-12-03 | Fabric | 0.16.0 |
+| 1.21.5 | 2025-03-25 | Fabric | 0.16.0 |
 | 1.21.8 | 2025-07-17 | Fabric (deckt 1.21.6 und 1.21.7 mit ab) | 0.1.14 |
 | 1.21.10 | 2025-10-07 | Fabric (deckt 1.21.9 mit ab) | 0.1.12 |
 | 1.21.11 | 2025-12-09 | Fabric | von Anfang an |
@@ -34,28 +38,24 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 
 ### Ab 1.21.2 – jede Unterversion einzeln (Fabric)
 
-Starten heute schon mit Fabric, aber ohne unsere Mod.
-
-- [ ] 1.21.3 (2024-10-23) – deckt 1.21.2 mit ab (Fehlerbehebung einen Tag später, kein neuer Inhalt); Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.21.3`), noch nicht veröffentlicht
-- [ ] 1.21.4 (2024-12-03) – Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.21.4`), noch nicht veröffentlicht
-- [ ] 1.21.5 (2025-03-25) – Mod fertig und von dir am 2026-10-13 bestätigt (`mod/1.21.5`), noch nicht veröffentlicht
+Seit 0.16.0 (2026-10-14) offen: keine – 1.21.3, 1.21.4 und 1.21.5 sind unter „Unterstützt“.
 
 Entschieden am 2026-10-08: 1.21.2, 1.21.6, 1.21.7, 1.21.9, 26.1 und 26.1.1 bekommen keine eigene
 Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen kurz danach und sind die
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
 (`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
 
-Fremd-Mods für 1.21.5 (Modrinth, 2026-10-13, liegen im Dev-Bundle): Fabric API 0.128.2 (`kKEGlsne`), Sodium 0.6.13
+Fremd-Mods für 1.21.5 (Modrinth, 2026-10-13, im Manifest seit 0.16.0): Fabric API 0.128.2 (`kKEGlsne`), Sodium 0.6.13
 (`DA250htH`), Lithium 0.16.3 (`xcELvp6R`), Continuity 3.0.1-test.4 (`kravz06U`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy
 Vegetation 3.4.2 (`aLE579XT`, dieselbe Datei wie für 1.21.8). Cape Provider gibt es nur als 1.1.1, die keine Cape-Adresse
 aus einer anderen Mod übernimmt – die Mod bringt die Capes dort selbst mit, wie in 1.20.6.
 
-Fremd-Mods für 1.21.4 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.119.4 (`p96k10UR`), Sodium 0.6.13
+Fremd-Mods für 1.21.4 (Modrinth, 2026-10-14, im Manifest seit 0.16.0): Fabric API 0.119.4 (`p96k10UR`), Sodium 0.6.13
 (`c3YkZvne`), Lithium 0.15.3 (`u8pHPXJl`), Continuity 3.0.0 (`esC1Vejm`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy Vegetation 3.3.2
 (`rIzHhAqW`, dieselbe Datei wie für 1.21.1). Cape Provider gibt es nur bis 1.0.2 – die Mod bringt die Capes selbst mit, wie
 in 1.21.5.
 
-Fremd-Mods für 1.21.3 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.114.1 (`wLq4rGsB`), Sodium 0.6.13
+Fremd-Mods für 1.21.3 (Modrinth, 2026-10-14, im Manifest seit 0.16.0): Fabric API 0.114.1 (`wLq4rGsB`), Sodium 0.6.13
 (`rLBgU2jc`), Lithium 0.14.6 (`W0Cc7ZVd`), Continuity 3.0.0 (`kwuHTVHC`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy Vegetation 3.3.2
 (`rIzHhAqW`, dieselbe Datei wie für 1.21.1 und 1.21.4). Cape Provider gibt es für 1.21.3 nicht – die Mod bringt die Capes
 selbst mit, wie in 1.21.4.
@@ -85,9 +85,9 @@ Bei zwei Hauptversionen ist die letzte Unterversion nicht die meistgespielte: f�
 1.20.1 und 1.20.6 wären für die Mod also zwei verschiedene Ports. Entschieden am 2026-10-13: 1.20.1 bekommt eine eigene
 Mod-Version, sie kommt mit 1.21.4 und 1.21.3 in dasselbe Update wie 1.21.5.
 
-- [ ] 1.20.1 (2023-06-12) – Mod fertig und von dir am 2026-10-14 bestätigt (`mod/1.20.1`, Java 17), noch nicht veröffentlicht
+1.20.1 ist seit 0.16.0 unter „Unterstützt“ (`mod/1.20.1`, Java 17).
 
-Fremd-Mods für 1.20.1 (Modrinth, 2026-10-14, liegen im Dev-Bundle): Fabric API 0.92.12 (`rvI2dfzR`), Sodium 0.5.13
+Fremd-Mods für 1.20.1 (Modrinth, 2026-10-14, im Manifest seit 0.16.0): Fabric API 0.92.12 (`rvI2dfzR`), Sodium 0.5.13
 (`OihdIimA`), Indium 1.0.36 (`nQHYSjxO`, dieselbe Datei wie für 1.20.6 – Sodium 0.5 hat keine Fabric Rendering API, ohne
 Indium verbindet Continuity nichts), Lithium 0.11.4 (`iEcXOkz4`), Continuity 3.0.0 (`qGTDcjHM`), e4mc 6.2.1 (`k8wW4lF5`,
 dieselbe Datei wie in den anderen Versionen) und Bushy Vegetation 3.2.2 (`tGmPHxzv`, für 1.20.1 gibt es kein 3.3.x). Cape
@@ -135,8 +135,8 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-31 Versionen nach den Regeln oben: 10 unterstützt, 21 offen (3 ab 1.21.2, 5 ältere mit Fabric,
-6 startbare Legacy-Versionen, 7 noch nicht startbare).
+31 Versionen nach den Regeln oben: 13 unterstützt, 18 offen (5 ältere mit Fabric, 6 startbare Legacy-Versionen,
+7 noch nicht startbare). Dazu die 1.20.1 als Ausnahme von der Regel (Modpack-Version neben 1.20.6), ebenfalls unterstützt.
 
 Fremd-Mods für 1.21.10 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3
 (`sFfidWgd`), Lithium 0.20.1 (`NsswKiwi`), Continuity 3.0.1-beta.2 (`7JbPpQnu`), Cape Provider
