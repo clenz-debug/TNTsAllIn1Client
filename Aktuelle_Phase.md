@@ -2003,3 +2003,5 @@ Auf Anweisung des Nutzers („comitt push und jetzt können wir releasen so wie 
 - Launcher-Code: unverändert seit 0.15.0 (nur ein Kommentar). Inhalt für die Spieler laut Release-Notizen: vier neue Versionen, 1.20.1 für Modpacks, Pakete für die neuen Versionen, Scrollleiste der langen Einstellungsseiten im Client-Design, Knopftext beim Design-Wechsel in 1.20.6 und 1.21.1.
 
 **Offen (Nutzer):** Auto-Update auf 0.16.0 und die vier neuen Versionen im installierten Launcher (`Offene_Punkte.md` 2).
+
+**Bestätigung des Nutzers (2026-10-15):** „ok update hat geklappt“ - das Auto-Update des installierten Launchers auf 0.16.0. Die vier neuen Versionen im installierten Launcher hat er dabei nicht erwähnt; sie bleiben in `Offene_Punkte.md` 2.
