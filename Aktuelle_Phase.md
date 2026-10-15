@@ -2005,3 +2005,5 @@ Auf Anweisung des Nutzers („comitt push und jetzt können wir releasen so wie 
 **Offen (Nutzer):** Auto-Update auf 0.16.0 und die vier neuen Versionen im installierten Launcher (`Offene_Punkte.md` 2).
 
 **Bestätigung des Nutzers (2026-10-15):** „ok update hat geklappt“ - das Auto-Update des installierten Launchers auf 0.16.0. Die vier neuen Versionen im installierten Launcher hat er dabei nicht erwähnt; sie bleiben in `Offene_Punkte.md` 2.
+
+Gleich danach: „und übergang auch“ - der Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1 (Knopftext nicht mehr durch die Animation, Korrektur aus dem 1.21.5-Port) ist bestätigt.

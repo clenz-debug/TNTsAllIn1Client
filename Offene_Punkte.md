@@ -30,7 +30,6 @@ Stand der Veröffentlichung: Launcher und Mod 0.16.0 (2026-10-14); was danach ge
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
 - [ ] Release 0.16.0 (2026-10-14, Sammel-Update): Auto-Update des installierten Launchers auf 0.16.0 von dir am 2026-10-15 bestätigt („ok update hat geklappt“). Noch offen: eine 1.20.1-, 1.21.3-, 1.21.4- und 1.21.5-Instanz im installierten Launcher – lädt er Mods und Pakete übers Manifest, startet sie, steht das Client-Logo davor? Getestet waren die vier bisher nur im Dev-Launcher mit lokal befülltem Bundle
-- [ ] Übergang zwischen Client- und Minecraft-Design in 1.20.6 und 1.21.1: dort dieselbe Korrektur wie in 1.21.5 (Knopf-Text schien durch die Animation), von dir dort noch nicht angesehen
 - [ ] Ein Launcher bis 0.14.1 kann die verschlüsselte Anmeldung nicht lesen und zeigt dann den Login – betrifft nur, wer nach dem Update wieder eine alte Version installiert; im Fenster nicht ausprobiert
 - [ ] Auto-Update des installierten Launchers auf 0.1.11
 - [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast
