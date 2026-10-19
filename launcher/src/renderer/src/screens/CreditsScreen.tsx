@@ -18,7 +18,8 @@ interface CreditEntry {
 const ENTRIES: CreditEntry[] = [
   { name: 'Fabric Loader', license: 'Apache-2.0', url: 'https://github.com/FabricMC/fabric-loader' },
   { name: 'Fabric API', license: 'Apache-2.0', url: 'https://github.com/FabricMC/fabric' },
-  { name: 'Sodium', license: 'PolyForm Shield License 1.0.0', url: 'https://github.com/CaffeineMC/sodium' },
+  // Sodium 0.4 (Minecraft 1.18.2 to 1.19.4) is still LGPL - PolyForm Shield only came with 0.5.
+  { name: 'Sodium', license: 'PolyForm Shield License 1.0.0 / LGPL-3.0-only (0.4)', url: 'https://github.com/CaffeineMC/sodium' },
   { name: 'Indium', license: 'Apache-2.0', url: 'https://github.com/comp500/Indium' },
   { name: 'Lithium', license: 'LGPL-3.0-only', url: 'https://github.com/CaffeineMC/lithium-fabric' },
   { name: 'Continuity', license: 'LGPL-3.0-only', url: 'https://github.com/PepperCode1/Continuity' },
