@@ -450,8 +450,10 @@ def legacy_gui(gui: dict) -> dict:
 # around. Held like any block it ended up out of sight (own user report: nothing in the hand) - so in
 # the hand it is moved to that middle first. And it is turned in first person: the game holds a block
 # a quarter turn to the side of where this flat thing's front would face the player (own user report,
-# with a screenshot: seen almost edge-on). item -> its turn in first person.
-HELD_BY_ITS_MIDDLE = {"item_frame": [0, 90, 0]}
+# with a screenshot: seen almost edge-on). item -> its turn in first person. The tripwire hook hangs on
+# the same wall, a quarter block from the middle, and was out of sight in the hand too (own user report,
+# 1.19.2 - the same in every version).
+HELD_BY_ITS_MIDDLE = {"item_frame": [0, 90, 0], "tripwire_hook": [0, 90, 0]}
 
 
 def way_to_middle(low, high, rotation: list, scale: float) -> list:

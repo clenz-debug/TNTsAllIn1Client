@@ -1488,10 +1488,11 @@ DOOR_DISPLAY = {
 GUI_FILL = 16    # how much of the inventory slot the item's longest side may fill, at the gui scale below
 DOOR_GUI_FILL = 24  # doors nearly the slot's full height (own user feedback: squeezed to a block's, too small)
 GUI_MAX_SCALE = 1.2
-# The ladder and the vine a little smaller than the slot (own user feedback, first on the 1.8.9 icons:
-# at the full slot they were a touch too big)
-WALL_ITEM_GUI_FILL = 14
-ITEM_GUI_FILL = {"ladder": WALL_ITEM_GUI_FILL, "vine": WALL_ITEM_GUI_FILL}
+# The wall growths and the ladder smaller than the slot (own user feedback, first on the 1.8.9 icons:
+# at the full slot the ladder and the vine were a touch too big; then 14 was still too big for them,
+# and glow lichen and sculk veins at the full slot too - 12 like the signs)
+WALL_ITEM_GUI_FILL = 12
+ITEM_GUI_FILL = {name: WALL_ITEM_GUI_FILL for name in ("ladder", "vine", "glow_lichen", "sculk_vein")}
 
 COPPER_STAGES = ["copper", "exposed_copper", "weathered_copper", "oxidized_copper"]
 # item -> (our block model, textures a vanilla child model would fill in, display)
@@ -1549,8 +1550,9 @@ VANILLA_3D_GUI_TURN = {"tripwire_hook": [20, 160, 0], "item_frame": [20, 160, 0]
 # around, front to the north. Held like a block they sat askew beside the hand (own user report: "they
 # look odd, turned strangely") - so they are held like a flat item, moved to that middle first and
 # turned half round, so the front is the side the player sees. No left-hand entries: the game mirrors
-# the right hand's.
-VANILLA_3D_HELD_FLAT = {"item_frame", "glow_item_frame"}
+# the right hand's. The tripwire hook hangs on the same wall, a quarter block from the middle: held like
+# a block it ended up beside and behind the hand, out of sight (own user report, 1.19.2).
+VANILLA_3D_HELD_FLAT = {"item_frame", "glow_item_frame", "tripwire_hook"}
 HELD_FLAT_FRONT_NORTH = {
     "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
     "firstperson_righthand": {"rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
@@ -1582,7 +1584,17 @@ def vanilla_3d_item(parent: str, low, high, gui_rotation: list, held_flat: bool 
         display = {key: value for key, value in display.items() if not key.endswith("hand")}
         for hand, held in HELD_FLAT_FRONT_NORTH.items():
             way = turned(held["rotation"], [held["scale"][0] * ((l + h) / 2 - 8) for l, h in zip(low, high)])
-            display[hand] = {**held, "translation": [round(base - moved_by, 3) + 0.0 for base, moved_by in zip(held["translation"], way)]}
+            translation = [round(base - moved_by, 3) + 0.0 for base, moved_by in zip(held["translation"], way)]
+            if hand.startswith("thirdperson"):
+                # In third person a flat item stands out from the fist along its own y, gripped at its
+                # lower end (a 16 pixel picture, one pixel in). Moved by its middle, a model much
+                # smaller than that ends short of the fist (own user report: a gap between hand and
+                # tripwire hook) - so there its lower end goes where a picture is gripped, if that
+                # is more than a pixel nearer the hand. The item frames are big enough and stay.
+                grip = held["translation"][1] + held["scale"][1] * (1 - low[1])
+                if translation[1] - grip > 1:
+                    translation[1] = round(grip, 3) + 0.0
+            display[hand] = {**held, "translation": translation}
     return {"parent": f"minecraft:{parent}", "display": display}
 
 
