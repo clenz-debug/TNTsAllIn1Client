@@ -27,16 +27,18 @@ Stand der Veröffentlichung: Launcher und Mod 0.16.0 (2026-10-14); was danach ge
   - Platzbremse (dein Wunsch vom 2026-10-10, seit dem zweiten Deploy am selben Tag auf dem Server; Sicherung davor in `~/tntcapes-data/backup-2026-10-10-b/`): keine Uploads und keine Kopien gemeldeter Capes mehr, sobald auf der Platte weniger als 500 MB frei sind; alle Capes zusammen höchstens 1 GB, die Kopien höchstens 200 MB (`backend/src/storage.ts`, per Umgebungsvariable änderbar). Die Cape-Grenze bleibt bei 5 MB – erst senken, falls die Nutzerzahlen es nötig machen. Stand der Platte am 2026-10-10: 2,6 GB von 50 GB frei. Wir belegen 132 MB, seit du Node.js auf das Programm selbst gekürzt und die Sicherung vom 01.10. gelöscht hast (vorher 216 MB); `deploy.sh` kürzt eine künftige Node.js-Installation gleich mit
   - Datenordner des Dienstes nur noch für den eigenen Benutzer lesbar, Dienst mit Speicher- und Prozessgrenze (`backend/deploy/tntcapes.service`)
 
-## 1a. 1.19.4- und 1.19.2-Port: von dir bestätigt, wartet auf Commit und Release
+## 1a. 1.19.4- und 1.19.2-Port: von dir bestätigt und committet, wartet auf das Release
 Am 2026-10-15 gebaut und im Dev-Launcher von dir getestet: „passt jetzt auch und somit passt alles“ – beide Versionen samt der Korrekturen dieses Tages (Lagerfeuer-Icon, verbundene Texturen und Wegpunkte in 1.19.2, Kein Nebel, Stolperdrahthaken). Einzelheiten in `Aktuelle_Phase.md` („1.19.4-Port“, „1.19.2-Port“).
 - [x] 1.19.4
 - [x] 1.19.2
-- [ ] Nur mit deinem OK: Commit, Manifest-Einträge `1.19.4` und `1.19.2` (jeweils samt Indium) und Release – zusammen mit den neuen 3D-Paketen aller Versionen (Stolperdrahthaken, siehe 2a)
+- [x] Commit (2026-10-19, auf deine Anweisung)
+- [ ] Nur mit deinem OK: Manifest-Einträge `1.19.4` und `1.19.2` (jeweils samt Indium) und Release – zusammen mit den neuen 3D-Paketen aller Versionen (Stolperdrahthaken, siehe 2a)
 
-## 1b. 1.18.2-Port: von dir bestätigt, wartet auf Commit und Release
+## 1b. 1.18.2-Port: von dir bestätigt und committet, wartet auf das Release
 Am 2026-10-15 gebaut, am 2026-10-16 im Dev-Launcher von dir getestet: „ok das passt, der rest hatte schon gepasst“ – der ganze Port samt der kleineren Inventar-Symbole (siehe 2a). Einzelheiten in `Aktuelle_Phase.md` („1.18.2-Port“).
 - [x] 1.18.2
-- [ ] Nur mit deinem OK: Commit, Manifest-Eintrag `1.18.2` (samt Indium) und Release – zusammen mit 1.19.4/1.19.2 (1a) und den neuen 3D-Paketen aller Versionen (2a)
+- [x] Commit (2026-10-19, auf deine Anweisung)
+- [ ] Nur mit deinem OK: Manifest-Eintrag `1.18.2` (samt Indium) und Release – zusammen mit 1.19.4/1.19.2 (1a) und den neuen 3D-Paketen aller Versionen (2a)
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
 Zurzeit nichts offen. Alle bisherigen Punkte hast du am 2026-10-19 bestätigt (Einzelheiten in `Aktuelle_Phase.md`).
