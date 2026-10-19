@@ -1,14 +1,13 @@
 # Offene Punkte (ohne 3D-Modelle)
 
-Stand 2026-10-14. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
+Stand 2026-10-15. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
 Stand der Veröffentlichung: Launcher und Mod 0.16.0 (2026-10-14); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
 - [ ] Eigene Mod auf weitere Minecraft-Versionen bringen. Regel seit 2026-10-02: ab 1.14 Fabric, darunter („Legacy“) ohne Mod-Loader mit eigenem Einstieg, kein Forge; pro alter Hauptversion nur die letzte Unterversion. Die vollständige Liste aller Versionen mit ihrem Stand steht in `Minecraft_Versionen.md`
   - [ ] Legacy-Versionen neben 1.8.9: 1.7.10, 1.9.4, 1.10.2, 1.11.2, 1.12.2 und 1.13.2 starten bisher als reines Minecraft ohne unsere Mod
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
-  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 seit 0.16.0)
-- [ ] Eingabefelder in den Fabric-Versionen stehen im Client-Design noch in der Spielschrift (in 1.8.9 in der Client-Schrift) – eigener Umbau, von dir noch nicht entschieden
+  - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 seit 0.16.0; 1.19.4, 1.19.2 und 1.18.2 gebaut und bestätigt, siehe 1a und 1b)
 - [ ] Linux und macOS
 - [ ] Sicherheit des Backends (Durchsicht vom 2026-10-09, Umbau vom 2026-10-10) – gebaut und lokal geprüft. Das Backend ist seit 2026-10-10 auf dem Server (mit deinem OK; Sicherung von Datenbank, Unit und altem Code in `~/tntcapes-data/backup-2026-10-10/`) und versteht alte und neue Launcher. Der Launcher-Teil ist seit 2026-10-13 mit Launcher 0.15.0 veröffentlicht. Offen bleibt hier nur noch das Abschalten des alten Anmeldewegs (siehe 3.) und die Punkte unter 2. Von dir am 2026-10-10 bestätigt: der installierte Launcher 0.14.1 lädt die Freunde weiter (alter Anmeldeweg), der Dev-Launcher zeigt die echten Freunde über die neue Anmeldung und im Cape-Screen „Gemeldete Capes“. Von dir am 2026-10-13 im Fenster bestätigt, gegen ein lokal gestartetes Backend mit Testdatenbank und drei erfundenen Mitspielern (kein zweites Konto nötig): Blockieren und Freigeben, Cape melden, als Moderator entscheiden, „Meine Daten löschen“. Nicht ausprobiert und nur auf Serverebene geprüft: die Sicht eines blockierten Spielers; „Meine Daten löschen“ gegen den echten Server (bewusst nicht). Das Log des Dienstes ist seit 2026-10-10 lesbar (der Besitzer hat unserem Benutzer die Rechte gegeben): `journalctl --user-unit tntcapes.service`; es reicht nur etwa einen halben Tag zurück:
   - Anmeldung ohne Minecraft-Token: der Launcher beweist dem Server über Mojangs Beitritts-Verfahren („join“/„hasJoined“), wer er ist, und bekommt dafür einen eigenen Sitzungsschlüssel, der nur auf nxlc.de gilt (12 Stunden, nur im Arbeitsspeicher). Das Minecraft-Token geht nur noch an Mojang (`backend/src/sessions.ts`, `launcher/src/main/backend/backendSession.ts`). Von dir am 2026-10-10 mit deinem Konto bestätigt, erst gegen ein lokal gestartetes Backend (Dev-Launcher mit `TNT_BACKEND_URL`), dann gegen den echten Server
@@ -28,19 +27,29 @@ Stand der Veröffentlichung: Launcher und Mod 0.16.0 (2026-10-14); was danach ge
   - Platzbremse (dein Wunsch vom 2026-10-10, seit dem zweiten Deploy am selben Tag auf dem Server; Sicherung davor in `~/tntcapes-data/backup-2026-10-10-b/`): keine Uploads und keine Kopien gemeldeter Capes mehr, sobald auf der Platte weniger als 500 MB frei sind; alle Capes zusammen höchstens 1 GB, die Kopien höchstens 200 MB (`backend/src/storage.ts`, per Umgebungsvariable änderbar). Die Cape-Grenze bleibt bei 5 MB – erst senken, falls die Nutzerzahlen es nötig machen. Stand der Platte am 2026-10-10: 2,6 GB von 50 GB frei. Wir belegen 132 MB, seit du Node.js auf das Programm selbst gekürzt und die Sicherung vom 01.10. gelöscht hast (vorher 216 MB); `deploy.sh` kürzt eine künftige Node.js-Installation gleich mit
   - Datenordner des Dienstes nur noch für den eigenen Benutzer lesbar, Dienst mit Speicher- und Prozessgrenze (`backend/deploy/tntcapes.service`)
 
-## 2. Noch von dir zu prüfen (schon veröffentlicht)
-- [ ] Ein Launcher bis 0.14.1 kann die verschlüsselte Anmeldung nicht lesen und zeigt dann den Login – betrifft nur, wer nach dem Update wieder eine alte Version installiert; im Fenster nicht ausprobiert
-- [ ] Auto-Update des installierten Launchers auf 0.1.11
-- [ ] Eine 1.20.6-Instanz im installierten Launcher (0.1.11): lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, verbindet Continuity die Texturen? Indium läuft seit 0.1.11 immer mit und darf im Mods-Screen nicht als Schalter auftauchen - das ist neuer Launcher-Code, den du noch nicht gesehen hast
-- [ ] Eine 1.21.1-Instanz im installierten Launcher: lädt er das Bundle übers Manifest (Mods und Ressourcenpakete), startet sie, funktionieren die Schalter? Getestet war 1.21.1 bisher nur im Dev-Launcher mit lokal befülltem Bundle
-- [ ] Hinweis im Launcher bei 1.21.2, 1.21.9, 26.1 und 26.1.1 (beim Anlegen einer Instanz und auf dem Startbildschirm) - gebaut, im Fenster noch von niemandem angesehen
-- [ ] Helligkeit mit Fullbright in 1.21.1 und 1.21.11: Fullbright einschalten, Spiel beenden, neu starten und Fullbright ausschalten - die eigene Helligkeit muss noch dieselbe sein, im Log kein „Error saving option Brightness“ mehr
+## 1a. 1.19.4- und 1.19.2-Port: von dir bestätigt, wartet auf Commit und Release
+Am 2026-10-15 gebaut und im Dev-Launcher von dir getestet: „passt jetzt auch und somit passt alles“ – beide Versionen samt der Korrekturen dieses Tages (Lagerfeuer-Icon, verbundene Texturen und Wegpunkte in 1.19.2, Kein Nebel, Stolperdrahthaken). Einzelheiten in `Aktuelle_Phase.md` („1.19.4-Port“, „1.19.2-Port“).
+- [x] 1.19.4
+- [x] 1.19.2
+- [ ] Nur mit deinem OK: Commit, Manifest-Einträge `1.19.4` und `1.19.2` (jeweils samt Indium) und Release – zusammen mit den neuen 3D-Paketen aller Versionen (Stolperdrahthaken, siehe 2a)
 
-- [ ] Neues 3D-Blöcke-Paket in einer schon vorhandenen Instanz: bietet der installierte Launcher das Paket als Update an, und liegt der Item-Rahmen danach flach in der Hand?
-- [ ] Launcher-Hinweis auch bei 1.21.6 und 1.21.7 (verweist auf 1.21.8) - seit 0.1.11, im Fenster noch nicht angesehen
+## 1b. 1.18.2-Port: von dir bestätigt, wartet auf Commit und Release
+Am 2026-10-15 gebaut, am 2026-10-16 im Dev-Launcher von dir getestet: „ok das passt, der rest hatte schon gepasst“ – der ganze Port samt der kleineren Inventar-Symbole (siehe 2a). Einzelheiten in `Aktuelle_Phase.md` („1.18.2-Port“).
+- [x] 1.18.2
+- [ ] Nur mit deinem OK: Commit, Manifest-Eintrag `1.18.2` (samt Indium) und Release – zusammen mit 1.19.4/1.19.2 (1a) und den neuen 3D-Paketen aller Versionen (2a)
+
+## 2. Noch von dir zu prüfen (schon veröffentlicht)
+Zurzeit nichts offen. Alle bisherigen Punkte hast du am 2026-10-19 bestätigt (Einzelheiten in `Aktuelle_Phase.md`).
 
 ## 2a. Wartet auf das nächste Release
-Derzeit nichts. Der Stolperdraht-Haken wird mit 3D-Items weiter wie ein Block gehalten (der Item-Rahmen seit 0.1.14 flach) - sag Bescheid, falls der auch stört.
+- [ ] Stolperdrahthaken in der Hand mit 3D-Items (2026-10-15, alle Versionen): war außer Sicht, wird jetzt wie der Item-Rahmen gehalten. Neue 3D-Pakete aller Versionen müssen mit dem Release hochgeladen werden (Manifest-Hashes), 1.8.9 kommt über den Installer. Von dir in 1.19.2 bestätigt („ja passt“), die anderen Versionen haben dieselbe Paket-Änderung
+- [ ] Leuchtflechte, Ranken, Leitern und Sculk-Ader im Inventar kleiner (2026-10-16, alle Versionen, deine Meldung aus dem 1.18.2-Test): alle vier füllen den Slot jetzt zu 12 von 16 px (vorher Flechte und Sculk-Ader 16, Leiter und Ranke 14). Nur das Inventar-Symbol, Hand/Boden/Rahmen und der platzierte Block bleiben. Neue 3D-Pakete aller Versionen mit dem Release hochladen, 1.8.9 über den Installer. Von dir in 1.18.2 bestätigt („ok das passt“), die anderen Versionen haben dieselbe Paket-Änderung
+- [ ] Launcher-Hinweis bei 1.18, 1.18.1 (→ 1.18.2), 1.19, 1.19.1 (→ 1.19.2) und 1.19.3 (→ 1.19.4) (2026-10-16, deine Entscheidung): beim Anlegen einer Instanz und auf dem Startbildschirm, eigener Text „wird vom Client nicht unterstützt“. Gebaut, von dir im Fenster noch nicht angesehen
+- [ ] „Von anderem Client übernehmen…“ fragt jetzt vor dem Import, dass die übernommenen Einstellungen für alle Instanzen gelten; der feste Satz unter der Versionsauswahl ist weg (2026-10-16). Von dir noch nicht angesehen
+
+- [ ] Eingabefelder im Client-Design in der Client-Schrift (2026-10-19, deine Entscheidung, alle Fabric-Versionen ab 1.18.2; 1.14.4 und 1.8.9 hatten es schon). Das betrifft Text, Cursor, Markierung und Hinweistext, in der Textfarbe des Themes und ohne Schatten. Von dir am 2026-10-19 bestätigt („jo passt jetzt“, nach der Tooltip-Korrektur), wartet auf das Release.
+
+- [ ] Tooltips des Client-Designs in der Client-Schrift (2026-10-19, deine Meldung: „Design wechseln“ am Logo stand noch in der Spielschrift). Das gilt für das Logo auf dem Startbildschirm und im Pausenmenü, für den Schließen-Knopf und für „Mehrspieler deaktiviert“ auf dem Startbildschirm, in allen Versionen. Der Rahmen bleibt der des Spiels. In 1.8.9 erscheint der Logo-Tooltip im Pausenmenü jetzt überhaupt erst, wie in den anderen Versionen. Von dir am 2026-10-19 bestätigt („jo passt jetzt“), wartet auf das Release
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).

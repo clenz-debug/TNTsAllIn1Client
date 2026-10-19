@@ -45,6 +45,8 @@ Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen k
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
 (`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
 
+Entschieden am 2026-10-16: die übrigen Unterversionen von 1.18 und 1.19 werden nicht unterstützt. Der Launcher verweist bei 1.18 und 1.18.1 auf 1.18.2, bei 1.19 und 1.19.1 auf 1.19.2, bei 1.19.3 auf 1.19.4 (`UNSUPPORTED_SUBVERSIONS`, eigener Text – das sind keine Fehlerbehebungen, die kurz darauf kamen; noch nicht veröffentlicht).
+
 Fremd-Mods für 1.21.5 (Modrinth, 2026-10-13, im Manifest seit 0.16.0): Fabric API 0.128.2 (`kKEGlsne`), Sodium 0.6.13
 (`DA250htH`), Lithium 0.16.3 (`xcELvp6R`), Continuity 3.0.1-test.4 (`kravz06U`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy
 Vegetation 3.4.2 (`aLE579XT`, dieselbe Datei wie für 1.21.8). Cape Provider gibt es nur als 1.1.1, die keine Cape-Adresse
@@ -77,9 +79,9 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.15.2 (2020-01-17)
 - [ ] 1.16.5 (2021-01-14)
 - [ ] 1.17.1 (2021-07-06)
-- [ ] 1.18.2 (2022-02-28)
-- [ ] 1.19.4 (2023-03-14)
-- [ ] 1.19.2 (2022-08-05) – Entschieden am 2026-10-15: 1.19 bekommt beide Unterversionen, 1.19.4 als letzte und stabilste,
+- [ ] 1.18.2 (2022-02-28) – am 2026-10-15 gebaut (`mod/1.18.2`, aus dem 1.19.2-Stand), am 2026-10-16 von dir im Dev-Launcher bestätigt, noch nicht veröffentlicht
+- [ ] 1.19.4 (2023-03-14) – am 2026-10-15 gebaut (`mod/1.19.4`), noch nicht getestet und nicht veröffentlicht
+- [ ] 1.19.2 (2022-08-05) – am 2026-10-15 gebaut (`mod/1.19.2`), noch nicht getestet und nicht veröffentlicht. Entschieden am 2026-10-15: 1.19 bekommt beide Unterversionen, 1.19.4 als letzte und stabilste,
   1.19.2 als die für Modpacks verbreitetere (wie 1.20.1 neben 1.20.6). Geplante Reihenfolge: erst 1.19.4 (aus dem
   1.20.1-Stand; 1.20 brachte `GuiGraphics`, darunter wird die ganze Oberfläche anders gezeichnet), dann 1.19.2 aus dem
   1.19.4-Stand (1.19.3 hat Registries, Kreativ-Tabs und die Mathe-Bibliothek umgebaut). Danach 1.18.2.
@@ -113,7 +115,9 @@ Einladungen in die eigene Welt.
 Fremd-Mods für 1.19.x (Modrinth, Fabric, 2026-10-15, jeweils neueste Vollversion): 1.19.4 – Fabric API 0.87.2 (`nyAmoHlr`),
 Sodium 0.4.10 (`b4hTi3mo`), Lithium 0.11.1 (`14hWYkog`), Continuity 3.0.0 (`kHdjiepB`), Indium 1.0.19 (`oYQsfz9e`); 1.19.2 –
 Fabric API 0.77.0 (`6g95K303`), Sodium 0.4.4 (`rAfhHfow`), Lithium 0.11.1 (`m6sVgAi6`), Continuity 2.0.2 (`Ql3Ho9eR`, ältere
-Reihe), Indium 1.0.9 (`yTfou6df`). Für beide: e4mc 6.2.x, Bushy Vegetation 3.2.2 (`tGmPHxzv`), kein Cape Provider. 1.15.2 und 1.17.1 sind noch nicht nachgesehen.
+Reihe), Indium 1.0.9 (`yTfou6df`). Für beide: e4mc 6.2.1 (`k8wW4lF5`), Bushy Vegetation 3.2.2 (`tGmPHxzv`), kein Cape Provider. Sodium 0.4.x steht noch unter LGPL-3.0 (PolyForm Shield erst ab 0.5). Alle liegen seit 2026-10-15 in den Dev-Bundles (SHA-1 geprüft). 1.15.2 und 1.17.1 sind noch nicht nachgesehen.
+
+Fremd-Mods für 1.18.2 (Modrinth, Fabric, 2026-10-15, jeweils neueste Vollversion): Fabric API 0.77.0 (`qk28POfr`), Sodium 0.4.1 (`74Y5Z8fo`, LGPL-3.0), Indium 1.0.7 (`H45YVREb`, verlangt genau Sodium 0.4.1), Lithium 0.10.3 (`ALnv7Npy`), Continuity 2.0.2 (`YEKdScFW`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie in den anderen Versionen) und Bushy Vegetation 3.2.2 (`tGmPHxzv`, dieselbe Datei wie für 1.19.x und 1.20.1 – listet 1.17 bis 1.20.2). Kein Cape Provider. Alle seit 2026-10-15 im Dev-Bundle (SHA-1 geprüft).
 
 Fremd-Mods für 1.20.6 (Modrinth, 2026-10-08): Fabric API 0.100.8, Sodium 0.5.11, Lithium 0.12.5,
 Continuity 3.0.0 (braucht mit Sodium 0.5 zusätzlich Indium 1.0.36), e4mc 6.2.1 und Bushy Vegetation 3.3.2 – alles da außer Cape Provider (für keine
