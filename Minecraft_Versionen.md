@@ -45,7 +45,7 @@ Mod-Version – ihre Fehlerbehebungen 1.21.3, 1.21.8, 1.21.10 und 26.1.2 kamen k
 stabileren Stände. Der Launcher weist bei diesen sechs Versionen darauf hin
 (`SUPERSEDED_MINECRAFT_VERSIONS` in `launcher/src/shared/types.ts`; 1.21.6 und 1.21.7 seit 0.1.11).
 
-Entschieden am 2026-10-16: die übrigen Unterversionen von 1.18 und 1.19 werden nicht unterstützt. Der Launcher verweist bei 1.18 und 1.18.1 auf 1.18.2, bei 1.19 und 1.19.1 auf 1.19.2, bei 1.19.3 auf 1.19.4 (`UNSUPPORTED_SUBVERSIONS`, eigener Text – das sind keine Fehlerbehebungen, die kurz darauf kamen; noch nicht veröffentlicht).
+Entschieden am 2026-10-16: die übrigen Unterversionen von 1.18 und 1.19 werden nicht unterstützt. Der Launcher verweist bei 1.18 und 1.18.1 auf 1.18.2, bei 1.19 und 1.19.1 auf 1.19.2, bei 1.19.3 auf 1.19.4 (`UNSUPPORTED_SUBVERSIONS`, eigener Text – das sind keine Fehlerbehebungen, die kurz darauf kamen; veröffentlicht mit 0.17.0).
 
 Fremd-Mods für 1.21.5 (Modrinth, 2026-10-13, im Manifest seit 0.16.0): Fabric API 0.128.2 (`kKEGlsne`), Sodium 0.6.13
 (`DA250htH`), Lithium 0.16.3 (`xcELvp6R`), Continuity 3.0.1-test.4 (`kravz06U`), e4mc 6.2.1 (`k8wW4lF5`) und Bushy
@@ -79,9 +79,9 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 - [ ] 1.15.2 (2020-01-17)
 - [ ] 1.16.5 (2021-01-14)
 - [ ] 1.17.1 (2021-07-06)
-- [ ] 1.18.2 (2022-02-28) – am 2026-10-15 gebaut (`mod/1.18.2`, aus dem 1.19.2-Stand), am 2026-10-16 von dir im Dev-Launcher bestätigt, noch nicht veröffentlicht
-- [ ] 1.19.4 (2023-03-14) – am 2026-10-15 gebaut (`mod/1.19.4`), noch nicht getestet und nicht veröffentlicht
-- [ ] 1.19.2 (2022-08-05) – am 2026-10-15 gebaut (`mod/1.19.2`), noch nicht getestet und nicht veröffentlicht. Entschieden am 2026-10-15: 1.19 bekommt beide Unterversionen, 1.19.4 als letzte und stabilste,
+- [x] 1.18.2 (2022-02-28) – am 2026-10-15 gebaut (`mod/1.18.2`, aus dem 1.19.2-Stand), am 2026-10-16 von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19)
+- [x] 1.19.4 (2023-03-14) – am 2026-10-15 gebaut (`mod/1.19.4`), von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19)
+- [x] 1.19.2 (2022-08-05) – am 2026-10-15 gebaut (`mod/1.19.2`), von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19). Entschieden am 2026-10-15: 1.19 bekommt beide Unterversionen, 1.19.4 als letzte und stabilste,
   1.19.2 als die für Modpacks verbreitetere (wie 1.20.1 neben 1.20.6). Geplante Reihenfolge: erst 1.19.4 (aus dem
   1.20.1-Stand; 1.20 brachte `GuiGraphics`, darunter wird die ganze Oberfläche anders gezeichnet), dann 1.19.2 aus dem
   1.19.4-Stand (1.19.3 hat Registries, Kreativ-Tabs und die Mathe-Bibliothek umgebaut). Danach 1.18.2.

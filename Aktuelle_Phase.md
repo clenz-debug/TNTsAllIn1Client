@@ -2148,3 +2148,30 @@ Meldung des Nutzers: „die anzeige switch client design (wechsel vom client des
 - **1.8.9 und 1.14.4:** Der Tooltip-Weg des Spiels kennt nur die Spielschrift. Neue Klasse `design/ClientTooltip` zeichnet den Rahmen des Spiels nach (Maße, Farben und Lage aus `Screen#renderTooltip`, im Bytecode nachgelesen) und die Zeile in `ClientFont`. `TitleScreenMixin` (beide) und `PauseScreenMixin` (1.14.4) nutzen sie. 1.8.9 hat den Logo-Tooltip im Pausenmenü bisher gar nicht gezeichnet, jetzt in `GameMenuScreenMixin` wie in den anderen Versionen.
 
 **Bestätigung des Nutzers (2026-10-19):** „jo passt jetzt“ – die Tooltips in der Client-Schrift und damit auch die Eingabefelder (die Tooltip-Meldung kam nach dem Test der Felder: „hat auch noch den falschen font“; auf Nachfrage: „beides hat gepasst“). Auf Anweisung des Nutzers am 2026-10-19 committet, zusammen mit den Ports 1.19.4, 1.19.2 und 1.18.2, den Paket-Änderungen und den Launcher-Hinweisen. Manifest und Release erst auf ausdrückliches OK.
+
+## Release 0.17.0 (2026-10-19, veröffentlicht)
+
+Freigabe des Nutzers: „ja ich gebs frei wir hauen das update raus“. Launcher und alle 17 Mods auf 0.17.0 (neuer Inhalt → mittlere Zahl). Release-Commit `fd02f6e`, Tag `v0.17.0`, ein Release mit 41 Dateien in einem Schritt (`gh release create` mit allen Dateien):
+- Installer, `.blockmap` und `latest.yml`
+- 16 Mod-Jars (alle Fabric-Versionen; die 1.8.9-Mod nur im Installer)
+- 16 3D-Blöcke-Pakete
+- je ein 3D-Büsche- und ein Dark-Mode-Paket für 1.18.2, 1.19.2 und 1.19.4
+
+Danach `main` gepusht, damit das Manifest live geht.
+
+- **Inhalt:**
+  - die Ports 1.19.4, 1.19.2 und 1.18.2, jeweils mit Indium im Manifest
+  - Stolperdrahthaken in der Hand und kleinere Wandpflanzen im Inventar (3D-Blöcke-Pakete aller Versionen)
+  - Eingabefelder und Client-Design-Tooltips in der Client-Schrift
+  - Launcher-Hinweis bei 1.18/1.18.1/1.19/1.19.1/1.19.3
+  - Rückfrage bei „Von anderem Client übernehmen…“
+- **Gefunden beim Packen:** Im lokalen Dev-Bundle waren die 3D-Blöcke-Pakete von 1.20.6 (19.10.) und 26.1.2 (18.10.) wieder die veröffentlichten von 0.1.14 – vermutlich hat der Dev-Launcher sie beim Testen aus dem Manifest nachgeladen. Alle 3D-Pakete frisch aus `build.py`/`early.py` gebaut und verglichen: Die beiden unterschieden sich genau in den fünf erwarteten Item-Modellen (Stolperdrahthaken, Leuchtflechte, Leiter, Sculk-Ader, Ranke). Ins Bundle zurückgelegt; alle anderen Bundle-Pakete waren schon der frische Stand. Dark-Mode-Pakete ebenfalls frisch gebaut: überall gleich.
+- **Lizenzen:** Sodium 0.4 (1.18.2 bis 1.19.4) steht noch unter LGPL-3.0. Das steht jetzt in `launcher/third-party-licenses/README.txt` und im Credits-Screen des Launchers; die Mod-Credits der drei Versionen hatten es schon. Die Indium-Zeile dort nennt jetzt 1.18.2 bis 1.20.6 (stand noch auf „nur 1.20.6“).
+- **Geprüft:**
+  - `latest.yml` passt zum Installer (sha512).
+  - Die Mod-Jars im Installer (1.21.11, 26.1.2, 1.8.9) sind die hochgeladenen.
+  - `seed-manifest.json` ist gleich dem Manifest.
+  - Es gibt genau ein Release zum Tag, es ist „Latest“, kein Entwurf.
+  - Alle 38 neuen Manifest-Links heruntergeladen: SHA-1 stimmt überall.
+  - Das Live-Manifest auf raw.githubusercontent zeigt die drei neuen Versionen.
+- Offen für den Nutzer: `Offene_Punkte.md` 2 (Auto-Update, die drei neuen Versionen im installierten Launcher, Paket-Update, die beiden Launcher-Hinweise).
