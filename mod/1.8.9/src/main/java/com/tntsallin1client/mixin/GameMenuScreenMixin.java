@@ -1,7 +1,9 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.design.ClientLayoutAccess;
+import com.tntsallin1client.design.ClientTooltip;
 import com.tntsallin1client.design.PauseScreenDesign;
+import com.tntsallin1client.design.ThemedButton;
 import com.tntsallin1client.design.TitleScreenDesign;
 import com.tntsallin1client.menu.ClientMenus;
 import com.tntsallin1client.menu.FriendsInGameScreen;
@@ -88,6 +90,13 @@ public abstract class GameMenuScreenMixin extends Screen implements ClientLayout
 
 	@Inject(method = "render(IIF)V", at = @At("TAIL"))
 	private void tnt$renderTransition(int mouseX, int mouseY, float tickDelta, CallbackInfo ci) {
+		if (this.tnt$clientLayout) {
+			for (ButtonWidget button : this.buttons) {
+				if (button instanceof ThemedButton && ((ThemedButton) button).tooltip != null && button.isMouseOver(this.client, mouseX, mouseY)) {
+					ClientTooltip.render(((ThemedButton) button).tooltip, mouseX, mouseY, this.width, this.height);
+				}
+			}
+		}
 		if (TitleScreenDesign.renderTransition(this.width, this.height, PauseScreenDesign.clientLogoRect(this.width, this.height))
 				&& TitleScreenDesign.useClientLayout()) {
 			this.init(this.client, this.width, this.height);

@@ -2,6 +2,7 @@ package com.tntsallin1client.design;
 
 import com.tntsallin1client.menu.ClientMenuScreen;
 import com.tntsallin1client.menu.HudEditorScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public final class ThemedUi {
 	private static final String MENU_PACKAGE = "com.tntsallin1client.menu.";
 
+	private static boolean drawing;
 	private static boolean active;
 	private static boolean ownScreen;
 
@@ -44,11 +46,13 @@ public final class ThemedUi {
 	}
 
 	public static void begin(Screen screen) {
+		drawing = true;
 		active = isThemed(screen);
 		ownScreen = screen.getClass().getName().startsWith(MENU_PACKAGE);
 	}
 
 	public static void end() {
+		drawing = false;
 		active = false;
 		ownScreen = false;
 	}
@@ -61,6 +65,31 @@ public final class ThemedUi {
 	/** Whether the widget being drawn right now belongs to a themed screen. */
 	public static boolean active() {
 		return active;
+	}
+
+	/**
+	 * Whether text fields measure and draw their text in the client font right now: while a screen is
+	 * drawn, whether that screen is themed; otherwise - typing and clicks, which move the cursor and
+	 * scroll the text outside of drawing - whether the open screen is.
+	 */
+	public static boolean clientFontFields() {
+		return drawing ? active : isThemed(Minecraft.getInstance().screen);
+	}
+
+	/**
+	 * A text field's colors mapped onto the theme like {@link #textColor}: the text color of an
+	 * editable field (0xE0E0E0) becomes the text color, that of a field that can't be edited (0x707070)
+	 * a dimmed text color.
+	 */
+	public static int fieldTextColor(int color) {
+		int rgb = color & 0xFFFFFF;
+		if (rgb == 0xE0E0E0) {
+			return textColor(color | 0xFFFFFF);
+		}
+		if (rgb == 0x707070) {
+			return textColor((color & 0xFF000000) | 0xA0A0A0);
+		}
+		return textColor(color);
 	}
 
 	/** Vanilla label colors mapped onto the theme: white becomes the text color, gray a dimmed text color. */

@@ -20,7 +20,8 @@ public class LogoButton extends AbstractButton {
 	public LogoButton(int x, int y, int height, Runnable onPress) {
 		super(x, y, Math.round(ClientLogo.widthFor(height)), height, Component.translatable("gui.tntsallin1client.design.switch"));
 		this.onPress = onPress;
-		this.setTooltip(Tooltip.create(Component.translatable("gui.tntsallin1client.design.switch")));
+		// The logo is only there in the client design, so its tooltip is in the client font.
+		this.setTooltip(Tooltip.create(ClientFont.of(Component.translatable("gui.tntsallin1client.design.switch"))));
 	}
 
 	@Override

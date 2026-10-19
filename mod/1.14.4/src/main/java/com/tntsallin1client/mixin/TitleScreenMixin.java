@@ -1,6 +1,7 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.design.ClientLayoutAccess;
+import com.tntsallin1client.design.ClientTooltip;
 import com.tntsallin1client.design.ThemedButton;
 import com.tntsallin1client.design.TitleScreenDesign;
 import com.tntsallin1client.menu.MenuButtons;
@@ -107,7 +108,7 @@ public abstract class TitleScreenMixin extends Screen implements ClientLayoutAcc
 		TitleScreenDesign.renderClientBackground(this.width, this.height);
 		super.render(mouseX, mouseY, partialTick);
 		if (tooltip != null) {
-			this.renderTooltip(tooltip, mouseX, mouseY);
+			ClientTooltip.render(tooltip, mouseX, mouseY, this.width, this.height);
 		}
 		ci.cancel();
 	}

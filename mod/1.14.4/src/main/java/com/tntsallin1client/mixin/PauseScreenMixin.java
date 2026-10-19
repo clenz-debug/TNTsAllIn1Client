@@ -1,6 +1,7 @@
 package com.tntsallin1client.mixin;
 
 import com.tntsallin1client.design.ClientLayoutAccess;
+import com.tntsallin1client.design.ClientTooltip;
 import com.tntsallin1client.design.PauseScreenDesign;
 import com.tntsallin1client.design.ThemedButton;
 import com.tntsallin1client.design.TitleScreenDesign;
@@ -84,7 +85,7 @@ public abstract class PauseScreenMixin extends Screen implements ClientLayoutAcc
 		if (this.tnt$clientLayout) {
 			for (AbstractWidget button : this.buttons) {
 				if (button instanceof ThemedButton && ((ThemedButton) button).tooltip != null && button.isMouseOver(mouseX, mouseY)) {
-					this.renderTooltip(((ThemedButton) button).tooltip, mouseX, mouseY);
+					ClientTooltip.render(((ThemedButton) button).tooltip, mouseX, mouseY, this.width, this.height);
 				}
 			}
 		}

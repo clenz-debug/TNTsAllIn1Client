@@ -106,7 +106,7 @@ public final class TitleScreenDesign {
 		int x = (width - BUTTON_WIDTH) / 2;
 		int y = Math.round(logo.y + logo.height) + LOGO_GAP;
 		boolean multiplayerAllowed = minecraft.allowsMultiplayer();
-		Tooltip multiplayerTooltip = multiplayerAllowed ? null : Tooltip.create(Component.translatable("title.multiplayer.disabled"));
+		Tooltip multiplayerTooltip = multiplayerAllowed ? null : Tooltip.create(ClientFont.of(Component.translatable("title.multiplayer.disabled")));
 
 		add.accept(button(x, y, "menu.singleplayer", () -> minecraft.setScreen(new SelectWorldScreen(screen))));
 		ThemedButton multiplayer = button(x, y += BUTTON_HEIGHT + BUTTON_GAP, "menu.multiplayer",
@@ -129,7 +129,7 @@ public final class TitleScreenDesign {
 				ClientLogo.drawCross(graphics, this.getX() + this.getWidth() / 2.0f, this.getY() + this.getHeight() / 2.0f, 8.0f, 1.5f, text);
 			}
 		};
-		quit.setTooltip(Tooltip.create(Component.translatable("menu.quit")));
+		quit.setTooltip(Tooltip.create(ClientFont.of(Component.translatable("menu.quit"))));
 		add.accept(quit);
 	}
 
