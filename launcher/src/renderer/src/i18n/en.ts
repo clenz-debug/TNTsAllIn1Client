@@ -250,8 +250,9 @@ export const en: typeof de = {
     create: 'Create',
     importing: 'Importing…',
     importFromClient: 'Import from another client…',
-    importedSettingsWarning:
-      'Imported settings (options.txt) apply to all your instances, not just the new one - this launcher deliberately shares these settings across all instances.',
+    importConfirm:
+      'The settings (options.txt) from the other client will then apply to all your instances, not just the new one - this launcher deliberately shares them across all instances. Import anyway?',
+    importConfirmButton: 'Import',
     importResultMods: (count: number) => `${count} mod(s) imported`,
     importResultSkipped: (count: number) => `${count} skipped (already included in the client or not compatible)`,
     importResultResourcepacks: (count: number) => `${count} resource pack(s) imported`,
@@ -264,6 +265,8 @@ export const en: typeof de = {
     clientSupported: 'This version is supported by the client',
     supersededVersionHint: (versionId: string, fixedVersion: string) =>
       `${versionId} is a faulty version that Mojang replaced with ${fixedVersion} shortly afterwards. We recommend using version ${fixedVersion}, as it runs more stably and is therefore the one the client supports.`,
+    unsupportedSubversionHint: (versionId: string, supportedVersion: string) =>
+      `${versionId} is not supported by the client. We recommend using version ${supportedVersion} - the client is available for it.`,
     select: 'Select',
     rename: 'Rename',
     cloning: 'Duplicating…',

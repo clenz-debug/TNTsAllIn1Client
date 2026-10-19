@@ -4,7 +4,7 @@ import { Dropdown } from '../Dropdown'
 import { formatError } from '../formatError'
 import { useTranslations } from '../i18n/LanguageContext'
 import { ClientSupportMark } from '../ClientSupportMark'
-import { isBundleCompatibleVersion, supersedingVersion, type GameVersionSummary, type Instance } from '../../../shared/types'
+import { isBundleCompatibleVersion, supersedingVersion, supportedSubversion, type GameVersionSummary, type Instance } from '../../../shared/types'
 
 interface Props {
   instances: Instance[]
@@ -68,6 +68,7 @@ export function InstancesScreen({
   const [newName, setNewName] = useState('')
   const [newVersion, setNewVersion] = useState(() => pickDefaultVersion(visibleVersions, bundleCompatibleVersions))
   const newVersionFixedBy = supersedingVersion(newVersion)
+  const newVersionSupportedSub = supportedSubversion(newVersion)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Own themed replacement for window.confirm() (ConfirmDialog) - holds which instance is pending
@@ -83,6 +84,9 @@ export function InstancesScreen({
 
   const [importBusy, setImportBusy] = useState(false)
   const [importResult, setImportResult] = useState<string | null>(null)
+  // The shared-options note is asked right before an import, not shown under the create row all the
+  // time (own user feedback: next to a version hint it read as if it belonged to the chosen version)
+  const [confirmingImport, setConfirmingImport] = useState(false)
 
   useEffect(() => {
     if (visibleVersions.length === 0) return
@@ -115,6 +119,7 @@ export function InstancesScreen({
    * button in the UI).
    */
   async function handleImportFromClient(): Promise<void> {
+    setConfirmingImport(false)
     if (!newVersion) return
     setImportBusy(true)
     setError(null)
@@ -244,14 +249,16 @@ export function InstancesScreen({
           </button>
           <button
             className="secondary-button"
-            onClick={() => void handleImportFromClient()}
+            onClick={() => setConfirmingImport(true)}
             disabled={importBusy}
           >
             {importBusy ? t.instances.importing : t.instances.importFromClient}
           </button>
         </div>
         {newVersionFixedBy && <p className="version-warning">{t.instances.supersededVersionHint(newVersion, newVersionFixedBy)}</p>}
-        <p className="version-warning">{t.instances.importedSettingsWarning}</p>
+        {newVersionSupportedSub && (
+          <p className="version-warning">{t.instances.unsupportedSubversionHint(newVersion, newVersionSupportedSub)}</p>
+        )}
         {importResult && <span className="status">{importResult}</span>}
         {versionsError && <span className="error">{t.instances.versionListError(versionsError)}</span>}
       </section>
@@ -321,6 +328,16 @@ export function InstancesScreen({
           {instances.length === 0 && <li className="mods-empty">{t.instances.empty}</li>}
         </ul>
       </section>
+
+      {confirmingImport && (
+        <ConfirmDialog
+          message={t.instances.importConfirm}
+          confirmLabel={t.instances.importConfirmButton}
+          cancelLabel={t.common.cancel}
+          onConfirm={() => void handleImportFromClient()}
+          onCancel={() => setConfirmingImport(false)}
+        />
+      )}
 
       {pendingDelete && (
         <ConfirmDialog

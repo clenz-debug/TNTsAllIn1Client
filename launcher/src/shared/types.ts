@@ -119,6 +119,23 @@ export function supersedingVersion(versionId: string): string | undefined {
   return Object.hasOwn(SUPERSEDED_MINECRAFT_VERSIONS, versionId) ? SUPERSEDED_MINECRAFT_VERSIONS[versionId] : undefined
 }
 
+/** Other sub-versions of a main version the client mods come for, mapped to the supported one to
+ * use instead - not bug-fix replacements like the list above (months apart, own content), so they
+ * get a hint of their own. Own user decision (2026-10-16): the remaining 1.18 and 1.19 sub-versions
+ * are not supported; 1.19.3 points to 1.19.4, the release right after it. */
+export const UNSUPPORTED_SUBVERSIONS: Readonly<Record<string, string>> = {
+  '1.18': '1.18.2',
+  '1.18.1': '1.18.2',
+  '1.19': '1.19.2',
+  '1.19.1': '1.19.2',
+  '1.19.3': '1.19.4'
+}
+
+/** The supported sub-version to use instead of `versionId`, if it is one of the unsupported ones. */
+export function supportedSubversion(versionId: string): string | undefined {
+  return Object.hasOwn(UNSUPPORTED_SUBVERSIONS, versionId) ? UNSUPPORTED_SUBVERSIONS[versionId] : undefined
+}
+
 export type GameVersionType = 'release' | 'snapshot'
 
 export interface GameVersionSummary {

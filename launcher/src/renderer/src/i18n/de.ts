@@ -256,8 +256,9 @@ export const de = {
     create: 'Erstellen',
     importing: 'Übernimmt…',
     importFromClient: 'Von anderem Client übernehmen…',
-    importedSettingsWarning:
-      'Übernommene Einstellungen (options.txt) gelten für alle deine Instanzen, nicht nur die neue - diese Einstellungen sind in diesem Launcher bewusst über alle Instanzen hinweg geteilt.',
+    importConfirm:
+      'Die Einstellungen (options.txt) aus dem anderen Client gelten danach für alle deine Instanzen, nicht nur für die neue – der Launcher teilt sie bewusst über alle Instanzen hinweg. Trotzdem übernehmen?',
+    importConfirmButton: 'Übernehmen',
     importResultMods: (count: number) => `${count} Mod(s) übernommen`,
     importResultSkipped: (count: number) => `${count} übersprungen (schon im Client enthalten oder nicht kompatibel)`,
     importResultResourcepacks: (count: number) => `${count} Texturpaket(e) übernommen`,
@@ -270,6 +271,8 @@ export const de = {
     clientSupported: 'Diese Version wird vom Client unterstützt',
     supersededVersionHint: (versionId: string, fixedVersion: string) =>
       `${versionId} ist eine fehlerhafte Version, die Mojang kurz darauf durch ${fixedVersion} ersetzt hat. Wir empfehlen, die Version ${fixedVersion} zu nehmen, da diese stabiler läuft und deshalb vom Client unterstützt wird.`,
+    unsupportedSubversionHint: (versionId: string, supportedVersion: string) =>
+      `${versionId} wird vom Client nicht unterstützt. Wir empfehlen, die Version ${supportedVersion} zu nehmen – für sie gibt es den Client.`,
     select: 'Auswählen',
     rename: 'Umbenennen',
     cloning: 'Dupliziert…',

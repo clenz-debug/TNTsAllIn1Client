@@ -24,7 +24,7 @@ import type {
   ThemeColors,
   UpdateStatus
 } from '../../../shared/types'
-import { isBundleCompatibleVersion, supersedingVersion } from '../../../shared/types'
+import { isBundleCompatibleVersion, supersedingVersion, supportedSubversion } from '../../../shared/types'
 import { CreditsScreen } from './CreditsScreen'
 import { FriendsScreen, InviteBanner } from './FriendsScreen'
 import { InstancesScreen } from './InstancesScreen'
@@ -115,6 +115,7 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
 
   const selectedInstance = instances.find((instance) => instance.id === selectedInstanceId) ?? null
   const selectedFixedBy = selectedInstance ? supersedingVersion(selectedInstance.versionId) : undefined
+  const selectedSupportedSub = selectedInstance ? supportedSubversion(selectedInstance.versionId) : undefined
 
   const [headTextureDataUri, setHeadTextureDataUri] = useState<string | null>(null)
 
@@ -704,6 +705,9 @@ export function PlayScreen({ profile, onProfileUpdate, onLogout, language, onLan
           )}
           {selectedInstance && selectedFixedBy && (
             <span className="version-warning">{t.instances.supersededVersionHint(selectedInstance.versionId, selectedFixedBy)}</span>
+          )}
+          {selectedInstance && selectedSupportedSub && (
+            <span className="version-warning">{t.instances.unsupportedSubversionHint(selectedInstance.versionId, selectedSupportedSub)}</span>
           )}
           {/* A legacy version our own mod exists for: no mod loader, but the client's own mods (own user request for this wording). */}
           {selectedInstance && isLegacyVersion(selectedInstance.versionId) && hasClientMod(selectedInstance.versionId) && (
