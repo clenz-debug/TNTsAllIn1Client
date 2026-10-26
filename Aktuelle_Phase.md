@@ -2175,3 +2175,32 @@ Danach `main` gepusht, damit das Manifest live geht.
   - Alle 38 neuen Manifest-Links heruntergeladen: SHA-1 stimmt überall.
   - Das Live-Manifest auf raw.githubusercontent zeigt die drei neuen Versionen.
 - Offen für den Nutzer: `Offene_Punkte.md` 2 (Auto-Update, die drei neuen Versionen im installierten Launcher, Paket-Update, die beiden Launcher-Hinweise).
+
+## Backend angehalten wegen der PHP-Lücke php2shell (2026-10-22, auf Wunsch des Nutzers)
+
+Frage des Nutzers: Ist auf dem Server PHP drauf, wegen der Sicherheitslücke? Nur lesend geprüft:
+- **PHP auf dem Server:** PHP 7.4.33 (`deb11u9`, Debian 11.11) mit laufendem `php7.4-fpm`. Die globale `php7.4-fpm.conf` reicht `.php`-Dateien auf allen rund 20 Seiten an FPM weiter (Benutzer `www-data`). Frei verfügbar wäre `deb11u12`. Gegen php2shell (CVE-2026-109618/109619) gibt es für 7.4 auf bullseye nur über Freexian ELTS einen Fix (`deb11u14`); das kostenlose Debian LTS endete am 31.08.2026.
+- **Unsere Teile:**
+  - Unser Webordner hat keine PHP-Dateien.
+  - `~/tntcapes-data` ist `drwx------`, für `www-data` also nicht zugänglich.
+  - `~/www/tntcapes` kann `www-data` nur lesen.
+  - Launcher und Mods holen von nxlc.de nie Programmcode.
+  - Offen bleibt: Vom Server aus erreicht `www-data` den Dienst auf 127.0.0.1:1025 direkt und kann `X-Forwarded-For` fälschen, also die Begrenzung pro Adresse umgehen. Schließen ließe sich das nur über die Apache-Konfiguration.
+- Der Nutzer hat dem Admin eine Nachricht weitergeleitet (PHP abschalten oder auf 8.2+ gehen, Logs ab 17.10. prüfen).
+- **„es geht mir erstmal darum die nutzer zu schützen“**, Auswahl „Dienst anhalten“: `tntcapes.service` gestoppt und deaktiviert. `/app/` antwortet mit 503, Capes werden weiter ausgeliefert (200). Der Launcher zeigt Freunde dann als nicht erreichbar.
+- Den Blick in die Dienst-Unit und in die Zähldatei der alten Anmeldungen hat die Sicherheitsprüfung blockiert.
+- Wieder an mit `systemctl --user enable --now tntcapes.service`, erst nach dem Fix des Admins und mit OK des Nutzers.
+
+**Nachtrag 2026-10-25:** PHP war auf dem Server weiter unverändert (alle Pakete `deb11u9`, `php7.4-fpm` aktiv seit 16.10.). Antwort des Admins: „hab ich schon längst aber irgendwie gibt es einen fehler / Aber der MC server ist eh getrennt / ich setze ein neues server image auf“. Auf Wunsch des Nutzers sind vorher unsere Daten per `scp` gesichert, nach `A:\tntcapes-backup-2026-10-25` (nicht im Repo):
+- `tntcapes-data`: Datenbank mit `-wal`/`-shm`, die drei früheren Sicherungen, Zähldatei, `reported-capes` (leer)
+- `www`: `index.html`, `.htaccess`, zwei aktive Capes
+
+Alle 47 Dateien haben dieselbe SHA-1 wie auf dem Server. `integrity_check` an einer Zweitkopie: ok, 7 Tabellen. Die Dienst-Unit liegt im Repo (`backend/deploy/tntcapes.service`). Den Apache-Eintrag für nxlc.de richtet der Admin ein.
+
+**Nachtrag 2026-10-26** (nur lesend geprüft): Noch kein neues Image – derselbe Rechner, Debian 11.11, läuft seit 16.10. Die PHP-7.4-Pakete sind noch installiert, unverändert `deb11u9`. Aber `php7.4-fpm` ist gestoppt und deaktiviert (`disabled`), es läuft kein PHP-Prozess, und `php7.4-fpm.conf` steht nicht mehr in `conf-enabled`. Apache führt also kein PHP mehr aus. Unser Dienst ist weiter aus (`/app/` → 503).
+
+**Nachtrag 2026-10-26, später:** Der Admin bringt den Server von Debian 11 auf 12. Zuerst hat er Debian 11 auf den neuesten Stand gebracht: PHP-Pakete jetzt `deb11u12`, Apache 2.4.67. Dabei hat das Paket-Update `php7.4-fpm` um 16:57 wieder aktiviert und gestartet, und `php7.4-fpm.conf` ist wieder in `conf-enabled` (16:50). Gegen php2shell hilft `deb11u12` laut Stand vom 22.10. nicht, der Fix ist erst `deb11u14` (ELTS). PHP 7.4 läuft also wieder angreifbar. Unsere Daten und `~/.local/node` sind noch da (Upgrade, kein neues Image). Unser Dienst ist weiter aus. Dem Nutzer eine Nachricht an den Admin vorgeschlagen: nach dem Upgrade `php7.4*` entfernen, weil alte PHP-Pakete ein Upgrade überleben und weiterlaufen.
+
+**Nachtrag 2026-10-26, nach dem Upgrade** (nur lesend geprüft): Debian 12.15 (Neustart 18:04), Apache 2.4.68. PHP 7.4 ist komplett entfernt. Es läuft PHP 8.2.35 (`8.2.35-1~deb12u1`), laut Changelog mit dem Fix für CVE-2026-109618/109619, und `bookworm-security` steht in den Paketquellen. Unsere Ordner, `~/.local/node` (v22.23.3), Linger und die Gruppen `adm`/`systemd-journal` sind da. Datenbank und Capes haben dieselbe SHA-1 wie die Sicherung vom 25.10., zurückspielen war nicht nötig. Den Dienst hat der Admin um 18:21 selbst wieder eingeschaltet: als root eingeloggt, gleiche IP und gleicher Schlüssel wie beim Upgrade, dann eine Sitzung als `lenz`. Seitdem ist er `enabled` und läuft. `/app/health` → 200, `/app/friends` ohne Anmeldung → 401, Capes → 200. Er läuft mit der alten Unit vom 13.10., der alte Anmeldeweg ist also noch an.
+
+Auf OK des Nutzers um 20:08 abgeschaltet: `Environment=TNTCAPES_ACCEPT_ACCESS_TOKENS=0` in `backend/deploy/tntcapes.service`, Datei per `scp` auf den Server gelegt (vorher byte-gleich mit dem Repo, alte Fassung gesichert als `~/tntcapes-data/tntcapes.service.bak-2026-10-26`), `daemon-reload` + Neustart. Im laufenden Prozess ist `TNTCAPES_ACCEPT_ACCESS_TOKENS=0` gesetzt. `/app/health` → 200, `/app/friends` ohne Anmeldung → 401, Capes → 200.

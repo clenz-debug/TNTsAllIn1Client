@@ -10,6 +10,8 @@ ExecStart=%h/.local/node/bin/node %h/tntcapes-backend/dist/server.js
 WorkingDirectory=%h/tntcapes-backend
 # Who sees reported capes in their launcher and decides about them (Minecraft UUIDs, comma-separated)
 Environment=TNTCAPES_MODERATORS=223d51565c7b4193a5c360920f13c591
+# Only the hasJoined session sign-in (launcher 0.15.0+); a raw Minecraft access token is refused
+Environment=TNTCAPES_ACCEPT_ACCESS_TOKENS=0
 Restart=on-failure
 RestartSec=5
 # The service never needs more rights than it starts with, and a runaway must not be able to take
