@@ -1,6 +1,6 @@
 # Offene Punkte (ohne 3D-Modelle)
 
-Stand 2026-10-15. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
+Stand 2026-11-05. Zusammengetragen aus `Aktuelle_Phase.md`, `Projekt_Roadmap.md` und `Ideen_für_den_client.md`.
 Stand der Veröffentlichung: Launcher und Mod 0.17.0 (2026-10-19); was danach gebaut wird, kommt unter 2a. Erledigtes steht nicht mehr hier, sondern in `Aktuelle_Phase.md`.
 
 ## 1. Noch nicht umgesetzt
@@ -9,7 +9,7 @@ Stand der Veröffentlichung: Launcher und Mod 0.17.0 (2026-10-19); was danach ge
   - [ ] 1.6.4 und älter: im Launcher noch nicht startbar (brauchen das alte Asset-Format und das Session-Argument)
   - [ ] Fabric-Versionen zwischen 1.15 und 1.21.10: starten mit Fabric, aber ohne unsere Mod (1.14.4 hat sie seit 0.1.9, 1.21.1 seit 0.1.10, 1.20.6 seit 0.1.11, 1.21.10 seit 0.1.12, 1.21.8 seit 0.1.14; 1.21.5, 1.21.4, 1.21.3 und 1.20.1 seit 0.16.0; 1.19.4, 1.19.2 und 1.18.2 seit 0.17.0)
 - [ ] Linux und macOS
-- [ ] Sicherheit des Backends (Durchsicht vom 2026-10-09, Umbau vom 2026-10-10) – gebaut und lokal geprüft. Das Backend ist seit 2026-10-10 auf dem Server (mit deinem OK; Sicherung von Datenbank, Unit und altem Code in `~/tntcapes-data/backup-2026-10-10/`) und versteht alte und neue Launcher. Der Launcher-Teil ist seit 2026-10-13 mit Launcher 0.15.0 veröffentlicht. Offen bleibt hier nur noch das Abschalten des alten Anmeldewegs (siehe 3.) und die Punkte unter 2. Von dir am 2026-10-10 bestätigt: der installierte Launcher 0.14.1 lädt die Freunde weiter (alter Anmeldeweg), der Dev-Launcher zeigt die echten Freunde über die neue Anmeldung und im Cape-Screen „Gemeldete Capes“. Von dir am 2026-10-13 im Fenster bestätigt, gegen ein lokal gestartetes Backend mit Testdatenbank und drei erfundenen Mitspielern (kein zweites Konto nötig): Blockieren und Freigeben, Cape melden, als Moderator entscheiden, „Meine Daten löschen“. Nicht ausprobiert und nur auf Serverebene geprüft: die Sicht eines blockierten Spielers; „Meine Daten löschen“ gegen den echten Server (bewusst nicht). Das Log des Dienstes ist seit 2026-10-10 lesbar (der Besitzer hat unserem Benutzer die Rechte gegeben): `journalctl --user-unit tntcapes.service`; es reicht nur etwa einen halben Tag zurück:
+- [ ] Sicherheit des Backends (Durchsicht vom 2026-10-09, Umbau vom 2026-10-10) – gebaut und lokal geprüft. Das Backend ist seit 2026-10-10 auf dem Server (mit deinem OK; Sicherung von Datenbank, Unit und altem Code in `~/tntcapes-data/backup-2026-10-10/`) und versteht alte und neue Launcher. Der Launcher-Teil ist seit 2026-10-13 mit Launcher 0.15.0 veröffentlicht. Der alte Anmeldeweg ist seit 2026-10-26 abgeschaltet (siehe 2c). Von dir am 2026-10-10 bestätigt: der installierte Launcher 0.14.1 lädt die Freunde weiter (alter Anmeldeweg), der Dev-Launcher zeigt die echten Freunde über die neue Anmeldung und im Cape-Screen „Gemeldete Capes“. Von dir am 2026-10-13 im Fenster bestätigt, gegen ein lokal gestartetes Backend mit Testdatenbank und drei erfundenen Mitspielern (kein zweites Konto nötig): Blockieren und Freigeben, Cape melden, als Moderator entscheiden, „Meine Daten löschen“. Nicht ausprobiert und nur auf Serverebene geprüft: die Sicht eines blockierten Spielers; „Meine Daten löschen“ gegen den echten Server (bewusst nicht). Das Log des Dienstes ist seit 2026-10-10 lesbar (der Besitzer hat unserem Benutzer die Rechte gegeben): `journalctl --user-unit tntcapes.service`; es reicht nur etwa einen halben Tag zurück:
   - Anmeldung ohne Minecraft-Token: der Launcher beweist dem Server über Mojangs Beitritts-Verfahren („join“/„hasJoined“), wer er ist, und bekommt dafür einen eigenen Sitzungsschlüssel, der nur auf nxlc.de gilt (12 Stunden, nur im Arbeitsspeicher). Das Minecraft-Token geht nur noch an Mojang (`backend/src/sessions.ts`, `launcher/src/main/backend/backendSession.ts`). Von dir am 2026-10-10 mit deinem Konto bestätigt, erst gegen ein lokal gestartetes Backend (Dev-Launcher mit `TNT_BACKEND_URL`), dann gegen den echten Server
   - Launcher bis 0.14.1 schicken weiter das Token; der Server nimmt es an, bis `TNTCAPES_ACCEPT_ACCESS_TOKENS=0` gesetzt wird. Im Log des Dienstes steht alle zehn Minuten, wie viele Spieler sich noch so angemeldet haben – steht dort nichts mehr, kann der alte Weg zu. Weil das Log nur etwa einen halben Tag zurückreicht, schreibt der Dienst die Zahl zusätzlich pro Tag in `~/tntcapes-data/access-token-sign-ins.txt` (nur Datum und Anzahl, keine Namen; `backend/src/accessTokenSignIns.ts`) – am 2026-10-13 gebaut, lokal geprüft und mit deinem OK deployt (Sicherung in `~/tntcapes-data/backup-2026-10-13/`); die Datei entsteht mit der ersten Anmeldung über den alten Weg
   - Konten, denen der Mehrspielermodus gesperrt ist (Xbox-Einstellungen, Sperre durch Mojang), können sich mit dem neuen Verfahren nicht anmelden: keine Freunde, kein eigenes Cape hochladen. Der Launcher sagt das mit eigenem Text
@@ -28,15 +28,10 @@ Stand der Veröffentlichung: Launcher und Mod 0.17.0 (2026-10-19); was danach ge
   - Datenordner des Dienstes nur noch für den eigenen Benutzer lesbar, Dienst mit Speicher- und Prozessgrenze (`backend/deploy/tntcapes.service`)
 
 ## 2. Noch von dir zu prüfen (schon veröffentlicht)
-Seit Release 0.17.0 (2026-10-19) draußen und im installierten Launcher noch nicht angesehen:
-- [ ] Auto-Update des installierten Launchers auf 0.17.0
-- [ ] Instanzen mit 1.19.4, 1.19.2 und 1.18.2 im installierten Launcher: Kommt das Bundle übers Manifest (unsere Mod, Fabric API, Sodium, Indium, Lithium, Continuity, e4mc, die Pakete), startet die Instanz? Getestet waren die drei bisher nur im Dev-Launcher
-- [ ] Neue 3D-Blöcke-Pakete (Stolperdrahthaken, kleinere Wandpflanzen) in einer schon vorhandenen Instanz: Bietet der Launcher das Paket als Update an?
-- [ ] Launcher-Hinweis bei 1.18, 1.18.1 (→ 1.18.2), 1.19, 1.19.1 (→ 1.19.2) und 1.19.3 (→ 1.19.4), beim Anlegen einer Instanz und auf dem Startbildschirm - im Fenster noch nicht angesehen
-- [ ] „Von anderem Client übernehmen…“ fragt vor dem Import nach - noch nicht angesehen
+Zurzeit nichts. Alles aus Release 0.17.0 hast du am 2026-11-05 bestätigt (Auto-Update, die drei neuen Versionen im installierten Launcher, Paket-Update, die beiden Launcher-Hinweise).
 
 ## 2a. Wartet auf das nächste Release
-Zurzeit nichts. Alles bisher Gebaute ist mit 0.17.0 veröffentlicht.
+- [x] Waypoint-Beam bei großer Entfernung (über die Fernebene hinaus abgeschnitten): in allen Versionen von 1.18.2 bis 26.3 behoben, von dir am 2026-11-05 bestätigt. Kommt mit den neuen Mod-Jars dieser Versionen
 
 ## 2b. Vor der 1.0 zu testen
 Die 1.0 ist die Version, in der alles umgesetzt ist, was du beim Client haben wolltest – sie steht noch nicht an. Diese Tests sind einer der letzten Schritte vor ihrer Veröffentlichung (dein Vorschlag vom 2026-10-03).
@@ -58,7 +53,6 @@ Auf dem Server von nxlc.de läuft PHP 7.4 (`7.4.33-1+deb11u9`, Debian 11) mit PH
 ## 3. Vor einer öffentlichen Veröffentlichung
 Code-Signing steht unter „4. Eventuell“. Aus der Sicherheits-Durchsicht des Backends vom 2026-10-09:
 
-- [ ] Alten Anmeldeweg (Minecraft-Token) auf dem Server abschalten, sobald kein Launcher bis 0.14.1 mehr unterwegs ist – abzulesen an `~/tntcapes-data/access-token-sign-ins.txt` auf dem Server (eine Zeile pro Tag mit der Zahl der Spieler); Launcher 0.15.0 ist seit 2026-10-13 draußen
 - [ ] Mit dem Besitzer des Servers zu klären (liegt nicht in unserer Hand): Sicherung der Freunde-Datenbank. HSTS für nxlc.de hat der Besitzer am 2026-10-13 eingeschaltet (von außen geprüft: ein Jahr, ohne Unterdomains). Geklärt am 2026-10-10: Apache bewahrt die Zugriffslogs 14 Tage auf (steht jetzt in `PRIVACY.md`)
 - Bewusst so: jedes Minecraft-Konto kann über `/players/lookup` oder eine Freundesanfrage erfahren, ob ein Spieler den Client nutzt (nötig fürs Logo am Nametag)
 

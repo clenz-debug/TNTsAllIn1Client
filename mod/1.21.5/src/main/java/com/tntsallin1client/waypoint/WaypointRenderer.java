@@ -45,9 +45,9 @@ public final class WaypointRenderer {
 	// distance so it keeps the same on-screen size instead of shrinking.
 	private static final float LABEL_MIN_SCALE = 0.4F;
 	private static final float LABEL_SCALE_PER_BLOCK = 0.06F;
-	// Labels of farther waypoints are pulled in to this distance along the view ray - identical on
-	// screen thanks to the distance scaling, but never clipped by the far plane.
-	private static final double LABEL_MAX_DISTANCE = 64.0;
+	// Beam ends and labels of farther waypoints are pulled in to this distance along the view ray -
+	// identical on screen (the label thanks to its distance scaling), but never clipped by the far plane.
+	private static final double MAX_DRAW_DISTANCE = 64.0;
 	private static final int LABEL_TEXT_COLOR = 0xFFFFFFFF;
 	private static final int LABEL_BACKGROUND_COLOR = 0xB0000000;
 	private static final float LABEL_OUTLINE_WIDTH = 2.0F;
@@ -106,7 +106,8 @@ public final class WaypointRenderer {
 		}
 
 		if (waypoint.showBeam) {
-			WorldShapes.line(pose, base, base.add(0, BEAM_HEIGHT, 0), color, BEAM_WIDTH, true);
+			Vec3 cameraPos = camera.getPosition();
+			WorldShapes.line(pose, pullIn(base, cameraPos), pullIn(base.add(0, BEAM_HEIGHT, 0), cameraPos), color, BEAM_WIDTH, true);
 		}
 		if (waypoint.showMarker) {
 			WorldShapes.box(pose, new AABB(new BlockPos(waypoint.x, waypoint.y, waypoint.z)), color, MARKER_WIDTH, true);
@@ -122,8 +123,8 @@ public final class WaypointRenderer {
 		Vec3 cameraPos = camera.getPosition();
 		Vec3 toAnchor = anchor.subtract(cameraPos);
 		double distance = toAnchor.length();
-		double labelDistance = Math.min(distance, LABEL_MAX_DISTANCE);
-		Vec3 pos = distance > LABEL_MAX_DISTANCE ? cameraPos.add(toAnchor.scale(LABEL_MAX_DISTANCE / distance)) : anchor;
+		double labelDistance = Math.min(distance, MAX_DRAW_DISTANCE);
+		Vec3 pos = pullIn(anchor, cameraPos);
 		float scale = Math.max(LABEL_MIN_SCALE, (float) labelDistance * LABEL_SCALE_PER_BLOCK);
 
 		// The text is drawn with one font pixel as scale / 16 world units, centered horizontally, glyph tops
@@ -156,6 +157,13 @@ public final class WaypointRenderer {
 
 	private static Vec3 toVec3(Vector3fc vector) {
 		return new Vec3(vector.x(), vector.y(), vector.z());
+	}
+
+	/** {@code point}, moved towards the camera along the view ray to at most {@link #MAX_DRAW_DISTANCE} away. */
+	private static Vec3 pullIn(Vec3 point, Vec3 cameraPos) {
+		Vec3 toPoint = point.subtract(cameraPos);
+		double distance = toPoint.length();
+		return distance > MAX_DRAW_DISTANCE ? cameraPos.add(toPoint.scale(MAX_DRAW_DISTANCE / distance)) : point;
 	}
 
 	/** 1 at/beyond {@link #FADE_START_DISTANCE}, 0 at/within {@link #FADE_END_DISTANCE}, linear between. */

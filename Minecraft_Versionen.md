@@ -1,6 +1,6 @@
 # Minecraft-Versionen: was unsere Mod schon kann und was noch offen ist
 
-Stand 2026-10-14 (Launcher und Mod 0.16.0). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
+Stand 2026-11-05 (Launcher und Mod 0.17.0). Grundlage: Mojangs Versionsliste (nur Vollversionen, keine
 Snapshots, kein Alpha/Beta) und Fabrics Liste der Versionen mit Mod-Loader, beide am 2026-10-08
 abgerufen.
 
@@ -21,6 +21,9 @@ Wird eine Version fertig und veröffentlicht, wandert sie von „Offen" nach „
 |---|---|---|---|
 | 1.8.9 | 2015-12-03 | Legacy (nur im Installer, kein Manifest-Eintrag) | 0.1.8 |
 | 1.14.4 | 2019-07-19 | Fabric | 0.1.9 |
+| 1.18.2 | 2022-02-28 | Fabric | 0.17.0 |
+| 1.19.2 | 2022-08-05 | Fabric (Modpack-Version, neben 1.19.4) | 0.17.0 |
+| 1.19.4 | 2023-03-14 | Fabric | 0.17.0 |
 | 1.20.1 | 2023-06-12 | Fabric (Modpack-Version, neben 1.20.6) | 0.16.0 |
 | 1.20.6 | 2024-04-29 | Fabric | 0.1.11 |
 | 1.21.1 | 2024-08-08 | Fabric | 0.1.10 |
@@ -148,8 +151,9 @@ Brauchen erst das alte Asset-Format und das Session-Argument im Launcher, dann e
 
 ## Zahlen
 
-31 Versionen nach den Regeln oben: 13 unterstützt, 18 offen (5 ältere mit Fabric, 6 startbare Legacy-Versionen,
-7 noch nicht startbare). Dazu die 1.20.1 als Ausnahme von der Regel (Modpack-Version neben 1.20.6), ebenfalls unterstützt.
+31 Versionen nach den Regeln oben: 15 unterstützt, 16 offen (3 ältere mit Fabric, 6 startbare Legacy-Versionen,
+7 noch nicht startbare). Dazu 1.20.1 und 1.19.2 als Ausnahmen von der Regel (Modpack-Versionen neben 1.20.6 und 1.19.4),
+ebenfalls unterstützt – zusammen 17 Versionen mit unserer Mod.
 
 Fremd-Mods für 1.21.10 (Modrinth, 2026-10-09, liegen im Dev-Bundle): Fabric API 0.138.4 (`tV4Gc0Zo`), Sodium 0.7.3
 (`sFfidWgd`), Lithium 0.20.1 (`NsswKiwi`), Continuity 3.0.1-beta.2 (`7JbPpQnu`), Cape Provider

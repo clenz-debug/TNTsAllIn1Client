@@ -2070,7 +2070,7 @@ Geprüft wie 1.19.4: Quelltext-Vergleich 1.19.4 ↔ 1.19.2 aller benutzten Spiel
 
 **Offen:** Commit, Manifest-Einträge `versions.1.19.4` und `versions.1.19.2` (jeweils samt Indium) und Release nur auf ausdrückliches OK. Nicht entschieden: ob 1.19, 1.19.1 und 1.19.3 im Launcher einen Hinweis auf 1.19.2 bzw. 1.19.4 bekommen (wie 1.21.2 → 1.21.3).
 
-## Stolperdrahthaken in der Hand mit 3D-Items (2026-10-15, alle Versionen, vom Nutzer noch nicht geprüft) — `resourcepacks/3d-blocks/`
+## Stolperdrahthaken in der Hand mit 3D-Items (2026-10-15, alle Versionen, vom Nutzer bestätigt; veröffentlicht mit 0.17.0) — `resourcepacks/3d-blocks/`
 
 Meldung des Nutzers im 1.19.2-Test: „tripwire hook halten wenn 3d block models an sind da sieht man das item nicht“, dann „diesen fehler in allen versionen beheben wo er auftritt“. Ursache, in jeder Version gleich: das 3D-Item des Hakens ist das Blockmodell des Spiels, und das hängt an der Wand, eine Viertel-Blockbreite aus der Mitte. Gehalten wie ein Block landete es neben und hinter der Hand, außer Sicht – derselbe Fehler, den die Item-Rahmen hatten. Jetzt wird der Haken wie die Item-Rahmen gehalten: zur Mitte verschoben, Vorderseite zum Spieler (`VANILLA_3D_HELD_FLAT` in `models3d.py`, für 1.8.9 `HELD_BY_ITS_MIDDLE` in `legacy.py`). Nachgesehen, welche 3D-Items sonst weit aus der Mitte liegen: nur noch die Item-Rahmen (schon so gehalten) und das Schildkrötenei (zwei Pixel, liegt am Boden – bleibt). In allen 15 Fabric-Paketen und den beiden 1.8.9-Paketen ändert sich nur `item/tripwire_hook.json` (Datei für Datei verglichen); die Flach-Icon-Pakete (ab 1.21.4) zeigen in der Hand ihr eigenes flaches Modell und bleiben gleich. Dev-Bundles aktualisiert, `mod/1.8.9` neu gebaut (Paket steckt im Jar, `verifyMixins` OK). Für die Spieler erst mit dem nächsten Release: die 3D-Pakete aller Versionen neu hochladen (Manifest-Hashes), 1.8.9 über den Installer.
 
@@ -2116,11 +2116,11 @@ Meldung des Nutzers beim 1.18.2-Test: „3d model von lichen ist zu groß, passe
 
 **Bestätigung des Nutzers (2026-10-16):** „ok das passt, der rest hatte schon gepasst“ – die kleineren Inventar-Symbole und der übrige 1.18.2-Port (Testliste in `Offene_Punkte.md` 1b) sind im Dev-Launcher bestätigt. Kein Commit, kein Manifest-Eintrag, kein Release: jeweils erst auf ausdrückliches OK.
 
-## Launcher: Hinweis bei nicht unterstützten 1.18er- und 1.19er-Unterversionen (2026-10-16, vom Nutzer noch nicht angesehen) — `launcher/`
+## Launcher: Hinweis bei nicht unterstützten 1.18er- und 1.19er-Unterversionen (2026-10-16, veröffentlicht mit 0.17.0, vom Nutzer am 2026-11-05 bestätigt) — `launcher/`
 
 Entscheidung des Nutzers: „die restlichen unterversioen werden nicht unterstützt bitte den hinweis hinzufügen“. Wer eine Instanz mit 1.18 oder 1.18.1 anlegt oder auswählt, bekommt einen Hinweis auf 1.18.2, bei 1.19 und 1.19.1 auf 1.19.2, bei 1.19.3 auf 1.19.4 (die Version direkt danach). Eigene Liste `UNSUPPORTED_SUBVERSIONS` in `launcher/src/shared/types.ts` mit eigenem Text („… wird vom Client nicht unterstützt. Wir empfehlen, die Version … zu nehmen – für sie gibt es den Client.“, de + en) – der bisherige Hinweis („fehlerhafte Version, die Mojang kurz darauf ersetzt hat“) passt dort nicht, zwischen diesen Versionen liegen Monate und eigene Inhalte. Angezeigt an denselben Stellen wie der alte: beim Anlegen einer Instanz und auf dem Startbildschirm. `npm run typecheck` und `npm run build` laufen durch. Nur Renderer-Code: im laufenden `npm run dev` lädt es ohne Neustart nach. Für die Spieler mit dem nächsten Release.
 
-Nachmeldung (2026-10-16): Unter dem neuen Hinweis stand der feste Satz zu übernommenen Einstellungen (options.txt gilt für alle Instanzen) und wirkte, als gehöre er zur gewählten Version. Er gehört zu „Von anderem Client übernehmen…“ und kommt jetzt erst beim Klick darauf als Rückfrage (ConfirmDialog, „Übernehmen“/„Abbrechen“, de + en); unter der Versionsauswahl steht er nicht mehr. typecheck und build laufen durch, vom Nutzer noch nicht angesehen.
+Nachmeldung (2026-10-16): Unter dem neuen Hinweis stand der feste Satz zu übernommenen Einstellungen (options.txt gilt für alle Instanzen) und wirkte, als gehöre er zur gewählten Version. Er gehört zu „Von anderem Client übernehmen…“ und kommt jetzt erst beim Klick darauf als Rückfrage (ConfirmDialog, „Übernehmen“/„Abbrechen“, de + en); unter der Versionsauswahl steht er nicht mehr. typecheck und build laufen durch, vom Nutzer am 2026-11-05 im installierten Launcher bestätigt.
 
 ## Client-Schrift in Eingabefeldern der Fabric-Versionen (2026-10-19, vom Nutzer bestätigt; noch nicht veröffentlicht) — `mod/`
 
@@ -2149,7 +2149,7 @@ Meldung des Nutzers: „die anzeige switch client design (wechsel vom client des
 
 **Bestätigung des Nutzers (2026-10-19):** „jo passt jetzt“ – die Tooltips in der Client-Schrift und damit auch die Eingabefelder (die Tooltip-Meldung kam nach dem Test der Felder: „hat auch noch den falschen font“; auf Nachfrage: „beides hat gepasst“). Auf Anweisung des Nutzers am 2026-10-19 committet, zusammen mit den Ports 1.19.4, 1.19.2 und 1.18.2, den Paket-Änderungen und den Launcher-Hinweisen. Manifest und Release erst auf ausdrückliches OK.
 
-## Release 0.17.0 (2026-10-19, veröffentlicht)
+## Release 0.17.0 (2026-10-19, veröffentlicht, vom Nutzer im installierten Launcher bestätigt)
 
 Freigabe des Nutzers: „ja ich gebs frei wir hauen das update raus“. Launcher und alle 17 Mods auf 0.17.0 (neuer Inhalt → mittlere Zahl). Release-Commit `fd02f6e`, Tag `v0.17.0`, ein Release mit 41 Dateien in einem Schritt (`gh release create` mit allen Dateien):
 - Installer, `.blockmap` und `latest.yml`
@@ -2175,6 +2175,7 @@ Danach `main` gepusht, damit das Manifest live geht.
   - Alle 38 neuen Manifest-Links heruntergeladen: SHA-1 stimmt überall.
   - Das Live-Manifest auf raw.githubusercontent zeigt die drei neuen Versionen.
 - Offen für den Nutzer: `Offene_Punkte.md` 2 (Auto-Update, die drei neuen Versionen im installierten Launcher, Paket-Update, die beiden Launcher-Hinweise).
+- **Bestätigung des Nutzers (2026-11-05):** „das was beim aktuellen stand noch nicht bestätigt war ist jetzt bestätigt durch mich“ – Auto-Update auf 0.17.0, Instanzen mit 1.19.4, 1.19.2 und 1.18.2 im installierten Launcher, Update der 3D-Blöcke-Pakete in einer vorhandenen Instanz, Hinweis bei den nicht unterstützten 1.18er-/1.19er-Unterversionen und die Rückfrage bei „Von anderem Client übernehmen…“.
 
 ## Backend angehalten wegen der PHP-Lücke php2shell (2026-10-22, auf Wunsch des Nutzers)
 
@@ -2204,3 +2205,9 @@ Alle 47 Dateien haben dieselbe SHA-1 wie auf dem Server. `integrity_check` an ei
 **Nachtrag 2026-10-26, nach dem Upgrade** (nur lesend geprüft): Debian 12.15 (Neustart 18:04), Apache 2.4.68. PHP 7.4 ist komplett entfernt. Es läuft PHP 8.2.35 (`8.2.35-1~deb12u1`), laut Changelog mit dem Fix für CVE-2026-109618/109619, und `bookworm-security` steht in den Paketquellen. Unsere Ordner, `~/.local/node` (v22.23.3), Linger und die Gruppen `adm`/`systemd-journal` sind da. Datenbank und Capes haben dieselbe SHA-1 wie die Sicherung vom 25.10., zurückspielen war nicht nötig. Den Dienst hat der Admin um 18:21 selbst wieder eingeschaltet: als root eingeloggt, gleiche IP und gleicher Schlüssel wie beim Upgrade, dann eine Sitzung als `lenz`. Seitdem ist er `enabled` und läuft. `/app/health` → 200, `/app/friends` ohne Anmeldung → 401, Capes → 200. Er läuft mit der alten Unit vom 13.10., der alte Anmeldeweg ist also noch an.
 
 Auf OK des Nutzers um 20:08 abgeschaltet: `Environment=TNTCAPES_ACCEPT_ACCESS_TOKENS=0` in `backend/deploy/tntcapes.service`, Datei per `scp` auf den Server gelegt (vorher byte-gleich mit dem Repo, alte Fassung gesichert als `~/tntcapes-data/tntcapes.service.bak-2026-10-26`), `daemon-reload` + Neustart. Im laufenden Prozess ist `TNTCAPES_ACCEPT_ACCESS_TOKENS=0` gesetzt. `/app/health` → 200, `/app/friends` ohne Anmeldung → 401, Capes → 200.
+
+## Waypoint-Beam bei großer Entfernung (2026-11-05, vom Nutzer bestätigt; noch nicht veröffentlicht) — `mod/`
+
+Meldung des Nutzers mit Screenshots aus der 26.3-Instanz des installierten Launchers (`A:\MC\instances\b91c1f28-…`): Der Beam eines Waypoints war bei rund 1000 m nur als Stück über dem Label zu sehen, bei 23460 m gar nicht. Ursache: Das Spiel zeichnet nur bis zu seiner Fernebene, in 26.3 `max(Sichtweite × 64, Wolkenweite × 16)` Blöcke (`Camera#update`, per `javap` geprüft), beim Nutzer also 1024 bis 1280. Der Beam lag an seiner echten Position dahinter. Das Label wurde schon auf 64 Blöcke herangeholt, der Beam nicht. Jetzt holt `WaypointRenderer#pullIn` beide Enden des Beams entlang der Blickrichtung auf höchstens 64 Blöcke heran (Konstante `MAX_DRAW_DISTANCE`, vorher `LABEL_MAX_DISTANCE`). Auf dem Bildschirm sieht er gleich aus, weil die Linienbreite in Pixeln gilt. Geändert in allen 15 Versionen von 1.18.2 bis 26.3; 1.14.4 und 1.8.9 holten den Beam schon heran. `./gradlew build` in allen 15 durch. Bestätigung des Nutzers (2026-11-05): „fix passt“.
+
+Zweite Meldung derselben Runde: Mobs sehen sehr hell aus, wenn man im Wasser ist. Kein Fehler der Mod: Das eigene Paket des Nutzers („TNT Pack.zip“) bringt eine `shaders/include/fog.glsl` aus Vanilla Tweaks mit, die den Nebel in allen Vanilla-Shadern abschaltet. Mobs bekommen damit keinen Nebel, die Landschaft (Sodiums eigene Shader) aber weiter den Wassernebel. Unser Schalter „Unterwasser-Nebel entfernen“ wirkt auf beides gleich.
