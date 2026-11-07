@@ -102,10 +102,12 @@ export function isBundleCompatibleVersion(versionId: string, bundleCompatibleVer
   return bundleCompatibleVersions.includes(versionId)
 }
 
-/** Versions Mojang replaced within days by a bug-fix release without new content, mapped to that
+/** Versions Mojang soon replaced by a bug-fix release without new content, mapped to that
  * release. Own user decision (2026-10-08): the client mods only ever come for the fixed one, and
- * the launcher says so wherever such a version is picked. */
+ * the launcher says so wherever such a version is picked. 1.17 joined on 2026-11-05 with the 1.17.1
+ * port (1.17.1 came four weeks later, fixes only). */
 export const SUPERSEDED_MINECRAFT_VERSIONS: Readonly<Record<string, string>> = {
+  '1.17': '1.17.1',
   '1.21.2': '1.21.3',
   '1.21.6': '1.21.8',
   '1.21.7': '1.21.8',

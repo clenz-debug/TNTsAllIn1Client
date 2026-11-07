@@ -81,7 +81,7 @@ Starten heute schon mit Fabric, aber ohne unsere Mod.
 
 - [ ] 1.15.2 (2020-01-17)
 - [ ] 1.16.5 (2021-01-14)
-- [ ] 1.17.1 (2021-07-06)
+- [x] 1.17.1 (2021-07-06) – am 2026-11-05 gebaut (`mod/1.17.1`, aus dem 1.18.2-Stand, Java 16), am 2026-11-07 von dir im Dev-Launcher bestätigt, noch nicht veröffentlicht. 1.17 bekommt den Launcher-Hinweis auf 1.17.1 (Fehlerbehebung, Continuity und Indium nur für 1.17.1). Keine Welt-Einladungen: e4mc 3.2.0 (das einzige für 1.17) nutzt ein Relay, das es nicht mehr gibt
 - [x] 1.18.2 (2022-02-28) – am 2026-10-15 gebaut (`mod/1.18.2`, aus dem 1.19.2-Stand), am 2026-10-16 von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19)
 - [x] 1.19.4 (2023-03-14) – am 2026-10-15 gebaut (`mod/1.19.4`), von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19)
 - [x] 1.19.2 (2022-08-05) – am 2026-10-15 gebaut (`mod/1.19.2`), von dir im Dev-Launcher bestätigt, veröffentlicht mit 0.17.0 (2026-10-19). Entschieden am 2026-10-15: 1.19 bekommt beide Unterversionen, 1.19.4 als letzte und stabilste,
@@ -118,9 +118,11 @@ Einladungen in die eigene Welt.
 Fremd-Mods für 1.19.x (Modrinth, Fabric, 2026-10-15, jeweils neueste Vollversion): 1.19.4 – Fabric API 0.87.2 (`nyAmoHlr`),
 Sodium 0.4.10 (`b4hTi3mo`), Lithium 0.11.1 (`14hWYkog`), Continuity 3.0.0 (`kHdjiepB`), Indium 1.0.19 (`oYQsfz9e`); 1.19.2 –
 Fabric API 0.77.0 (`6g95K303`), Sodium 0.4.4 (`rAfhHfow`), Lithium 0.11.1 (`m6sVgAi6`), Continuity 2.0.2 (`Ql3Ho9eR`, ältere
-Reihe), Indium 1.0.9 (`yTfou6df`). Für beide: e4mc 6.2.1 (`k8wW4lF5`), Bushy Vegetation 3.2.2 (`tGmPHxzv`), kein Cape Provider. Sodium 0.4.x steht noch unter LGPL-3.0 (PolyForm Shield erst ab 0.5). Alle liegen seit 2026-10-15 in den Dev-Bundles (SHA-1 geprüft). 1.15.2 und 1.17.1 sind noch nicht nachgesehen.
+Reihe), Indium 1.0.9 (`yTfou6df`). Für beide: e4mc 6.2.1 (`k8wW4lF5`), Bushy Vegetation 3.2.2 (`tGmPHxzv`), kein Cape Provider. Sodium 0.4.x steht noch unter LGPL-3.0 (PolyForm Shield erst ab 0.5). Alle liegen seit 2026-10-15 in den Dev-Bundles (SHA-1 geprüft). 1.15.2 ist noch nicht nachgesehen.
 
 Fremd-Mods für 1.18.2 (Modrinth, Fabric, 2026-10-15, jeweils neueste Vollversion): Fabric API 0.77.0 (`qk28POfr`), Sodium 0.4.1 (`74Y5Z8fo`, LGPL-3.0), Indium 1.0.7 (`H45YVREb`, verlangt genau Sodium 0.4.1), Lithium 0.10.3 (`ALnv7Npy`), Continuity 2.0.2 (`YEKdScFW`), e4mc 6.2.1 (`k8wW4lF5`, dieselbe Datei wie in den anderen Versionen) und Bushy Vegetation 3.2.2 (`tGmPHxzv`, dieselbe Datei wie für 1.19.x und 1.20.1 – listet 1.17 bis 1.20.2). Kein Cape Provider. Alle seit 2026-10-15 im Dev-Bundle (SHA-1 geprüft).
+
+Fremd-Mods für 1.17.1 (Modrinth, Fabric, 2026-11-05, jeweils neueste Vollversion): Fabric API 0.46.1 (`31ES0yWr`), Sodium 0.3.4 (`Fz37KqRh`, LGPL-3.0), Indium 1.0.1 (`mfNlBb6U`), Lithium 0.7.5 (`FHFKMKeu`), Continuity 1.1.0 (`yiOF0F2t`) und Bushy Vegetation 3.2.2 (`tGmPHxzv`, dieselbe Datei wie für 1.18.2). Kein Cape Provider, kein e4mc (siehe oben). Alle im Dev-Bundle (SHA-1 geprüft), noch nicht im Manifest.
 
 Fremd-Mods für 1.20.6 (Modrinth, 2026-10-08): Fabric API 0.100.8, Sodium 0.5.11, Lithium 0.12.5,
 Continuity 3.0.0 (braucht mit Sodium 0.5 zusätzlich Indium 1.0.36), e4mc 6.2.1 und Bushy Vegetation 3.3.2 – alles da außer Cape Provider (für keine
