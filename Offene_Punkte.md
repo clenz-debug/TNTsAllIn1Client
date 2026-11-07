@@ -14,7 +14,7 @@ Stand der Veröffentlichung: Launcher und Mod 0.17.0 (2026-10-19); was danach ge
 Zurzeit nichts. Alles aus Release 0.17.0 hast du am 2026-11-05 bestätigt (Auto-Update, die drei neuen Versionen im installierten Launcher, Paket-Update, die beiden Launcher-Hinweise).
 
 ## 2a. Wartet auf das nächste Release
-- [x] 1.17.1-Port (`mod/1.17.1`, Java 16) mit Launcher-Hinweis bei 1.17: von dir am 2026-11-07 im Dev-Launcher bestätigt. Für das Release: Manifest-Eintrag `versions.1.17.1` mit Fabric API, Sodium, Indium, Lithium, Continuity und den vier Paketen, ohne e4mc (Einzelheiten in `Aktuelle_Phase.md`)
+- [x] 1.17.1-Port (`mod/1.17.1`, Java 16) mit Launcher-Hinweis bei 1.17: von dir am 2026-11-07 im Dev-Launcher bestätigt. Für das Release: Manifest-Eintrag `versions.1.17.1` mit Fabric API, Sodium, Indium, Lithium, Continuity und den vier Paketen, ohne e4mc (Einzelheiten in `Aktuelle_Phase.md`). Der Eintrag liegt seit 2026-11-07 vorbereitet und **uncommittet** in `mod-bundle-manifest.json` (Links auf `v0.18.0`, Pakete mit SHA-1); beim Release noch `ownMod.sha1` aus dem hochgeladenen Jar eintragen, erst dann committen und pushen
 - [x] Waypoint-Beam bei großer Entfernung (über die Fernebene hinaus abgeschnitten): in allen Versionen von 1.18.2 bis 26.3 behoben, von dir am 2026-11-05 bestätigt. Kommt mit den neuen Mod-Jars dieser Versionen
 
 ## 2b. Vor der 1.0 zu testen

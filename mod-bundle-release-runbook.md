@@ -100,7 +100,9 @@ zusammen. Kein Wettrennen zwischen "Mods sind schon da, Resourcepacks fehlen noc
    mit Fabric API, und mit e4mc, wo es e4mc für die Version gibt** (ab 1.17): ohne Fabric API stürzt
    eine nur übers Manifest geladene Version ab, ohne e4mc gehen keine Welt-Einladungen. Für eine
    Version ohne e4mc - so 1.14.4, seit 0.1.9 im Manifest - bleibt der Eintrag ohne; unsere Mod zeigt
-   Einladungen dort nur an und lässt sie ablehnen), `bundledResourcepacks` (aus Schritt 4+5,
+   Einladungen dort nur an und lässt sie ablehnen. Ausnahme 1.17.1: das einzige e4mc dafür (3.2.0)
+   nutzt ein Relay, das es nicht mehr gibt, und kann LAN-Welten nicht privat halten - kein e4mc im
+   Eintrag), `bundledResourcepacks` (aus Schritt 4+5,
    `name`/`version`/`url`/`sha1` je Pack; `name` = Dateiname ohne `.zip`). Die Modrinth-IDs der
    lokal gebündelten Jars am zuverlässigsten per SHA-1 nachschlagen
    (`GET https://api.modrinth.com/v2/version_file/<sha1>`). e4mc **nur zusammen mit `ownMod`**
